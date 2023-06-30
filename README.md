@@ -14,10 +14,3 @@ This package is in its early stages, and is undergoing active development. It sh
 
 The aci (go-aci) package, from http://github.com/JesseCoretta/go-aci, is available under the terms of the MIT license. For further
 details, see the LICENSE file within the aforementioned repository.
-
-## Features
-
-• Eloquent: plentiful documentation and examples
-• Flexible: many different use cases, customizable for various ACI "styles"
-• Performant: efficient memory utilization for compact type instances
-• Stable: effective unit tests ensure consistent operation
