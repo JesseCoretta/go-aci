@@ -289,7 +289,10 @@ func (r Rule) Eq() (c Condition) {
 
 	for k, v := range tkwMap {
 		if r.Category() == v {
-			c = Cond(k, r.Paren(false), Eq).Encap(`"`).Paren()
+			c = Cond(k, r.Paren(false), Eq).
+				Encap(`"`).
+				Paren().
+				setCategory(k.String())
 			break
 		}
 	}
@@ -298,7 +301,7 @@ func (r Rule) Eq() (c Condition) {
 }
 
 /*
-Eq is a convenience method that crafts a particular negated-equality
+Ne is a convenience method that crafts a particular negated-equality
 Condition instance based upon the categorical string label value
 assigned to the receiver.
 
@@ -429,10 +432,15 @@ func targetRuleCanPush(x any) (ok bool) {
 	case Condition:
 		if matchTKW(tv.Category()) != TargetKeyword(0x0) {
 			ok = true
+		} else {
+			printf("Rejected %#v (%s)\n", tv, tv.Category())
 		}
 	case Rule:
 		if matchTKW(tv.Category()) != TargetKeyword(0x0) {
+			printf("%s\n", tv.Category())
 			ok = true
+		} else {
+			printf("Rejected %#v (%s)\n", tv, tv)
 		}
 	}
 

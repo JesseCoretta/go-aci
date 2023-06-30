@@ -133,3 +133,25 @@ func ExampleSearchScope_Eq_targetScopeOneLevel() {
 	// Output: (targetscope = "onelevel")
 }
 
+/*
+This example demonstrates how to craft a Target Rule Condition bearing the `targetfilter` keyword
+and an LDAP Search Filter.
+*/
+func ExampleTFilter() {
+	tf := TFilter().Push(`(&(uid=jesse)(objectClass=*))`)
+	fmt.Printf("%s", tf.Eq())
+	// Output: (targetfilter = "(&(uid=jesse)(objectClass=*))")
+}
+
+/*
+This example demonstrates how to craft a set of Target Rule Conditions.
+*/
+func ExampleT() {
+	t := T().Push(
+		TDN(`uid=jesse,ou=People,dc=example,dc=com`).Eq(),
+		TFilter().Push(`(&(uid=jesse)(objectClass=*))`).Eq(),
+		ExtOp(`1.3.6.1.4.1.56521.999.5`).Eq(),
+	)
+	fmt.Printf("%s", t)
+	// Output: (target = "ldap:///uid=jesse,ou=People,dc=example,dc=com")(targetfilter = "(&(uid=jesse)(objectClass=*))")(extop = "1.3.6.1.4.1.56521.999.5")
+}

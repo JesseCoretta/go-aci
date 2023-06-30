@@ -102,7 +102,11 @@ Eq initializes and returns a new Condition instance configured to express the
 evaluation of the receiver value as Equal-To a `targattrfilters`.
 */
 func (r AttributeFilter) Eq() Condition {
-	return Cond(TargetAttrFilters, r, Eq).Paren().Encap(`"`)
+	return Cond(TargetAttrFilters, r, Eq).
+		Paren().
+		Encap(`"`).
+		setID(`target`).
+		setCategory(TargetAttrFilters.String())
 }
 
 /*
@@ -170,7 +174,7 @@ func (r AttributeFilter) setFilter(f any) (ok bool) {
 			ok = true
 		}
         case Rule:
-		if tv.Category() == `filter` && !tv.IsZero() {
+		if tv.Category() == `targetfilter` && !tv.IsZero() {
 			r.atf.Rule = tv
 			ok = true
 		}
@@ -238,7 +242,10 @@ func (r AttributeOperation) AF(x ...AttributeFilter) AttributeFilters {
 
 	afs := AttributeFilters{new(atfs)}
 	afs.atfs.AttributeOperation = r
-	afs.atfs.Rule = Rule(stackageAnd().Symbol(`&&`).SetPushPolicy(ppol)).setCategory(`attrfilters`)
+	afs.atfs.Rule = Rule(stackageAnd().
+		Symbol(`&&`).
+		SetPushPolicy(ppol)).
+		setCategory(TargetAttrFilters.String())
 	if len(x) > 0 {
 		afs.atfs.set(x...)
 	}
@@ -264,7 +271,11 @@ Eq initializes and returns a new Condition instance configured to express the
 evaluation of the receiver value as Equal-To a `targattrfilters`.
 */
 func (r AttributeFilters) Eq() Condition {
-        return Cond(TargetAttrFilters, r, Eq).Paren().Encap(`"`)
+        return Cond(TargetAttrFilters, r, Eq).
+		Paren().
+		Encap(`"`).
+		setID(`target`).
+		setCategory(TargetAttrFilters.String())
 }
 
 /*
@@ -592,8 +603,11 @@ const (
 Filter returns an instance of Rule set to contain the string representation of
 an LDAP Search Filter.
 
-Rule instances of this design are primarily intended for use in composing Target
-Rules that bear the `targetfilter` or `targattrfilters` keywords.
+Rule instances of this design are intended for general use, as well as for the
+creation of LDAPURI instances.
+
+See the TFilter function for a means of using a filter exclusively for a Target
+Rule that bears the `targetfilter` keyword.
 
 Rule instances of this design have a maximum capacity of one (1) imposed, thus
 only one (1) successful Push of an LDAP filter can take place within any single
@@ -617,6 +631,43 @@ func Filter() Rule {
 	// with a maximum capacity of one (1). This
 	// will be reworked in the near future.
 	return Rule(stackageList(1).SetPushPolicy(ppol)).setCategory(`filter`)
+}
+
+/*
+TFilter returns an instance of Rule set to contain the string representation of
+an LDAP Search Filter.
+
+Rule instances of this design are primarily intended for use in composing Target
+Rules that bear the `targetfilter` keyword.
+
+See the Filter function for a general-use LDAP Filter facility.
+
+See the AF function for creating Target Rules that bear the `targattrfilters`
+keyword, as well as the AttributeOperation.AFs method for creating similar Target
+Rules, but with ANDed attr:filter combinations with an ADD or DELETE disposition.
+
+Rule instances of this design have a maximum capacity of one (1) imposed, thus
+only one (1) successful Push of an LDAP filter can take place within any single
+instance. This will change in the future to leverage a more sophisticated means
+of parsing/decompiling LDAP Search Filters.
+*/
+func TFilter() Rule {
+        ppol := func(x any) (err error) {
+                switch tv := x.(type) {
+                case string:
+                        if len(tv) == 0 {
+                                err = errorf("%T denied per PushPolicy method; zero length filter", tv)
+                        }
+                default:
+                        err = errorf("%T denied per PushPolicy method", tv)
+                }
+                return
+        }
+
+        // Temporarily place the filter in a Rule
+        // with a maximum capacity of one (1). This
+        // will be reworked in the near future.
+        return Rule(stackageList(1).SetPushPolicy(ppol)).setID(`target`).setCategory(`targetfilter`)
 }
 
 /*
@@ -1273,6 +1324,7 @@ func TAttrs() Rule {
         return Rule(stackageOr().
 		Symbol(`||`).
                 SetPushPolicy(ppol)).
+		setID(`target`).
 		setCategory(`targetattr`)
 }
 
@@ -1342,6 +1394,7 @@ func Ctrls() Rule {
 		Symbol(`||`).
 		Encap(``).
                 SetPushPolicy(ppol)).
+		setID(`target`).
 		setCategory(`targetcontrol`)
 }
 
@@ -1377,6 +1430,7 @@ func ExtOps() Rule {
         return Rule(stackageOr().
                 Symbol(`||`).
                 SetPushPolicy(ppol)).
+		setID(`target`).
                 setCategory(`extop`)
 }
 

@@ -46,6 +46,38 @@ func (r ObjectIdentifier) IsZero() bool {
 }
 
 /*
+Eq initializes and returns a new Condition instance configured to express
+the evaluation of the receiver value as Equal-To a `targetcontrol` or `extop`
+Target Rule, depending on the receiver's configuration.
+*/
+func (r ObjectIdentifier) Eq() Condition {
+	if r.IsZero() {
+		return Condition{}
+	}
+	return Cond(r.objectIdentifier.TargetKeyword, r, Eq).
+		Encap(`"`).
+		Paren().
+		setID(`target`).
+		setCategory(r.objectIdentifier.TargetKeyword.String())
+}
+
+/*
+Ne initializes and returns a new Condition instance configured to express
+the evaluation of the receiver value as Not-Equal-To a `targetcontrol` or
+`extop` Target Rule, depending on the receiver's configuration.
+*/
+func (r ObjectIdentifier) Ne() Condition {
+        if r.IsZero() {
+                return Condition{}
+        }
+        return Cond(r.objectIdentifier.TargetKeyword, r, Ne).
+		Encap(`"`).
+		Paren().
+		setID(`target`).
+		setCategory(r.objectIdentifier.TargetKeyword.String())
+}
+
+/*
 Valid returns an instance of error in the event the receiver is in
 an aberrant state.
 */
