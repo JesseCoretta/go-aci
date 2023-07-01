@@ -52,7 +52,7 @@ to store valid Instruction instances.
 func ACIs() Rule {
 	return Rule(stackageList().JoinDelim("\n")).
 		setPushPolicy().
-		setCategory(`instructions`)
+		setID(`instructions`)
 }
 
 /*
@@ -209,8 +209,8 @@ func (r PermissionBindRule) valid() (err error) {
 
 	if r.B.Len() == 0 {
 		err = errorf("%T is zero length", r.B)
-	} else if r.B.ID() != `bind` {
-		err = errorf("%T is not a bind rule (%s)", r.B, r.B.ID())
+	} else if r.B.ID() != `pb` && r.B.ID() != `bind` {
+		err = errorf("%T is not a permission+bind rule (%s)", r.B, r.B.ID())
 	}
 
 	return
@@ -353,7 +353,15 @@ func (r *instruction) assertPushRule(x Rule) {
                         }
                         r.T.Push(tgt)
                 }
-        }
+        } else if x.ID() == `pb` && x.Len() > 0 {
+                for t := 0; t < x.Len(); t++ {
+                        tgt, ok := x.Index(t)
+                        if !ok {
+                                continue
+                        }
+                        r.PB.Push(tgt)
+                }
+	}
 }
 
 

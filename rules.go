@@ -371,6 +371,8 @@ func bindRuleCanPush(x any) (ok bool) {
 		if matchBKW(tv.Category()) != BindKeyword(0x0) {
 			ok = true
 		}
+	case PermissionBindRule:
+		ok = true
 	case Rule:
 		ok = true
 	case ObjectIdentifier, DistinguishedName, AttributeBindTypeOrValue:
@@ -432,15 +434,10 @@ func targetRuleCanPush(x any) (ok bool) {
 	case Condition:
 		if matchTKW(tv.Category()) != TargetKeyword(0x0) {
 			ok = true
-		} else {
-			printf("Rejected %#v (%s)\n", tv, tv.Category())
 		}
 	case Rule:
 		if matchTKW(tv.Category()) != TargetKeyword(0x0) {
-			printf("%s\n", tv.Category())
 			ok = true
-		} else {
-			printf("Rejected %#v (%s)\n", tv, tv)
 		}
 	}
 
@@ -448,11 +445,11 @@ func targetRuleCanPush(x any) (ok bool) {
 }
 
 func pbRuleCanPush(x any) (ok bool) {
-	switch tv := x.(type) {
+	switch x.(type) {
+	case Rule:
+		ok = true
 	case PermissionBindRule:
-		if !tv.B.IsZero() {
-			ok = true
-		}
+		ok = true
 	}
 
 	return
@@ -460,6 +457,8 @@ func pbRuleCanPush(x any) (ok bool) {
 
 func listRuleCanPush(x any) (ok bool) {
 	switch tv := x.(type) {
+	case PermissionBindRule:
+		ok = true
 	case string:
 		if len(tv) > 0 {
 			ok = true
@@ -473,6 +472,132 @@ func listRuleCanPush(x any) (ok bool) {
 			ok = true
 		}
 	}
+	return
+}
+
+/*
+Parse reads the provided string definition value (def) and attempts
+to craft a structure of stacks. An error is returned should processing
+fail in some way.
+*/
+func (r Rule) Parse(def string) error {
+	return r.parse(def)
+}
+
+/*
+parse is a private method called during the parsing of an alleged
+Rule statement. This method is recursive.
+*/
+func (r *Rule) parse(def string) (err error) {
+	if len(def) < 2 {
+		err = errorf("%T parsing failed: input definition is below the required minimum length for processing")
+		return
+	}
+
+	// condense contiguous WHSP, and 
+	// remove leading/trailing WHSP.
+	raw := trimS(condenseWHSP(def))
+
+        // remove parenthetical encapsulation and
+        // remove leading/trailing WHSP afterwards.
+        if raw, _ = trimLRParen(raw); len(raw) == 0 {
+                err = errorf("%T parsing failed: invalid or zero length raw value", r)
+                return
+        }
+
+	var c Condition
+	var rest string
+	if rest, err = c.parse(raw); err != nil {
+		return
+	}
+	rest = trimS(rest)
+
+	switch {
+	case hasPfx(uc(rest), `AND`):
+		if r.IsZero() {
+			*r = And()
+			r.Push(c.Paren(false))
+		} else {
+			R := And()
+			r.Push(R.Push(c.Paren(false)))
+		}
+		if err = r.parse(rest[3:]); err != nil {
+			break
+		}
+		r.setCategory(`and`)
+	case hasPfx(uc(rest), `&&`):
+		if r.IsZero() {
+			*r = And().Paren().Symbol(`&&`)
+		}
+		r.Push(c)
+		if err = r.parse(rest[2:]); err != nil {
+			break
+		}
+		r.setCategory(`and`)
+	case hasPfx(uc(rest), `&(`):
+		if r.IsZero() {
+			*r = And().Paren().Symbol(`&`).leadOnce().NoPadding()
+		}
+		r.Push(c)
+		if err = r.parse(rest[2:]); err != nil {
+			break
+		}
+		r.setCategory(`and`)
+	case hasPfx(uc(rest), `OR`):
+		if r.IsZero() {
+			*r = Or().Paren()
+			r.Push(c)
+		} else {
+			R := Or().Paren().Push(r.Push(c.Paren(false)))
+			*r = R
+		}
+		if err = r.parse(rest[2:]); err != nil {
+			break
+		}
+		r.setCategory(`or`)
+	case hasPfx(uc(rest), `||`):
+		if r.IsZero() {
+			*r = Or().Paren().Symbol(`||`)
+		}
+		r.Push(c)
+		if err = r.parse(rest[2:]); err != nil {
+			break
+		}
+		r.setCategory(`or`)
+	case hasPfx(uc(rest), `|(`):
+		if r.IsZero() {
+			*r = Or().Paren().Symbol(`||`).leadOnce().NoPadding()
+		}
+		r.Push(c)
+		if err = r.parse(rest[2:]); err != nil {
+			break
+		}
+		r.setCategory(`or`)
+	case hasPfx(uc(rest), `NOT`):
+		if r.IsZero() {
+			*r = Not().Paren()
+		}
+		r.Push(c)
+		if err = r.parse(rest[3:]); err != nil {
+			break
+		}
+		r.setCategory(`not`)
+	case hasPfx(uc(rest), `!(`):
+		if r.IsZero() {
+			*r = Or().Paren().Symbol(`!`).leadOnce().NoPadding()
+		}
+		r.Push(c)
+		if err = r.parse(rest[2:]); err != nil {
+			break
+		}
+		r.setCategory(`not`)
+	default:
+		if r.IsZero() {
+			*r = Rule(stackageList()).setID(`bind`)
+		}
+		r.Push(c.Paren(false))
+	}
+
 	return
 }
 

@@ -17,7 +17,9 @@ var (
 	lc       func(string) string                  = strings.ToLower
 	uc       func(string) string                  = strings.ToUpper
 	eq       func(string,string) bool             = strings.EqualFold
+	idxf     func(string, func(rune) bool) int    = strings.IndexFunc
 	idxr     func(string, rune) int               = strings.IndexRune
+	idxs     func(string, string) int             = strings.Index
 	hasPfx   func(string, string) bool            = strings.HasPrefix
 	repAll   func(string, string, string) string  = strings.ReplaceAll
 	contains func(string, string) bool            = strings.Contains
@@ -29,6 +31,8 @@ var (
 	atoi     func(string) (int, error)            = strconv.Atoi
 	isDigit  func(rune) bool                      = unicode.IsDigit
 	isLetter func(rune) bool                      = unicode.IsLetter
+	isLower  func(rune) bool		      = unicode.IsLower
+	isUpper  func(rune) bool		      = unicode.IsUpper
 	uint16g  func([]byte) uint16                  = binary.BigEndian.Uint16
 	uint16p  func([]byte, uint16)		      = binary.BigEndian.PutUint16
 )
@@ -245,4 +249,51 @@ func assertToD(r *timeOfDay, t any) {
                         }
                 }
         }
+}
+
+/*
+trimLRParen returns the input string minus outer parentheses.
+If parentheses were actually trimmed, a boolean of true is
+returned. Leading/Trailing WHSP characters are removed in any
+scenario.
+*/
+func trimLRParen(raw string) (val string, trimmed bool) {
+	if len(raw) < 2 {
+		// below minimum usable length
+		val = trimS(raw)
+		return
+	} else if rune(raw[0]) != '(' || rune(raw[len(raw)-1]) != ')' {
+		// just as a courtesy, trim L/T WHSP chars 
+		val = trimS(raw)
+		trimmed = len(val) < len(raw)
+		return
+	}
+
+	// trim any L/T WHSP chars left over ...
+	val = trimS(raw[1:len(raw)-1])
+
+	// we should be shorter than the original.
+	trimmed = len(val) < len(raw)
+	return
+}
+
+/*
+keywords are strictly alphabetical (and, normalized to lower
+case). This function returns a boolean value which indicates
+whether rune c is a lower alpha char.
+*/
+func kwIdxFunc(c rune) bool {
+	return isLower(c)
+}
+
+/*
+operators can conceivably contain any characters other than
+WHSP. This function returns a boolean value which indicates
+whether rune c is such a char.  A value of true indicates a
+WHSP character was encountered, false otherwise. WHSP chars
+should be interpreted as an indication that the operator is
+done.
+*/
+func opIdxFunc(c rune) bool {
+        return c == whsp
 }

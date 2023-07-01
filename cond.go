@@ -49,6 +49,25 @@ const (
 )
 
 /*
+idOp attempts to identify an operator based on string input.
+*/
+func idOp(raw string) (op stackage.Operator, ok bool) {
+	// try compops first
+	for i := 0x1; i < 0x6; i++ {
+		if raw == stackage.ComparisonOperator(i).String() {
+			op = stackage.ComparisonOperator(i)
+			ok = true
+			return
+		}
+	}
+
+	// TODO - add LDAP Search Filter operators
+	// for fallback ...
+
+	return
+}
+
+/*
 Kind returns `target` or `bind` to identify the kind of *Condition.
 */
 func (r Condition) Kind() string {
@@ -175,3 +194,179 @@ func (r Condition) Value() any {
 	return stackage.Condition(r).Value()
 }
 
+/*
+Parse shall marshal the provided raw input string into the
+receiver. An error is returned should the process fail for
+some reason.
+*/
+func (r Condition) Parse(raw string) error {
+	_, err := r.parse(raw)
+	return err
+}
+
+/*
+parse is a private method called during the parsing of a
+string value believed to be a conditional expression of
+some form. An error is returned if the receiver was not
+properly populated, or if the raw input value does not
+conform to the known structure of a Condition.
+
+Note that if a non-zero receiver (i.e.: the receiver 
+already contains values that express a conditional
+statement), those contents shall be wiped out if the
+parsing process should succeed. No changes are made
+if errors are encountered at any point.
+*/
+func (r *Condition) parse(raw string) (rest string, err error) {
+	if len(raw) < 4 {
+		err = errorf("%T parsing failed: raw conditional expression is below the minimum required length", r)
+		return
+	}
+
+	// remove parenthetical encapsulation and
+	// remove leading/trailing WHSP afterwards.
+	if raw, _ = trimLRParen(raw); len(raw) == 0 {
+		err = errorf("%T parsing failed: invalid or zero length raw value", r)
+		return
+	}
+
+	// cidx defines the current index integer
+	// value during each of the three (3)
+	// stages of Condition parsing.
+	var cidx int
+
+	// Scan raw value rune by rune using the
+	// idxf alias for strings.IndexFunc with
+	// kwIdxFunc passed as the closure value.
+	// We are looking for a keyword, which we
+	// know should always be lower alphas.
+	//
+	// A return value of true during iteration
+	// indicates such a char was found, false
+	// otherwise, which breaks the loop. 
+	var kw string
+	for i := 0; i < len(raw); i++ {
+		// != -1 true means keep going, we're
+		// still reading keyword.
+		if idx := idxf(string(raw[i]), kwIdxFunc); idx != -1 {
+			kw += string(raw[i])
+			continue
+		}
+
+		cidx = i
+		break
+	}
+
+	// Bail out if no kw found
+	if len(kw) == 0 {
+		err = errorf("%T parsing failed: no keyword detected", r)
+		return
+	}
+
+	// Attempt to identify what kind of keyword
+	// we found by iterating each of the three
+	// (3) keyword maps found in kw.go looking
+	// for a stringer match.
+	k, ok := idKW(kw)
+	if !ok {
+		err = errorf("%T parsing failed: unidentifiable or invalid keyword '%s'", r, kw)
+		return
+	}
+
+        // Scan raw value rune by rune using the
+        // idxf alias for strings.IndexFunc with
+        // opIdxFunc passed as the closure value.
+        // We are looking for an operator, which
+        // can contain 
+        //
+        // A return value of true during iteration
+        // indicates such a char was found, false
+        // otherwise, which breaks the loop.
+        var op string
+        for i := cidx+1; i < len(raw[cidx+1:]); i++ {
+		// false means keep going, we're
+		// still reading operator.
+                if idx := idxf(string(raw[i]), opIdxFunc); idx == -1 {
+                        op += string(raw[i])
+                        continue
+                }
+
+		cidx = i
+                break
+        }
+
+	// Bail out if no op found
+	o, opOK := idOp(op)
+	if !opOK {
+		err = errorf("%T parsing failed: zero length or unidentifiable operator '%s'", r, op)
+		return
+	}
+
+        // Scan the remaining raw value rune by rune
+	// until double-quote, right parenthesis or
+	// EOL.
+        var (
+		ex any
+		exstr string
+		quoted bool
+		ur Rule
+	)
+
+	raw = trimS(raw[cidx+1:])
+        for i := 0; i < len(raw); i++ {
+		var end bool
+		switch char := rune(raw[i]); char {
+		case lpar:
+			if !quoted {
+				if err = ur.parse(raw[i:]); err != nil {
+					break
+				}
+				ex = ur
+				end = true
+			} else {
+				exstr += string(raw[i])
+			}
+		case dqot:
+			if i != 0 {
+				end = true
+				break
+			}
+			quoted = !quoted
+		case whsp:
+			if i != 0 {
+				end = true
+				break
+			}
+		default:
+			if i == len(raw)-1 {
+				end = true
+				break
+			}
+			exstr += string(raw[i])
+		}
+
+		if end {
+			cidx = i
+			break
+		} else if err != nil {
+			break
+		}
+        }
+
+	if err == nil {
+		if cidx+1 < len(raw) {
+			rest = raw[cidx+1:]
+		}
+		if len(exstr) > 0 {
+			ex = exstr
+		}
+
+		*r = Cond(k, ex, o).
+			Encap(`"`).
+			Paren().
+			setID(k.Kind()).
+			setCategory(k.String())
+	}
+
+	return
+}

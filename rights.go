@@ -23,6 +23,8 @@ const (
 	AllAccess Right = 895 // DOES NOT INCLUDE "proxy"
 )
 
+const badPerm = `<invalid_permission>`
+
 var rightsMap map[Right]string
 
 /*
@@ -44,20 +46,32 @@ type permission struct {
 	*Right
 }
 
+/*
+Allow returns a granting Permission instance bearing the provided
+instances of Right.
+*/
 func Allow(x ...Right) Permission {
-	return newPermission(true, x...)
+	return Permission{newPermission(true, x...)}
 }
 
+/*
+Deny returns a withholding Permission instance bearing the provided
+instances of Right.
+*/
 func Deny(x ...Right) Permission {
-	return newPermission(false, x...)
+	return Permission{newPermission(false, x...)}
 }
 
-func newPermission(disp bool, x ...Right) Permission {
-	p := new(permission)
+/*
+newPermission returns a newly initialized instance of *permission
+bearing the provided disposition and Right instance(s).
+*/
+func newPermission(disp bool, x ...Right) (p *permission) {
+	p = new(permission)
 	p.bool = &disp
 	p.Right = new(Right)
 	p.shift(x...)
-	return Permission{p}
+	return p
 }
 
 func (r *permission) shift(x ...Right) {
@@ -103,12 +117,30 @@ func (r Right) String() (p string) {
 }
 
 /*
+idRight will attempt to resolve a string value into a known privilege type (e.g.: `read` -> ReadAccess).
+If found, the proper Right instance is returned alongside a success-indicative boolean. If nothing was
+matched, NoAccess is returned alongside false bool.
+*/
+func idRight(def string) (r Right, ok bool) {
+	r = NoAccess
+	for k, v := range rightsMap {
+		if eq(def,v) {
+			r = k
+			ok = uint8(k) != 0x0
+			break
+		}
+	}
+
+	return
+}
+
+/*
 String is a stringer method that returns the string representation of
 the receiver instance.
 */
 func (r Permission) String() string {
 	if r.IsZero() {
-		return `<invalid_permission>`
+		return badPerm
 	}
 
 	var rights []string
@@ -184,20 +216,20 @@ func (r Permission) Unshift(x Right) Permission {
 	return r
 }
 
-func (r *permission) isZero() bool {
-	if r == nil {
-		return true
-	}
-
-	return r.bool == nil && r.Right == nil
-}
-
 /*
 IsZero returns a boolean value indicative of whether the receiver
 is nil, or unset.
 */
 func (r Permission) IsZero() bool {
 	return r.permission.isZero()
+}
+
+func (r *permission) isZero() bool {
+	if r == nil {
+		return true
+	}
+
+	return r.bool == nil && r.Right == nil
 }
 
 /*
@@ -216,6 +248,121 @@ func (r Permission) Valid() (err error) {
 	}
 
 	return
+}
+
+/*
+Parse returns an instance of error following an attempt to initialize and set
+the receiver based upon the  string-based privilege input statement (def).
+*/
+func (r Permission) Parse(def string) error {
+	var err error
+        r.permission, _, err = r.permission.parse(def)
+	return err
+}
+
+/*
+parsePermission reads the ACI definition string value and extracts
+the first permission statement encountered. The receiver instance is
+updated with the information, and an error is returned in the event
+the attempt fails.
+
+The return integer value (last) defines the index value at which the
+privilege string value is believed to terminate. This is useful for
+efficient top-level ACI parsing to know where to begin scanning for
+one (1) or more bind rules immediately after a privilege statement.
+*/
+func (r *permission) parse(def string) (p *permission, last int, err error) {
+
+        var allow bool
+	// First attempt to find the disposition. It can
+	// only be allow or deny.
+        if hasPfx(def, `allow`) {
+                allow = true
+        } else if !hasPfx(def, `deny`){
+		// if it wasn't allow above, and it isn't
+		// deny here, we can't go any further.
+                err = errorf("%T parsing failed: indeterminate disposition (must be 'allow' or 'deny')",
+			Permission{})
+                return
+        }
+
+	// get left paren idx
+        lidx := idxr(def,'(');
+        if lidx == -1 {
+                err = errorf("%T parsing failed: unopened rights definition",
+			Permission{})
+                return
+        }
+
+	// get right paren idx
+        ridx := idxr(def,')')
+        if ridx == -1 {
+                err = errorf("%T parsing failed: unclosed rights definition",
+			Permission{})
+                return
+        }
+
+	// Save righthanded index for subsequent PB
+	// rule parsing if this involves a toplevel
+	// ACI parsing attempt.
+	last = ridx
+
+	// extract the (apparent) privilege
+	// statement(s) from between the two
+	// above L/R indices. Additionally,
+	// replace all WHSP with nothing,
+	// and split the parenthetical value
+	// on its commas into a string slice.
+        rights := split(repAll(def[lidx+1:ridx], string(whsp), ``), `,`)
+        if len(rights) == 0 {
+		// Even if `none` is desired, you'd
+		// have to actually put the `none`
+		// string into the ACI definition.
+		// We found nothing, so we can't go
+		// further.
+                err = errorf("%T parsing failed: no specific privileges specified",
+			Permission{})
+                return
+        }
+
+	// Begin new private instance
+	p = newPermission(allow)
+
+        // Iterate each string-based privilege keyword,
+        // and attempt to resolve into a known Right
+        // constant. If found, shift the perms bits to
+	// include said constant.
+        for i := 0; i < len(rights); i++ {
+
+		if i == len(rightsMap) {
+			// Since you can't add the same
+			// priv twice, only a certain
+			// iteration count makes sense.
+			// Don't spin wheels forever.
+			break
+		}
+
+		// Begin resolution attempt
+                if pr, ok := idRight(rights[i]); ok {
+			// We found *something* as a result of
+			// the resolution attempt. Examine it.
+                        if pr == NoAccess && !r.isZero() {
+				// If they requested NoAccess and
+				// there were already privileges
+				// set, then wipe them out and bail.
+                                p.shift(NoAccess)
+                                break
+                        }
+			// Add the verified privilege.
+                        p.shift(pr)
+                } else {
+			// Resolution attempt failed
+			err = errorf("%T failed: unresolvable privilege keyword '%s'", rights[i])
+			break
+		}
+        }
+
+        return
 }
 
 func init() {
