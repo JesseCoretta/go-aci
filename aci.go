@@ -333,9 +333,7 @@ func (r *instruction) assertInstruction(x any) {
         case Rule:
                 r.assertPushRule(tv)
         case PermissionBindRule:
-                if err := tv.Valid(); err == nil {
-                        r.PB.Push(tv)
-		}
+		r.PB.Push(tv)
         }
 }
 
@@ -354,13 +352,7 @@ func (r *instruction) assertPushRule(x Rule) {
                         r.T.Push(tgt)
                 }
         } else if x.ID() == `pb` && x.Len() > 0 {
-                for t := 0; t < x.Len(); t++ {
-                        tgt, ok := x.Index(t)
-                        if !ok {
-                                continue
-                        }
-                        r.PB.Push(tgt)
-                }
+		r.PB.Push(x)
 	}
 }
 
@@ -379,3 +371,4 @@ func pbrule() Rule {
 		setCategory(`bind`).
 		setPushPolicy()
 }
+

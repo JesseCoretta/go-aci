@@ -1,7 +1,8 @@
 package aci
 
 /*
-rules.go contains rule and condition elements.
+rules.go contains the go-stackage Stack alias "Rule" and its extended
+methods.
 */
 
 import "github.com/JesseCoretta/go-stackage"
@@ -290,8 +291,7 @@ func (r Rule) Eq() (c Condition) {
 	for k, v := range tkwMap {
 		if r.Category() == v {
 			c = Cond(k, r.Paren(false), Eq).
-				Encap(`"`).
-				Paren().
+				Encap(`"`).Paren().
 				setCategory(k.String())
 			break
 		}
@@ -318,7 +318,9 @@ func (r Rule) Ne() (c Condition) {
 
         for k, v := range tkwMap {
                 if r.Category() == v {
-                        c = Cond(k, r.Paren(false), Ne).Encap(`"`).Paren()
+                        c = Cond(k, r.Paren(false), Ne).
+				Encap(`"`).Paren().
+				setCategory(k.String())
                         break
                 }
         }
@@ -475,133 +477,59 @@ func listRuleCanPush(x any) (ok bool) {
 	return
 }
 
-/*
-Parse reads the provided string definition value (def) and attempts
-to craft a structure of stacks. An error is returned should processing
-fail in some way.
-*/
-func (r Rule) Parse(def string) error {
-	return r.parse(def)
-}
-
-/*
-parse is a private method called during the parsing of an alleged
-Rule statement. This method is recursive.
-*/
-func (r *Rule) parse(def string) (err error) {
-	if len(def) < 2 {
-		err = errorf("%T parsing failed: input definition is below the required minimum length for processing")
-		return
-	}
-
-	// condense contiguous WHSP, and 
-	// remove leading/trailing WHSP.
-	raw := trimS(condenseWHSP(def))
-
-        // remove parenthetical encapsulation and
-        // remove leading/trailing WHSP afterwards.
-        if raw, _ = trimLRParen(raw); len(raw) == 0 {
-                err = errorf("%T parsing failed: invalid or zero length raw value", r)
-                return
-        }
-
-	var c Condition
-	var rest string
-	if rest, err = c.parse(raw); err != nil {
-		return
-	}
-	rest = trimS(rest)
-
-	switch {
-	case hasPfx(uc(rest), `AND`):
-		if r.IsZero() {
-			*r = And()
-			r.Push(c.Paren(false))
-		} else {
-			R := And()
-			r.Push(R.Push(c.Paren(false)))
-		}
-		if err = r.parse(rest[3:]); err != nil {
-			break
-		}
-		r.setCategory(`and`)
-	case hasPfx(uc(rest), `&&`):
-		if r.IsZero() {
-			*r = And().Paren().Symbol(`&&`)
-		}
-		r.Push(c)
-		if err = r.parse(rest[2:]); err != nil {
-			break
-		}
-		r.setCategory(`and`)
-	case hasPfx(uc(rest), `&(`):
-		if r.IsZero() {
-			*r = And().Paren().Symbol(`&`).leadOnce().NoPadding()
-		}
-		r.Push(c)
-		if err = r.parse(rest[2:]); err != nil {
-			break
-		}
-		r.setCategory(`and`)
-	case hasPfx(uc(rest), `OR`):
-		if r.IsZero() {
-			*r = Or().Paren()
-			r.Push(c)
-		} else {
-			R := Or().Paren().Push(r.Push(c.Paren(false)))
-			*r = R
-		}
-		if err = r.parse(rest[2:]); err != nil {
-			break
-		}
-		r.setCategory(`or`)
-	case hasPfx(uc(rest), `||`):
-		if r.IsZero() {
-			*r = Or().Paren().Symbol(`||`)
-		}
-		r.Push(c)
-		if err = r.parse(rest[2:]); err != nil {
-			break
-		}
-		r.setCategory(`or`)
-	case hasPfx(uc(rest), `|(`):
-		if r.IsZero() {
-			*r = Or().Paren().Symbol(`||`).leadOnce().NoPadding()
-		}
-		r.Push(c)
-		if err = r.parse(rest[2:]); err != nil {
-			break
-		}
-		r.setCategory(`or`)
-	case hasPfx(uc(rest), `NOT`):
-		if r.IsZero() {
-			*r = Not().Paren()
-		}
-		r.Push(c)
-		if err = r.parse(rest[3:]); err != nil {
-			break
-		}
-		r.setCategory(`not`)
-	case hasPfx(uc(rest), `!(`):
-		if r.IsZero() {
-			*r = Or().Paren().Symbol(`!`).leadOnce().NoPadding()
-		}
-		r.Push(c)
-		if err = r.parse(rest[2:]); err != nil {
-			break
-		}
-		r.setCategory(`not`)
-	default:
-		if r.IsZero() {
-			*r = Rule(stackageList()).setID(`bind`)
-		}
-		r.Push(c.Paren(false))
-	}
-
-	return
-}
-
 func stackageAnd() stackage.Stack { return stackage.And() }
 func stackageOr() stackage.Stack { return stackage.Or() }
 func stackageNot() stackage.Stack { return stackage.Not() }
 func stackageList(capacity ...int) stackage.Stack { return stackage.List(capacity...) }
+
+/*
+ruleByLoP returns the requested Rule type, or an "And()" Rule as a fallback. The input
+value op should be one (1) value from one (1) of the following lines:
+
+• `NOT`, `!(`
+
+• `OR`, `|(`, `||`
+
+• `AND`, `&(`, `&&`
+
+For LDAP filter symbol operators `!(`, `|(` and `&(`, the padding bit is disabled, and
+the lead-once/symbol bits are enabled in the returned Rule instance.
+
+For double-boolean symbol operators `&&` and `||`, the symbol bit is enabled in the
+return Rule instance.
+
+For word operators `NOT`, `OR` and `AND`, case-folding is not significant in the matching
+process. No additional configuration / presentation options are enabled in the return Rule
+instance, unlike the above symbol scenarios.
+
+An unrecognized operator word will return a fallback And() Rule.
+*/
+func ruleByLoP(op string) Rule {
+
+	if eq(op,`NOT`) || eq(op, `AND NOT`) {
+		// NOT (word)
+		return Not()
+	} else if eq(op,`!(`) {
+		// NOT (filter)
+		return Rule(stackageNot().LeadOnce().NoPadding().Symbol(`!`)).setCategory(`not`)
+	} else if eq(op,`OR`) {
+		// OR (word)
+		return Or()
+	} else if eq(op,`|(`) {
+		// OR (filter)
+		return Rule(stackageOr().LeadOnce().NoPadding().Symbol(`|`)).setCategory(`or`)
+	} else if eq(op,`||`) {
+		// OR (dsymbol)
+		return Rule(stackageOr().Symbol(`||`)).setCategory(`or`)
+	} else if eq(op, `&(`) {
+		// AND (filter)
+		return Rule(stackageAnd().LeadOnce().NoPadding().Symbol(`&`)).setCategory(`or`)
+	} else if eq(op,`&&`) {
+		// AND (dsymbol)
+		return Rule(stackageAnd().Symbol(`&&`)).setCategory(`or`)
+	}
+
+	// Fallback AND (word)
+	return And()
+}
+

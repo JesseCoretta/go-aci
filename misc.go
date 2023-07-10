@@ -21,6 +21,7 @@ var (
 	idxr     func(string, rune) int               = strings.IndexRune
 	idxs     func(string, string) int             = strings.Index
 	hasPfx   func(string, string) bool            = strings.HasPrefix
+	hasSfx   func(string, string) bool            = strings.HasSuffix
 	repAll   func(string, string, string) string  = strings.ReplaceAll
 	contains func(string, string) bool            = strings.Contains
 	split    func(string, string) []string        = strings.Split
@@ -36,6 +37,13 @@ var (
 	uint16g  func([]byte) uint16                  = binary.BigEndian.Uint16
 	uint16p  func([]byte, uint16)		      = binary.BigEndian.PutUint16
 )
+
+var ops []string = []string{
+	`AND NOT`,
+        `NOT`, `!(`,
+        `OR`, `||`, `|(`,
+        `AND`, `&&`, `&(`,
+}
 
 /*
 Version defines the ACI syntax version number implemented by
@@ -295,5 +303,13 @@ should be interpreted as an indication that the operator is
 done.
 */
 func opIdxFunc(c rune) bool {
-        return c == whsp
+        return c == rune(32)
+}
+
+func chopACITerm(def string) string {
+	if !hasSfx(def, `;)`) {
+		return def
+	}
+
+	return def[:len(def)-2]
 }

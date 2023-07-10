@@ -89,10 +89,10 @@ extracts one (1) or more PermissionBindRule instance values.
 */
 func parsePermissionBindRules(def string) (pbr Rule, err error) {
 	var (
-		P Permission
-		B Rule
-		p *permission
-		bidx int
+		P Permission	// allow/deny(...)
+		p *permission	// embedding for P
+		B Rule		// Bind Rule(s)
+		bidx int	// bind "rest" index for continuous processing of expressive statements
 	)
 
 	// First parse the privilege keyword(s)
@@ -103,7 +103,7 @@ func parsePermissionBindRules(def string) (pbr Rule, err error) {
 	}
 	P = Permission{p}
 
-	if err = B.parse(def[bidx+1:]); err != nil {
+	if B, _, err = parseRule(def[bidx+1:]); err != nil {
 		return
 	}
 
@@ -235,7 +235,7 @@ func parseInstructionTargets(def string) (t Rule, c int, err error) {
 		// container created earlier.
 		for _, targ := range targs {
 			var Cx Condition
-			if _, err = Cx.parse(targ); err != nil {
+			if Cx, _, err = parseCondition(targ); err != nil {
 				break
 			}
 			t.Push(Cx)
