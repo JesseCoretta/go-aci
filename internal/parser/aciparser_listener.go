@@ -10,630 +10,864 @@ type ACIParserListener interface {
 	// EnterParse is called when entering the parse production.
 	EnterParse(c *ParseContext)
 
-	// EnterAccessControlInstruction is called when entering the accessControlInstruction production.
-	EnterAccessControlInstruction(c *AccessControlInstructionContext)
+	// EnterAci is called when entering the aci production.
+	EnterAci(c *AciContext)
 
-	// EnterAccessControlInstructionNameAndVersion is called when entering the accessControlInstructionNameAndVersion production.
-	EnterAccessControlInstructionNameAndVersion(c *AccessControlInstructionNameAndVersionContext)
+	// EnterPermission_bind_rules is called when entering the permission_bind_rules production.
+	EnterPermission_bind_rules(c *Permission_bind_rulesContext)
 
-	// EnterPermissionBindRules is called when entering the permissionBindRules production.
-	EnterPermissionBindRules(c *PermissionBindRulesContext)
+	// EnterPermission_and_bind_rule_pair is called when entering the permission_and_bind_rule_pair production.
+	EnterPermission_and_bind_rule_pair(c *Permission_and_bind_rule_pairContext)
 
-	// EnterPermissionBindRule is called when entering the permissionBindRule production.
-	EnterPermissionBindRule(c *PermissionBindRuleContext)
+	// EnterPermission_expression is called when entering the permission_expression production.
+	EnterPermission_expression(c *Permission_expressionContext)
 
-	// EnterPermissionExpression is called when entering the permissionExpression production.
-	EnterPermissionExpression(c *PermissionExpressionContext)
+	// EnterAllow_access is called when entering the allow_access production.
+	EnterAllow_access(c *Allow_accessContext)
 
-	// EnterTargetRuleExpressions is called when entering the targetRuleExpressions production.
-	EnterTargetRuleExpressions(c *TargetRuleExpressionsContext)
+	// EnterDeny_access is called when entering the deny_access production.
+	EnterDeny_access(c *Deny_accessContext)
 
-	// EnterTargetcontrol is called when entering the targetcontrol production.
-	EnterTargetcontrol(c *TargetcontrolContext)
+	// EnterSearch_privilege is called when entering the search_privilege production.
+	EnterSearch_privilege(c *Search_privilegeContext)
 
-	// EnterExtop is called when entering the extop production.
-	EnterExtop(c *ExtopContext)
+	// EnterRead_privilege is called when entering the read_privilege production.
+	EnterRead_privilege(c *Read_privilegeContext)
 
-	// EnterTargetfilter is called when entering the targetfilter production.
-	EnterTargetfilter(c *TargetfilterContext)
+	// EnterCompare_privilege is called when entering the compare_privilege production.
+	EnterCompare_privilege(c *Compare_privilegeContext)
 
-	// EnterTargattrfilters is called when entering the targattrfilters production.
-	EnterTargattrfilters(c *TargattrfiltersContext)
+	// EnterAdd_privilege is called when entering the add_privilege production.
+	EnterAdd_privilege(c *Add_privilegeContext)
 
-	// EnterTargetscope is called when entering the targetscope production.
-	EnterTargetscope(c *TargetscopeContext)
+	// EnterDelete_privilege is called when entering the delete_privilege production.
+	EnterDelete_privilege(c *Delete_privilegeContext)
 
-	// EnterTargetattr is called when entering the targetattr production.
-	EnterTargetattr(c *TargetattrContext)
+	// EnterSelfwrite_privilege is called when entering the selfwrite_privilege production.
+	EnterSelfwrite_privilege(c *Selfwrite_privilegeContext)
 
-	// EnterTargetdn is called when entering the targetdn production.
-	EnterTargetdn(c *TargetdnContext)
+	// EnterProxy_privilege is called when entering the proxy_privilege production.
+	EnterProxy_privilege(c *Proxy_privilegeContext)
 
-	// EnterTargettodn is called when entering the targettodn production.
-	EnterTargettodn(c *TargettodnContext)
+	// EnterImport_privilege is called when entering the import_privilege production.
+	EnterImport_privilege(c *Import_privilegeContext)
 
-	// EnterTargetfromDN is called when entering the targetfromDN production.
-	EnterTargetfromDN(c *TargetfromDNContext)
+	// EnterExport_privilege is called when entering the export_privilege production.
+	EnterExport_privilege(c *Export_privilegeContext)
 
-	// EnterParentheticalControls is called when entering the parentheticalControls production.
-	EnterParentheticalControls(c *ParentheticalControlsContext)
+	// EnterAll_privileges is called when entering the all_privileges production.
+	EnterAll_privileges(c *All_privilegesContext)
 
-	// EnterParentheticalExtendedOperations is called when entering the parentheticalExtendedOperations production.
-	EnterParentheticalExtendedOperations(c *ParentheticalExtendedOperationsContext)
+	// EnterTarget_rules is called when entering the target_rules production.
+	EnterTarget_rules(c *Target_rulesContext)
 
-	// EnterParentheticalTargetFilterExpression is called when entering the parentheticalTargetFilterExpression production.
-	EnterParentheticalTargetFilterExpression(c *ParentheticalTargetFilterExpressionContext)
+	// EnterTargetRule is called when entering the targetRule production.
+	EnterTargetRule(c *TargetRuleContext)
 
-	// EnterQuotedFilterExpression is called when entering the quotedFilterExpression production.
-	EnterQuotedFilterExpression(c *QuotedFilterExpressionContext)
+	// EnterTarget_dn_rule is called when entering the target_dn_rule production.
+	EnterTarget_dn_rule(c *Target_dn_ruleContext)
 
-	// EnterTargetDistinguishedNames is called when entering the targetDistinguishedNames production.
-	EnterTargetDistinguishedNames(c *TargetDistinguishedNamesContext)
+	// EnterTarget_to_rule is called when entering the target_to_rule production.
+	EnterTarget_to_rule(c *Target_to_ruleContext)
 
-	// EnterTargetToDistinguishedName is called when entering the targetToDistinguishedName production.
-	EnterTargetToDistinguishedName(c *TargetToDistinguishedNameContext)
+	// EnterTarget_from_rule is called when entering the target_from_rule production.
+	EnterTarget_from_rule(c *Target_from_ruleContext)
 
-	// EnterTargetFromDistinguishedName is called when entering the targetFromDistinguishedName production.
-	EnterTargetFromDistinguishedName(c *TargetFromDistinguishedNameContext)
+	// EnterTargetfilter_rule is called when entering the targetfilter_rule production.
+	EnterTargetfilter_rule(c *Targetfilter_ruleContext)
 
-	// EnterParentheticalTargetAttrFilters is called when entering the parentheticalTargetAttrFilters production.
-	EnterParentheticalTargetAttrFilters(c *ParentheticalTargetAttrFiltersContext)
+	// EnterTargattrfilters_rule is called when entering the targattrfilters_rule production.
+	EnterTargattrfilters_rule(c *Targattrfilters_ruleContext)
 
-	// EnterQuotedAttributeFilters is called when entering the quotedAttributeFilters production.
-	EnterQuotedAttributeFilters(c *QuotedAttributeFiltersContext)
+	// EnterTargetscope_rule is called when entering the targetscope_rule production.
+	EnterTargetscope_rule(c *Targetscope_ruleContext)
 
-	// EnterQuotedAttributeFilterSet is called when entering the quotedAttributeFilterSet production.
-	EnterQuotedAttributeFilterSet(c *QuotedAttributeFilterSetContext)
+	// EnterTargetattr_rule is called when entering the targetattr_rule production.
+	EnterTargetattr_rule(c *Targetattr_ruleContext)
 
-	// EnterQuotedAttributeFilter is called when entering the quotedAttributeFilter production.
-	EnterQuotedAttributeFilter(c *QuotedAttributeFilterContext)
+	// EnterTargetcontrol_rule is called when entering the targetcontrol_rule production.
+	EnterTargetcontrol_rule(c *Targetcontrol_ruleContext)
 
-	// EnterTargetScopeBindRule is called when entering the targetScopeBindRule production.
-	EnterTargetScopeBindRule(c *TargetScopeBindRuleContext)
+	// EnterTargetextop_rule is called when entering the targetextop_rule production.
+	EnterTargetextop_rule(c *Targetextop_ruleContext)
 
-	// EnterTargetAttrBindRule is called when entering the targetAttrBindRule production.
-	EnterTargetAttrBindRule(c *TargetAttrBindRuleContext)
+	// EnterBase_object_targetscope is called when entering the base_object_targetscope production.
+	EnterBase_object_targetscope(c *Base_object_targetscopeContext)
 
-	// EnterAttributeTypesList is called when entering the attributeTypesList production.
-	EnterAttributeTypesList(c *AttributeTypesListContext)
+	// EnterOne_level_targetscope is called when entering the one_level_targetscope production.
+	EnterOne_level_targetscope(c *One_level_targetscopeContext)
 
-	// EnterBindRuleInstance is called when entering the bindRuleInstance production.
-	EnterBindRuleInstance(c *BindRuleInstanceContext)
+	// EnterSub_tree_targetscope is called when entering the sub_tree_targetscope production.
+	EnterSub_tree_targetscope(c *Sub_tree_targetscopeContext)
 
-	// EnterParentheticalBindRuleInstanceWithRequiredBooleanOperator is called when entering the parentheticalBindRuleInstanceWithRequiredBooleanOperator production.
-	EnterParentheticalBindRuleInstanceWithRequiredBooleanOperator(c *ParentheticalBindRuleInstanceWithRequiredBooleanOperatorContext)
+	// EnterSubordinate_targetscope is called when entering the subordinate_targetscope production.
+	EnterSubordinate_targetscope(c *Subordinate_targetscopeContext)
 
-	// EnterParentheticalBindRuleExpressionWithRequiredBooleanOperatorRecursion is called when entering the parentheticalBindRuleExpressionWithRequiredBooleanOperatorRecursion production.
-	EnterParentheticalBindRuleExpressionWithRequiredBooleanOperatorRecursion(c *ParentheticalBindRuleExpressionWithRequiredBooleanOperatorRecursionContext)
+	// EnterQuoted_object_identifier_list is called when entering the quoted_object_identifier_list production.
+	EnterQuoted_object_identifier_list(c *Quoted_object_identifier_listContext)
 
-	// EnterNegatedBindRuleExpressionRecursion is called when entering the negatedBindRuleExpressionRecursion production.
-	EnterNegatedBindRuleExpressionRecursion(c *NegatedBindRuleExpressionRecursionContext)
+	// EnterList_of_quoted_object_identifiers is called when entering the list_of_quoted_object_identifiers production.
+	EnterList_of_quoted_object_identifiers(c *List_of_quoted_object_identifiersContext)
 
-	// EnterParentheticalBindRuleExpressionRecursion is called when entering the parentheticalBindRuleExpressionRecursion production.
-	EnterParentheticalBindRuleExpressionRecursion(c *ParentheticalBindRuleExpressionRecursionContext)
+	// EnterQuoted_targeted_attributes_list is called when entering the quoted_targeted_attributes_list production.
+	EnterQuoted_targeted_attributes_list(c *Quoted_targeted_attributes_listContext)
 
-	// EnterBindRuleExpressionRecursion is called when entering the bindRuleExpressionRecursion production.
-	EnterBindRuleExpressionRecursion(c *BindRuleExpressionRecursionContext)
+	// EnterList_of_quoted_attributes is called when entering the list_of_quoted_attributes production.
+	EnterList_of_quoted_attributes(c *List_of_quoted_attributesContext)
 
-	// EnterBindRuleExpression is called when entering the bindRuleExpression production.
-	EnterBindRuleExpression(c *BindRuleExpressionContext)
+	// EnterObject_identifier is called when entering the object_identifier production.
+	EnterObject_identifier(c *Object_identifierContext)
 
-	// EnterUserdn is called when entering the userdn production.
-	EnterUserdn(c *UserdnContext)
+	// EnterNumber_form is called when entering the number_form production.
+	EnterNumber_form(c *Number_formContext)
 
-	// EnterUserattr is called when entering the userattr production.
-	EnterUserattr(c *UserattrContext)
+	// EnterAttribute_filters_sets is called when entering the attribute_filters_sets production.
+	EnterAttribute_filters_sets(c *Attribute_filters_setsContext)
 
-	// EnterGroupdn is called when entering the groupdn production.
-	EnterGroupdn(c *GroupdnContext)
+	// EnterAttribute_filters_set is called when entering the attribute_filters_set production.
+	EnterAttribute_filters_set(c *Attribute_filters_setContext)
 
-	// EnterGroupattr is called when entering the groupattr production.
-	EnterGroupattr(c *GroupattrContext)
+	// EnterAttribute_filter_single is called when entering the attribute_filter_single production.
+	EnterAttribute_filter_single(c *Attribute_filter_singleContext)
 
-	// EnterRoledn is called when entering the roledn production.
-	EnterRoledn(c *RolednContext)
+	// EnterAttribute_filters is called when entering the attribute_filters production.
+	EnterAttribute_filters(c *Attribute_filtersContext)
 
-	// EnterDns is called when entering the dns production.
-	EnterDns(c *DnsContext)
+	// EnterAttribute_filter_set is called when entering the attribute_filter_set production.
+	EnterAttribute_filter_set(c *Attribute_filter_setContext)
 
-	// EnterIp is called when entering the ip production.
-	EnterIp(c *IpContext)
+	// EnterAdd_filter_operation is called when entering the add_filter_operation production.
+	EnterAdd_filter_operation(c *Add_filter_operationContext)
 
-	// EnterTimeofday is called when entering the timeofday production.
-	EnterTimeofday(c *TimeofdayContext)
+	// EnterDelete_filter_operation is called when entering the delete_filter_operation production.
+	EnterDelete_filter_operation(c *Delete_filter_operationContext)
 
-	// EnterDayofweek is called when entering the dayofweek production.
-	EnterDayofweek(c *DayofweekContext)
+	// EnterAttribute_filter is called when entering the attribute_filter production.
+	EnterAttribute_filter(c *Attribute_filterContext)
 
-	// EnterSsf is called when entering the ssf production.
-	EnterSsf(c *SsfContext)
+	// EnterBind_rule is called when entering the bind_rule production.
+	EnterBind_rule(c *Bind_ruleContext)
 
-	// EnterAuthmethod is called when entering the authmethod production.
-	EnterAuthmethod(c *AuthmethodContext)
+	// EnterParenthetical_bind_rule is called when entering the parenthetical_bind_rule production.
+	EnterParenthetical_bind_rule(c *Parenthetical_bind_ruleContext)
 
-	// EnterParentheticalUserDistinguishedName is called when entering the parentheticalUserDistinguishedName production.
-	EnterParentheticalUserDistinguishedName(c *ParentheticalUserDistinguishedNameContext)
+	// EnterParenthetical_bind_rule_req_bool_op is called when entering the parenthetical_bind_rule_req_bool_op production.
+	EnterParenthetical_bind_rule_req_bool_op(c *Parenthetical_bind_rule_req_bool_opContext)
 
-	// EnterUserDistinguishedNameExpression is called when entering the userDistinguishedNameExpression production.
-	EnterUserDistinguishedNameExpression(c *UserDistinguishedNameExpressionContext)
+	// EnterNegated_bind_rule_expression is called when entering the negated_bind_rule_expression production.
+	EnterNegated_bind_rule_expression(c *Negated_bind_rule_expressionContext)
 
-	// EnterParentheticalRoleDistinguishedName is called when entering the parentheticalRoleDistinguishedName production.
-	EnterParentheticalRoleDistinguishedName(c *ParentheticalRoleDistinguishedNameContext)
+	// EnterParenthetical_bind_rule_expression is called when entering the parenthetical_bind_rule_expression production.
+	EnterParenthetical_bind_rule_expression(c *Parenthetical_bind_rule_expressionContext)
 
-	// EnterRoleDistinguishedNameExpression is called when entering the roleDistinguishedNameExpression production.
-	EnterRoleDistinguishedNameExpression(c *RoleDistinguishedNameExpressionContext)
+	// EnterBind_rule_expression_recursion is called when entering the bind_rule_expression_recursion production.
+	EnterBind_rule_expression_recursion(c *Bind_rule_expression_recursionContext)
 
-	// EnterParentheticalGroupDistinguishedName is called when entering the parentheticalGroupDistinguishedName production.
-	EnterParentheticalGroupDistinguishedName(c *ParentheticalGroupDistinguishedNameContext)
+	// EnterBind_rule_expression is called when entering the bind_rule_expression production.
+	EnterBind_rule_expression(c *Bind_rule_expressionContext)
 
-	// EnterGroupDistinguishedNameExpression is called when entering the groupDistinguishedNameExpression production.
-	EnterGroupDistinguishedNameExpression(c *GroupDistinguishedNameExpressionContext)
+	// EnterUserdn_expression is called when entering the userdn_expression production.
+	EnterUserdn_expression(c *Userdn_expressionContext)
 
-	// EnterParentheticalUserAttributes is called when entering the parentheticalUserAttributes production.
-	EnterParentheticalUserAttributes(c *ParentheticalUserAttributesContext)
+	// EnterUserattr_expression is called when entering the userattr_expression production.
+	EnterUserattr_expression(c *Userattr_expressionContext)
 
-	// EnterUserAttributesExpression is called when entering the userAttributesExpression production.
-	EnterUserAttributesExpression(c *UserAttributesExpressionContext)
+	// EnterGroupdn_expression is called when entering the groupdn_expression production.
+	EnterGroupdn_expression(c *Groupdn_expressionContext)
 
-	// EnterParentheticalGroupAttributes is called when entering the parentheticalGroupAttributes production.
-	EnterParentheticalGroupAttributes(c *ParentheticalGroupAttributesContext)
+	// EnterGroupattr_expression is called when entering the groupattr_expression production.
+	EnterGroupattr_expression(c *Groupattr_expressionContext)
 
-	// EnterGroupAttributesExpression is called when entering the groupAttributesExpression production.
-	EnterGroupAttributesExpression(c *GroupAttributesExpressionContext)
+	// EnterRoledn_expression is called when entering the roledn_expression production.
+	EnterRoledn_expression(c *Roledn_expressionContext)
+
+	// EnterDns_expression is called when entering the dns_expression production.
+	EnterDns_expression(c *Dns_expressionContext)
+
+	// EnterIp_expression is called when entering the ip_expression production.
+	EnterIp_expression(c *Ip_expressionContext)
+
+	// EnterTimeofday_expression is called when entering the timeofday_expression production.
+	EnterTimeofday_expression(c *Timeofday_expressionContext)
+
+	// EnterDayofweek_expression is called when entering the dayofweek_expression production.
+	EnterDayofweek_expression(c *Dayofweek_expressionContext)
+
+	// EnterSsf_expression is called when entering the ssf_expression production.
+	EnterSsf_expression(c *Ssf_expressionContext)
+
+	// EnterAuthmethod_expression is called when entering the authmethod_expression production.
+	EnterAuthmethod_expression(c *Authmethod_expressionContext)
+
+	// EnterParenthetical_dayofweek_bind_rule is called when entering the parenthetical_dayofweek_bind_rule production.
+	EnterParenthetical_dayofweek_bind_rule(c *Parenthetical_dayofweek_bind_ruleContext)
+
+	// EnterDayofweek_bind_rule is called when entering the dayofweek_bind_rule production.
+	EnterDayofweek_bind_rule(c *Dayofweek_bind_ruleContext)
+
+	// EnterSun is called when entering the Sun production.
+	EnterSun(c *SunContext)
+
+	// EnterMon is called when entering the Mon production.
+	EnterMon(c *MonContext)
+
+	// EnterTues is called when entering the Tues production.
+	EnterTues(c *TuesContext)
+
+	// EnterWed is called when entering the Wed production.
+	EnterWed(c *WedContext)
+
+	// EnterThur is called when entering the Thur production.
+	EnterThur(c *ThurContext)
+
+	// EnterFri is called when entering the Fri production.
+	EnterFri(c *FriContext)
+
+	// EnterSat is called when entering the Sat production.
+	EnterSat(c *SatContext)
 
 	// EnterParentheticalAuthenticationMethod is called when entering the parentheticalAuthenticationMethod production.
 	EnterParentheticalAuthenticationMethod(c *ParentheticalAuthenticationMethodContext)
 
-	// EnterAuthenticationMethodExpression is called when entering the authenticationMethodExpression production.
-	EnterAuthenticationMethodExpression(c *AuthenticationMethodExpressionContext)
+	// EnterAuthentication_method is called when entering the authentication_method production.
+	EnterAuthentication_method(c *Authentication_methodContext)
 
-	// EnterParentheticalDNS is called when entering the parentheticalDNS production.
-	EnterParentheticalDNS(c *ParentheticalDNSContext)
+	// EnterNone is called when entering the none production.
+	EnterNone(c *NoneContext)
 
-	// EnterDNSBindRule is called when entering the dNSBindRule production.
-	EnterDNSBindRule(c *DNSBindRuleContext)
+	// EnterSimple is called when entering the simple production.
+	EnterSimple(c *SimpleContext)
 
-	// EnterParentheticalTimeOfDay is called when entering the parentheticalTimeOfDay production.
-	EnterParentheticalTimeOfDay(c *ParentheticalTimeOfDayContext)
+	// EnterSsl is called when entering the ssl production.
+	EnterSsl(c *SslContext)
 
-	// EnterTimeOfDayBindRule is called when entering the timeOfDayBindRule production.
-	EnterTimeOfDayBindRule(c *TimeOfDayBindRuleContext)
+	// EnterSasl is called when entering the sasl production.
+	EnterSasl(c *SaslContext)
 
-	// EnterParentheticalDayOfWeek is called when entering the parentheticalDayOfWeek production.
-	EnterParentheticalDayOfWeek(c *ParentheticalDayOfWeekContext)
+	// EnterParenthetical_bind_userdn is called when entering the parenthetical_bind_userdn production.
+	EnterParenthetical_bind_userdn(c *Parenthetical_bind_userdnContext)
 
-	// EnterDayOfWeekExpression is called when entering the dayOfWeekExpression production.
-	EnterDayOfWeekExpression(c *DayOfWeekExpressionContext)
+	// EnterBind_userdn is called when entering the bind_userdn production.
+	EnterBind_userdn(c *Bind_userdnContext)
 
-	// EnterParentheticalIPAddress is called when entering the parentheticalIPAddress production.
-	EnterParentheticalIPAddress(c *ParentheticalIPAddressContext)
+	// EnterParenthetical_bind_roledn is called when entering the parenthetical_bind_roledn production.
+	EnterParenthetical_bind_roledn(c *Parenthetical_bind_rolednContext)
 
-	// EnterIpAddressBindRule is called when entering the ipAddressBindRule production.
-	EnterIpAddressBindRule(c *IpAddressBindRuleContext)
+	// EnterBind_roledn is called when entering the bind_roledn production.
+	EnterBind_roledn(c *Bind_rolednContext)
 
-	// EnterParentheticalSecurityStrengthFactor is called when entering the parentheticalSecurityStrengthFactor production.
-	EnterParentheticalSecurityStrengthFactor(c *ParentheticalSecurityStrengthFactorContext)
+	// EnterParenthetical_bind_groupdn is called when entering the parenthetical_bind_groupdn production.
+	EnterParenthetical_bind_groupdn(c *Parenthetical_bind_groupdnContext)
 
-	// EnterSecurityStrengthFactorExpression is called when entering the securityStrengthFactorExpression production.
-	EnterSecurityStrengthFactorExpression(c *SecurityStrengthFactorExpressionContext)
+	// EnterBind_groupdn is called when entering the bind_groupdn production.
+	EnterBind_groupdn(c *Bind_groupdnContext)
 
-	// EnterDayOfWeekValue is called when entering the dayOfWeekValue production.
-	EnterDayOfWeekValue(c *DayOfWeekValueContext)
+	// EnterParenthetical_bind_userattr is called when entering the parenthetical_bind_userattr production.
+	EnterParenthetical_bind_userattr(c *Parenthetical_bind_userattrContext)
 
-	// EnterFullyQualifiedDomainNameValue is called when entering the fullyQualifiedDomainNameValue production.
-	EnterFullyQualifiedDomainNameValue(c *FullyQualifiedDomainNameValueContext)
+	// EnterBind_userattr is called when entering the bind_userattr production.
+	EnterBind_userattr(c *Bind_userattrContext)
 
-	// EnterObjectIdentifierValues is called when entering the objectIdentifierValues production.
-	EnterObjectIdentifierValues(c *ObjectIdentifierValuesContext)
+	// EnterParenthetical_bind_groupattr is called when entering the parenthetical_bind_groupattr production.
+	EnterParenthetical_bind_groupattr(c *Parenthetical_bind_groupattrContext)
 
-	// EnterObjectIdentifierValue is called when entering the objectIdentifierValue production.
-	EnterObjectIdentifierValue(c *ObjectIdentifierValueContext)
+	// EnterBind_groupattr is called when entering the bind_groupattr production.
+	EnterBind_groupattr(c *Bind_groupattrContext)
 
-	// EnterIPV6AddressValue is called when entering the iPV6AddressValue production.
-	EnterIPV6AddressValue(c *IPV6AddressValueContext)
+	// EnterParenthetical_ssf is called when entering the parenthetical_ssf production.
+	EnterParenthetical_ssf(c *Parenthetical_ssfContext)
 
-	// EnterIPV4AddressValue is called when entering the iPV4AddressValue production.
-	EnterIPV4AddressValue(c *IPV4AddressValueContext)
+	// EnterBind_ssf is called when entering the bind_ssf production.
+	EnterBind_ssf(c *Bind_ssfContext)
 
-	// EnterSecurityStrengthFactorValue is called when entering the securityStrengthFactorValue production.
-	EnterSecurityStrengthFactorValue(c *SecurityStrengthFactorValueContext)
+	// EnterParenthetical_bind_timeofday is called when entering the parenthetical_bind_timeofday production.
+	EnterParenthetical_bind_timeofday(c *Parenthetical_bind_timeofdayContext)
 
-	// EnterTimeOfDayValue is called when entering the timeOfDayValue production.
-	EnterTimeOfDayValue(c *TimeOfDayValueContext)
+	// EnterBind_timeofday is called when entering the bind_timeofday production.
+	EnterBind_timeofday(c *Bind_timeofdayContext)
 
-	// EnterObjectIdentifierArc is called when entering the objectIdentifierArc production.
-	EnterObjectIdentifierArc(c *ObjectIdentifierArcContext)
+	// EnterParenthetical_bind_ip is called when entering the parenthetical_bind_ip production.
+	EnterParenthetical_bind_ip(c *Parenthetical_bind_ipContext)
 
-	// EnterInheritanceExpression is called when entering the inheritanceExpression production.
-	EnterInheritanceExpression(c *InheritanceExpressionContext)
+	// EnterBind_ip is called when entering the bind_ip production.
+	EnterBind_ip(c *Bind_ipContext)
 
-	// EnterInheritanceLevelValue is called when entering the inheritanceLevelValue production.
-	EnterInheritanceLevelValue(c *InheritanceLevelValueContext)
+	// EnterParenthetical_bind_dns is called when entering the parenthetical_bind_dns production.
+	EnterParenthetical_bind_dns(c *Parenthetical_bind_dnsContext)
 
-	// EnterAttributeBindTypeOrValueValue is called when entering the attributeBindTypeOrValueValue production.
-	EnterAttributeBindTypeOrValueValue(c *AttributeBindTypeOrValueValueContext)
+	// EnterDns_bind_rule is called when entering the dns_bind_rule production.
+	EnterDns_bind_rule(c *Dns_bind_ruleContext)
 
-	// EnterAttributeFiltersExpression is called when entering the attributeFiltersExpression production.
-	EnterAttributeFiltersExpression(c *AttributeFiltersExpressionContext)
+	// EnterIps is called when entering the ips production.
+	EnterIps(c *IpsContext)
 
-	// EnterAttributeFilterSetExpression is called when entering the attributeFilterSetExpression production.
-	EnterAttributeFilterSetExpression(c *AttributeFilterSetExpressionContext)
+	// EnterIpv4_address is called when entering the ipv4_address production.
+	EnterIpv4_address(c *Ipv4_addressContext)
 
-	// EnterDoubleAmpersandDelimiter is called when entering the doubleAmpersandDelimiter production.
-	EnterDoubleAmpersandDelimiter(c *DoubleAmpersandDelimiterContext)
+	// EnterIpv6_address is called when entering the ipv6_address production.
+	EnterIpv6_address(c *Ipv6_addressContext)
 
-	// EnterAttributeFilterExpression is called when entering the attributeFilterExpression production.
-	EnterAttributeFilterExpression(c *AttributeFilterExpressionContext)
+	// EnterIpv4 is called when entering the ipv4 production.
+	EnterIpv4(c *Ipv4Context)
 
-	// EnterDistinguishedNamesList is called when entering the distinguishedNamesList production.
-	EnterDistinguishedNamesList(c *DistinguishedNamesListContext)
+	// EnterIpv6 is called when entering the ipv6 production.
+	EnterIpv6(c *Ipv6Context)
 
-	// EnterDoublePipeDelimiter is called when entering the doublePipeDelimiter production.
-	EnterDoublePipeDelimiter(c *DoublePipeDelimiterContext)
+	// EnterFqdn is called when entering the fqdn production.
+	EnterFqdn(c *FqdnContext)
 
-	// EnterUriAndBindType is called when entering the uriAndBindType production.
-	EnterUriAndBindType(c *UriAndBindTypeContext)
+	// EnterQuoted_distinguished_name_list is called when entering the quoted_distinguished_name_list production.
+	EnterQuoted_distinguished_name_list(c *Quoted_distinguished_name_listContext)
 
-	// EnterFullyQualifiedLDAPURI is called when entering the fullyQualifiedLDAPURI production.
-	EnterFullyQualifiedLDAPURI(c *FullyQualifiedLDAPURIContext)
+	// EnterList_of_quoted_distinguished_names is called when entering the list_of_quoted_distinguished_names production.
+	EnterList_of_quoted_distinguished_names(c *List_of_quoted_distinguished_namesContext)
 
-	// EnterUriSearchFilter is called when entering the uriSearchFilter production.
-	EnterUriSearchFilter(c *UriSearchFilterContext)
+	// EnterDn is called when entering the dn production.
+	EnterDn(c *DnContext)
 
-	// EnterUriSearchScopes is called when entering the uriSearchScopes production.
-	EnterUriSearchScopes(c *UriSearchScopesContext)
+	// EnterRdn_macro is called when entering the rdn_macro production.
+	EnterRdn_macro(c *Rdn_macroContext)
 
-	// EnterUriAttributeList is called when entering the uriAttributeList production.
-	EnterUriAttributeList(c *UriAttributeListContext)
+	// EnterParenthetical_filter_expression is called when entering the parenthetical_filter_expression production.
+	EnterParenthetical_filter_expression(c *Parenthetical_filter_expressionContext)
 
-	// EnterDistinguishedNameValue is called when entering the distinguishedNameValue production.
-	EnterDistinguishedNameValue(c *DistinguishedNameValueContext)
+	// EnterFilter_expressions is called when entering the filter_expressions production.
+	EnterFilter_expressions(c *Filter_expressionsContext)
 
-	// EnterRelativeDistinguishedNameValue is called when entering the relativeDistinguishedNameValue production.
-	EnterRelativeDistinguishedNameValue(c *RelativeDistinguishedNameValueContext)
+	// EnterParenthetical_filter_expression_opt_bool is called when entering the parenthetical_filter_expression_opt_bool production.
+	EnterParenthetical_filter_expression_opt_bool(c *Parenthetical_filter_expression_opt_boolContext)
 
-	// EnterRelativeDistinguishedNameMacro is called when entering the relativeDistinguishedNameMacro production.
-	EnterRelativeDistinguishedNameMacro(c *RelativeDistinguishedNameMacroContext)
+	// EnterNot_filter_expression is called when entering the not_filter_expression production.
+	EnterNot_filter_expression(c *Not_filter_expressionContext)
 
-	// EnterParentheticalFilterExpression is called when entering the parentheticalFilterExpression production.
-	EnterParentheticalFilterExpression(c *ParentheticalFilterExpressionContext)
+	// EnterAva_expression is called when entering the ava_expression production.
+	EnterAva_expression(c *Ava_expressionContext)
 
-	// EnterFilterExpressions is called when entering the filterExpressions production.
-	EnterFilterExpressions(c *FilterExpressionsContext)
+	// EnterAva_or_rdn is called when entering the ava_or_rdn production.
+	EnterAva_or_rdn(c *Ava_or_rdnContext)
 
-	// EnterParentheticalFilterExpressionWithOptionalBooleanOperator is called when entering the parentheticalFilterExpressionWithOptionalBooleanOperator production.
-	EnterParentheticalFilterExpressionWithOptionalBooleanOperator(c *ParentheticalFilterExpressionWithOptionalBooleanOperatorContext)
+	// EnterInheritance_expression is called when entering the inheritance_expression production.
+	EnterInheritance_expression(c *Inheritance_expressionContext)
 
-	// EnterNegatedFilterExpression is called when entering the negatedFilterExpression production.
-	EnterNegatedFilterExpression(c *NegatedFilterExpressionContext)
+	// EnterInheritance_levels is called when entering the inheritance_levels production.
+	EnterInheritance_levels(c *Inheritance_levelsContext)
 
-	// EnterAttributeValueAssertionExpression is called when entering the attributeValueAssertionExpression production.
-	EnterAttributeValueAssertionExpression(c *AttributeValueAssertionExpressionContext)
+	// EnterAttr_bind_type_or_value is called when entering the attr_bind_type_or_value production.
+	EnterAttr_bind_type_or_value(c *Attr_bind_type_or_valueContext)
 
-	// EnterAttributeValueAssertionStatement is called when entering the attributeValueAssertionStatement production.
-	EnterAttributeValueAssertionStatement(c *AttributeValueAssertionStatementContext)
+	// EnterUSERDN is called when entering the USERDN production.
+	EnterUSERDN(c *USERDNContext)
 
-	// EnterAttributeTypeIdentifier is called when entering the attributeTypeIdentifier production.
-	EnterAttributeTypeIdentifier(c *AttributeTypeIdentifierContext)
+	// EnterGROUPDN is called when entering the GROUPDN production.
+	EnterGROUPDN(c *GROUPDNContext)
 
-	// EnterAttributeAssertionValue is called when entering the attributeAssertionValue production.
-	EnterAttributeAssertionValue(c *AttributeAssertionValueContext)
+	// EnterROLEDN is called when entering the ROLEDN production.
+	EnterROLEDN(c *ROLEDNContext)
 
-	// EnterAttributeOperators is called when entering the attributeOperators production.
-	EnterAttributeOperators(c *AttributeOperatorsContext)
+	// EnterSELFDN is called when entering the SELFDN production.
+	EnterSELFDN(c *SELFDNContext)
+
+	// EnterLDAPURL is called when entering the LDAPURL production.
+	EnterLDAPURL(c *LDAPURLContext)
+
+	// EnterKey_or_value is called when entering the key_or_value production.
+	EnterKey_or_value(c *Key_or_valueContext)
+
+	// EnterEqual_to is called when entering the equal_to production.
+	EnterEqual_to(c *Equal_toContext)
+
+	// EnterNot_equal_to is called when entering the not_equal_to production.
+	EnterNot_equal_to(c *Not_equal_toContext)
+
+	// EnterGreater_than_or_equal is called when entering the greater_than_or_equal production.
+	EnterGreater_than_or_equal(c *Greater_than_or_equalContext)
+
+	// EnterLess_than_or_equal is called when entering the less_than_or_equal production.
+	EnterLess_than_or_equal(c *Less_than_or_equalContext)
+
+	// EnterApprox is called when entering the approx production.
+	EnterApprox(c *ApproxContext)
+
+	// EnterExtensible_rule is called when entering the extensible_rule production.
+	EnterExtensible_rule(c *Extensible_ruleContext)
+
+	// EnterExtensible_rule_with_dn is called when entering the extensible_rule_with_dn production.
+	EnterExtensible_rule_with_dn(c *Extensible_rule_with_dnContext)
+
+	// EnterExtensible_rule_with_attrs is called when entering the extensible_rule_with_attrs production.
+	EnterExtensible_rule_with_attrs(c *Extensible_rule_with_attrsContext)
+
+	// EnterExtensible_rule_with_dn_oid is called when entering the extensible_rule_with_dn_oid production.
+	EnterExtensible_rule_with_dn_oid(c *Extensible_rule_with_dn_oidContext)
+
+	// EnterEqualTo is called when entering the equalTo production.
+	EnterEqualTo(c *EqualToContext)
+
+	// EnterNotEqualTo is called when entering the notEqualTo production.
+	EnterNotEqualTo(c *NotEqualToContext)
+
+	// EnterGreaterThan is called when entering the greaterThan production.
+	EnterGreaterThan(c *GreaterThanContext)
+
+	// EnterLessThan is called when entering the lessThan production.
+	EnterLessThan(c *LessThanContext)
+
+	// EnterGreaterThanOrEqual is called when entering the greaterThanOrEqual production.
+	EnterGreaterThanOrEqual(c *GreaterThanOrEqualContext)
+
+	// EnterLessThanOrEqual is called when entering the lessThanOrEqual production.
+	EnterLessThanOrEqual(c *LessThanOrEqualContext)
+
+	// EnterApproximate is called when entering the approximate production.
+	EnterApproximate(c *ApproximateContext)
+
+	// EnterExtensibleRule is called when entering the extensibleRule production.
+	EnterExtensibleRule(c *ExtensibleRuleContext)
+
+	// EnterExtensibleRuleDNOID is called when entering the extensibleRuleDNOID production.
+	EnterExtensibleRuleDNOID(c *ExtensibleRuleDNOIDContext)
+
+	// EnterExtensibleRuleDN is called when entering the extensibleRuleDN production.
+	EnterExtensibleRuleDN(c *ExtensibleRuleDNContext)
+
+	// EnterExtensibleRuleAttr is called when entering the extensibleRuleAttr production.
+	EnterExtensibleRuleAttr(c *ExtensibleRuleAttrContext)
+
+	// EnterORDelimiter is called when entering the oRDelimiter production.
+	EnterORDelimiter(c *ORDelimiterContext)
+
+	// EnterANDDelimiter is called when entering the aNDDelimiter production.
+	EnterANDDelimiter(c *ANDDelimiterContext)
 
 	// ExitParse is called when exiting the parse production.
 	ExitParse(c *ParseContext)
 
-	// ExitAccessControlInstruction is called when exiting the accessControlInstruction production.
-	ExitAccessControlInstruction(c *AccessControlInstructionContext)
+	// ExitAci is called when exiting the aci production.
+	ExitAci(c *AciContext)
 
-	// ExitAccessControlInstructionNameAndVersion is called when exiting the accessControlInstructionNameAndVersion production.
-	ExitAccessControlInstructionNameAndVersion(c *AccessControlInstructionNameAndVersionContext)
+	// ExitPermission_bind_rules is called when exiting the permission_bind_rules production.
+	ExitPermission_bind_rules(c *Permission_bind_rulesContext)
 
-	// ExitPermissionBindRules is called when exiting the permissionBindRules production.
-	ExitPermissionBindRules(c *PermissionBindRulesContext)
+	// ExitPermission_and_bind_rule_pair is called when exiting the permission_and_bind_rule_pair production.
+	ExitPermission_and_bind_rule_pair(c *Permission_and_bind_rule_pairContext)
 
-	// ExitPermissionBindRule is called when exiting the permissionBindRule production.
-	ExitPermissionBindRule(c *PermissionBindRuleContext)
+	// ExitPermission_expression is called when exiting the permission_expression production.
+	ExitPermission_expression(c *Permission_expressionContext)
 
-	// ExitPermissionExpression is called when exiting the permissionExpression production.
-	ExitPermissionExpression(c *PermissionExpressionContext)
+	// ExitAllow_access is called when exiting the allow_access production.
+	ExitAllow_access(c *Allow_accessContext)
 
-	// ExitTargetRuleExpressions is called when exiting the targetRuleExpressions production.
-	ExitTargetRuleExpressions(c *TargetRuleExpressionsContext)
+	// ExitDeny_access is called when exiting the deny_access production.
+	ExitDeny_access(c *Deny_accessContext)
 
-	// ExitTargetcontrol is called when exiting the targetcontrol production.
-	ExitTargetcontrol(c *TargetcontrolContext)
+	// ExitSearch_privilege is called when exiting the search_privilege production.
+	ExitSearch_privilege(c *Search_privilegeContext)
 
-	// ExitExtop is called when exiting the extop production.
-	ExitExtop(c *ExtopContext)
+	// ExitRead_privilege is called when exiting the read_privilege production.
+	ExitRead_privilege(c *Read_privilegeContext)
 
-	// ExitTargetfilter is called when exiting the targetfilter production.
-	ExitTargetfilter(c *TargetfilterContext)
+	// ExitCompare_privilege is called when exiting the compare_privilege production.
+	ExitCompare_privilege(c *Compare_privilegeContext)
 
-	// ExitTargattrfilters is called when exiting the targattrfilters production.
-	ExitTargattrfilters(c *TargattrfiltersContext)
+	// ExitAdd_privilege is called when exiting the add_privilege production.
+	ExitAdd_privilege(c *Add_privilegeContext)
 
-	// ExitTargetscope is called when exiting the targetscope production.
-	ExitTargetscope(c *TargetscopeContext)
+	// ExitDelete_privilege is called when exiting the delete_privilege production.
+	ExitDelete_privilege(c *Delete_privilegeContext)
 
-	// ExitTargetattr is called when exiting the targetattr production.
-	ExitTargetattr(c *TargetattrContext)
+	// ExitSelfwrite_privilege is called when exiting the selfwrite_privilege production.
+	ExitSelfwrite_privilege(c *Selfwrite_privilegeContext)
 
-	// ExitTargetdn is called when exiting the targetdn production.
-	ExitTargetdn(c *TargetdnContext)
+	// ExitProxy_privilege is called when exiting the proxy_privilege production.
+	ExitProxy_privilege(c *Proxy_privilegeContext)
 
-	// ExitTargettodn is called when exiting the targettodn production.
-	ExitTargettodn(c *TargettodnContext)
+	// ExitImport_privilege is called when exiting the import_privilege production.
+	ExitImport_privilege(c *Import_privilegeContext)
 
-	// ExitTargetfromDN is called when exiting the targetfromDN production.
-	ExitTargetfromDN(c *TargetfromDNContext)
+	// ExitExport_privilege is called when exiting the export_privilege production.
+	ExitExport_privilege(c *Export_privilegeContext)
 
-	// ExitParentheticalControls is called when exiting the parentheticalControls production.
-	ExitParentheticalControls(c *ParentheticalControlsContext)
+	// ExitAll_privileges is called when exiting the all_privileges production.
+	ExitAll_privileges(c *All_privilegesContext)
 
-	// ExitParentheticalExtendedOperations is called when exiting the parentheticalExtendedOperations production.
-	ExitParentheticalExtendedOperations(c *ParentheticalExtendedOperationsContext)
+	// ExitTarget_rules is called when exiting the target_rules production.
+	ExitTarget_rules(c *Target_rulesContext)
 
-	// ExitParentheticalTargetFilterExpression is called when exiting the parentheticalTargetFilterExpression production.
-	ExitParentheticalTargetFilterExpression(c *ParentheticalTargetFilterExpressionContext)
+	// ExitTargetRule is called when exiting the targetRule production.
+	ExitTargetRule(c *TargetRuleContext)
 
-	// ExitQuotedFilterExpression is called when exiting the quotedFilterExpression production.
-	ExitQuotedFilterExpression(c *QuotedFilterExpressionContext)
+	// ExitTarget_dn_rule is called when exiting the target_dn_rule production.
+	ExitTarget_dn_rule(c *Target_dn_ruleContext)
 
-	// ExitTargetDistinguishedNames is called when exiting the targetDistinguishedNames production.
-	ExitTargetDistinguishedNames(c *TargetDistinguishedNamesContext)
+	// ExitTarget_to_rule is called when exiting the target_to_rule production.
+	ExitTarget_to_rule(c *Target_to_ruleContext)
 
-	// ExitTargetToDistinguishedName is called when exiting the targetToDistinguishedName production.
-	ExitTargetToDistinguishedName(c *TargetToDistinguishedNameContext)
+	// ExitTarget_from_rule is called when exiting the target_from_rule production.
+	ExitTarget_from_rule(c *Target_from_ruleContext)
 
-	// ExitTargetFromDistinguishedName is called when exiting the targetFromDistinguishedName production.
-	ExitTargetFromDistinguishedName(c *TargetFromDistinguishedNameContext)
+	// ExitTargetfilter_rule is called when exiting the targetfilter_rule production.
+	ExitTargetfilter_rule(c *Targetfilter_ruleContext)
 
-	// ExitParentheticalTargetAttrFilters is called when exiting the parentheticalTargetAttrFilters production.
-	ExitParentheticalTargetAttrFilters(c *ParentheticalTargetAttrFiltersContext)
+	// ExitTargattrfilters_rule is called when exiting the targattrfilters_rule production.
+	ExitTargattrfilters_rule(c *Targattrfilters_ruleContext)
 
-	// ExitQuotedAttributeFilters is called when exiting the quotedAttributeFilters production.
-	ExitQuotedAttributeFilters(c *QuotedAttributeFiltersContext)
+	// ExitTargetscope_rule is called when exiting the targetscope_rule production.
+	ExitTargetscope_rule(c *Targetscope_ruleContext)
 
-	// ExitQuotedAttributeFilterSet is called when exiting the quotedAttributeFilterSet production.
-	ExitQuotedAttributeFilterSet(c *QuotedAttributeFilterSetContext)
+	// ExitTargetattr_rule is called when exiting the targetattr_rule production.
+	ExitTargetattr_rule(c *Targetattr_ruleContext)
 
-	// ExitQuotedAttributeFilter is called when exiting the quotedAttributeFilter production.
-	ExitQuotedAttributeFilter(c *QuotedAttributeFilterContext)
+	// ExitTargetcontrol_rule is called when exiting the targetcontrol_rule production.
+	ExitTargetcontrol_rule(c *Targetcontrol_ruleContext)
 
-	// ExitTargetScopeBindRule is called when exiting the targetScopeBindRule production.
-	ExitTargetScopeBindRule(c *TargetScopeBindRuleContext)
+	// ExitTargetextop_rule is called when exiting the targetextop_rule production.
+	ExitTargetextop_rule(c *Targetextop_ruleContext)
 
-	// ExitTargetAttrBindRule is called when exiting the targetAttrBindRule production.
-	ExitTargetAttrBindRule(c *TargetAttrBindRuleContext)
+	// ExitBase_object_targetscope is called when exiting the base_object_targetscope production.
+	ExitBase_object_targetscope(c *Base_object_targetscopeContext)
 
-	// ExitAttributeTypesList is called when exiting the attributeTypesList production.
-	ExitAttributeTypesList(c *AttributeTypesListContext)
+	// ExitOne_level_targetscope is called when exiting the one_level_targetscope production.
+	ExitOne_level_targetscope(c *One_level_targetscopeContext)
 
-	// ExitBindRuleInstance is called when exiting the bindRuleInstance production.
-	ExitBindRuleInstance(c *BindRuleInstanceContext)
+	// ExitSub_tree_targetscope is called when exiting the sub_tree_targetscope production.
+	ExitSub_tree_targetscope(c *Sub_tree_targetscopeContext)
 
-	// ExitParentheticalBindRuleInstanceWithRequiredBooleanOperator is called when exiting the parentheticalBindRuleInstanceWithRequiredBooleanOperator production.
-	ExitParentheticalBindRuleInstanceWithRequiredBooleanOperator(c *ParentheticalBindRuleInstanceWithRequiredBooleanOperatorContext)
+	// ExitSubordinate_targetscope is called when exiting the subordinate_targetscope production.
+	ExitSubordinate_targetscope(c *Subordinate_targetscopeContext)
 
-	// ExitParentheticalBindRuleExpressionWithRequiredBooleanOperatorRecursion is called when exiting the parentheticalBindRuleExpressionWithRequiredBooleanOperatorRecursion production.
-	ExitParentheticalBindRuleExpressionWithRequiredBooleanOperatorRecursion(c *ParentheticalBindRuleExpressionWithRequiredBooleanOperatorRecursionContext)
+	// ExitQuoted_object_identifier_list is called when exiting the quoted_object_identifier_list production.
+	ExitQuoted_object_identifier_list(c *Quoted_object_identifier_listContext)
 
-	// ExitNegatedBindRuleExpressionRecursion is called when exiting the negatedBindRuleExpressionRecursion production.
-	ExitNegatedBindRuleExpressionRecursion(c *NegatedBindRuleExpressionRecursionContext)
+	// ExitList_of_quoted_object_identifiers is called when exiting the list_of_quoted_object_identifiers production.
+	ExitList_of_quoted_object_identifiers(c *List_of_quoted_object_identifiersContext)
 
-	// ExitParentheticalBindRuleExpressionRecursion is called when exiting the parentheticalBindRuleExpressionRecursion production.
-	ExitParentheticalBindRuleExpressionRecursion(c *ParentheticalBindRuleExpressionRecursionContext)
+	// ExitQuoted_targeted_attributes_list is called when exiting the quoted_targeted_attributes_list production.
+	ExitQuoted_targeted_attributes_list(c *Quoted_targeted_attributes_listContext)
 
-	// ExitBindRuleExpressionRecursion is called when exiting the bindRuleExpressionRecursion production.
-	ExitBindRuleExpressionRecursion(c *BindRuleExpressionRecursionContext)
+	// ExitList_of_quoted_attributes is called when exiting the list_of_quoted_attributes production.
+	ExitList_of_quoted_attributes(c *List_of_quoted_attributesContext)
 
-	// ExitBindRuleExpression is called when exiting the bindRuleExpression production.
-	ExitBindRuleExpression(c *BindRuleExpressionContext)
+	// ExitObject_identifier is called when exiting the object_identifier production.
+	ExitObject_identifier(c *Object_identifierContext)
 
-	// ExitUserdn is called when exiting the userdn production.
-	ExitUserdn(c *UserdnContext)
+	// ExitNumber_form is called when exiting the number_form production.
+	ExitNumber_form(c *Number_formContext)
 
-	// ExitUserattr is called when exiting the userattr production.
-	ExitUserattr(c *UserattrContext)
+	// ExitAttribute_filters_sets is called when exiting the attribute_filters_sets production.
+	ExitAttribute_filters_sets(c *Attribute_filters_setsContext)
 
-	// ExitGroupdn is called when exiting the groupdn production.
-	ExitGroupdn(c *GroupdnContext)
+	// ExitAttribute_filters_set is called when exiting the attribute_filters_set production.
+	ExitAttribute_filters_set(c *Attribute_filters_setContext)
 
-	// ExitGroupattr is called when exiting the groupattr production.
-	ExitGroupattr(c *GroupattrContext)
+	// ExitAttribute_filter_single is called when exiting the attribute_filter_single production.
+	ExitAttribute_filter_single(c *Attribute_filter_singleContext)
 
-	// ExitRoledn is called when exiting the roledn production.
-	ExitRoledn(c *RolednContext)
+	// ExitAttribute_filters is called when exiting the attribute_filters production.
+	ExitAttribute_filters(c *Attribute_filtersContext)
 
-	// ExitDns is called when exiting the dns production.
-	ExitDns(c *DnsContext)
+	// ExitAttribute_filter_set is called when exiting the attribute_filter_set production.
+	ExitAttribute_filter_set(c *Attribute_filter_setContext)
 
-	// ExitIp is called when exiting the ip production.
-	ExitIp(c *IpContext)
+	// ExitAdd_filter_operation is called when exiting the add_filter_operation production.
+	ExitAdd_filter_operation(c *Add_filter_operationContext)
 
-	// ExitTimeofday is called when exiting the timeofday production.
-	ExitTimeofday(c *TimeofdayContext)
+	// ExitDelete_filter_operation is called when exiting the delete_filter_operation production.
+	ExitDelete_filter_operation(c *Delete_filter_operationContext)
 
-	// ExitDayofweek is called when exiting the dayofweek production.
-	ExitDayofweek(c *DayofweekContext)
+	// ExitAttribute_filter is called when exiting the attribute_filter production.
+	ExitAttribute_filter(c *Attribute_filterContext)
 
-	// ExitSsf is called when exiting the ssf production.
-	ExitSsf(c *SsfContext)
+	// ExitBind_rule is called when exiting the bind_rule production.
+	ExitBind_rule(c *Bind_ruleContext)
 
-	// ExitAuthmethod is called when exiting the authmethod production.
-	ExitAuthmethod(c *AuthmethodContext)
+	// ExitParenthetical_bind_rule is called when exiting the parenthetical_bind_rule production.
+	ExitParenthetical_bind_rule(c *Parenthetical_bind_ruleContext)
 
-	// ExitParentheticalUserDistinguishedName is called when exiting the parentheticalUserDistinguishedName production.
-	ExitParentheticalUserDistinguishedName(c *ParentheticalUserDistinguishedNameContext)
+	// ExitParenthetical_bind_rule_req_bool_op is called when exiting the parenthetical_bind_rule_req_bool_op production.
+	ExitParenthetical_bind_rule_req_bool_op(c *Parenthetical_bind_rule_req_bool_opContext)
 
-	// ExitUserDistinguishedNameExpression is called when exiting the userDistinguishedNameExpression production.
-	ExitUserDistinguishedNameExpression(c *UserDistinguishedNameExpressionContext)
+	// ExitNegated_bind_rule_expression is called when exiting the negated_bind_rule_expression production.
+	ExitNegated_bind_rule_expression(c *Negated_bind_rule_expressionContext)
 
-	// ExitParentheticalRoleDistinguishedName is called when exiting the parentheticalRoleDistinguishedName production.
-	ExitParentheticalRoleDistinguishedName(c *ParentheticalRoleDistinguishedNameContext)
+	// ExitParenthetical_bind_rule_expression is called when exiting the parenthetical_bind_rule_expression production.
+	ExitParenthetical_bind_rule_expression(c *Parenthetical_bind_rule_expressionContext)
 
-	// ExitRoleDistinguishedNameExpression is called when exiting the roleDistinguishedNameExpression production.
-	ExitRoleDistinguishedNameExpression(c *RoleDistinguishedNameExpressionContext)
+	// ExitBind_rule_expression_recursion is called when exiting the bind_rule_expression_recursion production.
+	ExitBind_rule_expression_recursion(c *Bind_rule_expression_recursionContext)
 
-	// ExitParentheticalGroupDistinguishedName is called when exiting the parentheticalGroupDistinguishedName production.
-	ExitParentheticalGroupDistinguishedName(c *ParentheticalGroupDistinguishedNameContext)
+	// ExitBind_rule_expression is called when exiting the bind_rule_expression production.
+	ExitBind_rule_expression(c *Bind_rule_expressionContext)
 
-	// ExitGroupDistinguishedNameExpression is called when exiting the groupDistinguishedNameExpression production.
-	ExitGroupDistinguishedNameExpression(c *GroupDistinguishedNameExpressionContext)
+	// ExitUserdn_expression is called when exiting the userdn_expression production.
+	ExitUserdn_expression(c *Userdn_expressionContext)
 
-	// ExitParentheticalUserAttributes is called when exiting the parentheticalUserAttributes production.
-	ExitParentheticalUserAttributes(c *ParentheticalUserAttributesContext)
+	// ExitUserattr_expression is called when exiting the userattr_expression production.
+	ExitUserattr_expression(c *Userattr_expressionContext)
 
-	// ExitUserAttributesExpression is called when exiting the userAttributesExpression production.
-	ExitUserAttributesExpression(c *UserAttributesExpressionContext)
+	// ExitGroupdn_expression is called when exiting the groupdn_expression production.
+	ExitGroupdn_expression(c *Groupdn_expressionContext)
 
-	// ExitParentheticalGroupAttributes is called when exiting the parentheticalGroupAttributes production.
-	ExitParentheticalGroupAttributes(c *ParentheticalGroupAttributesContext)
+	// ExitGroupattr_expression is called when exiting the groupattr_expression production.
+	ExitGroupattr_expression(c *Groupattr_expressionContext)
 
-	// ExitGroupAttributesExpression is called when exiting the groupAttributesExpression production.
-	ExitGroupAttributesExpression(c *GroupAttributesExpressionContext)
+	// ExitRoledn_expression is called when exiting the roledn_expression production.
+	ExitRoledn_expression(c *Roledn_expressionContext)
+
+	// ExitDns_expression is called when exiting the dns_expression production.
+	ExitDns_expression(c *Dns_expressionContext)
+
+	// ExitIp_expression is called when exiting the ip_expression production.
+	ExitIp_expression(c *Ip_expressionContext)
+
+	// ExitTimeofday_expression is called when exiting the timeofday_expression production.
+	ExitTimeofday_expression(c *Timeofday_expressionContext)
+
+	// ExitDayofweek_expression is called when exiting the dayofweek_expression production.
+	ExitDayofweek_expression(c *Dayofweek_expressionContext)
+
+	// ExitSsf_expression is called when exiting the ssf_expression production.
+	ExitSsf_expression(c *Ssf_expressionContext)
+
+	// ExitAuthmethod_expression is called when exiting the authmethod_expression production.
+	ExitAuthmethod_expression(c *Authmethod_expressionContext)
+
+	// ExitParenthetical_dayofweek_bind_rule is called when exiting the parenthetical_dayofweek_bind_rule production.
+	ExitParenthetical_dayofweek_bind_rule(c *Parenthetical_dayofweek_bind_ruleContext)
+
+	// ExitDayofweek_bind_rule is called when exiting the dayofweek_bind_rule production.
+	ExitDayofweek_bind_rule(c *Dayofweek_bind_ruleContext)
+
+	// ExitSun is called when exiting the Sun production.
+	ExitSun(c *SunContext)
+
+	// ExitMon is called when exiting the Mon production.
+	ExitMon(c *MonContext)
+
+	// ExitTues is called when exiting the Tues production.
+	ExitTues(c *TuesContext)
+
+	// ExitWed is called when exiting the Wed production.
+	ExitWed(c *WedContext)
+
+	// ExitThur is called when exiting the Thur production.
+	ExitThur(c *ThurContext)
+
+	// ExitFri is called when exiting the Fri production.
+	ExitFri(c *FriContext)
+
+	// ExitSat is called when exiting the Sat production.
+	ExitSat(c *SatContext)
 
 	// ExitParentheticalAuthenticationMethod is called when exiting the parentheticalAuthenticationMethod production.
 	ExitParentheticalAuthenticationMethod(c *ParentheticalAuthenticationMethodContext)
 
-	// ExitAuthenticationMethodExpression is called when exiting the authenticationMethodExpression production.
-	ExitAuthenticationMethodExpression(c *AuthenticationMethodExpressionContext)
+	// ExitAuthentication_method is called when exiting the authentication_method production.
+	ExitAuthentication_method(c *Authentication_methodContext)
 
-	// ExitParentheticalDNS is called when exiting the parentheticalDNS production.
-	ExitParentheticalDNS(c *ParentheticalDNSContext)
+	// ExitNone is called when exiting the none production.
+	ExitNone(c *NoneContext)
 
-	// ExitDNSBindRule is called when exiting the dNSBindRule production.
-	ExitDNSBindRule(c *DNSBindRuleContext)
+	// ExitSimple is called when exiting the simple production.
+	ExitSimple(c *SimpleContext)
 
-	// ExitParentheticalTimeOfDay is called when exiting the parentheticalTimeOfDay production.
-	ExitParentheticalTimeOfDay(c *ParentheticalTimeOfDayContext)
+	// ExitSsl is called when exiting the ssl production.
+	ExitSsl(c *SslContext)
 
-	// ExitTimeOfDayBindRule is called when exiting the timeOfDayBindRule production.
-	ExitTimeOfDayBindRule(c *TimeOfDayBindRuleContext)
+	// ExitSasl is called when exiting the sasl production.
+	ExitSasl(c *SaslContext)
 
-	// ExitParentheticalDayOfWeek is called when exiting the parentheticalDayOfWeek production.
-	ExitParentheticalDayOfWeek(c *ParentheticalDayOfWeekContext)
+	// ExitParenthetical_bind_userdn is called when exiting the parenthetical_bind_userdn production.
+	ExitParenthetical_bind_userdn(c *Parenthetical_bind_userdnContext)
 
-	// ExitDayOfWeekExpression is called when exiting the dayOfWeekExpression production.
-	ExitDayOfWeekExpression(c *DayOfWeekExpressionContext)
+	// ExitBind_userdn is called when exiting the bind_userdn production.
+	ExitBind_userdn(c *Bind_userdnContext)
 
-	// ExitParentheticalIPAddress is called when exiting the parentheticalIPAddress production.
-	ExitParentheticalIPAddress(c *ParentheticalIPAddressContext)
+	// ExitParenthetical_bind_roledn is called when exiting the parenthetical_bind_roledn production.
+	ExitParenthetical_bind_roledn(c *Parenthetical_bind_rolednContext)
 
-	// ExitIpAddressBindRule is called when exiting the ipAddressBindRule production.
-	ExitIpAddressBindRule(c *IpAddressBindRuleContext)
+	// ExitBind_roledn is called when exiting the bind_roledn production.
+	ExitBind_roledn(c *Bind_rolednContext)
 
-	// ExitParentheticalSecurityStrengthFactor is called when exiting the parentheticalSecurityStrengthFactor production.
-	ExitParentheticalSecurityStrengthFactor(c *ParentheticalSecurityStrengthFactorContext)
+	// ExitParenthetical_bind_groupdn is called when exiting the parenthetical_bind_groupdn production.
+	ExitParenthetical_bind_groupdn(c *Parenthetical_bind_groupdnContext)
 
-	// ExitSecurityStrengthFactorExpression is called when exiting the securityStrengthFactorExpression production.
-	ExitSecurityStrengthFactorExpression(c *SecurityStrengthFactorExpressionContext)
+	// ExitBind_groupdn is called when exiting the bind_groupdn production.
+	ExitBind_groupdn(c *Bind_groupdnContext)
 
-	// ExitDayOfWeekValue is called when exiting the dayOfWeekValue production.
-	ExitDayOfWeekValue(c *DayOfWeekValueContext)
+	// ExitParenthetical_bind_userattr is called when exiting the parenthetical_bind_userattr production.
+	ExitParenthetical_bind_userattr(c *Parenthetical_bind_userattrContext)
 
-	// ExitFullyQualifiedDomainNameValue is called when exiting the fullyQualifiedDomainNameValue production.
-	ExitFullyQualifiedDomainNameValue(c *FullyQualifiedDomainNameValueContext)
+	// ExitBind_userattr is called when exiting the bind_userattr production.
+	ExitBind_userattr(c *Bind_userattrContext)
 
-	// ExitObjectIdentifierValues is called when exiting the objectIdentifierValues production.
-	ExitObjectIdentifierValues(c *ObjectIdentifierValuesContext)
+	// ExitParenthetical_bind_groupattr is called when exiting the parenthetical_bind_groupattr production.
+	ExitParenthetical_bind_groupattr(c *Parenthetical_bind_groupattrContext)
 
-	// ExitObjectIdentifierValue is called when exiting the objectIdentifierValue production.
-	ExitObjectIdentifierValue(c *ObjectIdentifierValueContext)
+	// ExitBind_groupattr is called when exiting the bind_groupattr production.
+	ExitBind_groupattr(c *Bind_groupattrContext)
 
-	// ExitIPV6AddressValue is called when exiting the iPV6AddressValue production.
-	ExitIPV6AddressValue(c *IPV6AddressValueContext)
+	// ExitParenthetical_ssf is called when exiting the parenthetical_ssf production.
+	ExitParenthetical_ssf(c *Parenthetical_ssfContext)
 
-	// ExitIPV4AddressValue is called when exiting the iPV4AddressValue production.
-	ExitIPV4AddressValue(c *IPV4AddressValueContext)
+	// ExitBind_ssf is called when exiting the bind_ssf production.
+	ExitBind_ssf(c *Bind_ssfContext)
 
-	// ExitSecurityStrengthFactorValue is called when exiting the securityStrengthFactorValue production.
-	ExitSecurityStrengthFactorValue(c *SecurityStrengthFactorValueContext)
+	// ExitParenthetical_bind_timeofday is called when exiting the parenthetical_bind_timeofday production.
+	ExitParenthetical_bind_timeofday(c *Parenthetical_bind_timeofdayContext)
 
-	// ExitTimeOfDayValue is called when exiting the timeOfDayValue production.
-	ExitTimeOfDayValue(c *TimeOfDayValueContext)
+	// ExitBind_timeofday is called when exiting the bind_timeofday production.
+	ExitBind_timeofday(c *Bind_timeofdayContext)
 
-	// ExitObjectIdentifierArc is called when exiting the objectIdentifierArc production.
-	ExitObjectIdentifierArc(c *ObjectIdentifierArcContext)
+	// ExitParenthetical_bind_ip is called when exiting the parenthetical_bind_ip production.
+	ExitParenthetical_bind_ip(c *Parenthetical_bind_ipContext)
 
-	// ExitInheritanceExpression is called when exiting the inheritanceExpression production.
-	ExitInheritanceExpression(c *InheritanceExpressionContext)
+	// ExitBind_ip is called when exiting the bind_ip production.
+	ExitBind_ip(c *Bind_ipContext)
 
-	// ExitInheritanceLevelValue is called when exiting the inheritanceLevelValue production.
-	ExitInheritanceLevelValue(c *InheritanceLevelValueContext)
+	// ExitParenthetical_bind_dns is called when exiting the parenthetical_bind_dns production.
+	ExitParenthetical_bind_dns(c *Parenthetical_bind_dnsContext)
 
-	// ExitAttributeBindTypeOrValueValue is called when exiting the attributeBindTypeOrValueValue production.
-	ExitAttributeBindTypeOrValueValue(c *AttributeBindTypeOrValueValueContext)
+	// ExitDns_bind_rule is called when exiting the dns_bind_rule production.
+	ExitDns_bind_rule(c *Dns_bind_ruleContext)
 
-	// ExitAttributeFiltersExpression is called when exiting the attributeFiltersExpression production.
-	ExitAttributeFiltersExpression(c *AttributeFiltersExpressionContext)
+	// ExitIps is called when exiting the ips production.
+	ExitIps(c *IpsContext)
 
-	// ExitAttributeFilterSetExpression is called when exiting the attributeFilterSetExpression production.
-	ExitAttributeFilterSetExpression(c *AttributeFilterSetExpressionContext)
+	// ExitIpv4_address is called when exiting the ipv4_address production.
+	ExitIpv4_address(c *Ipv4_addressContext)
 
-	// ExitDoubleAmpersandDelimiter is called when exiting the doubleAmpersandDelimiter production.
-	ExitDoubleAmpersandDelimiter(c *DoubleAmpersandDelimiterContext)
+	// ExitIpv6_address is called when exiting the ipv6_address production.
+	ExitIpv6_address(c *Ipv6_addressContext)
 
-	// ExitAttributeFilterExpression is called when exiting the attributeFilterExpression production.
-	ExitAttributeFilterExpression(c *AttributeFilterExpressionContext)
+	// ExitIpv4 is called when exiting the ipv4 production.
+	ExitIpv4(c *Ipv4Context)
 
-	// ExitDistinguishedNamesList is called when exiting the distinguishedNamesList production.
-	ExitDistinguishedNamesList(c *DistinguishedNamesListContext)
+	// ExitIpv6 is called when exiting the ipv6 production.
+	ExitIpv6(c *Ipv6Context)
 
-	// ExitDoublePipeDelimiter is called when exiting the doublePipeDelimiter production.
-	ExitDoublePipeDelimiter(c *DoublePipeDelimiterContext)
+	// ExitFqdn is called when exiting the fqdn production.
+	ExitFqdn(c *FqdnContext)
 
-	// ExitUriAndBindType is called when exiting the uriAndBindType production.
-	ExitUriAndBindType(c *UriAndBindTypeContext)
+	// ExitQuoted_distinguished_name_list is called when exiting the quoted_distinguished_name_list production.
+	ExitQuoted_distinguished_name_list(c *Quoted_distinguished_name_listContext)
 
-	// ExitFullyQualifiedLDAPURI is called when exiting the fullyQualifiedLDAPURI production.
-	ExitFullyQualifiedLDAPURI(c *FullyQualifiedLDAPURIContext)
+	// ExitList_of_quoted_distinguished_names is called when exiting the list_of_quoted_distinguished_names production.
+	ExitList_of_quoted_distinguished_names(c *List_of_quoted_distinguished_namesContext)
 
-	// ExitUriSearchFilter is called when exiting the uriSearchFilter production.
-	ExitUriSearchFilter(c *UriSearchFilterContext)
+	// ExitDn is called when exiting the dn production.
+	ExitDn(c *DnContext)
 
-	// ExitUriSearchScopes is called when exiting the uriSearchScopes production.
-	ExitUriSearchScopes(c *UriSearchScopesContext)
+	// ExitRdn_macro is called when exiting the rdn_macro production.
+	ExitRdn_macro(c *Rdn_macroContext)
 
-	// ExitUriAttributeList is called when exiting the uriAttributeList production.
-	ExitUriAttributeList(c *UriAttributeListContext)
+	// ExitParenthetical_filter_expression is called when exiting the parenthetical_filter_expression production.
+	ExitParenthetical_filter_expression(c *Parenthetical_filter_expressionContext)
 
-	// ExitDistinguishedNameValue is called when exiting the distinguishedNameValue production.
-	ExitDistinguishedNameValue(c *DistinguishedNameValueContext)
+	// ExitFilter_expressions is called when exiting the filter_expressions production.
+	ExitFilter_expressions(c *Filter_expressionsContext)
 
-	// ExitRelativeDistinguishedNameValue is called when exiting the relativeDistinguishedNameValue production.
-	ExitRelativeDistinguishedNameValue(c *RelativeDistinguishedNameValueContext)
+	// ExitParenthetical_filter_expression_opt_bool is called when exiting the parenthetical_filter_expression_opt_bool production.
+	ExitParenthetical_filter_expression_opt_bool(c *Parenthetical_filter_expression_opt_boolContext)
 
-	// ExitRelativeDistinguishedNameMacro is called when exiting the relativeDistinguishedNameMacro production.
-	ExitRelativeDistinguishedNameMacro(c *RelativeDistinguishedNameMacroContext)
+	// ExitNot_filter_expression is called when exiting the not_filter_expression production.
+	ExitNot_filter_expression(c *Not_filter_expressionContext)
 
-	// ExitParentheticalFilterExpression is called when exiting the parentheticalFilterExpression production.
-	ExitParentheticalFilterExpression(c *ParentheticalFilterExpressionContext)
+	// ExitAva_expression is called when exiting the ava_expression production.
+	ExitAva_expression(c *Ava_expressionContext)
 
-	// ExitFilterExpressions is called when exiting the filterExpressions production.
-	ExitFilterExpressions(c *FilterExpressionsContext)
+	// ExitAva_or_rdn is called when exiting the ava_or_rdn production.
+	ExitAva_or_rdn(c *Ava_or_rdnContext)
 
-	// ExitParentheticalFilterExpressionWithOptionalBooleanOperator is called when exiting the parentheticalFilterExpressionWithOptionalBooleanOperator production.
-	ExitParentheticalFilterExpressionWithOptionalBooleanOperator(c *ParentheticalFilterExpressionWithOptionalBooleanOperatorContext)
+	// ExitInheritance_expression is called when exiting the inheritance_expression production.
+	ExitInheritance_expression(c *Inheritance_expressionContext)
 
-	// ExitNegatedFilterExpression is called when exiting the negatedFilterExpression production.
-	ExitNegatedFilterExpression(c *NegatedFilterExpressionContext)
+	// ExitInheritance_levels is called when exiting the inheritance_levels production.
+	ExitInheritance_levels(c *Inheritance_levelsContext)
 
-	// ExitAttributeValueAssertionExpression is called when exiting the attributeValueAssertionExpression production.
-	ExitAttributeValueAssertionExpression(c *AttributeValueAssertionExpressionContext)
+	// ExitAttr_bind_type_or_value is called when exiting the attr_bind_type_or_value production.
+	ExitAttr_bind_type_or_value(c *Attr_bind_type_or_valueContext)
 
-	// ExitAttributeValueAssertionStatement is called when exiting the attributeValueAssertionStatement production.
-	ExitAttributeValueAssertionStatement(c *AttributeValueAssertionStatementContext)
+	// ExitUSERDN is called when exiting the USERDN production.
+	ExitUSERDN(c *USERDNContext)
 
-	// ExitAttributeTypeIdentifier is called when exiting the attributeTypeIdentifier production.
-	ExitAttributeTypeIdentifier(c *AttributeTypeIdentifierContext)
+	// ExitGROUPDN is called when exiting the GROUPDN production.
+	ExitGROUPDN(c *GROUPDNContext)
 
-	// ExitAttributeAssertionValue is called when exiting the attributeAssertionValue production.
-	ExitAttributeAssertionValue(c *AttributeAssertionValueContext)
+	// ExitROLEDN is called when exiting the ROLEDN production.
+	ExitROLEDN(c *ROLEDNContext)
 
-	// ExitAttributeOperators is called when exiting the attributeOperators production.
-	ExitAttributeOperators(c *AttributeOperatorsContext)
+	// ExitSELFDN is called when exiting the SELFDN production.
+	ExitSELFDN(c *SELFDNContext)
+
+	// ExitLDAPURL is called when exiting the LDAPURL production.
+	ExitLDAPURL(c *LDAPURLContext)
+
+	// ExitKey_or_value is called when exiting the key_or_value production.
+	ExitKey_or_value(c *Key_or_valueContext)
+
+	// ExitEqual_to is called when exiting the equal_to production.
+	ExitEqual_to(c *Equal_toContext)
+
+	// ExitNot_equal_to is called when exiting the not_equal_to production.
+	ExitNot_equal_to(c *Not_equal_toContext)
+
+	// ExitGreater_than_or_equal is called when exiting the greater_than_or_equal production.
+	ExitGreater_than_or_equal(c *Greater_than_or_equalContext)
+
+	// ExitLess_than_or_equal is called when exiting the less_than_or_equal production.
+	ExitLess_than_or_equal(c *Less_than_or_equalContext)
+
+	// ExitApprox is called when exiting the approx production.
+	ExitApprox(c *ApproxContext)
+
+	// ExitExtensible_rule is called when exiting the extensible_rule production.
+	ExitExtensible_rule(c *Extensible_ruleContext)
+
+	// ExitExtensible_rule_with_dn is called when exiting the extensible_rule_with_dn production.
+	ExitExtensible_rule_with_dn(c *Extensible_rule_with_dnContext)
+
+	// ExitExtensible_rule_with_attrs is called when exiting the extensible_rule_with_attrs production.
+	ExitExtensible_rule_with_attrs(c *Extensible_rule_with_attrsContext)
+
+	// ExitExtensible_rule_with_dn_oid is called when exiting the extensible_rule_with_dn_oid production.
+	ExitExtensible_rule_with_dn_oid(c *Extensible_rule_with_dn_oidContext)
+
+	// ExitEqualTo is called when exiting the equalTo production.
+	ExitEqualTo(c *EqualToContext)
+
+	// ExitNotEqualTo is called when exiting the notEqualTo production.
+	ExitNotEqualTo(c *NotEqualToContext)
+
+	// ExitGreaterThan is called when exiting the greaterThan production.
+	ExitGreaterThan(c *GreaterThanContext)
+
+	// ExitLessThan is called when exiting the lessThan production.
+	ExitLessThan(c *LessThanContext)
+
+	// ExitGreaterThanOrEqual is called when exiting the greaterThanOrEqual production.
+	ExitGreaterThanOrEqual(c *GreaterThanOrEqualContext)
+
+	// ExitLessThanOrEqual is called when exiting the lessThanOrEqual production.
+	ExitLessThanOrEqual(c *LessThanOrEqualContext)
+
+	// ExitApproximate is called when exiting the approximate production.
+	ExitApproximate(c *ApproximateContext)
+
+	// ExitExtensibleRule is called when exiting the extensibleRule production.
+	ExitExtensibleRule(c *ExtensibleRuleContext)
+
+	// ExitExtensibleRuleDNOID is called when exiting the extensibleRuleDNOID production.
+	ExitExtensibleRuleDNOID(c *ExtensibleRuleDNOIDContext)
+
+	// ExitExtensibleRuleDN is called when exiting the extensibleRuleDN production.
+	ExitExtensibleRuleDN(c *ExtensibleRuleDNContext)
+
+	// ExitExtensibleRuleAttr is called when exiting the extensibleRuleAttr production.
+	ExitExtensibleRuleAttr(c *ExtensibleRuleAttrContext)
+
+	// ExitORDelimiter is called when exiting the oRDelimiter production.
+	ExitORDelimiter(c *ORDelimiterContext)
+
+	// ExitANDDelimiter is called when exiting the aNDDelimiter production.
+	ExitANDDelimiter(c *ANDDelimiterContext)
 }

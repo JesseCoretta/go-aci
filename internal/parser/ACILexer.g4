@@ -1,289 +1,420 @@
 lexer grammar ACILexer;
 
-LEVELS: [0-4]+;
+WHSP
+  : ' '+?
+  ;
 
-INT
- : DecimalDigit+
- ;
+DQUOTE
+  : '"'
+  ;
 
-ID
- : Identifier+
- ;
+LBRAK
+  : '['
+  ;
 
-COLON: ':';
-ExtensibleRuleDNMatch: COLON DN COLON EqualTo;
-ExtensibleRuleDNOIDMatch: COLON DN COLON;
-ExtensibleRuleAttrMatch: COLON EqualTo;
-ExtensibleRuleMatch: COLON;
-ApproximateMatch: '~=';
-NotEqualTo: '!=';
-GreaterThanOrEqual: '>=';
-LessThanOrEqual: '<=';
+LPAREN
+  : '('
+  ;
 
-DAMP:  AMP AMP;
-DPIPE: PIPE PIPE ;
+RBRAK
+  : ']'
+  ;
 
-// Boolean operator words
-BooleanWordOperators
-    : BooleanAndWord
-    | BooleanOrWord
-    | BooleanNotWord
-    ;
+RPAREN
+  : ')'
+  ;
 
-BooleanAndWord
-    : 'AND'
-    | 'and'
-    ;
+DOT
+  : '.'
+  ;
 
-BooleanOrWord
-    : 'OR'
-    | 'or'
-    ;
+COLON
+  : ':'
+  ;
 
-BooleanNotWord
-    : 'AND NOT'
-    | 'and not'
-    ;
+TILDE
+  : '~'
+  ;
 
-DAYS: 'Sun'
-    | 'Mon'
-    | 'Tues'
-    | 'Wed'
-    | 'Thur'
-    | 'Fri'
-    | 'Sat'
-    ;
+EQ
+  : '='
+  ;
+
+NE
+  : BANG EQ
+  ;
+
+GT
+  : '>'
+  ;
+
+LT
+  : '<'
+  ;
+
+APX
+  : TILDE EQ
+  ;
+
+GE
+  : GT EQ
+  ;
+
+LE
+  : LT EQ
+  ;
+
+EXA
+  : COLON EQ
+  ;
+
+EXO
+  : COLON 'dn' COLON
+  ;
+
+EXD
+  : COLON 'dn' COLON EQ
+  ;
+
+HASH
+  : '#'
+  ;
+
+// Symbolic ANDs are used as delimiters in ANDed lists
+SYMBOLIC_AND
+  : AMPERSAND AMPERSAND
+  ;
+
+fragment AMPERSAND
+  : '&'
+  ;
+
+// Symbolic ORs are used as delimiters in ORed lists
+SYMBOLIC_OR
+  : PIPE PIPE
+  ;
+
+fragment PIPE
+  : '|'
+  ;
+
+fragment BANG
+  : '!'
+  ;
+
+FILTER_AND
+  : AMPERSAND
+  ;
+
+FILTER_OR
+  : PIPE
+  ;
+
+FILTER_NOT
+  : BANG
+  ;
+
+FILTER_OPERATOR
+  : FILTER_AND
+  | FILTER_OR
+  | FILTER_NOT
+  ;
+
+COMMA
+  : ','
+  ;
+
+SEMI
+  : ';'
+  ;
+
+STAR
+  : '*'
+  ;
+
+LOCAL_LDAP_SCHEME
+  : 'ldap:///'
+  ;
+
+INHERITANCE_PREFIX
+  : 'parent'
+  ;
+
+ANCHOR
+  : 'version 3.0; acl '
+  ;
+
+SUNDAY
+  : [Ss][Uu][Nn]
+  ;
+
+MONDAY
+  : [Mm][Oo][Nn]
+  ;
+
+TUESDAY
+  : [Tt][Uu][Ee][Ss]
+  ;
+
+WEDNESDAY
+  : [Ww][Ee][Dd]
+  ;
+
+THURSDAY
+  : [Tt][Hh][Uu][Rr]
+  ;
+
+FRIDAY
+  : [Ff][Rr][Ii]
+  ;
+
+SATURDAY
+  : [Ss][Aa][Tt]
+  ;
+
+ANONYMOUS
+  : [Nn][Oo][Nn][Ee]
+  ;
+SIMPLE
+  : [Ss][Ii][Mm][Pp][Ll][Ee]
+  ;
+SSL
+  : [Ss][Ss][Ll]
+  ;
+SASL
+  : [Ss][Aa][Ss][Ll]
+  ;
 
 // Target Rule keywords
-TargetKeyword: 'target';
-TargetScopeKeyword: 'targetscope';
-TargetToKeyword: 'target_to';
-TargetFromKeyword: 'target_from';
-TargetAttrKeyword: 'targetattr';
-TargetFilterKeyword: 'targetfilter';
-TargetAttrFiltersKeyword: 'targattrfilters';
-TargetControlKeyword: 'targetcontrol';
-ExtOpKeyword: 'extop';
+TARGET
+  : [Tt][Aa][Rr][Gg][Ee][Tt]
+  ;
 
-ANONYMOUS: 'none';
-SIMPLE: 'simple';
-SASL: 'SASL';
-SSL: 'SSL';
+TARGET_TO
+  : [Tt][Aa][Rr][Gg][Ee][Tt] '_' [Tt][Oo]
+  ;
 
-// Bind Rule keywords
-RoleDNKeyword: 'roledn';
-UserDNKeyword: 'userdn';
-GroupDNKeyword: 'groupdn';
-UserAttrKeyword: 'userattr';
-GroupAttrKeyword: 'groupattr';
-SSFKeyword: 'ssf';
-DNSKeyword: 'dns';
-IPKeyword: 'ip';
-AuthMethodKeyword: 'authmethod';
-TimeOfDayKeyword: 'timeofday';
-DayOfWeekKeyword: 'dayofweek';
+TARGET_FROM
+  : [Tt][Aa][Rr][Gg][Ee][Tt] '_' [Ff][Rr][Oo][Mm]
+  ;
 
-DISPOSITION: 'allow' | 'deny' ;
-RIGHTS: 'search'
-     |  'read'
-     |  'compare'
-     |  'add'
-     |  'delete'
-     |  'selfwrite'
-     |  'proxy'
-     |  'import'
-     |  'export'
-     |  'all'
-     ;
+TARGET_SCOPE
+  : [Tt][Aa][Rr][Gg][Ee][Tt][Ss][Cc][Oo][Pp][Ee]
+  ;
 
-AttributeFilterOperation
-     : AddOperation
-     | DeleteOperation
-     ;
+TARGET_ATTR
+  : [Tt][Aa][Rr][Gg][Ee][Tt][Aa][Tt][Tt][Rr]
+  ;
 
-AddOperation:    'add' EqualTo;
-DeleteOperation: 'delete' EqualTo;
+TARGET_FILTER
+  : [Tt][Aa][Rr][Gg][Ee][Tt][Ff][Ii][Ll][Tt][Ee][Rr]
+  ;
 
-TargetRuleSearchScopes
-     : '"base"'
-     | '"onelevel"'
-     | '"subtree"'
-     | '"subordinate"'
-     ;
+TARGET_ATTR_FILTERS
+  : [Tt][Aa][Rr][Gg][Aa][Tt][Tt][Rr][Ff][Ii][Ll][Tt][Ee][Rr][Ss]
+  ;
 
-LDAPSearchScopes
-     : 'base'
-     | 'one'
-     | 'sub'
-     ;
+TARGET_CONTROL
+  : [Tt][Aa][Rr][Gg][Ee][Tt][Cc][Oo][Nn][Tt][Rr][Oo][Ll]
+  ;
 
-BINDTYPES
-     : 'USERDN'
-     | 'GROUPDN'
-     | 'ROLEDN'
-     | 'SELFDN'
-     | 'LDAPURL'
-     ;
+TARGET_EXTENDED_OPERATION
+  : [Ee][Xx][Tt][Oo][Pp]
+  ;
 
-INHERITANCEPREFIX: 'parent[';
+BIND_USER_DN
+  : WHSP? 'userdn' WHSP?
+  ;
 
-LocalLDAPScheme: LDAP COLON SOLIDUS SOLIDUS SOLIDUS;
+BIND_GROUP_DN
+  : 'groupdn'
+  ;
 
-// Miscellaneous literals/characters used frequently
-SEMI: ';';
-EqualTo: '=';
-GreaterThan: '>';
-LessThan: '<';
-LDAP: 'ldap';
-ANCHOR: 'version 3.0; acl ' ;
-DN: 'dn';
-AMP:  '&' ;
-PIPE: '|' ;
-BANG: '!' ;
-SOLIDUS: '/';
-LPAREN: '(' ;
-LBRAC: '{' ;
-LBRAK: '[' ;
-RPAREN: ')' ;
-RBRAK: ']' ;
-RBRAC: '}' ;
-DQUOTE: '"' ;
-COMMA: ',';
-TILDE: '~';
-HASH: '#';
-DOLLAR: '$';
-ATSIGN: '@';
-DOT: '.';
-DASH: '-';
-STAR: '*';
-QMARK: '?';
+BIND_ROLE_DN
+  : 'roledn'
+  ;
 
-LineTerminator
- : [\r\n\u2028\u2029] -> channel(HIDDEN)
- ;
+BIND_USER_ATTR
+  : 'userattr'
+  ;
 
-WhiteSpaces
- : [\t\u000B\u000C\u0020\u00A0]+ -> channel(HIDDEN)
- ;
+BIND_GROUP_ATTR
+  : 'groupattr'
+  ;
 
-NumericLiteral
- : DecimalDigit
- | HexDigit
- ;
+BIND_SSF
+  : 'ssf'
+  ;
 
-Literal
- : StringLiteral
- | NumericLiteral
- ;
+BIND_DNS
+  : 'dns'
+  ;
 
-DelimitedAddress
- : ( (ID|'*') ( COLON (ID|'*')* )+ )
- | ( (ID|'*') ( DOT (ID|'*')* )+ )
- ;
+BIND_IP
+  : 'ip'
+  ;
 
-DelimitedNumbers
- : ( INT (COMMA INT)* )+
- ;
+BIND_AUTH_METHOD
+  : 'authmethod'
+  ;
 
-StringLiteral
- : '"' DoubleStringCharacter* '"'
- | '\'' SingleStringCharacter* '\''
- ;
+BIND_TIME_OF_DAY
+  : 'timeofday'
+  ;
 
-WildcardString
- : (Letter|DecimalDigit|'*')+
- ;
+BIND_DAY_OF_WEEK
+  : 'dayofweek'
+  ;
 
-MacroValue
- : '[$dn]'
- | '($dn)'
- | '($attr.' Identifier+ ')'
- ;
+BINDTYPE_USER_DN
+  : 'USERDN'
+  ;
 
-fragment DoubleStringCharacter
- : ~["\\\r\n]
- | '\\' EscapeSequence
- | LineContinuation
- ;
+BINDTYPE_GROUP_DN
+  : 'GROUPDN'
+  ;
 
-fragment SingleStringCharacter
- : ~['\\\r\n]
- | '\\' EscapeSequence
- | LineContinuation
- ;
+BINDTYPE_ROLE_DN
+  : 'ROLEDN'
+  ;
 
-fragment EscapeSequence
- : CharacterEscapeSequence
- | '0' // no digit ahead! TODO
- | HexEscapeSequence
- | UnicodeEscapeSequence
- ;
+BINDTYPE_SELF_DN
+  : 'SELFDN'
+  ;
 
-fragment CharacterEscapeSequence
- : SingleEscapeCharacter
- | NonEscapeCharacter
- ;
+BINDTYPE_LDAP_URL
+  : 'LDAPURL'
+  ;
 
-fragment HexEscapeSequence
- : 'x' HexDigit HexDigit
- ;
+// BASE is the same for a targetscope, or a regular scope
+BASE_OBJECT_SCOPE
+  : [Bb][Aa][Ss][Ee]
+  ;
 
-fragment UnicodeEscapeSequence
- : 'u' HexDigit HexDigit HexDigit HexDigit
- ;
+ONE_LEVEL_SCOPE
+  : [Oo][Nn][Ee]
+  ;
 
-fragment SingleEscapeCharacter
- : ['"\\bfnrtv]
- ;
+ONE_LEVEL_TARGET_SCOPE
+  : [Oo][Nn][Ee][Ll][Ee][Vv][Ee][Ll]
+  ;
 
-fragment NonEscapeCharacter
- : ~['"\\bfnrtv0-9xu\r\n]
- ;
+SUB_TREE_SCOPE
+  : [Ss][Uu][Bb]
+  ;
 
-fragment EscapeCharacter
- : SingleEscapeCharacter
- | DecimalDigit
- | [xu]
- ;
+SUB_TREE_TARGET_SCOPE
+  : [Ss][Uu][Bb][Tt][Rr][Ee][Ee]
+  ;
 
-fragment LineContinuation
- : '\\' LineTerminatorSequence
- ;
+SUBORDINATE_TARGET_SCOPE
+  : [Ss][Uu][Bb][Oo][Rr][Dd][Ii][Nn][Aa][Tt][Ee]
+  ;
 
-fragment LineTerminatorSequence
- : '\r\n'
- | LineTerminator
- ;
+ALLOW_ACCESS
+  : WHSP? [Aa][Ll][Ll][Oo][Ww] WHSP?
+  ;
 
-fragment Identifier
- : Letter
- | DecimalDigit
- | DASH
- ;
+DENY_ACCESS
+  : [Dd][Ee][Nn][Yy]
+  ;
 
-fragment Letter
- : LowercaseLetter
- | UppercaseLetter
- ;
+SEARCH_PRIVILEGE
+  : [Ss][Ee][Aa][Rr][Cc][Hh]
+  ;
 
-fragment LowercaseLetter
- : [a-z]
- ;
+READ_PRIVILEGE
+  : [Rr][Ee][Aa][Dd]
+  ;
 
-fragment UppercaseLetter
- : [A-Z]
- ;
+COMPARE_PRIVILEGE
+  : [Cc][Oo][Mm][Pp][Aa][Rr][Ee]
+  ;
 
-fragment DecimalDigit
- : [0-9]
- ;
+ADD_PRIVILEGE
+  : [Aa][Dd][Dd]
+  ;
 
-fragment HexDigit
- : [0-9a-fA-F]
- ;
+DELETE_PRIVILEGE
+  : [Dd][Ee][Ll][Ee][Tt][Ee]
+  ;
 
-//fragment Value
-// :  ~[\r\n,"]+
-// ;
+SELFWRITE_PRIVILEGE
+  : [Ss][Ee][Ll][Ff][Ww][Rr][Ii][Tt][Ee]
+  ;
 
-ANY: .;
+PROXY_PRIVILEGE
+  : [Pp][Rr][Oo][Xx][Yy]
+  ;
+
+IMPORT_PRIVILEGE
+  : [Ii][Mm][Pp][Oo][Rr][Tt]
+  ;
+
+EXPORT_PRIVILEGE
+  : [Ee][Xx][Pp][Oo][Rr][Tt]
+  ;
+
+// ALL_PRIVILEGES defines all possible privileges
+// **EXCEPT** PROXY_PRIVILEGE.
+ALL_PRIVILEGES
+  : [Aa][Ll][Ll]
+  ;
+
+// Certain directory implementations allow the use
+// of macro statements within distinguished names
+// to allow extended flexibility in terms of value
+// matching in ACIs. For instance:
+//
+//   [$dn],ou=People,dc=example,dc=com
+//
+// ... might be used to expand ou=Contractors, etc.
+RDN_MACROS
+  : '[$dn]'
+  | '($dn)'
+  | '($attr.' KEY_OR_VALUE ')'
+  ;
+
+// AND defines statements that mandate all conditions
+// evaluate as true.
+BOOLEAN_AND
+  : [Aa][Nn][Dd]
+  ;
+
+// OR defines statements that mandate at least one
+// condition evaluates as true.
+BOOLEAN_OR
+  : [Oo][Rr]
+  ;
+
+// NOT defines statements that negate otherwise
+// matchable values. NOT is special, is right
+// associated and MUST include a space between
+// AND and NOT.
+BOOLEAN_NOT
+  : [Aa][Nn][Dd] ' ' [Nn][Oo][Tt]
+  ;
+
+// Whitespace characters are dumped from
+// here on out.  I know this is supposed
+// to be at the bottom of the lexer file,
+// but all hell breaks loose when it is.
+WHITESPACE
+  : [ \t\r\n\u000C]+ -> skip
+  ;
+
+INT
+  : [0-9]+
+  ;
+
+// KEY_OR_VALUE can more or less be anything,
+// but will be verified in the Go visitor.
+//
+// I really wish I could split this into two
+// lexers that WON'T collide, but I've given
+// up on that hopeless cause. To be honest,
+// I'm not even sure THIS is right.
+KEY_OR_VALUE
+  : ~["\\,.:=![\]()#|&<>~\t\r\n]+
+  ;
+
