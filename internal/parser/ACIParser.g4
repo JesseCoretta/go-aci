@@ -260,8 +260,8 @@ authenticationMethods
 
 // 'userdn' Bind Rule syntax
 bindUserDN
-  : LPAREN bindUserDN RPAREN					# parenthetical_bind_userdn 
-  | BIND_USER_DN (equalTo|notEqualTo) WHSP? distinguishedNames	# bind_userdn
+  : LPAREN bindUserDN RPAREN								# parenthetical_bind_userdn 
+  | BIND_USER_DN (equalTo|notEqualTo) WHSP? (distinguishedNames|DQUOTE lDAPURI DQUOTE)	# bind_userdn
   ;
 
 // 'roledn' Bind Rule syntax
@@ -272,8 +272,8 @@ bindRoleDN
 
 // 'groupdn' Bind Rule syntax
 bindGroupDN
-  : LPAREN bindGroupDN RPAREN				      	# parenthetical_bind_groupdn
-  | BIND_GROUP_DN (equalTo|notEqualTo) distinguishedNames 	# bind_groupdn
+  : LPAREN bindGroupDN RPAREN				      				# parenthetical_bind_groupdn
+  | BIND_GROUP_DN (equalTo|notEqualTo) (distinguishedNames|DQUOTE lDAPURI DQUOTE) 	# bind_groupdn
   ;
 
 // 'userattr' Bind Rule syntax
@@ -336,6 +336,22 @@ fQDN
 ///////////////////////////////////////////////////////////////////////////////
 // Begin LDAP related rules
 
+lDAPURI
+     : distinguishedName uRIAttributeList uRISearchScopes uRISearchFilter       # fullyQualifiedLDAPURI
+     ;
+
+uRISearchFilter
+     : QMARK lDAPFilter                                                 # uriSearchFilter
+     ;
+
+uRISearchScopes
+     : QMARK (BASE_OBJECT_SCOPE|ONE_LEVEL_SCOPE|SUB_TREE_SCOPE)?        # uriSearchScopes
+     ;
+
+uRIAttributeList
+     : QMARK ( attributeTypeOrValue ( COMMA attributeTypeOrValue )* )?  # uriAttributeList
+     ;
+
 // distinguishedNames contains one or more LDAP Distinguished Names. In the
 // case of >1 DNs, the symbolic OR (||) delimiter is used. This applies to
 // userdn, groupdn and target rules.
@@ -349,6 +365,10 @@ distinguishedNames
 // are supported.
 distinguishedName
   : ( LOCAL_LDAP_SCHEME aVAOrRDN ( COMMA (aVAOrRDN|rDNMacros) )* )	# dn
+  | LOCAL_LDAP_SCHEME ANYONE						# anonymous_dn_alias
+  | LOCAL_LDAP_SCHEME ALL_USERS						# any_user_dn_alias
+  | LOCAL_LDAP_SCHEME SELF						# self_dn_alias
+  | LOCAL_LDAP_SCHEME PARENT						# parent_dn_alias
   ;
 
 rDNMacros
@@ -375,7 +395,7 @@ aVAOrRDN
 
 // Vertical Inheritance (for User/Group Attribute Matching)
 inheritance
-  : ( INHERITANCE_PREFIX inheritanceLevels DOT attributeBindTypeOrValue )       # inheritance_expression
+  : ( PARENT inheritanceLevels DOT attributeBindTypeOrValue )       # inheritance_expression
   ;
 
 inheritanceLevels

@@ -672,6 +672,30 @@ func (s *BaseACIParserListener) EnterFqdn(ctx *FqdnContext) {}
 // ExitFqdn is called when production fqdn is exited.
 func (s *BaseACIParserListener) ExitFqdn(ctx *FqdnContext) {}
 
+// EnterFullyQualifiedLDAPURI is called when production fullyQualifiedLDAPURI is entered.
+func (s *BaseACIParserListener) EnterFullyQualifiedLDAPURI(ctx *FullyQualifiedLDAPURIContext) {}
+
+// ExitFullyQualifiedLDAPURI is called when production fullyQualifiedLDAPURI is exited.
+func (s *BaseACIParserListener) ExitFullyQualifiedLDAPURI(ctx *FullyQualifiedLDAPURIContext) {}
+
+// EnterUriSearchFilter is called when production uriSearchFilter is entered.
+func (s *BaseACIParserListener) EnterUriSearchFilter(ctx *UriSearchFilterContext) {}
+
+// ExitUriSearchFilter is called when production uriSearchFilter is exited.
+func (s *BaseACIParserListener) ExitUriSearchFilter(ctx *UriSearchFilterContext) {}
+
+// EnterUriSearchScopes is called when production uriSearchScopes is entered.
+func (s *BaseACIParserListener) EnterUriSearchScopes(ctx *UriSearchScopesContext) {}
+
+// ExitUriSearchScopes is called when production uriSearchScopes is exited.
+func (s *BaseACIParserListener) ExitUriSearchScopes(ctx *UriSearchScopesContext) {}
+
+// EnterUriAttributeList is called when production uriAttributeList is entered.
+func (s *BaseACIParserListener) EnterUriAttributeList(ctx *UriAttributeListContext) {}
+
+// ExitUriAttributeList is called when production uriAttributeList is exited.
+func (s *BaseACIParserListener) ExitUriAttributeList(ctx *UriAttributeListContext) {}
+
 // EnterQuoted_distinguished_name_list is called when production quoted_distinguished_name_list is entered.
 func (s *BaseACIParserListener) EnterQuoted_distinguished_name_list(ctx *Quoted_distinguished_name_listContext) {
 }
@@ -693,6 +717,30 @@ func (s *BaseACIParserListener) EnterDn(ctx *DnContext) {}
 
 // ExitDn is called when production dn is exited.
 func (s *BaseACIParserListener) ExitDn(ctx *DnContext) {}
+
+// EnterAnonymous_dn_alias is called when production anonymous_dn_alias is entered.
+func (s *BaseACIParserListener) EnterAnonymous_dn_alias(ctx *Anonymous_dn_aliasContext) {}
+
+// ExitAnonymous_dn_alias is called when production anonymous_dn_alias is exited.
+func (s *BaseACIParserListener) ExitAnonymous_dn_alias(ctx *Anonymous_dn_aliasContext) {}
+
+// EnterAny_user_dn_alias is called when production any_user_dn_alias is entered.
+func (s *BaseACIParserListener) EnterAny_user_dn_alias(ctx *Any_user_dn_aliasContext) {}
+
+// ExitAny_user_dn_alias is called when production any_user_dn_alias is exited.
+func (s *BaseACIParserListener) ExitAny_user_dn_alias(ctx *Any_user_dn_aliasContext) {}
+
+// EnterSelf_dn_alias is called when production self_dn_alias is entered.
+func (s *BaseACIParserListener) EnterSelf_dn_alias(ctx *Self_dn_aliasContext) {}
+
+// ExitSelf_dn_alias is called when production self_dn_alias is exited.
+func (s *BaseACIParserListener) ExitSelf_dn_alias(ctx *Self_dn_aliasContext) {}
+
+// EnterParent_dn_alias is called when production parent_dn_alias is entered.
+func (s *BaseACIParserListener) EnterParent_dn_alias(ctx *Parent_dn_aliasContext) {}
+
+// ExitParent_dn_alias is called when production parent_dn_alias is exited.
+func (s *BaseACIParserListener) ExitParent_dn_alias(ctx *Parent_dn_aliasContext) {}
 
 // EnterRdn_macro is called when production rdn_macro is entered.
 func (s *BaseACIParserListener) EnterRdn_macro(ctx *Rdn_macroContext) {}

@@ -316,6 +316,18 @@ type ACIParserListener interface {
 	// EnterFqdn is called when entering the fqdn production.
 	EnterFqdn(c *FqdnContext)
 
+	// EnterFullyQualifiedLDAPURI is called when entering the fullyQualifiedLDAPURI production.
+	EnterFullyQualifiedLDAPURI(c *FullyQualifiedLDAPURIContext)
+
+	// EnterUriSearchFilter is called when entering the uriSearchFilter production.
+	EnterUriSearchFilter(c *UriSearchFilterContext)
+
+	// EnterUriSearchScopes is called when entering the uriSearchScopes production.
+	EnterUriSearchScopes(c *UriSearchScopesContext)
+
+	// EnterUriAttributeList is called when entering the uriAttributeList production.
+	EnterUriAttributeList(c *UriAttributeListContext)
+
 	// EnterQuoted_distinguished_name_list is called when entering the quoted_distinguished_name_list production.
 	EnterQuoted_distinguished_name_list(c *Quoted_distinguished_name_listContext)
 
@@ -324,6 +336,18 @@ type ACIParserListener interface {
 
 	// EnterDn is called when entering the dn production.
 	EnterDn(c *DnContext)
+
+	// EnterAnonymous_dn_alias is called when entering the anonymous_dn_alias production.
+	EnterAnonymous_dn_alias(c *Anonymous_dn_aliasContext)
+
+	// EnterAny_user_dn_alias is called when entering the any_user_dn_alias production.
+	EnterAny_user_dn_alias(c *Any_user_dn_aliasContext)
+
+	// EnterSelf_dn_alias is called when entering the self_dn_alias production.
+	EnterSelf_dn_alias(c *Self_dn_aliasContext)
+
+	// EnterParent_dn_alias is called when entering the parent_dn_alias production.
+	EnterParent_dn_alias(c *Parent_dn_aliasContext)
 
 	// EnterRdn_macro is called when entering the rdn_macro production.
 	EnterRdn_macro(c *Rdn_macroContext)
@@ -748,6 +772,18 @@ type ACIParserListener interface {
 	// ExitFqdn is called when exiting the fqdn production.
 	ExitFqdn(c *FqdnContext)
 
+	// ExitFullyQualifiedLDAPURI is called when exiting the fullyQualifiedLDAPURI production.
+	ExitFullyQualifiedLDAPURI(c *FullyQualifiedLDAPURIContext)
+
+	// ExitUriSearchFilter is called when exiting the uriSearchFilter production.
+	ExitUriSearchFilter(c *UriSearchFilterContext)
+
+	// ExitUriSearchScopes is called when exiting the uriSearchScopes production.
+	ExitUriSearchScopes(c *UriSearchScopesContext)
+
+	// ExitUriAttributeList is called when exiting the uriAttributeList production.
+	ExitUriAttributeList(c *UriAttributeListContext)
+
 	// ExitQuoted_distinguished_name_list is called when exiting the quoted_distinguished_name_list production.
 	ExitQuoted_distinguished_name_list(c *Quoted_distinguished_name_listContext)
 
@@ -756,6 +792,18 @@ type ACIParserListener interface {
 
 	// ExitDn is called when exiting the dn production.
 	ExitDn(c *DnContext)
+
+	// ExitAnonymous_dn_alias is called when exiting the anonymous_dn_alias production.
+	ExitAnonymous_dn_alias(c *Anonymous_dn_aliasContext)
+
+	// ExitAny_user_dn_alias is called when exiting the any_user_dn_alias production.
+	ExitAny_user_dn_alias(c *Any_user_dn_aliasContext)
+
+	// ExitSelf_dn_alias is called when exiting the self_dn_alias production.
+	ExitSelf_dn_alias(c *Self_dn_aliasContext)
+
+	// ExitParent_dn_alias is called when exiting the parent_dn_alias production.
+	ExitParent_dn_alias(c *Parent_dn_aliasContext)
 
 	// ExitRdn_macro is called when exiting the rdn_macro production.
 	ExitRdn_macro(c *Rdn_macroContext)

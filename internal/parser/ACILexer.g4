@@ -4,6 +4,10 @@ WHSP
   : ' '+?
   ;
 
+QMARK
+  : '?'
+  ;
+
 DQUOTE
   : '"'
   ;
@@ -136,8 +140,20 @@ LOCAL_LDAP_SCHEME
   : 'ldap:///'
   ;
 
-INHERITANCE_PREFIX
-  : 'parent'
+PARENT
+  : [Pp][Aa][Rr][Ee][Nn][Tt]
+  ;
+
+ANYONE
+  : [Aa][Nn][Yy][Oo][Nn][Ee]
+  ;
+
+ALL_USERS
+  : [Aa][Ll][Ll]
+  ;
+
+SELF
+  : [Ss][Ee][Ll][Ff]
   ;
 
 ANCHOR
@@ -415,6 +431,6 @@ INT
 // up on that hopeless cause. To be honest,
 // I'm not even sure THIS is right.
 KEY_OR_VALUE
-  : ~["\\,.:=![\]()#|&<>~\t\r\n]+
+  : ~["\\,.:=!?[\]()#|&<>~\t\r\n]+
   ;
 
