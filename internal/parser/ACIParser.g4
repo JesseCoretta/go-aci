@@ -123,7 +123,7 @@ targetControl
   : LPAREN TARGET_CONTROL (equalTo|notEqualTo) objectIdentifiers RPAREN	 				# targetcontrol_rule
   ;
 
-// 'targetcontrol' Target Rule syntax
+// 'extop' Target Rule syntax
 targetExtendedOperation
   : LPAREN TARGET_EXTENDED_OPERATION (equalTo|notEqualTo) objectIdentifiers RPAREN 			# targetextop_rule
   ;
@@ -143,6 +143,7 @@ objectIdentifiers
 targetedAttributes
   : DQUOTE ( attributeTypeOrValue ( oRDelimiter attributeTypeOrValue )* ) DQUOTE     			# quoted_targeted_attributes_list
   | ( DQUOTE attributeTypeOrValue DQUOTE ( oRDelimiter (DQUOTE attributeTypeOrValue DQUOTE) )* )	# list_of_quoted_attributes
+  | DQUOTE STAR DQUOTE											# all_attributes
   ;
 
 objectIdentifier

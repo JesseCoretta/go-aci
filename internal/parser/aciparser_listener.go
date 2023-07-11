@@ -115,6 +115,9 @@ type ACIParserListener interface {
 	// EnterList_of_quoted_attributes is called when entering the list_of_quoted_attributes production.
 	EnterList_of_quoted_attributes(c *List_of_quoted_attributesContext)
 
+	// EnterAll_attributes is called when entering the all_attributes production.
+	EnterAll_attributes(c *All_attributesContext)
+
 	// EnterObject_identifier is called when entering the object_identifier production.
 	EnterObject_identifier(c *Object_identifierContext)
 
@@ -570,6 +573,9 @@ type ACIParserListener interface {
 
 	// ExitList_of_quoted_attributes is called when exiting the list_of_quoted_attributes production.
 	ExitList_of_quoted_attributes(c *List_of_quoted_attributesContext)
+
+	// ExitAll_attributes is called when exiting the all_attributes production.
+	ExitAll_attributes(c *All_attributesContext)
 
 	// ExitObject_identifier is called when exiting the object_identifier production.
 	ExitObject_identifier(c *Object_identifierContext)

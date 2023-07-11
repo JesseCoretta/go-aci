@@ -246,6 +246,12 @@ func (s *BaseACIParserListener) EnterList_of_quoted_attributes(ctx *List_of_quot
 func (s *BaseACIParserListener) ExitList_of_quoted_attributes(ctx *List_of_quoted_attributesContext) {
 }
 
+// EnterAll_attributes is called when production all_attributes is entered.
+func (s *BaseACIParserListener) EnterAll_attributes(ctx *All_attributesContext) {}
+
+// ExitAll_attributes is called when production all_attributes is exited.
+func (s *BaseACIParserListener) ExitAll_attributes(ctx *All_attributesContext) {}
+
 // EnterObject_identifier is called when production object_identifier is entered.
 func (s *BaseACIParserListener) EnterObject_identifier(ctx *Object_identifierContext) {}
 
