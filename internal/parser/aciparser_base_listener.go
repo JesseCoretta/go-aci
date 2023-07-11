@@ -130,11 +130,59 @@ func (s *BaseACIParserListener) EnterTarget_rules(ctx *Target_rulesContext) {}
 // ExitTarget_rules is called when production target_rules is exited.
 func (s *BaseACIParserListener) ExitTarget_rules(ctx *Target_rulesContext) {}
 
-// EnterTargetRule is called when production targetRule is entered.
-func (s *BaseACIParserListener) EnterTargetRule(ctx *TargetRuleContext) {}
+// EnterRule_is_targetcontrol is called when production rule_is_targetcontrol is entered.
+func (s *BaseACIParserListener) EnterRule_is_targetcontrol(ctx *Rule_is_targetcontrolContext) {}
 
-// ExitTargetRule is called when production targetRule is exited.
-func (s *BaseACIParserListener) ExitTargetRule(ctx *TargetRuleContext) {}
+// ExitRule_is_targetcontrol is called when production rule_is_targetcontrol is exited.
+func (s *BaseACIParserListener) ExitRule_is_targetcontrol(ctx *Rule_is_targetcontrolContext) {}
+
+// EnterRule_is_extop is called when production rule_is_extop is entered.
+func (s *BaseACIParserListener) EnterRule_is_extop(ctx *Rule_is_extopContext) {}
+
+// ExitRule_is_extop is called when production rule_is_extop is exited.
+func (s *BaseACIParserListener) ExitRule_is_extop(ctx *Rule_is_extopContext) {}
+
+// EnterRule_is_targetfilter is called when production rule_is_targetfilter is entered.
+func (s *BaseACIParserListener) EnterRule_is_targetfilter(ctx *Rule_is_targetfilterContext) {}
+
+// ExitRule_is_targetfilter is called when production rule_is_targetfilter is exited.
+func (s *BaseACIParserListener) ExitRule_is_targetfilter(ctx *Rule_is_targetfilterContext) {}
+
+// EnterRule_is_targattrfilters is called when production rule_is_targattrfilters is entered.
+func (s *BaseACIParserListener) EnterRule_is_targattrfilters(ctx *Rule_is_targattrfiltersContext) {}
+
+// ExitRule_is_targattrfilters is called when production rule_is_targattrfilters is exited.
+func (s *BaseACIParserListener) ExitRule_is_targattrfilters(ctx *Rule_is_targattrfiltersContext) {}
+
+// EnterRule_is_targetscope is called when production rule_is_targetscope is entered.
+func (s *BaseACIParserListener) EnterRule_is_targetscope(ctx *Rule_is_targetscopeContext) {}
+
+// ExitRule_is_targetscope is called when production rule_is_targetscope is exited.
+func (s *BaseACIParserListener) ExitRule_is_targetscope(ctx *Rule_is_targetscopeContext) {}
+
+// EnterRule_is_targetattr is called when production rule_is_targetattr is entered.
+func (s *BaseACIParserListener) EnterRule_is_targetattr(ctx *Rule_is_targetattrContext) {}
+
+// ExitRule_is_targetattr is called when production rule_is_targetattr is exited.
+func (s *BaseACIParserListener) ExitRule_is_targetattr(ctx *Rule_is_targetattrContext) {}
+
+// EnterRule_is_target is called when production rule_is_target is entered.
+func (s *BaseACIParserListener) EnterRule_is_target(ctx *Rule_is_targetContext) {}
+
+// ExitRule_is_target is called when production rule_is_target is exited.
+func (s *BaseACIParserListener) ExitRule_is_target(ctx *Rule_is_targetContext) {}
+
+// EnterRule_is_target_to is called when production rule_is_target_to is entered.
+func (s *BaseACIParserListener) EnterRule_is_target_to(ctx *Rule_is_target_toContext) {}
+
+// ExitRule_is_target_to is called when production rule_is_target_to is exited.
+func (s *BaseACIParserListener) ExitRule_is_target_to(ctx *Rule_is_target_toContext) {}
+
+// EnterRule_is_target_from is called when production rule_is_target_from is entered.
+func (s *BaseACIParserListener) EnterRule_is_target_from(ctx *Rule_is_target_fromContext) {}
+
+// ExitRule_is_target_from is called when production rule_is_target_from is exited.
+func (s *BaseACIParserListener) ExitRule_is_target_from(ctx *Rule_is_target_fromContext) {}
 
 // EnterTarget_dn_rule is called when production target_dn_rule is entered.
 func (s *BaseACIParserListener) EnterTarget_dn_rule(ctx *Target_dn_ruleContext) {}
@@ -356,77 +404,77 @@ func (s *BaseACIParserListener) EnterBind_rule_expression_recursion(ctx *Bind_ru
 func (s *BaseACIParserListener) ExitBind_rule_expression_recursion(ctx *Bind_rule_expression_recursionContext) {
 }
 
-// EnterBind_rule_expression is called when production bind_rule_expression is entered.
-func (s *BaseACIParserListener) EnterBind_rule_expression(ctx *Bind_rule_expressionContext) {}
+// EnterRule_is_parenthetical is called when production rule_is_parenthetical is entered.
+func (s *BaseACIParserListener) EnterRule_is_parenthetical(ctx *Rule_is_parentheticalContext) {}
 
-// ExitBind_rule_expression is called when production bind_rule_expression is exited.
-func (s *BaseACIParserListener) ExitBind_rule_expression(ctx *Bind_rule_expressionContext) {}
+// ExitRule_is_parenthetical is called when production rule_is_parenthetical is exited.
+func (s *BaseACIParserListener) ExitRule_is_parenthetical(ctx *Rule_is_parentheticalContext) {}
 
-// EnterUserdn_expression is called when production userdn_expression is entered.
-func (s *BaseACIParserListener) EnterUserdn_expression(ctx *Userdn_expressionContext) {}
+// EnterRule_is_userdn is called when production rule_is_userdn is entered.
+func (s *BaseACIParserListener) EnterRule_is_userdn(ctx *Rule_is_userdnContext) {}
 
-// ExitUserdn_expression is called when production userdn_expression is exited.
-func (s *BaseACIParserListener) ExitUserdn_expression(ctx *Userdn_expressionContext) {}
+// ExitRule_is_userdn is called when production rule_is_userdn is exited.
+func (s *BaseACIParserListener) ExitRule_is_userdn(ctx *Rule_is_userdnContext) {}
 
-// EnterUserattr_expression is called when production userattr_expression is entered.
-func (s *BaseACIParserListener) EnterUserattr_expression(ctx *Userattr_expressionContext) {}
+// EnterRule_is_userattr is called when production rule_is_userattr is entered.
+func (s *BaseACIParserListener) EnterRule_is_userattr(ctx *Rule_is_userattrContext) {}
 
-// ExitUserattr_expression is called when production userattr_expression is exited.
-func (s *BaseACIParserListener) ExitUserattr_expression(ctx *Userattr_expressionContext) {}
+// ExitRule_is_userattr is called when production rule_is_userattr is exited.
+func (s *BaseACIParserListener) ExitRule_is_userattr(ctx *Rule_is_userattrContext) {}
 
-// EnterGroupdn_expression is called when production groupdn_expression is entered.
-func (s *BaseACIParserListener) EnterGroupdn_expression(ctx *Groupdn_expressionContext) {}
+// EnterRule_is_groupdn is called when production rule_is_groupdn is entered.
+func (s *BaseACIParserListener) EnterRule_is_groupdn(ctx *Rule_is_groupdnContext) {}
 
-// ExitGroupdn_expression is called when production groupdn_expression is exited.
-func (s *BaseACIParserListener) ExitGroupdn_expression(ctx *Groupdn_expressionContext) {}
+// ExitRule_is_groupdn is called when production rule_is_groupdn is exited.
+func (s *BaseACIParserListener) ExitRule_is_groupdn(ctx *Rule_is_groupdnContext) {}
 
-// EnterGroupattr_expression is called when production groupattr_expression is entered.
-func (s *BaseACIParserListener) EnterGroupattr_expression(ctx *Groupattr_expressionContext) {}
+// EnterRule_is_groupattr is called when production rule_is_groupattr is entered.
+func (s *BaseACIParserListener) EnterRule_is_groupattr(ctx *Rule_is_groupattrContext) {}
 
-// ExitGroupattr_expression is called when production groupattr_expression is exited.
-func (s *BaseACIParserListener) ExitGroupattr_expression(ctx *Groupattr_expressionContext) {}
+// ExitRule_is_groupattr is called when production rule_is_groupattr is exited.
+func (s *BaseACIParserListener) ExitRule_is_groupattr(ctx *Rule_is_groupattrContext) {}
 
-// EnterRoledn_expression is called when production roledn_expression is entered.
-func (s *BaseACIParserListener) EnterRoledn_expression(ctx *Roledn_expressionContext) {}
+// EnterRule_is_roledn is called when production rule_is_roledn is entered.
+func (s *BaseACIParserListener) EnterRule_is_roledn(ctx *Rule_is_rolednContext) {}
 
-// ExitRoledn_expression is called when production roledn_expression is exited.
-func (s *BaseACIParserListener) ExitRoledn_expression(ctx *Roledn_expressionContext) {}
+// ExitRule_is_roledn is called when production rule_is_roledn is exited.
+func (s *BaseACIParserListener) ExitRule_is_roledn(ctx *Rule_is_rolednContext) {}
 
-// EnterDns_expression is called when production dns_expression is entered.
-func (s *BaseACIParserListener) EnterDns_expression(ctx *Dns_expressionContext) {}
+// EnterRule_is_dns is called when production rule_is_dns is entered.
+func (s *BaseACIParserListener) EnterRule_is_dns(ctx *Rule_is_dnsContext) {}
 
-// ExitDns_expression is called when production dns_expression is exited.
-func (s *BaseACIParserListener) ExitDns_expression(ctx *Dns_expressionContext) {}
+// ExitRule_is_dns is called when production rule_is_dns is exited.
+func (s *BaseACIParserListener) ExitRule_is_dns(ctx *Rule_is_dnsContext) {}
 
-// EnterIp_expression is called when production ip_expression is entered.
-func (s *BaseACIParserListener) EnterIp_expression(ctx *Ip_expressionContext) {}
+// EnterRule_is_ip is called when production rule_is_ip is entered.
+func (s *BaseACIParserListener) EnterRule_is_ip(ctx *Rule_is_ipContext) {}
 
-// ExitIp_expression is called when production ip_expression is exited.
-func (s *BaseACIParserListener) ExitIp_expression(ctx *Ip_expressionContext) {}
+// ExitRule_is_ip is called when production rule_is_ip is exited.
+func (s *BaseACIParserListener) ExitRule_is_ip(ctx *Rule_is_ipContext) {}
 
-// EnterTimeofday_expression is called when production timeofday_expression is entered.
-func (s *BaseACIParserListener) EnterTimeofday_expression(ctx *Timeofday_expressionContext) {}
+// EnterRule_is_timeofday is called when production rule_is_timeofday is entered.
+func (s *BaseACIParserListener) EnterRule_is_timeofday(ctx *Rule_is_timeofdayContext) {}
 
-// ExitTimeofday_expression is called when production timeofday_expression is exited.
-func (s *BaseACIParserListener) ExitTimeofday_expression(ctx *Timeofday_expressionContext) {}
+// ExitRule_is_timeofday is called when production rule_is_timeofday is exited.
+func (s *BaseACIParserListener) ExitRule_is_timeofday(ctx *Rule_is_timeofdayContext) {}
 
-// EnterDayofweek_expression is called when production dayofweek_expression is entered.
-func (s *BaseACIParserListener) EnterDayofweek_expression(ctx *Dayofweek_expressionContext) {}
+// EnterRule_is_dayofweek is called when production rule_is_dayofweek is entered.
+func (s *BaseACIParserListener) EnterRule_is_dayofweek(ctx *Rule_is_dayofweekContext) {}
 
-// ExitDayofweek_expression is called when production dayofweek_expression is exited.
-func (s *BaseACIParserListener) ExitDayofweek_expression(ctx *Dayofweek_expressionContext) {}
+// ExitRule_is_dayofweek is called when production rule_is_dayofweek is exited.
+func (s *BaseACIParserListener) ExitRule_is_dayofweek(ctx *Rule_is_dayofweekContext) {}
 
-// EnterSsf_expression is called when production ssf_expression is entered.
-func (s *BaseACIParserListener) EnterSsf_expression(ctx *Ssf_expressionContext) {}
+// EnterRule_is_ssf is called when production rule_is_ssf is entered.
+func (s *BaseACIParserListener) EnterRule_is_ssf(ctx *Rule_is_ssfContext) {}
 
-// ExitSsf_expression is called when production ssf_expression is exited.
-func (s *BaseACIParserListener) ExitSsf_expression(ctx *Ssf_expressionContext) {}
+// ExitRule_is_ssf is called when production rule_is_ssf is exited.
+func (s *BaseACIParserListener) ExitRule_is_ssf(ctx *Rule_is_ssfContext) {}
 
-// EnterAuthmethod_expression is called when production authmethod_expression is entered.
-func (s *BaseACIParserListener) EnterAuthmethod_expression(ctx *Authmethod_expressionContext) {}
+// EnterRule_is_authmethod is called when production rule_is_authmethod is entered.
+func (s *BaseACIParserListener) EnterRule_is_authmethod(ctx *Rule_is_authmethodContext) {}
 
-// ExitAuthmethod_expression is called when production authmethod_expression is exited.
-func (s *BaseACIParserListener) ExitAuthmethod_expression(ctx *Authmethod_expressionContext) {}
+// ExitRule_is_authmethod is called when production rule_is_authmethod is exited.
+func (s *BaseACIParserListener) ExitRule_is_authmethod(ctx *Rule_is_authmethodContext) {}
 
 // EnterParenthetical_dayofweek_bind_rule is called when production parenthetical_dayofweek_bind_rule is entered.
 func (s *BaseACIParserListener) EnterParenthetical_dayofweek_bind_rule(ctx *Parenthetical_dayofweek_bind_ruleContext) {
@@ -788,6 +836,12 @@ func (s *BaseACIParserListener) EnterAva_expression(ctx *Ava_expressionContext) 
 // ExitAva_expression is called when production ava_expression is exited.
 func (s *BaseACIParserListener) ExitAva_expression(ctx *Ava_expressionContext) {}
 
+// EnterParenthetical_ava_or_rdn is called when production parenthetical_ava_or_rdn is entered.
+func (s *BaseACIParserListener) EnterParenthetical_ava_or_rdn(ctx *Parenthetical_ava_or_rdnContext) {}
+
+// ExitParenthetical_ava_or_rdn is called when production parenthetical_ava_or_rdn is exited.
+func (s *BaseACIParserListener) ExitParenthetical_ava_or_rdn(ctx *Parenthetical_ava_or_rdnContext) {}
+
 // EnterAva_or_rdn is called when production ava_or_rdn is entered.
 func (s *BaseACIParserListener) EnterAva_or_rdn(ctx *Ava_or_rdnContext) {}
 
@@ -847,6 +901,12 @@ func (s *BaseACIParserListener) EnterKey_or_value(ctx *Key_or_valueContext) {}
 
 // ExitKey_or_value is called when production key_or_value is exited.
 func (s *BaseACIParserListener) ExitKey_or_value(ctx *Key_or_valueContext) {}
+
+// EnterPresence_key_or_value is called when production presence_key_or_value is entered.
+func (s *BaseACIParserListener) EnterPresence_key_or_value(ctx *Presence_key_or_valueContext) {}
+
+// ExitPresence_key_or_value is called when production presence_key_or_value is exited.
+func (s *BaseACIParserListener) ExitPresence_key_or_value(ctx *Presence_key_or_valueContext) {}
 
 // EnterEqual_to is called when production equal_to is entered.
 func (s *BaseACIParserListener) EnterEqual_to(ctx *Equal_toContext) {}

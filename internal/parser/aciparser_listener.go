@@ -61,8 +61,32 @@ type ACIParserListener interface {
 	// EnterTarget_rules is called when entering the target_rules production.
 	EnterTarget_rules(c *Target_rulesContext)
 
-	// EnterTargetRule is called when entering the targetRule production.
-	EnterTargetRule(c *TargetRuleContext)
+	// EnterRule_is_targetcontrol is called when entering the rule_is_targetcontrol production.
+	EnterRule_is_targetcontrol(c *Rule_is_targetcontrolContext)
+
+	// EnterRule_is_extop is called when entering the rule_is_extop production.
+	EnterRule_is_extop(c *Rule_is_extopContext)
+
+	// EnterRule_is_targetfilter is called when entering the rule_is_targetfilter production.
+	EnterRule_is_targetfilter(c *Rule_is_targetfilterContext)
+
+	// EnterRule_is_targattrfilters is called when entering the rule_is_targattrfilters production.
+	EnterRule_is_targattrfilters(c *Rule_is_targattrfiltersContext)
+
+	// EnterRule_is_targetscope is called when entering the rule_is_targetscope production.
+	EnterRule_is_targetscope(c *Rule_is_targetscopeContext)
+
+	// EnterRule_is_targetattr is called when entering the rule_is_targetattr production.
+	EnterRule_is_targetattr(c *Rule_is_targetattrContext)
+
+	// EnterRule_is_target is called when entering the rule_is_target production.
+	EnterRule_is_target(c *Rule_is_targetContext)
+
+	// EnterRule_is_target_to is called when entering the rule_is_target_to production.
+	EnterRule_is_target_to(c *Rule_is_target_toContext)
+
+	// EnterRule_is_target_from is called when entering the rule_is_target_from production.
+	EnterRule_is_target_from(c *Rule_is_target_fromContext)
 
 	// EnterTarget_dn_rule is called when entering the target_dn_rule production.
 	EnterTarget_dn_rule(c *Target_dn_ruleContext)
@@ -166,41 +190,41 @@ type ACIParserListener interface {
 	// EnterBind_rule_expression_recursion is called when entering the bind_rule_expression_recursion production.
 	EnterBind_rule_expression_recursion(c *Bind_rule_expression_recursionContext)
 
-	// EnterBind_rule_expression is called when entering the bind_rule_expression production.
-	EnterBind_rule_expression(c *Bind_rule_expressionContext)
+	// EnterRule_is_parenthetical is called when entering the rule_is_parenthetical production.
+	EnterRule_is_parenthetical(c *Rule_is_parentheticalContext)
 
-	// EnterUserdn_expression is called when entering the userdn_expression production.
-	EnterUserdn_expression(c *Userdn_expressionContext)
+	// EnterRule_is_userdn is called when entering the rule_is_userdn production.
+	EnterRule_is_userdn(c *Rule_is_userdnContext)
 
-	// EnterUserattr_expression is called when entering the userattr_expression production.
-	EnterUserattr_expression(c *Userattr_expressionContext)
+	// EnterRule_is_userattr is called when entering the rule_is_userattr production.
+	EnterRule_is_userattr(c *Rule_is_userattrContext)
 
-	// EnterGroupdn_expression is called when entering the groupdn_expression production.
-	EnterGroupdn_expression(c *Groupdn_expressionContext)
+	// EnterRule_is_groupdn is called when entering the rule_is_groupdn production.
+	EnterRule_is_groupdn(c *Rule_is_groupdnContext)
 
-	// EnterGroupattr_expression is called when entering the groupattr_expression production.
-	EnterGroupattr_expression(c *Groupattr_expressionContext)
+	// EnterRule_is_groupattr is called when entering the rule_is_groupattr production.
+	EnterRule_is_groupattr(c *Rule_is_groupattrContext)
 
-	// EnterRoledn_expression is called when entering the roledn_expression production.
-	EnterRoledn_expression(c *Roledn_expressionContext)
+	// EnterRule_is_roledn is called when entering the rule_is_roledn production.
+	EnterRule_is_roledn(c *Rule_is_rolednContext)
 
-	// EnterDns_expression is called when entering the dns_expression production.
-	EnterDns_expression(c *Dns_expressionContext)
+	// EnterRule_is_dns is called when entering the rule_is_dns production.
+	EnterRule_is_dns(c *Rule_is_dnsContext)
 
-	// EnterIp_expression is called when entering the ip_expression production.
-	EnterIp_expression(c *Ip_expressionContext)
+	// EnterRule_is_ip is called when entering the rule_is_ip production.
+	EnterRule_is_ip(c *Rule_is_ipContext)
 
-	// EnterTimeofday_expression is called when entering the timeofday_expression production.
-	EnterTimeofday_expression(c *Timeofday_expressionContext)
+	// EnterRule_is_timeofday is called when entering the rule_is_timeofday production.
+	EnterRule_is_timeofday(c *Rule_is_timeofdayContext)
 
-	// EnterDayofweek_expression is called when entering the dayofweek_expression production.
-	EnterDayofweek_expression(c *Dayofweek_expressionContext)
+	// EnterRule_is_dayofweek is called when entering the rule_is_dayofweek production.
+	EnterRule_is_dayofweek(c *Rule_is_dayofweekContext)
 
-	// EnterSsf_expression is called when entering the ssf_expression production.
-	EnterSsf_expression(c *Ssf_expressionContext)
+	// EnterRule_is_ssf is called when entering the rule_is_ssf production.
+	EnterRule_is_ssf(c *Rule_is_ssfContext)
 
-	// EnterAuthmethod_expression is called when entering the authmethod_expression production.
-	EnterAuthmethod_expression(c *Authmethod_expressionContext)
+	// EnterRule_is_authmethod is called when entering the rule_is_authmethod production.
+	EnterRule_is_authmethod(c *Rule_is_authmethodContext)
 
 	// EnterParenthetical_dayofweek_bind_rule is called when entering the parenthetical_dayofweek_bind_rule production.
 	EnterParenthetical_dayofweek_bind_rule(c *Parenthetical_dayofweek_bind_ruleContext)
@@ -370,6 +394,9 @@ type ACIParserListener interface {
 	// EnterAva_expression is called when entering the ava_expression production.
 	EnterAva_expression(c *Ava_expressionContext)
 
+	// EnterParenthetical_ava_or_rdn is called when entering the parenthetical_ava_or_rdn production.
+	EnterParenthetical_ava_or_rdn(c *Parenthetical_ava_or_rdnContext)
+
 	// EnterAva_or_rdn is called when entering the ava_or_rdn production.
 	EnterAva_or_rdn(c *Ava_or_rdnContext)
 
@@ -399,6 +426,9 @@ type ACIParserListener interface {
 
 	// EnterKey_or_value is called when entering the key_or_value production.
 	EnterKey_or_value(c *Key_or_valueContext)
+
+	// EnterPresence_key_or_value is called when entering the presence_key_or_value production.
+	EnterPresence_key_or_value(c *Presence_key_or_valueContext)
 
 	// EnterEqual_to is called when entering the equal_to production.
 	EnterEqual_to(c *Equal_toContext)
@@ -520,8 +550,32 @@ type ACIParserListener interface {
 	// ExitTarget_rules is called when exiting the target_rules production.
 	ExitTarget_rules(c *Target_rulesContext)
 
-	// ExitTargetRule is called when exiting the targetRule production.
-	ExitTargetRule(c *TargetRuleContext)
+	// ExitRule_is_targetcontrol is called when exiting the rule_is_targetcontrol production.
+	ExitRule_is_targetcontrol(c *Rule_is_targetcontrolContext)
+
+	// ExitRule_is_extop is called when exiting the rule_is_extop production.
+	ExitRule_is_extop(c *Rule_is_extopContext)
+
+	// ExitRule_is_targetfilter is called when exiting the rule_is_targetfilter production.
+	ExitRule_is_targetfilter(c *Rule_is_targetfilterContext)
+
+	// ExitRule_is_targattrfilters is called when exiting the rule_is_targattrfilters production.
+	ExitRule_is_targattrfilters(c *Rule_is_targattrfiltersContext)
+
+	// ExitRule_is_targetscope is called when exiting the rule_is_targetscope production.
+	ExitRule_is_targetscope(c *Rule_is_targetscopeContext)
+
+	// ExitRule_is_targetattr is called when exiting the rule_is_targetattr production.
+	ExitRule_is_targetattr(c *Rule_is_targetattrContext)
+
+	// ExitRule_is_target is called when exiting the rule_is_target production.
+	ExitRule_is_target(c *Rule_is_targetContext)
+
+	// ExitRule_is_target_to is called when exiting the rule_is_target_to production.
+	ExitRule_is_target_to(c *Rule_is_target_toContext)
+
+	// ExitRule_is_target_from is called when exiting the rule_is_target_from production.
+	ExitRule_is_target_from(c *Rule_is_target_fromContext)
 
 	// ExitTarget_dn_rule is called when exiting the target_dn_rule production.
 	ExitTarget_dn_rule(c *Target_dn_ruleContext)
@@ -625,41 +679,41 @@ type ACIParserListener interface {
 	// ExitBind_rule_expression_recursion is called when exiting the bind_rule_expression_recursion production.
 	ExitBind_rule_expression_recursion(c *Bind_rule_expression_recursionContext)
 
-	// ExitBind_rule_expression is called when exiting the bind_rule_expression production.
-	ExitBind_rule_expression(c *Bind_rule_expressionContext)
+	// ExitRule_is_parenthetical is called when exiting the rule_is_parenthetical production.
+	ExitRule_is_parenthetical(c *Rule_is_parentheticalContext)
 
-	// ExitUserdn_expression is called when exiting the userdn_expression production.
-	ExitUserdn_expression(c *Userdn_expressionContext)
+	// ExitRule_is_userdn is called when exiting the rule_is_userdn production.
+	ExitRule_is_userdn(c *Rule_is_userdnContext)
 
-	// ExitUserattr_expression is called when exiting the userattr_expression production.
-	ExitUserattr_expression(c *Userattr_expressionContext)
+	// ExitRule_is_userattr is called when exiting the rule_is_userattr production.
+	ExitRule_is_userattr(c *Rule_is_userattrContext)
 
-	// ExitGroupdn_expression is called when exiting the groupdn_expression production.
-	ExitGroupdn_expression(c *Groupdn_expressionContext)
+	// ExitRule_is_groupdn is called when exiting the rule_is_groupdn production.
+	ExitRule_is_groupdn(c *Rule_is_groupdnContext)
 
-	// ExitGroupattr_expression is called when exiting the groupattr_expression production.
-	ExitGroupattr_expression(c *Groupattr_expressionContext)
+	// ExitRule_is_groupattr is called when exiting the rule_is_groupattr production.
+	ExitRule_is_groupattr(c *Rule_is_groupattrContext)
 
-	// ExitRoledn_expression is called when exiting the roledn_expression production.
-	ExitRoledn_expression(c *Roledn_expressionContext)
+	// ExitRule_is_roledn is called when exiting the rule_is_roledn production.
+	ExitRule_is_roledn(c *Rule_is_rolednContext)
 
-	// ExitDns_expression is called when exiting the dns_expression production.
-	ExitDns_expression(c *Dns_expressionContext)
+	// ExitRule_is_dns is called when exiting the rule_is_dns production.
+	ExitRule_is_dns(c *Rule_is_dnsContext)
 
-	// ExitIp_expression is called when exiting the ip_expression production.
-	ExitIp_expression(c *Ip_expressionContext)
+	// ExitRule_is_ip is called when exiting the rule_is_ip production.
+	ExitRule_is_ip(c *Rule_is_ipContext)
 
-	// ExitTimeofday_expression is called when exiting the timeofday_expression production.
-	ExitTimeofday_expression(c *Timeofday_expressionContext)
+	// ExitRule_is_timeofday is called when exiting the rule_is_timeofday production.
+	ExitRule_is_timeofday(c *Rule_is_timeofdayContext)
 
-	// ExitDayofweek_expression is called when exiting the dayofweek_expression production.
-	ExitDayofweek_expression(c *Dayofweek_expressionContext)
+	// ExitRule_is_dayofweek is called when exiting the rule_is_dayofweek production.
+	ExitRule_is_dayofweek(c *Rule_is_dayofweekContext)
 
-	// ExitSsf_expression is called when exiting the ssf_expression production.
-	ExitSsf_expression(c *Ssf_expressionContext)
+	// ExitRule_is_ssf is called when exiting the rule_is_ssf production.
+	ExitRule_is_ssf(c *Rule_is_ssfContext)
 
-	// ExitAuthmethod_expression is called when exiting the authmethod_expression production.
-	ExitAuthmethod_expression(c *Authmethod_expressionContext)
+	// ExitRule_is_authmethod is called when exiting the rule_is_authmethod production.
+	ExitRule_is_authmethod(c *Rule_is_authmethodContext)
 
 	// ExitParenthetical_dayofweek_bind_rule is called when exiting the parenthetical_dayofweek_bind_rule production.
 	ExitParenthetical_dayofweek_bind_rule(c *Parenthetical_dayofweek_bind_ruleContext)
@@ -829,6 +883,9 @@ type ACIParserListener interface {
 	// ExitAva_expression is called when exiting the ava_expression production.
 	ExitAva_expression(c *Ava_expressionContext)
 
+	// ExitParenthetical_ava_or_rdn is called when exiting the parenthetical_ava_or_rdn production.
+	ExitParenthetical_ava_or_rdn(c *Parenthetical_ava_or_rdnContext)
+
 	// ExitAva_or_rdn is called when exiting the ava_or_rdn production.
 	ExitAva_or_rdn(c *Ava_or_rdnContext)
 
@@ -858,6 +915,9 @@ type ACIParserListener interface {
 
 	// ExitKey_or_value is called when exiting the key_or_value production.
 	ExitKey_or_value(c *Key_or_valueContext)
+
+	// ExitPresence_key_or_value is called when exiting the presence_key_or_value production.
+	ExitPresence_key_or_value(c *Presence_key_or_valueContext)
 
 	// ExitEqual_to is called when exiting the equal_to production.
 	ExitEqual_to(c *Equal_toContext)
