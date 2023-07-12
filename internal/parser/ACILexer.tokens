@@ -113,6 +113,7 @@ KEY_OR_VALUE=97
 '*'=30
 'ldap:///'=31
 'version 3.0; acl '=36
+'userdn'=57
 'groupdn'=58
 'roledn'=59
 'userattr'=60

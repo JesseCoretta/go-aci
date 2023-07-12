@@ -36,7 +36,7 @@ func aciparserParserInit() {
 		"'='", "", "'>'", "'<'", "", "", "", "", "", "", "'#'", "", "", "",
 		"", "", "", "','", "';'", "'*'", "'ldap:///'", "", "", "", "", "'version 3.0; acl '",
 		"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-		"", "", "", "", "'groupdn'", "'roledn'", "'userattr'", "'groupattr'",
+		"", "", "", "'userdn'", "'groupdn'", "'roledn'", "'userattr'", "'groupattr'",
 		"'ssf'", "'dns'", "'ip'", "'authmethod'", "'timeofday'", "'dayofweek'",
 		"'USERDN'", "'GROUPDN'", "'ROLEDN'", "'SELFDN'", "'LDAPURL'",
 	}

@@ -1,12 +1,25 @@
 /*
 ACIv3 Parser Grammar
 
-Author: Jesse Coretta ▲
-Date:   07/06/2023
+Implemented by Jesse Coretta ▲
+
+ADVISORY
+
+This is an initial release and is potentially unsuitable for
+mission-critical / production environments. At the moment, it
+should only be used as a convenient supplement to an already
+hardened ACI review/approval/documentation/etc., process. Use
+at your own risk.
+
+See further down for LICENSE details.
+
+ABOUT THIS FILE
 
 This ANTLRv4 (4.13.0) parser grammar implements parser support for
 Version 3.0 of the Access Control Instruction syntax specification
-and all of its abstract components. See below for LICENSE details.
+and all of its abstract components.
+
+ABOUT THE ACI SYNTAX
 
 ACIv3 is a popular expressive access control syntax used by various
 directory products on the market today, including (but not limited
@@ -15,11 +28,26 @@ rules" in that modifications do not generally require DSA downtime.
 Most often they reside within the LDAP entries they are prescribed
 to protect, and are stored via the multi-valued 'aci' attributeType.
 
-If you believe this solution lacks certain "syntactical sugars" of
-which I am unaware (and you can cite literature to that end), you
-are encouraged to open a ticket on the go-aci repository.
+CONTRIBUTIONS and LIMITATIONS
 
-See also the accompanying (sourced) ACILexer.g4 file.
+If you believe this solution lacks a certain "syntactical sugar" of
+which I am unaware (and you can cite literature to that end), then
+you are encouraged to open a new ticket within the github repository
+in which the parser resides.
+
+Please note that, at this time, this solution does NOT cover Apache
+DS's own proprietary ACI syntax, which is radically different. In
+fact it is so different that I am uncertain as to the ideal means
+for  integration with this solution, assuming I integrate them in
+the first place. I may try to tackle that in the near future, but
+it is extremely low-priority and I suspect there would be little to
+no demand for it.
+
+LEXER CONTENTS
+
+See also the accompanying (sourced) ACILexer.g4 file for lexers.
+
+LICENSE
 
 MIT License
 
@@ -223,7 +251,8 @@ objectIdentifier
   : ( numberForm ( DOT numberForm )+ )                			# object_identifier
   ;
 
-// numberForm represents a single arc within a given ASN.1 Object Identifier in dot notation.
+// numberForm represents a single arc of any unsigned magnitude within a given ASN.1
+// Object Identifier in dot notation.
 numberForm
   : INT                                                                 # number_form
   ;
@@ -239,6 +268,7 @@ numberForm
 //
 // Double ampersands (symbolic AND ('&&')) are always used, never '||'.
 //
+// Note this is behaving a little quirky, not sure I've got it nailed down yet ;/
 targetAttrFiltersValue
   : attributeFilters           # attribute_filters_sets
   | attributeFilterSet         # attribute_filters_set

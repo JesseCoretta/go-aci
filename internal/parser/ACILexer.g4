@@ -1,14 +1,28 @@
 /*
 ACIv3 Lexer Grammar
 
-Author: Jesse Coretta ▲
-Date:   07/06/2023
+Implemented by Jesse Coretta ▲
+
+ADVISORY
+
+This is an initial release and is potentially unsuitable for
+mission-critical / production environments. At the moment, it
+should only be used as a convenient supplement to an already
+hardened ACI review/approval/documentation/etc., process. Use
+at your own risk.
+
+See further down for LICENSE details.
+
+ABOUT THIS FILE
 
 This ANTLRv4 (4.13.0) lexer grammar implements lexer support for
 Version 3.0 of the Access Control Instruction syntax specification
 and all of its abstract components. See below for LICENSE details.
 
-This file is sourced via the main ACIParser.g4 grammar file.
+This file is sourced via the main ACIParser.g4 grammar file. See
+further details there.
+
+LICENSE
 
 MIT License
 
@@ -70,6 +84,9 @@ SYMBOLIC_OR: PIPE PIPE;
 
 fragment PIPE: '|';
 fragment BANG: '!';
+
+//////////////////////////////////////
+// LDAP Search Filter Logical Operators
 
 // FILTER_OR (&) describes two (2) or more ANDed attribute
 // value assertion statements. All of the attribute value
@@ -163,40 +180,46 @@ ANCHOR
   : 'version 3.0; acl '
   ;
 
-// Sunday is day one (1).
+//////////////////////////////////////
+// Day Of Week components
+
+// Sunday is day one (1) and is used within 'dayofweek' Bind Rules.
 SUNDAY
   : [Ss][Uu][Nn]
   ;
 
-// Monday is day two (2).
+// Monday is day two (2) and is used within 'dayofweek' Bind Rules.
 MONDAY
   : [Mm][Oo][Nn]
   ;
 
-// Tuesday is day three (3).
+// Tuesday is day three (3) and is used within 'dayofweek' Bind Rules.
 TUESDAY
   : [Tt][Uu][Ee][Ss]
   ;
 
-// Wednesday is day four (4).
+// Wednesday is day four (4) and is used within 'dayofweek' Bind Rules
 WEDNESDAY
   : [Ww][Ee][Dd]
   ;
 
-// Thursday is day five (5).
+// Thursday is day five (5) and is used within 'dayofweek' Bind Rules.
 THURSDAY
   : [Tt][Hh][Uu][Rr]
   ;
 
-// Friday is day six (6).
+// Friday is day six (6) and is used within 'dayofweek' Bind Rules.
 FRIDAY
   : [Ff][Rr][Ii]
   ;
 
-// Saturday is day seven (7).
+// Saturday is day seven (7) and is used within 'dayofweek' Bind Rules.
 SATURDAY
   : [Ss][Aa][Tt]
   ;
+
+//////////////////////////////////////
+// Authentication Method string literals
 
 // 'none' describes an ANONYMOUS LDAP bind.
 ANONYMOUS
@@ -227,42 +250,42 @@ SASL
 //////////////////////////////////////
 // Target Rule keywords
 
-// 'target' keyword
+// 'target' Target Rule keyword
 TARGET
   : [Tt][Aa][Rr][Gg][Ee][Tt]
   ;
 
-// 'target_to' keyword
+// 'target_to' Target Rule keyword
 TARGET_TO
   : [Tt][Aa][Rr][Gg][Ee][Tt] '_' [Tt][Oo]
   ;
 
-// 'target_from' keyword
+// 'target_from' Target Rule keyword
 TARGET_FROM
   : [Tt][Aa][Rr][Gg][Ee][Tt] '_' [Ff][Rr][Oo][Mm]
   ;
 
-// 'targetscope' keyword
+// 'targetscope' Target Rule keyword
 TARGET_SCOPE
   : [Tt][Aa][Rr][Gg][Ee][Tt][Ss][Cc][Oo][Pp][Ee]
   ;
 
-// 'targetattr' keyword
+// 'targetattr' Target Rule keyword
 TARGET_ATTR
   : [Tt][Aa][Rr][Gg][Ee][Tt][Aa][Tt][Tt][Rr]
   ;
 
-// 'targetfilter' keyword
+// 'targetfilter' Target Rule keyword
 TARGET_FILTER
   : [Tt][Aa][Rr][Gg][Ee][Tt][Ff][Ii][Ll][Tt][Ee][Rr]
   ;
 
-// 'targattrfilters' keyword
+// 'targattrfilters' Target Rule keyword
 TARGET_ATTR_FILTERS
   : [Tt][Aa][Rr][Gg][Aa][Tt][Tt][Rr][Ff][Ii][Ll][Tt][Ee][Rr][Ss]
   ;
 
-// 'targetcontrol' keyword
+// 'targetcontrol' Target Rule keyword
 TARGET_CONTROL
   : [Tt][Aa][Rr][Gg][Ee][Tt][Cc][Oo][Nn][Tt][Rr][Oo][Ll]
   ;
@@ -272,51 +295,66 @@ TARGET_EXTENDED_OPERATION
   : [Ee][Xx][Tt][Oo][Pp]
   ;
 
-// TODO - WHSP shouldn't need to be specified manually
-// fix me plz 
+//////////////////////////////////////
+// Bind Rule keywords
+
+// 'userdn' Bind Rule keyword
 BIND_USER_DN
-  : WHSP? 'userdn' WHSP?
+  : 'userdn'
   ;
 
+// 'groupdn' Bind Rule keyword
 BIND_GROUP_DN
   : 'groupdn'
   ;
 
+// 'roledn' Bind Rule keyword
 BIND_ROLE_DN
   : 'roledn'
   ;
 
+// 'userattr' Bind Rule keyword
 BIND_USER_ATTR
   : 'userattr'
   ;
 
+// 'groupattr' Bind Rule keyword
 BIND_GROUP_ATTR
   : 'groupattr'
   ;
 
+// 'ssf' Bind Rule keyword
 BIND_SSF
   : 'ssf'
   ;
 
+// 'dns' Bind Rule keyword
 BIND_DNS
   : 'dns'
   ;
 
+// 'ip' Bind Rule keyword
 BIND_IP
   : 'ip'
   ;
 
+// 'authmethod' Bind Rule keyword
 BIND_AUTH_METHOD
   : 'authmethod'
   ;
 
+// 'timeofday' Bind Rule keyword
 BIND_TIME_OF_DAY
   : 'timeofday'
   ;
 
+// 'dayofweek' Bind Rule keyword
 BIND_DAY_OF_WEEK
   : 'dayofweek'
   ;
+
+//////////////////////////////////////
+// Bind Type keywords
 
 // USERDN string literal is used within 'userattr' and 'groupattr'
 // Bind Rule statements.
@@ -347,6 +385,9 @@ BINDTYPE_SELF_DN
 BINDTYPE_LDAP_URL
   : 'LDAPURL'
   ;
+
+//////////////////////////////////////
+// LDAP and Target Rule Search Scopes
 
 // BASE is the same for 'targetscope' Target Rules as for lDAPURI
 // search parameters and is used the same in either scenario.
@@ -385,6 +426,9 @@ SUB_TREE_TARGET_SCOPE
 SUBORDINATE_TARGET_SCOPE
   : [Ss][Uu][Bb][Oo][Rr][Dd][Ii][Nn][Aa][Tt][Ee]
   ;
+
+//////////////////////////////////////
+// Permission and Access Rights components
 
 // The disposition of a permission is to grant some level(s)
 // of access to the directory.
@@ -490,13 +534,24 @@ BOOLEAN_NOT
 
 // Whitespace characters are dumped from here on out. I
 // know this is supposed to be at the bottom of the lexer
-// file, but all hell breaks loose when it is :(
+// file (or so I read somewhere), but all hell breaks loose
+// when it is :(
 WHITESPACE
   : [ \t\r\n\u000C]+ -> skip
   ;
 
 // INT represents any unsigned integer of any magnitude.
 // At no point in this solution are negative integers used.
+// Values of this kind are used in 'ssf' and 'timeofday'
+// Bind Rules, as well as inheritance-based Bind Rules that
+// bear the 'userattr' and/or 'groupattr' keywords. Values
+// of this kind are also used for OID numberForm and IPv4
+// octet sequences that represent a composite (and likely
+// delimited) value.
+//
+// Depending on the circumscribing rule, any single value of
+// this kind may (or may not!) be preempted by another char,
+// such as STAR for wildcard statements.
 INT
   : [0-9]+
   ;
