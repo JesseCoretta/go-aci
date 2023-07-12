@@ -491,11 +491,10 @@ EXPORT_PRIVILEGE
   : [Ee][Xx][Pp][Oo][Rr][Tt]
   ;
 
-// Grant or withhold all privileges within the DSA **EXCEPT** for
-// proxy privileges.
-ALL_PRIVILEGES
-  : [Aa][Ll][Ll]
-  ;
+// Note that "no privileges" manifests as an alias of ANONYMOUS as
+// they share the same string literal value. See the ACIParser.g4
+// file for the accessPrivileges rule.
+// The same goes for ALL_PRIVILEGES, which is an alias for ALL_USERS.
 
 // Certain directory implementations allow the use
 // of macro statements within distinguished names

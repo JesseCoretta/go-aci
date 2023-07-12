@@ -58,6 +58,15 @@ type ACIParserListener interface {
 	// EnterAll_privileges is called when entering the all_privileges production.
 	EnterAll_privileges(c *All_privilegesContext)
 
+	// EnterNo_privileges is called when entering the no_privileges production.
+	EnterNo_privileges(c *No_privilegesContext)
+
+	// EnterNoPrivileges is called when entering the noPrivileges production.
+	EnterNoPrivileges(c *NoPrivilegesContext)
+
+	// EnterAllPrivileges is called when entering the allPrivileges production.
+	EnterAllPrivileges(c *AllPrivilegesContext)
+
 	// EnterTarget_rules is called when entering the target_rules production.
 	EnterTarget_rules(c *Target_rulesContext)
 
@@ -169,6 +178,12 @@ type ACIParserListener interface {
 	// EnterDelete_filter_operation is called when entering the delete_filter_operation production.
 	EnterDelete_filter_operation(c *Delete_filter_operationContext)
 
+	// EnterAddFilterOperation is called when entering the addFilterOperation production.
+	EnterAddFilterOperation(c *AddFilterOperationContext)
+
+	// EnterDelFilterOperation is called when entering the delFilterOperation production.
+	EnterDelFilterOperation(c *DelFilterOperationContext)
+
 	// EnterAttribute_filter is called when entering the attribute_filter production.
 	EnterAttribute_filter(c *Attribute_filterContext)
 
@@ -253,8 +268,8 @@ type ACIParserListener interface {
 	// EnterSat is called when entering the Sat production.
 	EnterSat(c *SatContext)
 
-	// EnterParentheticalAuthenticationMethod is called when entering the parentheticalAuthenticationMethod production.
-	EnterParentheticalAuthenticationMethod(c *ParentheticalAuthenticationMethodContext)
+	// EnterParenthetical_authentication_method is called when entering the parenthetical_authentication_method production.
+	EnterParenthetical_authentication_method(c *Parenthetical_authentication_methodContext)
 
 	// EnterAuthentication_method is called when entering the authentication_method production.
 	EnterAuthentication_method(c *Authentication_methodContext)
@@ -382,11 +397,11 @@ type ACIParserListener interface {
 	// EnterRdn_macro is called when entering the rdn_macro production.
 	EnterRdn_macro(c *Rdn_macroContext)
 
-	// EnterParenthetical_filter_expression is called when entering the parenthetical_filter_expression production.
-	EnterParenthetical_filter_expression(c *Parenthetical_filter_expressionContext)
+	// EnterParenthetical_filter is called when entering the parenthetical_filter production.
+	EnterParenthetical_filter(c *Parenthetical_filterContext)
 
-	// EnterFilter_expressions is called when entering the filter_expressions production.
-	EnterFilter_expressions(c *Filter_expressionsContext)
+	// EnterFilter is called when entering the filter production.
+	EnterFilter(c *FilterContext)
 
 	// EnterParenthetical_filter_expression_opt_bool is called when entering the parenthetical_filter_expression_opt_bool production.
 	EnterParenthetical_filter_expression_opt_bool(c *Parenthetical_filter_expression_opt_boolContext)
@@ -547,6 +562,15 @@ type ACIParserListener interface {
 	// ExitAll_privileges is called when exiting the all_privileges production.
 	ExitAll_privileges(c *All_privilegesContext)
 
+	// ExitNo_privileges is called when exiting the no_privileges production.
+	ExitNo_privileges(c *No_privilegesContext)
+
+	// ExitNoPrivileges is called when exiting the noPrivileges production.
+	ExitNoPrivileges(c *NoPrivilegesContext)
+
+	// ExitAllPrivileges is called when exiting the allPrivileges production.
+	ExitAllPrivileges(c *AllPrivilegesContext)
+
 	// ExitTarget_rules is called when exiting the target_rules production.
 	ExitTarget_rules(c *Target_rulesContext)
 
@@ -658,6 +682,12 @@ type ACIParserListener interface {
 	// ExitDelete_filter_operation is called when exiting the delete_filter_operation production.
 	ExitDelete_filter_operation(c *Delete_filter_operationContext)
 
+	// ExitAddFilterOperation is called when exiting the addFilterOperation production.
+	ExitAddFilterOperation(c *AddFilterOperationContext)
+
+	// ExitDelFilterOperation is called when exiting the delFilterOperation production.
+	ExitDelFilterOperation(c *DelFilterOperationContext)
+
 	// ExitAttribute_filter is called when exiting the attribute_filter production.
 	ExitAttribute_filter(c *Attribute_filterContext)
 
@@ -742,8 +772,8 @@ type ACIParserListener interface {
 	// ExitSat is called when exiting the Sat production.
 	ExitSat(c *SatContext)
 
-	// ExitParentheticalAuthenticationMethod is called when exiting the parentheticalAuthenticationMethod production.
-	ExitParentheticalAuthenticationMethod(c *ParentheticalAuthenticationMethodContext)
+	// ExitParenthetical_authentication_method is called when exiting the parenthetical_authentication_method production.
+	ExitParenthetical_authentication_method(c *Parenthetical_authentication_methodContext)
 
 	// ExitAuthentication_method is called when exiting the authentication_method production.
 	ExitAuthentication_method(c *Authentication_methodContext)
@@ -871,11 +901,11 @@ type ACIParserListener interface {
 	// ExitRdn_macro is called when exiting the rdn_macro production.
 	ExitRdn_macro(c *Rdn_macroContext)
 
-	// ExitParenthetical_filter_expression is called when exiting the parenthetical_filter_expression production.
-	ExitParenthetical_filter_expression(c *Parenthetical_filter_expressionContext)
+	// ExitParenthetical_filter is called when exiting the parenthetical_filter production.
+	ExitParenthetical_filter(c *Parenthetical_filterContext)
 
-	// ExitFilter_expressions is called when exiting the filter_expressions production.
-	ExitFilter_expressions(c *Filter_expressionsContext)
+	// ExitFilter is called when exiting the filter production.
+	ExitFilter(c *FilterContext)
 
 	// ExitParenthetical_filter_expression_opt_bool is called when exiting the parenthetical_filter_expression_opt_bool production.
 	ExitParenthetical_filter_expression_opt_bool(c *Parenthetical_filter_expression_opt_boolContext)

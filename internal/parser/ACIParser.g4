@@ -54,8 +54,10 @@ priority and I suspect there would be little to no demand for it, as:
 
  - (b) OpenLDAP recommends users leverage their proprietary configuration
        based "ACL" syntax with or without dynamic configuration involved
-       (in fact, their ACL syntax is far more palatable for incorporation
-       into this solution, given how widely it is used)
+       
+Regarding (b): The OpenLDAP ACL syntax is actually quite nice, and far more
+appealing -- if for no reason other than its popularity -- for incorporation
+into this package when compared to the above (non-implemented) variants.
 
 LEXER CONTENTS
 
@@ -160,8 +162,22 @@ accessPrivileges
   | PROXY_PRIVILEGE	# proxy_privilege
   | IMPORT_PRIVILEGE	# import_privilege
   | EXPORT_PRIVILEGE	# export_privilege
-  | ALL_PRIVILEGES	# all_privileges
+  | allPrivileges	# all_privileges
+  | noPrivileges	# no_privileges
   ;
+
+// Grant or withhold no privileges within the DSA.
+//
+// NOTE: We make a parser alias of ANONYMOUS only
+// because its string literal value 'none' happens
+// to be the same as the literal for "no rights"
+// (e.g.: allow(none)).
+noPrivileges: ANONYMOUS ;
+
+// Grant or withhold all privileges within the DSA.
+//
+// Same alias deal as above, but for allPrivileges/ALL_USERS.
+allPrivileges: ALL_USERS ;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Begin TARGET RULES
@@ -253,8 +269,10 @@ targetSearchScopes
 //
 // - "<n>.<n>.<n>.<...> || <n>.<n>.<n>.<...>"
 // - "<n>.<n>.<n>.<...>" || "<n>.<n>.<n>.<...>"
+// - "<n>.<n>.<n>.<...>"
 //
-// Values of this kind are used to represent an ORed (||) list of OIDs.
+// Values of this kind are used to represent an ORed (||) list of ASN.1 Object
+// Identifiers -- specifically LDAP Control and Extended Operation OIDs.
 objectIdentifiers
   : DQUOTE ( objectIdentifier ( oRDelimiter objectIdentifier )* ) DQUOTE             			# quoted_object_identifier_list
   | ( DQUOTE objectIdentifier DQUOTE ( oRDelimiter (DQUOTE objectIdentifier DQUOTE) )* )		# list_of_quoted_object_identifiers
@@ -266,7 +284,9 @@ objectIdentifiers
 // - "attr || attr || attr"
 // - "attr" || "attr" || "attr"
 // - "*"
-// Values of this kind are used to represent an ORed (||) list of attributeTypes.
+//
+// Values of this kind are used to represent an ORed (||) list of attributeTypes,
+// except when "*" is used, which should be all-or-nothing in its application.
 targetedAttributes
   : DQUOTE ( attributeTypeOrValue ( oRDelimiter attributeTypeOrValue )* ) DQUOTE     			# quoted_targeted_attributes_list
   | ( DQUOTE attributeTypeOrValue DQUOTE ( oRDelimiter (DQUOTE attributeTypeOrValue DQUOTE) )* )	# list_of_quoted_attributes
@@ -294,7 +314,7 @@ numberForm
 //   add=attributeType:filter && attributeType:filter ... (;|,) delete=attributeType:filter && attributeType:filter ...
 //
 // Note that some directory implementations delimit the latter set
-// with semicolon, others use comma: both are supported here :)
+// with a SEMI, others use COMMA: both are supported here :)
 //
 // Double ampersands (symbolic AND ('&&')) are always used, never '||'.
 //
@@ -306,8 +326,8 @@ targetAttrFiltersValue
   ;
 
 // A sequence of one (1) or more attributeFilterAnd values
-// that are joined by a comma or semicolon (depending on
-// the vendor implementation).
+// that are joined by a COMMA or SEMI (depending on vendor
+// implementation).
 //
 // Note: linebreak added to example below for readability.
 //
@@ -324,18 +344,26 @@ attributeFilters
 //
 // e.g.: add=userCertificate:(&(objectClass=employee)(terminated=FALSE)) && userCertificate(objectClass=shareholder)
 attributeFilterSet
-  : attributeFilterOperation ( attributeFilter ( aNDDelimiter attributeFilter )* )? # attribute_filter_set
+  : attributeFilterOperation attributeFilter ( aNDDelimiter attributeFilter )*		# attribute_filter_set
   ;
 
 // attributeFilterOperation describes the "operational intent" behind the
-// specified attributeType:filter pair. Valid values are "add" and "delete".
+// specified attributeType:filter pair.
 attributeFilterOperation
-  : ADD_PRIVILEGE equalTo	# add_filter_operation
-  | DELETE_PRIVILEGE equalTo	# delete_filter_operation
+  : addFilterOperation equalTo	# add_filter_operation
+  | delFilterOperation equalTo	# delete_filter_operation
   ;
 
+// addFilterOperation is an alias of ADD_PRIVILEGE
+// due to the common string literal value they share.
+addFilterOperation: ADD_PRIVILEGE;
+
+// delFilterOperation is an alias of DELETE_PRIVILEGE
+// due to the common string literal value they share.
+delFilterOperation: DELETE_PRIVILEGE;
+
 // attributeFilter is an attributeType and LDAP Search
-// Filter delimited by a single colon (:).
+// Filter joined by a COLON.
 //
 // e.g.: userCertificate:(objectClass=employee)
 attributeFilter
@@ -407,7 +435,7 @@ doW
 //
 // e.g.: authmethod != "none"
 bindAuthMethod
-  : LPAREN bindAuthMethod RPAREN                                       		# parentheticalAuthenticationMethod
+  : LPAREN bindAuthMethod RPAREN                                       		# parenthetical_authentication_method
   | BIND_AUTH_METHOD (equalTo|notEqualTo) DQUOTE authenticationMethods DQUOTE 	# authentication_method
   ;
 
@@ -449,15 +477,15 @@ bindGroupDN
 //
 // e.g.: userattr="owner#USERDN"
 bindUserAttr
-  : LPAREN bindUserAttr RPAREN                 					# parenthetical_bind_userattr
-  | BIND_USER_ATTR (equalTo|notEqualTo) DQUOTE (attributeBindTypeOrValue|inheritance) DQUOTE  # bind_userattr
+  : LPAREN bindUserAttr RPAREN                 							# parenthetical_bind_userattr
+  | BIND_USER_ATTR (equalTo|notEqualTo) DQUOTE (attributeBindTypeOrValue|inheritance) DQUOTE	# bind_userattr
   ;
 
 // 'groupattr' Bind Rule syntax
 //
 // e.g.: groupattr="manager#LDAPURL"
 bindGroupAttr
-  : LPAREN bindGroupAttr RPAREN                                        		# parenthetical_bind_groupattr
+  : LPAREN bindGroupAttr RPAREN                                        				# parenthetical_bind_groupattr
   | BIND_GROUP_ATTR (equalTo|notEqualTo) DQUOTE (attributeBindTypeOrValue|inheritance) DQUOTE	# bind_groupattr
   ;
 
@@ -577,7 +605,7 @@ uRISearchScopes
   : QMARK (BASE_OBJECT_SCOPE|ONE_LEVEL_SCOPE|SUB_TREE_SCOPE)?        # uriSearchScopes
   ;
 
-// uRIAttributeList describes a list of zero (0) or more comma-delimited
+// uRIAttributeList describes a list of zero (0) or more COMMA-delimited
 // attributeType names to be requested for the search operation. Values
 // of this kind appear immediately right of the distinguishedName.
 uRIAttributeList
@@ -591,6 +619,7 @@ uRIAttributeList
 // e.g.:
 //	- "ldap:///uid=courtney,ou=People,dc=example,dc=com" || "ldap:///uid=jane,ou=People,dc=example,dc=com"
 //	- "ldap:///uid=courtney,ou=People,dc=example,dc=com || ldap:///uid=jane,ou=People,dc=example,dc=com"
+//      - "ldap:///uid=jane,ou=People,dc=example,dc=com"
 distinguishedNames
   : DQUOTE ( distinguishedName ( oRDelimiter distinguishedName )* ) DQUOTE             		# quoted_distinguished_name_list
   | ( DQUOTE distinguishedName DQUOTE ( oRDelimiter (DQUOTE distinguishedName DQUOTE) )* )	# list_of_quoted_distinguished_names
@@ -598,9 +627,12 @@ distinguishedNames
 
 // distinguishedName is a sequence of aVAOrRDN values. Macro
 // variable declarations for [$dn], ($dn) and ($attr.<atname>)
-// are supported.
+// are supported, as well as DN aliases for abstract contexts
+// such as parent, self, etc.
 //
-// e.g.: "ldap:///uid=courtney,ou=People,dc=example,dc=com"
+// e.g.:
+// 	- "ldap:///uid=courtney,ou=People,dc=example,dc=com"
+//	- "ldap:///anyone"
 distinguishedName
   : ( LOCAL_LDAP_SCHEME aVAOrRDN ( COMMA (aVAOrRDN|rDNMacros) )* )	# dn
   | LOCAL_LDAP_SCHEME ANYONE						# anonymous_dn_alias
@@ -631,8 +663,8 @@ rDNMacros
 //
 // e.g.: "(&(objectClass=employee)(terminated=FALSE))"
 lDAPFilter
-  : LPAREN lDAPFilterExpr RPAREN       	# parenthetical_filter_expression
-  | lDAPFilterExpr*                    	# filter_expressions
+  : LPAREN lDAPFilterExpr RPAREN       	# parenthetical_filter
+  | lDAPFilterExpr*                    	# filter
   ;
 
 // lDAPFilterExpr describes a single expressive LDAP filter statement, but may
@@ -645,8 +677,14 @@ lDAPFilterExpr
 
 // aVAOrRDN is one (1) of two (2) things for the sake of a simple grammar file:
 //
-// - when present within a distinguishedName, it is a relativeDistinguishedName (e.g.: 'uid=grrlpower' or 'cn=Jesse Coretta')
-// - when present within a filter, it is an attributeValueAssertion (e.g.: 'color;lang-fr: bleu' or 'objectClass=*')
+// - When present within a distinguishedName, it is a relative distinguished name, e.g.:
+//	- 'ou=Protocol'
+//	- 'l=Palm Springs'
+//	- 'cn=Courtney Tolana'
+//
+// - When present within a filter, it is an attribute value assertion, e.g.:
+//	- 'color;lang-fr=bleu'
+//	- 'objectClass=*'
 //
 // This is an absolutely critical parser component.
 aVAOrRDN
@@ -665,7 +703,7 @@ inheritance
 //
 // - Level Zero (0) ("base" (baseObject) scope; zero depth)
 // - Level One (1) (one level below baseObject; "onelevel" scope)
-// - Level Two (2) (two levels below baseObject "subtree" scope)
+// - Level Two (2) (two levels below baseObject)
 // - Level Three (3) (three levels below baseObject)
 // - Level Four (4) (four levels below baseObject)
 //
@@ -682,7 +720,8 @@ inheritanceLevels
 // e.g.: 'manager#GROUPDN' or 'nickname#squatcobbler'
 //
 // Values of this kind are used in certain 'userattr' and 'groupattr' Bind
-// Rules, and may also be found within certain lDAPURI instances.
+// Rules, and will also be found within certain lDAPURI instances from time
+// to time.
 attributeBindTypeOrValue
   : attributeTypeOrValue HASH (bindTypes|attributeTypeOrValue)      # attr_bind_type_or_value
   ;

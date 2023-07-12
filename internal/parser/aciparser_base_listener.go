@@ -124,6 +124,24 @@ func (s *BaseACIParserListener) EnterAll_privileges(ctx *All_privilegesContext) 
 // ExitAll_privileges is called when production all_privileges is exited.
 func (s *BaseACIParserListener) ExitAll_privileges(ctx *All_privilegesContext) {}
 
+// EnterNo_privileges is called when production no_privileges is entered.
+func (s *BaseACIParserListener) EnterNo_privileges(ctx *No_privilegesContext) {}
+
+// ExitNo_privileges is called when production no_privileges is exited.
+func (s *BaseACIParserListener) ExitNo_privileges(ctx *No_privilegesContext) {}
+
+// EnterNoPrivileges is called when production noPrivileges is entered.
+func (s *BaseACIParserListener) EnterNoPrivileges(ctx *NoPrivilegesContext) {}
+
+// ExitNoPrivileges is called when production noPrivileges is exited.
+func (s *BaseACIParserListener) ExitNoPrivileges(ctx *NoPrivilegesContext) {}
+
+// EnterAllPrivileges is called when production allPrivileges is entered.
+func (s *BaseACIParserListener) EnterAllPrivileges(ctx *AllPrivilegesContext) {}
+
+// ExitAllPrivileges is called when production allPrivileges is exited.
+func (s *BaseACIParserListener) ExitAllPrivileges(ctx *AllPrivilegesContext) {}
+
 // EnterTarget_rules is called when production target_rules is entered.
 func (s *BaseACIParserListener) EnterTarget_rules(ctx *Target_rulesContext) {}
 
@@ -354,6 +372,18 @@ func (s *BaseACIParserListener) EnterDelete_filter_operation(ctx *Delete_filter_
 // ExitDelete_filter_operation is called when production delete_filter_operation is exited.
 func (s *BaseACIParserListener) ExitDelete_filter_operation(ctx *Delete_filter_operationContext) {}
 
+// EnterAddFilterOperation is called when production addFilterOperation is entered.
+func (s *BaseACIParserListener) EnterAddFilterOperation(ctx *AddFilterOperationContext) {}
+
+// ExitAddFilterOperation is called when production addFilterOperation is exited.
+func (s *BaseACIParserListener) ExitAddFilterOperation(ctx *AddFilterOperationContext) {}
+
+// EnterDelFilterOperation is called when production delFilterOperation is entered.
+func (s *BaseACIParserListener) EnterDelFilterOperation(ctx *DelFilterOperationContext) {}
+
+// ExitDelFilterOperation is called when production delFilterOperation is exited.
+func (s *BaseACIParserListener) ExitDelFilterOperation(ctx *DelFilterOperationContext) {}
+
 // EnterAttribute_filter is called when production attribute_filter is entered.
 func (s *BaseACIParserListener) EnterAttribute_filter(ctx *Attribute_filterContext) {}
 
@@ -532,12 +562,12 @@ func (s *BaseACIParserListener) EnterSat(ctx *SatContext) {}
 // ExitSat is called when production Sat is exited.
 func (s *BaseACIParserListener) ExitSat(ctx *SatContext) {}
 
-// EnterParentheticalAuthenticationMethod is called when production parentheticalAuthenticationMethod is entered.
-func (s *BaseACIParserListener) EnterParentheticalAuthenticationMethod(ctx *ParentheticalAuthenticationMethodContext) {
+// EnterParenthetical_authentication_method is called when production parenthetical_authentication_method is entered.
+func (s *BaseACIParserListener) EnterParenthetical_authentication_method(ctx *Parenthetical_authentication_methodContext) {
 }
 
-// ExitParentheticalAuthenticationMethod is called when production parentheticalAuthenticationMethod is exited.
-func (s *BaseACIParserListener) ExitParentheticalAuthenticationMethod(ctx *ParentheticalAuthenticationMethodContext) {
+// ExitParenthetical_authentication_method is called when production parenthetical_authentication_method is exited.
+func (s *BaseACIParserListener) ExitParenthetical_authentication_method(ctx *Parenthetical_authentication_methodContext) {
 }
 
 // EnterAuthentication_method is called when production authentication_method is entered.
@@ -810,19 +840,17 @@ func (s *BaseACIParserListener) EnterRdn_macro(ctx *Rdn_macroContext) {}
 // ExitRdn_macro is called when production rdn_macro is exited.
 func (s *BaseACIParserListener) ExitRdn_macro(ctx *Rdn_macroContext) {}
 
-// EnterParenthetical_filter_expression is called when production parenthetical_filter_expression is entered.
-func (s *BaseACIParserListener) EnterParenthetical_filter_expression(ctx *Parenthetical_filter_expressionContext) {
-}
+// EnterParenthetical_filter is called when production parenthetical_filter is entered.
+func (s *BaseACIParserListener) EnterParenthetical_filter(ctx *Parenthetical_filterContext) {}
 
-// ExitParenthetical_filter_expression is called when production parenthetical_filter_expression is exited.
-func (s *BaseACIParserListener) ExitParenthetical_filter_expression(ctx *Parenthetical_filter_expressionContext) {
-}
+// ExitParenthetical_filter is called when production parenthetical_filter is exited.
+func (s *BaseACIParserListener) ExitParenthetical_filter(ctx *Parenthetical_filterContext) {}
 
-// EnterFilter_expressions is called when production filter_expressions is entered.
-func (s *BaseACIParserListener) EnterFilter_expressions(ctx *Filter_expressionsContext) {}
+// EnterFilter is called when production filter is entered.
+func (s *BaseACIParserListener) EnterFilter(ctx *FilterContext) {}
 
-// ExitFilter_expressions is called when production filter_expressions is exited.
-func (s *BaseACIParserListener) ExitFilter_expressions(ctx *Filter_expressionsContext) {}
+// ExitFilter is called when production filter is exited.
+func (s *BaseACIParserListener) ExitFilter(ctx *FilterContext) {}
 
 // EnterParenthetical_filter_expression_opt_bool is called when production parenthetical_filter_expression_opt_bool is entered.
 func (s *BaseACIParserListener) EnterParenthetical_filter_expression_opt_bool(ctx *Parenthetical_filter_expression_opt_boolContext) {
