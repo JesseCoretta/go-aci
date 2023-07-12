@@ -88,7 +88,7 @@ fragment BANG: '!';
 //////////////////////////////////////
 // LDAP Search Filter Logical Operators
 
-// FILTER_OR (&) describes two (2) or more ANDed attribute
+// FILTER_AND (&) describes two (2) or more ANDed attribute
 // value assertion statements. All of the attribute value
 // assertion statements must evaluate as true. These are
 // only used within lDAPFilter instances.
@@ -143,8 +143,8 @@ PARENT
   : [Pp][Aa][Rr][Ee][Nn][Tt]
   ;
 
-// 'parent' is a convenient DN "alias" supported
-// by the DSA to describe any user DN -- whether
+// 'anyone' is a convenient DN "alias" supported
+// by the DSA to describe ANY user DN -- whether
 // authenticated (known) or anonymous (null). It
 // is prefixed with the above Local LDAP Scheme
 // string literal.
@@ -172,10 +172,12 @@ SELF
 // The "anchor" is a string literal that will always
 // appear identical within an ACI (as shown), and acts
 // as a suitable starting point for processing and basic
-// validation.
+// validation. 
 //
 // The anchor is preceded by zero (0) or more Target Rules
-// and followed by one (1) or more Permission+Bind statements.
+// and the trailing space (which is intended) is followed
+// by a brief, double-quoted, and DIT-unique descriptive
+// string label of (ideally) limited ASCII diversity.
 ANCHOR
   : 'version 3.0; acl '
   ;
@@ -281,6 +283,8 @@ TARGET_FILTER
   ;
 
 // 'targattrfilters' Target Rule keyword
+// NOTE: Yes, it (targ) is the correct Target keyword
+// prefix, unlike most others.
 TARGET_ATTR_FILTERS
   : [Tt][Aa][Rr][Gg][Aa][Tt][Tt][Rr][Ff][Ii][Ll][Tt][Ee][Rr][Ss]
   ;
@@ -504,8 +508,12 @@ ALL_PRIVILEGES
 // ou=Accounting, etc.
 //
 // Please note these are string literals and users
-// should not expect to see any interpolation (that
+// should not expect to see any interpolation (this
 // is what the DSA does, NOT the DUA or client SDK).
+//
+// These may or may not be supported by your product
+// as Macro ACIs aren't an official edict within the
+// (common) realm of the ACIv3 syntax. Check your docs!
 RDN_MACROS
   : '[$dn]'
   | '($dn)'
@@ -559,13 +567,13 @@ INT
 // KEY_OR_VALUE can more or less be anything, but will be
 // verified in the Go visitor.
 //
-// This is used in a variety of areas - most importantly
-// within aVAOrRDN instances - to describe a key/value
+// This is used in a variety of areas -- most importantly
+// within aVAOrRDN instances -- to describe a "key/value"
 // statement (which is something you see VERY OFTEN in the
 // LDAP world). This was particularly tricky to implement
 // due to the extensive comparison operators that must be
 // supported -- operators that go well beyond the typical
-// eq, ge, lt operators -- such as ':=', ':dn:=', et al.
+// eq, ge, le operators -- such as ':=', ':dn:=', et al.
 //
 // I REALLY wish I could split this into two (2) lexers that
 // WON'T collide, e.g.:
@@ -577,12 +585,12 @@ INT
 // - VALUE: ~["\\,.:=!?[\]()#|&<>~\t\r\n]+
 //
 // ... but I've given up on that for the moment. Every attempt
-// to do wreaks havoc within this otherwise functional setup.
+// to do so wreaks havoc within this otherwise functional setup.
 // 
 // The (negated!) characters below are specified due to their
 // special nature elsewhere in this implementation, i.e.: '&'
 // in Boolean lists, and (probably?) shouldn't appear in values
-// such as the 'acl' (ACI label).
+// such as the 'acl' (ACI label), though I'm not 100% certain.
 //
 // To be honest, I'm quite sure this is NOT an ideal solution
 // (likely will barf on certain otherwise harmless characters

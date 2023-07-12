@@ -86,10 +86,19 @@ parse
   ;
 
 // instruction describes a legal version 3.0 access control instruction
-// (aci) at the top level.
+// (aci) at the top level. This is the parser component any given user
+// is most likely to use directly, unless they are testing one or more
+// constituent components.
 //
-// I don't want to be required to specify optional WHSP here as
-// I am doing, but implementing this has proven difficult.
+// Users are cautioned when using various non-alphanumeric chars for the
+// DQUOTE'd attributeTypeOrValue parameter because I'm not 100% certain
+// as to what the specification explicitly allows (AND, any given LDAP
+// vendor may choose to enforce or relax such constraints for their own
+// reasons). When given a choice, it is recommended one confine any string
+// label to alphanumeric, whitespace, hyphen and underscore chars (while
+// enforcing uniqueness of said value within the entire DIT!).
+//
+// YMMV and KISS.
 instruction
   : targetRules LPAREN ANCHOR DQUOTE attributeTypeOrValue DQUOTE WHSP*? SEMI WHSP*? permissionBindRules WHSP? RPAREN # aci
   ;
@@ -111,6 +120,8 @@ permissionBindRule
 
 // permission describes a complete permissive statement for an ACI, which
 // may either grant or deny certain privileges.
+//
+// e.g.: allow(read,search,compare)
 permission
   : permissionDisposition WHSP*? LPAREN ( WHSP*? accessPrivileges ( COMMA accessPrivileges WHSP*?)* ) WHSP*? RPAREN	# permission_expression
   ;
@@ -143,7 +154,8 @@ accessPrivileges
 
 // targetRules defines a sequence of zero (0) or more
 // targetRule instances; use of Target Rules is optional
-// in ACIs.
+// in ACIs, however Target Rule statements are *ALWAYS*
+// parenthetical, unlike Bind Rules which may be either.
 targetRules
   : targetRule*              # target_rules
   ;
@@ -183,11 +195,13 @@ targetFilter
   ;
 
 // 'targattrfilters' Target Rule syntax
+// NOTE: ineligible for negation (!=).
 targetAttrFilters
   : LPAREN TARGET_ATTR_FILTERS equalTo DQUOTE targetAttrFiltersValue DQUOTE RPAREN    			# targattrfilters_rule
   ;
 
 // 'targetscope' Target Rule syntax
+// NOTE: ineligible for negation (!=).
 targetScope
   : LPAREN TARGET_SCOPE equalTo DQUOTE targetSearchScopes DQUOTE RPAREN 				# targetscope_rule
   ;
@@ -247,6 +261,8 @@ targetedAttributes
 
 // objectIdentifier contains a dot notation ASN.1 Object Identifier. Values of this
 // kind shall be used within 'targetcontrol' and 'extop' Target Rules.
+//
+// e.g.: 2.16.840.1.113730.3.4.18
 objectIdentifier
   : ( numberForm ( DOT numberForm )+ )                			# object_identifier
   ;
@@ -278,6 +294,12 @@ targetAttrFiltersValue
 // A sequence of one (1) or more attributeFilterAnd values
 // that are joined by a comma or semicolon (depending on
 // the vendor implementation).
+//
+// Note: linebreak added to example below for readability.
+//
+// e.g.: add=userCertificate:(&(objectClass=employee)(terminated=FALSE)) && userCertificate:(objectClass=shareholder); \
+// 	delete=userCertificate:(&(objectClass=executive)(isJerk=TRUE)) && userCertificate:(&(objectClass=marketing)(dweeb=TRUE))
+//
 attributeFilters
   : attributeFilterSet (COMMA|SEMI) attributeFilterSet     # attribute_filters
   ;
@@ -285,6 +307,8 @@ attributeFilters
 // A sequence of one (1) or more attributeFilter values prefixed with a
 // single LDAP Operation (add or delete) and (if need be) joined by a
 // double ampersand (&&)
+//
+// e.g.: add=userCertificate:(&(objectClass=employee)(terminated=FALSE)) && userCertificate(objectClass=shareholder)
 attributeFilterSet
   : attributeFilterOperation ( attributeFilter ( aNDDelimiter attributeFilter )* )? # attribute_filter_set
   ;
@@ -298,6 +322,8 @@ attributeFilterOperation
 
 // attributeFilter is an attributeType and LDAP Search
 // Filter delimited by a single colon (:).
+//
+// e.g.: userCertificate:(objectClass=employee)
 attributeFilter
   : attributeTypeOrValue COLON lDAPFilter	# attribute_filter
   ;
@@ -306,6 +332,11 @@ attributeFilter
 // Begin BIND RULES
 
 // Bind Rule Boolean statements
+//
+// e.g.:
+//	- (timeofday >= "1730" AND timeofday < "2400")
+//	- authmethod = "SASL"
+//
 bindRule
   : bindRuleExpr                                                		# bind_rule
   | bindRuleExprParen ((BOOLEAN_AND|BOOLEAN_OR|BOOLEAN_NOT) bindRuleExprParen)* # parenthetical_bind_rule
@@ -321,6 +352,8 @@ bindRuleExprParen
 
 // bindRuleExpr contains a single Bind Rule in the form of
 // <bind_keyword> <comparison_operator> <assertion_value>
+//
+// e.g.: ssf >= "128"
 bindRuleExpr
   : LPAREN bindRuleExpr RPAREN   # rule_is_parenthetical
   | bindUserDN                   # rule_is_userdn
@@ -337,6 +370,8 @@ bindRuleExpr
   ;
 
 // 'dayofweek' Bind Rule syntax
+//
+// e.g.: dayofweek="Mon,Tues,Fri"
 bindDayOfWeek
   : LPAREN bindDayOfWeek RPAREN                                			# parenthetical_dayofweek_bind_rule
   | BIND_DAY_OF_WEEK (equalTo|notEqualTo) DQUOTE ( doW ( COMMA doW )* ) DQUOTE	# dayofweek_bind_rule
@@ -355,6 +390,8 @@ doW
   ;
 
 // 'authmethod' Bind Rule syntax
+//
+// e.g.: authmethod != "none"
 bindAuthMethod
   : LPAREN bindAuthMethod RPAREN                                       		# parentheticalAuthenticationMethod
   | BIND_AUTH_METHOD (equalTo|notEqualTo) DQUOTE authenticationMethods DQUOTE 	# authentication_method
@@ -371,54 +408,72 @@ authenticationMethods
   ;
 
 // 'userdn' Bind Rule syntax
+//
+// e.g.: userdn="ldap:///uid=someone,ou=People,dc=example,dc=com"
 bindUserDN
   : LPAREN bindUserDN RPAREN								# parenthetical_bind_userdn 
   | BIND_USER_DN (equalTo|notEqualTo) WHSP? (distinguishedNames|DQUOTE lDAPURI DQUOTE)	# bind_userdn
   ;
 
 // 'roledn' Bind Rule syntax
+//
+// e.g.: roledn="ldap:///uid=someone,ou=People,dc=example,dc=com"
 bindRoleDN
   : LPAREN bindRoleDN RPAREN					# parenthetical_bind_roledn
   | BIND_ROLE_DN (equalTo|notEqualTo) distinguishedNames 	# bind_roledn
   ;
 
 // 'groupdn' Bind Rule syntax
+//
+// e.g.: groupdn="ldap:///cn=X.500 Administrators,ou=Groups,dc=example,dc=com"
 bindGroupDN
   : LPAREN bindGroupDN RPAREN				      				# parenthetical_bind_groupdn
   | BIND_GROUP_DN (equalTo|notEqualTo) (distinguishedNames|DQUOTE lDAPURI DQUOTE) 	# bind_groupdn
   ;
 
 // 'userattr' Bind Rule syntax
+//
+// e.g.: userattr="owner#USERDN"
 bindUserAttr
   : LPAREN bindUserAttr RPAREN                 					# parenthetical_bind_userattr
   | BIND_USER_ATTR (equalTo|notEqualTo) DQUOTE (attributeBindTypeOrValue|inheritance) DQUOTE  # bind_userattr
   ;
 
 // 'groupattr' Bind Rule syntax
+//
+// e.g.: groupattr="manager#LDAPURL"
 bindGroupAttr
   : LPAREN bindGroupAttr RPAREN                                        		# parenthetical_bind_groupattr
   | BIND_GROUP_ATTR (equalTo|notEqualTo) DQUOTE (attributeBindTypeOrValue|inheritance) DQUOTE	# bind_groupattr
   ;
 
 // 'ssf' Bind Rule syntax
+//
+// e.g.: ssf != "0"
 bindSecurityStrengthFactor
   : LPAREN bindSecurityStrengthFactor RPAREN                             					# parenthetical_ssf
   | BIND_SSF (equalTo|notEqualTo|greaterThan|greaterThanOrEqual|lessThan|lessThanOrEqual) DQUOTE INT DQUOTE	# bind_ssf
   ;
 
 // 'timeofday' Bind Rule syntax
+//
+// e.g.: (timeofday >= "1730" AND timeofday < "2400")
 bindTimeOfDay
   : LPAREN bindTimeOfDay RPAREN												# parenthetical_bind_timeofday
   | BIND_TIME_OF_DAY (equalTo|notEqualTo|greaterThan|greaterThanOrEqual|lessThan|lessThanOrEqual) DQUOTE INT DQUOTE	# bind_timeofday
   ;
 
 // 'ip' Bind Rule syntax
+//
+// e.g.: ip = "192.168.0,12.3.45.*,10.0.0.0/8"
 bindIP
   : LPAREN bindIP RPAREN                       			# parenthetical_bind_ip
   | BIND_IP (equalTo|notEqualTo) DQUOTE iPAddresses DQUOTE	# bind_ip
   ;
 
 // 'dns' Bind Rule syntax
+//
+// e.g.: dns = "www.example.com"
 bindDNS
   : LPAREN bindDNS RPAREN                      				# parenthetical_bind_dns
   | BIND_DNS (equalTo|notEqualTo) DQUOTE fQDN DQUOTE			# dns_bind_rule
@@ -426,6 +481,8 @@ bindDNS
 
 // iPAddresses contains a sequence of one (1) or more IPv4 or IPv6
 // addresses, delimited by COMMA as needed.
+//
+// e.g.: '192.168.0,12.3.45.*,10.0.0.0/8'
 iPAddresses
   : ( iPAddress ( COMMA iPAddress )* )+?      				# ips
   ;
@@ -439,18 +496,24 @@ iPAddress
 
 // iPv4Address describes a single IPv4 address, which may include a
 // STAR for octet wildcard statements.
+//
+// e.g.: '192.168.*'
 iPv4Address
   : ( INT ( DOT (INT|STAR)* ) )						# ipv4
   ;
 
 // iPv6Address describes a single IPv6 address, which may include a
 // STAR for octet wildcard statements.
+//
+// e.g.: '2001:470:dead:beef::'
 iPv6Address
   : ( attributeTypeOrValue ( COLON attributeTypeOrValue )+ COLON? )	# ipv6
   ;
 
 // fQDN describes a single fully-qualified domain name, which may 
 // include a STAR for label wildcard statements.
+//
+// e.g.: 'www.example.com' or '*.example.com'
 fQDN
   : ( attributeTypeOrValue ( DOT attributeTypeOrValue )+ )		# fqdn
   ;
@@ -458,17 +521,32 @@ fQDN
 ///////////////////////////////////////////////////////////////////////////////
 // Begin LDAP related rules
 
-// lDAPURI describes a fully-qualified LDAP URI, which may include one (1) or
-// more of the following LDAP Search parameters in the following order:
+// lDAPURI describes a fully-qualified LDAP URI, which will include either of
+// the following conditions
 //
-// - Comma-delimited attributeType list
-// - A standard LDAP Search Scope (base, one, sub)
-// - An LDAP Search Filter
+// LDAP Search Parameters:
+// 	- Comma-delimited attributeType list, and/or ..
+// 	- A standard LDAP Search Scope (base, one, sub), and/or ..
+// 	- An LDAP Search Filter
+//
+// ... OR ...
+//
+// A value that matches the attributeBindTypeOrValue parser type
 //
 // The prefix of values of this kind shall ALWAYS be a distinguishedName which
-// bears local LDAP scheme (ldap:///).
+// bears local LDAP scheme (ldap:///), regardless of which structure above was
+// qualified.
+//
+// e.g.:
+//	- 'ldap:///uid=courtney,ou=People,dc=example,dc=com?cn,sn,givenName?sub?(objectClass=employee)'
+//	- 'ldap:///uid=courtney,ou=People,dc=example,dc=com??sub?(objectClass=employee)'
+//
+// ... OR ...
+//
+//	- 'ldap:///uid=courtney,ou=People,dc=example,dc=com?manager#USERDN'
 lDAPURI
-  : distinguishedName uRIAttributeList uRISearchScopes uRISearchFilter       # fullyQualifiedLDAPURI
+  : distinguishedName uRIAttributeList uRISearchScopes uRISearchFilter	# fully_qualified_ldapuri
+  | distinguishedName QMARK attributeBindTypeOrValue			# fully_qualified_ldapuri_attr_bindtype_or_value
   ;
 
 // uRISearchFilter describes a single LDAP Search Filter with a QMARK (?)
@@ -492,9 +570,13 @@ uRIAttributeList
   : QMARK ( attributeTypeOrValue ( COMMA attributeTypeOrValue )* )?  # uriAttributeList
   ;
 
-// distinguishedNames contains one or more LDAP Distinguished Names. In the
+// distinguishedNames contains one (1) or more LDAP Distinguished Names. In the
 // case of >1 DNs, the symbolic OR (||) delimiter is used. This applies to
 // 'userdn', 'groupdn' and 'target' rules.
+//
+// e.g.:
+//	- "ldap:///uid=courtney,ou=People,dc=example,dc=com" || "ldap:///uid=jane,ou=People,dc=example,dc=com"
+//	- "ldap:///uid=courtney,ou=People,dc=example,dc=com || ldap:///uid=jane,ou=People,dc=example,dc=com"
 distinguishedNames
   : DQUOTE ( distinguishedName ( oRDelimiter distinguishedName )* ) DQUOTE             		# quoted_distinguished_name_list
   | ( DQUOTE distinguishedName DQUOTE ( oRDelimiter (DQUOTE distinguishedName DQUOTE) )* )	# list_of_quoted_distinguished_names
@@ -503,6 +585,8 @@ distinguishedNames
 // distinguishedName is a sequence of aVAOrRDN values. Macro
 // variable declarations for [$dn], ($dn) and ($attr.<atname>)
 // are supported.
+//
+// e.g.: "ldap:///uid=courtney,ou=People,dc=example,dc=com"
 distinguishedName
   : ( LOCAL_LDAP_SCHEME aVAOrRDN ( COMMA (aVAOrRDN|rDNMacros) )* )	# dn
   | LOCAL_LDAP_SCHEME ANYONE						# anonymous_dn_alias
@@ -521,6 +605,8 @@ distinguishedName
 // Instances of this type are used within 'userdn' and 'groupdn' Bind Rules
 // (assuming the LDAP DSA product supports Macro ACIs). Please note that
 // Macro ACIs are not part of the universally-adopted syntax components.
+//
+// e.g.: "ldap:///uid=courtney,($attr.ou),ou=People,dc=example,dc=com"
 rDNMacros
   : RDN_MACROS							   	# rdn_macro
   ;
@@ -528,6 +614,8 @@ rDNMacros
 // lDAPFilter describes the string representation of an RFC4515 LDAP Search Filter.
 // Values of this kind are used in several areas, including 'targetfilter' Target Rules,
 // LDAP URIs, et al.
+//
+// e.g.: "(&(objectClass=employee)(terminated=FALSE))"
 lDAPFilter
   : LPAREN lDAPFilterExpr RPAREN       	# parenthetical_filter_expression
   | lDAPFilterExpr*                    	# filter_expressions
@@ -541,24 +629,29 @@ lDAPFilterExpr
   | aVAOrRDN			                               		   # ava_expression
   ;
 
-// aVAOrRDN is two things (for the sake of a simple grammar file)
-// - when present within a distinguishedName, it is a relativeDistinguishedName (e.g.: 'uid=jesse')
-// - when present within a filter, it is an attributeValueAssertion (e.g.: 'cn~=Jesse' or 'objectClass=*')
+// aVAOrRDN is one (1) of two (2) things for the sake of a simple grammar file:
+//
+// - when present within a distinguishedName, it is a relativeDistinguishedName (e.g.: 'uid=grrlpower' or 'cn=Jesse Coretta')
+// - when present within a filter, it is an attributeValueAssertion (e.g.: 'color;lang-fr: bleu' or 'objectClass=*')
+//
+// This is an absolutely critical parser component.
 aVAOrRDN
   : LPAREN attributeTypeOrValue attributeComparisonOperator attributeTypeOrValue RPAREN	# parenthetical_ava_or_rdn
   | attributeTypeOrValue attributeComparisonOperator attributeTypeOrValue	 	# ava_or_rdn
   ;
 
 // Vertical Inheritance (for User/Group Attribute Matching)
+//
+// e.g.: 'parent[0,1,3].owner#USERDN'
 inheritance
   : ( PARENT inheritanceLevels DOT attributeBindTypeOrValue )       # inheritance_expression
   ;
 
 // inheritanceLevels describe one (1) of five (5) possible "depth levels":
 //
-// - Level Zero (0) (baseObject)
-// - Level One (1) (one level below baseObject)
-// - Level Two (2) (two levels below baseObject)
+// - Level Zero (0) ("base" (baseObject) scope; zero depth)
+// - Level One (1) (one level below baseObject; "onelevel" scope)
+// - Level Two (2) (two levels below baseObject "subtree" scope)
 // - Level Three (3) (three levels below baseObject)
 // - Level Four (4) (four levels below baseObject)
 //
@@ -572,8 +665,10 @@ inheritanceLevels
 //
 // <attributeType>#<bindType_or_value>
 //
+// e.g.: 'manager#GROUPDN' or 'nickname#squatcobbler'
+//
 // Values of this kind are used in certain 'userattr' and 'groupattr' Bind
-// Rules.
+// Rules, and may also be found within certain lDAPURI instances.
 attributeBindTypeOrValue
   : attributeTypeOrValue HASH (bindTypes|attributeTypeOrValue)      # attr_bind_type_or_value
   ;
@@ -591,16 +686,22 @@ bindTypes
 // attributeTypeOrValue describes a general attributeType OR
 // assertion value. Values of this kind MAY manifest as STAR
 // for wildcard statements or presence checks.
+//
+// See the lexer KEY_OR_VALUE definition for additional notes
+// on the topic of this value.
 attributeTypeOrValue
   : KEY_OR_VALUE	# key_or_value
   | STAR		# presence_key_or_value
   ;
 
-// attributeComparisonOperator describes one (1) of nine (9)
-// possible comparison operators to be used in AVAs and RDNs.
+// attributeComparisonOperator describes one (1) of eight (8)
+// possible comparison operators to be used in LDAP AVAs.
+//
+// Note that gt/lt are not valid operators for LDAP AVAs, and
+// thus they are not listed here. Only ge/le are available for
+// (numerical) ordering matches.
 attributeComparisonOperator
   : equalTo		# equal_to
-  | notEqualTo		# not_equal_to
   | greaterThanOrEqual	# greater_than_or_equal
   | lessThanOrEqual	# less_than_or_equal
   | approximate		# approx

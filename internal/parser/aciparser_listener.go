@@ -343,8 +343,11 @@ type ACIParserListener interface {
 	// EnterFqdn is called when entering the fqdn production.
 	EnterFqdn(c *FqdnContext)
 
-	// EnterFullyQualifiedLDAPURI is called when entering the fullyQualifiedLDAPURI production.
-	EnterFullyQualifiedLDAPURI(c *FullyQualifiedLDAPURIContext)
+	// EnterFully_qualified_ldapuri is called when entering the fully_qualified_ldapuri production.
+	EnterFully_qualified_ldapuri(c *Fully_qualified_ldapuriContext)
+
+	// EnterFully_qualified_ldapuri_attr_bindtype_or_value is called when entering the fully_qualified_ldapuri_attr_bindtype_or_value production.
+	EnterFully_qualified_ldapuri_attr_bindtype_or_value(c *Fully_qualified_ldapuri_attr_bindtype_or_valueContext)
 
 	// EnterUriSearchFilter is called when entering the uriSearchFilter production.
 	EnterUriSearchFilter(c *UriSearchFilterContext)
@@ -432,9 +435,6 @@ type ACIParserListener interface {
 
 	// EnterEqual_to is called when entering the equal_to production.
 	EnterEqual_to(c *Equal_toContext)
-
-	// EnterNot_equal_to is called when entering the not_equal_to production.
-	EnterNot_equal_to(c *Not_equal_toContext)
 
 	// EnterGreater_than_or_equal is called when entering the greater_than_or_equal production.
 	EnterGreater_than_or_equal(c *Greater_than_or_equalContext)
@@ -832,8 +832,11 @@ type ACIParserListener interface {
 	// ExitFqdn is called when exiting the fqdn production.
 	ExitFqdn(c *FqdnContext)
 
-	// ExitFullyQualifiedLDAPURI is called when exiting the fullyQualifiedLDAPURI production.
-	ExitFullyQualifiedLDAPURI(c *FullyQualifiedLDAPURIContext)
+	// ExitFully_qualified_ldapuri is called when exiting the fully_qualified_ldapuri production.
+	ExitFully_qualified_ldapuri(c *Fully_qualified_ldapuriContext)
+
+	// ExitFully_qualified_ldapuri_attr_bindtype_or_value is called when exiting the fully_qualified_ldapuri_attr_bindtype_or_value production.
+	ExitFully_qualified_ldapuri_attr_bindtype_or_value(c *Fully_qualified_ldapuri_attr_bindtype_or_valueContext)
 
 	// ExitUriSearchFilter is called when exiting the uriSearchFilter production.
 	ExitUriSearchFilter(c *UriSearchFilterContext)
@@ -921,9 +924,6 @@ type ACIParserListener interface {
 
 	// ExitEqual_to is called when exiting the equal_to production.
 	ExitEqual_to(c *Equal_toContext)
-
-	// ExitNot_equal_to is called when exiting the not_equal_to production.
-	ExitNot_equal_to(c *Not_equal_toContext)
 
 	// ExitGreater_than_or_equal is called when exiting the greater_than_or_equal production.
 	ExitGreater_than_or_equal(c *Greater_than_or_equalContext)
