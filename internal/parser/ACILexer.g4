@@ -545,7 +545,7 @@ BOOLEAN_NOT
 // file (or so I read somewhere), but all hell breaks loose
 // when it is :(
 WHITESPACE
-  : [ \t\r\n\u000C]+ -> skip
+  : [ \t\r\n\u000C]+ -> channel(HIDDEN)
   ;
 
 // INT represents any unsigned integer of any magnitude.

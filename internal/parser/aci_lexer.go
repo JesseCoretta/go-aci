@@ -435,7 +435,7 @@ func acilexerLexerInit() {
 		1, 0, 0, 0, 783, 198, 1, 0, 0, 0, 784, 786, 8, 24, 0, 0, 785, 784, 1, 0,
 		0, 0, 786, 787, 1, 0, 0, 0, 787, 785, 1, 0, 0, 0, 787, 788, 1, 0, 0, 0,
 		788, 200, 1, 0, 0, 0, 9, 0, 204, 281, 654, 662, 755, 775, 782, 787, 1,
-		6, 0, 0,
+		0, 1, 0,
 	}
 	deserializer := antlr.NewATNDeserializer(nil)
 	staticData.atn = deserializer.Deserialize(staticData.serializedATN)

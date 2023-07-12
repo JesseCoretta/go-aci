@@ -35,13 +35,27 @@ which I am unaware (and you can cite literature to that end), then
 you are encouraged to open a new ticket within the github repository
 in which the parser resides.
 
-Please note that, at this time, this solution does NOT cover Apache
-DS's own proprietary ACI syntax, which is radically different. In
-fact it is so different that I am uncertain as to the ideal means
-for  integration with this solution, assuming I integrate them in
-the first place. I may try to tackle that in the near future, but
-it is extremely low-priority and I suspect there would be little to
-no demand for it.
+Please note that, at this time, this solution does NOT cover these
+ACI syntax "variants":
+
+ - Apache DS "Entry, Prescriptive & Subentry ACIs"
+ - OpenLDAP "Experimental ACIs"
+
+The main reason is because they're so incredibly different from the
+syntax honored here that I am uncertain as to the ideal means for
+integration with this solution.
+
+I may try to tackle this in the near future, but it is extremely low 
+priority and I suspect there would be little to no demand for it, as:
+
+ - (a) Apache DS is widely considered lackluster, much of the reference
+       material is empty, labeled "TODO" or contain ToC-only pages that
+       lead nowhere. Plus its Java. Java makes me want to take a shower
+
+ - (b) OpenLDAP recommends users leverage their proprietary configuration
+       based "ACL" syntax with or without dynamic configuration involved
+       (in fact, their ACL syntax is far more palatable for incorporation
+       into this solution, given how widely it is used)
 
 LEXER CONTENTS
 
@@ -79,16 +93,16 @@ parser grammar ACIParser;
 options { tokenVocab=ACILexer; }
 
 // instruction is the main parsing target, which is comprised of
-// many constituent "parts", all of which are defined later in this
-// grammar file.
+// many "constituents" -- all of which are defined later in this
+// grammar file (and its accompanying lexer file).
 parse
   : instruction EOF
   ;
 
 // instruction describes a legal version 3.0 access control instruction
-// (aci) at the top level. This is the parser component any given user
+// (aci) at the top-level. This is the parser component any given user
 // is most likely to use directly, unless they are testing one or more
-// constituent components.
+// constituent components only.
 //
 // Users are cautioned when using various non-alphanumeric chars for the
 // DQUOTE'd attributeTypeOrValue parameter because I'm not 100% certain
