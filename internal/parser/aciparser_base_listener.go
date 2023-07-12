@@ -64,6 +64,18 @@ func (s *BaseACIParserListener) EnterDeny_access(ctx *Deny_accessContext) {}
 // ExitDeny_access is called when production deny_access is exited.
 func (s *BaseACIParserListener) ExitDeny_access(ctx *Deny_accessContext) {}
 
+// EnterAllow is called when production allow is entered.
+func (s *BaseACIParserListener) EnterAllow(ctx *AllowContext) {}
+
+// ExitAllow is called when production allow is exited.
+func (s *BaseACIParserListener) ExitAllow(ctx *AllowContext) {}
+
+// EnterDeny is called when production deny is entered.
+func (s *BaseACIParserListener) EnterDeny(ctx *DenyContext) {}
+
+// ExitDeny is called when production deny is exited.
+func (s *BaseACIParserListener) ExitDeny(ctx *DenyContext) {}
+
 // EnterSearch_privilege is called when production search_privilege is entered.
 func (s *BaseACIParserListener) EnterSearch_privilege(ctx *Search_privilegeContext) {}
 
@@ -129,6 +141,60 @@ func (s *BaseACIParserListener) EnterNo_privileges(ctx *No_privilegesContext) {}
 
 // ExitNo_privileges is called when production no_privileges is exited.
 func (s *BaseACIParserListener) ExitNo_privileges(ctx *No_privilegesContext) {}
+
+// EnterSearchPrivilege is called when production searchPrivilege is entered.
+func (s *BaseACIParserListener) EnterSearchPrivilege(ctx *SearchPrivilegeContext) {}
+
+// ExitSearchPrivilege is called when production searchPrivilege is exited.
+func (s *BaseACIParserListener) ExitSearchPrivilege(ctx *SearchPrivilegeContext) {}
+
+// EnterReadPrivilege is called when production readPrivilege is entered.
+func (s *BaseACIParserListener) EnterReadPrivilege(ctx *ReadPrivilegeContext) {}
+
+// ExitReadPrivilege is called when production readPrivilege is exited.
+func (s *BaseACIParserListener) ExitReadPrivilege(ctx *ReadPrivilegeContext) {}
+
+// EnterComparePrivilege is called when production comparePrivilege is entered.
+func (s *BaseACIParserListener) EnterComparePrivilege(ctx *ComparePrivilegeContext) {}
+
+// ExitComparePrivilege is called when production comparePrivilege is exited.
+func (s *BaseACIParserListener) ExitComparePrivilege(ctx *ComparePrivilegeContext) {}
+
+// EnterAddPrivilege is called when production addPrivilege is entered.
+func (s *BaseACIParserListener) EnterAddPrivilege(ctx *AddPrivilegeContext) {}
+
+// ExitAddPrivilege is called when production addPrivilege is exited.
+func (s *BaseACIParserListener) ExitAddPrivilege(ctx *AddPrivilegeContext) {}
+
+// EnterDeletePrivilege is called when production deletePrivilege is entered.
+func (s *BaseACIParserListener) EnterDeletePrivilege(ctx *DeletePrivilegeContext) {}
+
+// ExitDeletePrivilege is called when production deletePrivilege is exited.
+func (s *BaseACIParserListener) ExitDeletePrivilege(ctx *DeletePrivilegeContext) {}
+
+// EnterSelfWritePrivilege is called when production selfWritePrivilege is entered.
+func (s *BaseACIParserListener) EnterSelfWritePrivilege(ctx *SelfWritePrivilegeContext) {}
+
+// ExitSelfWritePrivilege is called when production selfWritePrivilege is exited.
+func (s *BaseACIParserListener) ExitSelfWritePrivilege(ctx *SelfWritePrivilegeContext) {}
+
+// EnterProxyPrivilege is called when production proxyPrivilege is entered.
+func (s *BaseACIParserListener) EnterProxyPrivilege(ctx *ProxyPrivilegeContext) {}
+
+// ExitProxyPrivilege is called when production proxyPrivilege is exited.
+func (s *BaseACIParserListener) ExitProxyPrivilege(ctx *ProxyPrivilegeContext) {}
+
+// EnterExportPrivilege is called when production exportPrivilege is entered.
+func (s *BaseACIParserListener) EnterExportPrivilege(ctx *ExportPrivilegeContext) {}
+
+// ExitExportPrivilege is called when production exportPrivilege is exited.
+func (s *BaseACIParserListener) ExitExportPrivilege(ctx *ExportPrivilegeContext) {}
+
+// EnterImportPrivilege is called when production importPrivilege is entered.
+func (s *BaseACIParserListener) EnterImportPrivilege(ctx *ImportPrivilegeContext) {}
+
+// ExitImportPrivilege is called when production importPrivilege is exited.
+func (s *BaseACIParserListener) ExitImportPrivilege(ctx *ImportPrivilegeContext) {}
 
 // EnterNoPrivileges is called when production noPrivileges is entered.
 func (s *BaseACIParserListener) EnterNoPrivileges(ctx *NoPrivilegesContext) {}
@@ -279,6 +345,30 @@ func (s *BaseACIParserListener) EnterSubordinate_targetscope(ctx *Subordinate_ta
 
 // ExitSubordinate_targetscope is called when production subordinate_targetscope is exited.
 func (s *BaseACIParserListener) ExitSubordinate_targetscope(ctx *Subordinate_targetscopeContext) {}
+
+// EnterBaseTargetScope is called when production baseTargetScope is entered.
+func (s *BaseACIParserListener) EnterBaseTargetScope(ctx *BaseTargetScopeContext) {}
+
+// ExitBaseTargetScope is called when production baseTargetScope is exited.
+func (s *BaseACIParserListener) ExitBaseTargetScope(ctx *BaseTargetScopeContext) {}
+
+// EnterOneLevelTargetScope is called when production oneLevelTargetScope is entered.
+func (s *BaseACIParserListener) EnterOneLevelTargetScope(ctx *OneLevelTargetScopeContext) {}
+
+// ExitOneLevelTargetScope is called when production oneLevelTargetScope is exited.
+func (s *BaseACIParserListener) ExitOneLevelTargetScope(ctx *OneLevelTargetScopeContext) {}
+
+// EnterSubTreeTargetScope is called when production subTreeTargetScope is entered.
+func (s *BaseACIParserListener) EnterSubTreeTargetScope(ctx *SubTreeTargetScopeContext) {}
+
+// ExitSubTreeTargetScope is called when production subTreeTargetScope is exited.
+func (s *BaseACIParserListener) ExitSubTreeTargetScope(ctx *SubTreeTargetScopeContext) {}
+
+// EnterSubordinateTargetScope is called when production subordinateTargetScope is entered.
+func (s *BaseACIParserListener) EnterSubordinateTargetScope(ctx *SubordinateTargetScopeContext) {}
+
+// ExitSubordinateTargetScope is called when production subordinateTargetScope is exited.
+func (s *BaseACIParserListener) ExitSubordinateTargetScope(ctx *SubordinateTargetScopeContext) {}
 
 // EnterQuoted_object_identifier_list is called when production quoted_object_identifier_list is entered.
 func (s *BaseACIParserListener) EnterQuoted_object_identifier_list(ctx *Quoted_object_identifier_listContext) {
@@ -520,46 +610,88 @@ func (s *BaseACIParserListener) EnterDayofweek_bind_rule(ctx *Dayofweek_bind_rul
 // ExitDayofweek_bind_rule is called when production dayofweek_bind_rule is exited.
 func (s *BaseACIParserListener) ExitDayofweek_bind_rule(ctx *Dayofweek_bind_ruleContext) {}
 
-// EnterSun is called when production Sun is entered.
+// EnterSunday is called when production Sunday is entered.
+func (s *BaseACIParserListener) EnterSunday(ctx *SundayContext) {}
+
+// ExitSunday is called when production Sunday is exited.
+func (s *BaseACIParserListener) ExitSunday(ctx *SundayContext) {}
+
+// EnterMonday is called when production Monday is entered.
+func (s *BaseACIParserListener) EnterMonday(ctx *MondayContext) {}
+
+// ExitMonday is called when production Monday is exited.
+func (s *BaseACIParserListener) ExitMonday(ctx *MondayContext) {}
+
+// EnterTuesday is called when production Tuesday is entered.
+func (s *BaseACIParserListener) EnterTuesday(ctx *TuesdayContext) {}
+
+// ExitTuesday is called when production Tuesday is exited.
+func (s *BaseACIParserListener) ExitTuesday(ctx *TuesdayContext) {}
+
+// EnterWednesday is called when production Wednesday is entered.
+func (s *BaseACIParserListener) EnterWednesday(ctx *WednesdayContext) {}
+
+// ExitWednesday is called when production Wednesday is exited.
+func (s *BaseACIParserListener) ExitWednesday(ctx *WednesdayContext) {}
+
+// EnterThurday is called when production Thurday is entered.
+func (s *BaseACIParserListener) EnterThurday(ctx *ThurdayContext) {}
+
+// ExitThurday is called when production Thurday is exited.
+func (s *BaseACIParserListener) ExitThurday(ctx *ThurdayContext) {}
+
+// EnterFriday is called when production Friday is entered.
+func (s *BaseACIParserListener) EnterFriday(ctx *FridayContext) {}
+
+// ExitFriday is called when production Friday is exited.
+func (s *BaseACIParserListener) ExitFriday(ctx *FridayContext) {}
+
+// EnterSaturday is called when production Saturday is entered.
+func (s *BaseACIParserListener) EnterSaturday(ctx *SaturdayContext) {}
+
+// ExitSaturday is called when production Saturday is exited.
+func (s *BaseACIParserListener) ExitSaturday(ctx *SaturdayContext) {}
+
+// EnterSun is called when production sun is entered.
 func (s *BaseACIParserListener) EnterSun(ctx *SunContext) {}
 
-// ExitSun is called when production Sun is exited.
+// ExitSun is called when production sun is exited.
 func (s *BaseACIParserListener) ExitSun(ctx *SunContext) {}
 
-// EnterMon is called when production Mon is entered.
+// EnterMon is called when production mon is entered.
 func (s *BaseACIParserListener) EnterMon(ctx *MonContext) {}
 
-// ExitMon is called when production Mon is exited.
+// ExitMon is called when production mon is exited.
 func (s *BaseACIParserListener) ExitMon(ctx *MonContext) {}
 
-// EnterTues is called when production Tues is entered.
+// EnterTues is called when production tues is entered.
 func (s *BaseACIParserListener) EnterTues(ctx *TuesContext) {}
 
-// ExitTues is called when production Tues is exited.
+// ExitTues is called when production tues is exited.
 func (s *BaseACIParserListener) ExitTues(ctx *TuesContext) {}
 
-// EnterWed is called when production Wed is entered.
+// EnterWed is called when production wed is entered.
 func (s *BaseACIParserListener) EnterWed(ctx *WedContext) {}
 
-// ExitWed is called when production Wed is exited.
+// ExitWed is called when production wed is exited.
 func (s *BaseACIParserListener) ExitWed(ctx *WedContext) {}
 
-// EnterThur is called when production Thur is entered.
+// EnterThur is called when production thur is entered.
 func (s *BaseACIParserListener) EnterThur(ctx *ThurContext) {}
 
-// ExitThur is called when production Thur is exited.
+// ExitThur is called when production thur is exited.
 func (s *BaseACIParserListener) ExitThur(ctx *ThurContext) {}
 
-// EnterFri is called when production Fri is entered.
+// EnterFri is called when production fri is entered.
 func (s *BaseACIParserListener) EnterFri(ctx *FriContext) {}
 
-// ExitFri is called when production Fri is exited.
+// ExitFri is called when production fri is exited.
 func (s *BaseACIParserListener) ExitFri(ctx *FriContext) {}
 
-// EnterSat is called when production Sat is entered.
+// EnterSat is called when production sat is entered.
 func (s *BaseACIParserListener) EnterSat(ctx *SatContext) {}
 
-// ExitSat is called when production Sat is exited.
+// ExitSat is called when production sat is exited.
 func (s *BaseACIParserListener) ExitSat(ctx *SatContext) {}
 
 // EnterParenthetical_authentication_method is called when production parenthetical_authentication_method is entered.
@@ -599,6 +731,30 @@ func (s *BaseACIParserListener) EnterSasl(ctx *SaslContext) {}
 
 // ExitSasl is called when production sasl is exited.
 func (s *BaseACIParserListener) ExitSasl(ctx *SaslContext) {}
+
+// EnterAnonAuth is called when production anonAuth is entered.
+func (s *BaseACIParserListener) EnterAnonAuth(ctx *AnonAuthContext) {}
+
+// ExitAnonAuth is called when production anonAuth is exited.
+func (s *BaseACIParserListener) ExitAnonAuth(ctx *AnonAuthContext) {}
+
+// EnterSimpleAuth is called when production simpleAuth is entered.
+func (s *BaseACIParserListener) EnterSimpleAuth(ctx *SimpleAuthContext) {}
+
+// ExitSimpleAuth is called when production simpleAuth is exited.
+func (s *BaseACIParserListener) ExitSimpleAuth(ctx *SimpleAuthContext) {}
+
+// EnterSSLAuth is called when production sSLAuth is entered.
+func (s *BaseACIParserListener) EnterSSLAuth(ctx *SSLAuthContext) {}
+
+// ExitSSLAuth is called when production sSLAuth is exited.
+func (s *BaseACIParserListener) ExitSSLAuth(ctx *SSLAuthContext) {}
+
+// EnterSASLAuth is called when production sASLAuth is entered.
+func (s *BaseACIParserListener) EnterSASLAuth(ctx *SASLAuthContext) {}
+
+// ExitSASLAuth is called when production sASLAuth is exited.
+func (s *BaseACIParserListener) ExitSASLAuth(ctx *SASLAuthContext) {}
 
 // EnterParenthetical_bind_userdn is called when production parenthetical_bind_userdn is entered.
 func (s *BaseACIParserListener) EnterParenthetical_bind_userdn(ctx *Parenthetical_bind_userdnContext) {
@@ -902,34 +1058,64 @@ func (s *BaseACIParserListener) EnterAttr_bind_type_or_value(ctx *Attr_bind_type
 // ExitAttr_bind_type_or_value is called when production attr_bind_type_or_value is exited.
 func (s *BaseACIParserListener) ExitAttr_bind_type_or_value(ctx *Attr_bind_type_or_valueContext) {}
 
-// EnterUSERDN is called when production USERDN is entered.
-func (s *BaseACIParserListener) EnterUSERDN(ctx *USERDNContext) {}
+// EnterBtUSERDN is called when production btUSERDN is entered.
+func (s *BaseACIParserListener) EnterBtUSERDN(ctx *BtUSERDNContext) {}
 
-// ExitUSERDN is called when production USERDN is exited.
-func (s *BaseACIParserListener) ExitUSERDN(ctx *USERDNContext) {}
+// ExitBtUSERDN is called when production btUSERDN is exited.
+func (s *BaseACIParserListener) ExitBtUSERDN(ctx *BtUSERDNContext) {}
 
-// EnterGROUPDN is called when production GROUPDN is entered.
-func (s *BaseACIParserListener) EnterGROUPDN(ctx *GROUPDNContext) {}
+// EnterBtGROUPDN is called when production btGROUPDN is entered.
+func (s *BaseACIParserListener) EnterBtGROUPDN(ctx *BtGROUPDNContext) {}
 
-// ExitGROUPDN is called when production GROUPDN is exited.
-func (s *BaseACIParserListener) ExitGROUPDN(ctx *GROUPDNContext) {}
+// ExitBtGROUPDN is called when production btGROUPDN is exited.
+func (s *BaseACIParserListener) ExitBtGROUPDN(ctx *BtGROUPDNContext) {}
 
-// EnterROLEDN is called when production ROLEDN is entered.
-func (s *BaseACIParserListener) EnterROLEDN(ctx *ROLEDNContext) {}
+// EnterBtROLEDN is called when production btROLEDN is entered.
+func (s *BaseACIParserListener) EnterBtROLEDN(ctx *BtROLEDNContext) {}
 
-// ExitROLEDN is called when production ROLEDN is exited.
-func (s *BaseACIParserListener) ExitROLEDN(ctx *ROLEDNContext) {}
+// ExitBtROLEDN is called when production btROLEDN is exited.
+func (s *BaseACIParserListener) ExitBtROLEDN(ctx *BtROLEDNContext) {}
 
-// EnterSELFDN is called when production SELFDN is entered.
-func (s *BaseACIParserListener) EnterSELFDN(ctx *SELFDNContext) {}
+// EnterBtSELFDN is called when production btSELFDN is entered.
+func (s *BaseACIParserListener) EnterBtSELFDN(ctx *BtSELFDNContext) {}
 
-// ExitSELFDN is called when production SELFDN is exited.
-func (s *BaseACIParserListener) ExitSELFDN(ctx *SELFDNContext) {}
+// ExitBtSELFDN is called when production btSELFDN is exited.
+func (s *BaseACIParserListener) ExitBtSELFDN(ctx *BtSELFDNContext) {}
 
-// EnterLDAPURL is called when production LDAPURL is entered.
+// EnterBtLDAPURL is called when production btLDAPURL is entered.
+func (s *BaseACIParserListener) EnterBtLDAPURL(ctx *BtLDAPURLContext) {}
+
+// ExitBtLDAPURL is called when production btLDAPURL is exited.
+func (s *BaseACIParserListener) ExitBtLDAPURL(ctx *BtLDAPURLContext) {}
+
+// EnterUserDN is called when production userDN is entered.
+func (s *BaseACIParserListener) EnterUserDN(ctx *UserDNContext) {}
+
+// ExitUserDN is called when production userDN is exited.
+func (s *BaseACIParserListener) ExitUserDN(ctx *UserDNContext) {}
+
+// EnterRoleDN is called when production roleDN is entered.
+func (s *BaseACIParserListener) EnterRoleDN(ctx *RoleDNContext) {}
+
+// ExitRoleDN is called when production roleDN is exited.
+func (s *BaseACIParserListener) ExitRoleDN(ctx *RoleDNContext) {}
+
+// EnterSelfDN is called when production selfDN is entered.
+func (s *BaseACIParserListener) EnterSelfDN(ctx *SelfDNContext) {}
+
+// ExitSelfDN is called when production selfDN is exited.
+func (s *BaseACIParserListener) ExitSelfDN(ctx *SelfDNContext) {}
+
+// EnterGroupDN is called when production groupDN is entered.
+func (s *BaseACIParserListener) EnterGroupDN(ctx *GroupDNContext) {}
+
+// ExitGroupDN is called when production groupDN is exited.
+func (s *BaseACIParserListener) ExitGroupDN(ctx *GroupDNContext) {}
+
+// EnterLDAPURL is called when production lDAPURL is entered.
 func (s *BaseACIParserListener) EnterLDAPURL(ctx *LDAPURLContext) {}
 
-// ExitLDAPURL is called when production LDAPURL is exited.
+// ExitLDAPURL is called when production lDAPURL is exited.
 func (s *BaseACIParserListener) ExitLDAPURL(ctx *LDAPURLContext) {}
 
 // EnterKey_or_value is called when production key_or_value is entered.

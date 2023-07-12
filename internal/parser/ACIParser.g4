@@ -145,38 +145,48 @@ permission
 // permissionDisposition describes the disposition of a given ACI permission
 // statement, which may be either 'allow' or 'deny'.
 permissionDisposition
-  : ALLOW_ACCESS	# allow_access
-  | DENY_ACCESS		# deny_access
+  : allow	# allow_access
+  | deny	# deny_access
   ;
+
+allow: ALLOW_ACCESS;
+deny: DENY_ACCESS;
 
 // accessPrivileges contains multiple discrete privilege
 // identifiers, each of which may be used to define access
 // rights granted or withheld within a given ACI.
 accessPrivileges
-  : SEARCH_PRIVILEGE	# search_privilege
-  | READ_PRIVILEGE	# read_privilege
-  | COMPARE_PRIVILEGE	# compare_privilege
-  | ADD_PRIVILEGE	# add_privilege
-  | DELETE_PRIVILEGE	# delete_privilege
-  | SELFWRITE_PRIVILEGE	# selfwrite_privilege
-  | PROXY_PRIVILEGE	# proxy_privilege
-  | IMPORT_PRIVILEGE	# import_privilege
-  | EXPORT_PRIVILEGE	# export_privilege
+  : searchPrivilege	# search_privilege
+  | readPrivilege	# read_privilege
+  | comparePrivilege	# compare_privilege
+  | addPrivilege	# add_privilege
+  | deletePrivilege	# delete_privilege
+  | selfWritePrivilege	# selfwrite_privilege
+  | proxyPrivilege	# proxy_privilege
+  | importPrivilege	# import_privilege
+  | exportPrivilege	# export_privilege
   | allPrivileges	# all_privileges
   | noPrivileges	# no_privileges
   ;
 
+searchPrivilege:	SEARCH_PRIVILEGE;
+readPrivilege:		READ_PRIVILEGE;
+comparePrivilege:	COMPARE_PRIVILEGE;
+addPrivilege:		ADD_PRIVILEGE;
+deletePrivilege:	DELETE_PRIVILEGE;
+selfWritePrivilege:	SELFWRITE_PRIVILEGE;
+proxyPrivilege:		PROXY_PRIVILEGE;
+exportPrivilege:	EXPORT_PRIVILEGE;
+importPrivilege:	IMPORT_PRIVILEGE;
+
 // Grant or withhold no privileges within the DSA.
-//
-// NOTE: We make a parser alias of ANONYMOUS only
-// because its string literal value 'none' happens
-// to be the same as the literal for "no rights"
-// (e.g.: allow(none)).
+// NOTE: alias of ANONYMOUS due to the string literal
+// value they share.
 noPrivileges: ANONYMOUS ;
 
 // Grant or withhold all privileges within the DSA.
-//
-// Same alias deal as above, but for allPrivileges/ALL_USERS.
+// NOTE: alias of ALL_USERS due to the string literal
+// value they share.
 allPrivileges: ALL_USERS ;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -258,11 +268,18 @@ targetExtendedOperation
 // Instances of this kind are used singularly within 'targetscope'
 // Target Rules.
 targetSearchScopes
-  : BASE_OBJECT_SCOPE		# base_object_targetscope
-  | ONE_LEVEL_TARGET_SCOPE   	# one_level_targetscope
-  | SUB_TREE_TARGET_SCOPE	# sub_tree_targetscope
-  | SUBORDINATE_TARGET_SCOPE 	# subordinate_targetscope
+  : baseTargetScope		# base_object_targetscope
+  | oneLevelTargetScope   	# one_level_targetscope
+  | subTreeTargetScope		# sub_tree_targetscope
+  | subordinateTargetScope 	# subordinate_targetscope
   ;
+
+// baseTargetScope is an alias of BASE_OBJECT_SCOPE
+// due to the string literal value they share.
+baseTargetScope:	BASE_OBJECT_SCOPE;
+oneLevelTargetScope:	ONE_LEVEL_TARGET_SCOPE;
+subTreeTargetScope:	SUB_TREE_TARGET_SCOPE;
+subordinateTargetScope:	SUBORDINATE_TARGET_SCOPE;
 
 // objectIdentifiers is used by 'targetcontrol' and 'extop' Target Rules and will
 // manifest a value in one (1) of the following forms:
@@ -333,7 +350,6 @@ targetAttrFiltersValue
 //
 // e.g.: add=userCertificate:(&(objectClass=employee)(terminated=FALSE)) && userCertificate:(objectClass=shareholder); \
 // 	delete=userCertificate:(&(objectClass=executive)(isJerk=TRUE)) && userCertificate:(&(objectClass=marketing)(dweeb=TRUE))
-//
 attributeFilters
   : attributeFilterSet (COMMA|SEMI) attributeFilterSet     # attribute_filters
   ;
@@ -378,7 +394,6 @@ attributeFilter
 // e.g.:
 //	- (timeofday >= "1730" AND timeofday < "2400")
 //	- authmethod = "SASL"
-//
 bindRule
   : bindRuleExpr                                                		# bind_rule
   | bindRuleExprParen ((BOOLEAN_AND|BOOLEAN_OR|BOOLEAN_NOT) bindRuleExprParen)* # parenthetical_bind_rule
@@ -422,14 +437,22 @@ bindDayOfWeek
 // doW describes the individual days of the week. Instances containing these
 // values are used within 'dayofweek' Bind Rules.
 doW
-  : SUNDAY	# Sun
-  | MONDAY	# Mon
-  | TUESDAY	# Tues
-  | WEDNESDAY	# Wed
-  | THURSDAY	# Thur
-  | FRIDAY	# Fri
-  | SATURDAY	# Sat
+  : sun	 # Sunday
+  | mon	 # Monday
+  | tues # Tuesday
+  | wed	 # Wednesday
+  | thur # Thurday
+  | fri	 # Friday
+  | sat	 # Saturday
   ;
+
+sun:	SUNDAY;
+mon:	MONDAY;
+tues:	TUESDAY;
+wed:	WEDNESDAY;
+thur:	THURSDAY;
+fri:	FRIDAY;
+sat:	SATURDAY;
 
 // 'authmethod' Bind Rule syntax
 //
@@ -443,11 +466,16 @@ bindAuthMethod
 // mechanisms (or lack thereof) a requestor may leverage during LDAP
 // communication between a DUA and DSA.
 authenticationMethods
-  : ANONYMOUS	# none
-  | SIMPLE	# simple
-  | SSL		# ssl
-  | SASL	# sasl
+  : anonAuth	# none
+  | simpleAuth	# simple
+  | sSLAuth	# ssl
+  | sASLAuth	# sasl
   ;
+
+anonAuth:	ANONYMOUS;
+simpleAuth:	SIMPLE;
+sSLAuth:	SSL;
+sASLAuth:	SASL;
 
 // 'userdn' Bind Rule syntax
 //
@@ -729,12 +757,18 @@ attributeBindTypeOrValue
 // bindTypes describes one (1) of five (5) possible BIND TYPES to be
 // specified for certain 'userattr' and 'groupattr' Bind Rules.
 bindTypes
-  : BINDTYPE_USER_DN	# USERDN
-  | BINDTYPE_GROUP_DN	# GROUPDN
-  | BINDTYPE_ROLE_DN	# ROLEDN
-  | BINDTYPE_SELF_DN	# SELFDN
-  | BINDTYPE_LDAP_URL	# LDAPURL
+  : userDN	# btUSERDN
+  | groupDN	# btGROUPDN
+  | roleDN	# btROLEDN
+  | selfDN	# btSELFDN
+  | lDAPURL	# btLDAPURL
   ;
+
+userDN: BINDTYPE_USER_DN;
+roleDN: BINDTYPE_ROLE_DN;
+selfDN: BINDTYPE_SELF_DN;
+groupDN: BINDTYPE_GROUP_DN;
+lDAPURL: BINDTYPE_LDAP_URL;
 
 // attributeTypeOrValue describes a general attributeType OR
 // assertion value. Values of this kind MAY manifest as STAR

@@ -437,7 +437,7 @@ SUBORDINATE_TARGET_SCOPE
 // The disposition of a permission is to grant some level(s)
 // of access to the directory.
 ALLOW_ACCESS
-  : WHSP? [Aa][Ll][Ll][Oo][Ww] WHSP?
+  : [Aa][Ll][Ll][Oo][Ww]
   ;
 
 // The disposition of a permission is to deny some level(s)

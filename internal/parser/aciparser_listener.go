@@ -28,6 +28,12 @@ type ACIParserListener interface {
 	// EnterDeny_access is called when entering the deny_access production.
 	EnterDeny_access(c *Deny_accessContext)
 
+	// EnterAllow is called when entering the allow production.
+	EnterAllow(c *AllowContext)
+
+	// EnterDeny is called when entering the deny production.
+	EnterDeny(c *DenyContext)
+
 	// EnterSearch_privilege is called when entering the search_privilege production.
 	EnterSearch_privilege(c *Search_privilegeContext)
 
@@ -60,6 +66,33 @@ type ACIParserListener interface {
 
 	// EnterNo_privileges is called when entering the no_privileges production.
 	EnterNo_privileges(c *No_privilegesContext)
+
+	// EnterSearchPrivilege is called when entering the searchPrivilege production.
+	EnterSearchPrivilege(c *SearchPrivilegeContext)
+
+	// EnterReadPrivilege is called when entering the readPrivilege production.
+	EnterReadPrivilege(c *ReadPrivilegeContext)
+
+	// EnterComparePrivilege is called when entering the comparePrivilege production.
+	EnterComparePrivilege(c *ComparePrivilegeContext)
+
+	// EnterAddPrivilege is called when entering the addPrivilege production.
+	EnterAddPrivilege(c *AddPrivilegeContext)
+
+	// EnterDeletePrivilege is called when entering the deletePrivilege production.
+	EnterDeletePrivilege(c *DeletePrivilegeContext)
+
+	// EnterSelfWritePrivilege is called when entering the selfWritePrivilege production.
+	EnterSelfWritePrivilege(c *SelfWritePrivilegeContext)
+
+	// EnterProxyPrivilege is called when entering the proxyPrivilege production.
+	EnterProxyPrivilege(c *ProxyPrivilegeContext)
+
+	// EnterExportPrivilege is called when entering the exportPrivilege production.
+	EnterExportPrivilege(c *ExportPrivilegeContext)
+
+	// EnterImportPrivilege is called when entering the importPrivilege production.
+	EnterImportPrivilege(c *ImportPrivilegeContext)
 
 	// EnterNoPrivileges is called when entering the noPrivileges production.
 	EnterNoPrivileges(c *NoPrivilegesContext)
@@ -135,6 +168,18 @@ type ACIParserListener interface {
 
 	// EnterSubordinate_targetscope is called when entering the subordinate_targetscope production.
 	EnterSubordinate_targetscope(c *Subordinate_targetscopeContext)
+
+	// EnterBaseTargetScope is called when entering the baseTargetScope production.
+	EnterBaseTargetScope(c *BaseTargetScopeContext)
+
+	// EnterOneLevelTargetScope is called when entering the oneLevelTargetScope production.
+	EnterOneLevelTargetScope(c *OneLevelTargetScopeContext)
+
+	// EnterSubTreeTargetScope is called when entering the subTreeTargetScope production.
+	EnterSubTreeTargetScope(c *SubTreeTargetScopeContext)
+
+	// EnterSubordinateTargetScope is called when entering the subordinateTargetScope production.
+	EnterSubordinateTargetScope(c *SubordinateTargetScopeContext)
 
 	// EnterQuoted_object_identifier_list is called when entering the quoted_object_identifier_list production.
 	EnterQuoted_object_identifier_list(c *Quoted_object_identifier_listContext)
@@ -247,25 +292,46 @@ type ACIParserListener interface {
 	// EnterDayofweek_bind_rule is called when entering the dayofweek_bind_rule production.
 	EnterDayofweek_bind_rule(c *Dayofweek_bind_ruleContext)
 
-	// EnterSun is called when entering the Sun production.
+	// EnterSunday is called when entering the Sunday production.
+	EnterSunday(c *SundayContext)
+
+	// EnterMonday is called when entering the Monday production.
+	EnterMonday(c *MondayContext)
+
+	// EnterTuesday is called when entering the Tuesday production.
+	EnterTuesday(c *TuesdayContext)
+
+	// EnterWednesday is called when entering the Wednesday production.
+	EnterWednesday(c *WednesdayContext)
+
+	// EnterThurday is called when entering the Thurday production.
+	EnterThurday(c *ThurdayContext)
+
+	// EnterFriday is called when entering the Friday production.
+	EnterFriday(c *FridayContext)
+
+	// EnterSaturday is called when entering the Saturday production.
+	EnterSaturday(c *SaturdayContext)
+
+	// EnterSun is called when entering the sun production.
 	EnterSun(c *SunContext)
 
-	// EnterMon is called when entering the Mon production.
+	// EnterMon is called when entering the mon production.
 	EnterMon(c *MonContext)
 
-	// EnterTues is called when entering the Tues production.
+	// EnterTues is called when entering the tues production.
 	EnterTues(c *TuesContext)
 
-	// EnterWed is called when entering the Wed production.
+	// EnterWed is called when entering the wed production.
 	EnterWed(c *WedContext)
 
-	// EnterThur is called when entering the Thur production.
+	// EnterThur is called when entering the thur production.
 	EnterThur(c *ThurContext)
 
-	// EnterFri is called when entering the Fri production.
+	// EnterFri is called when entering the fri production.
 	EnterFri(c *FriContext)
 
-	// EnterSat is called when entering the Sat production.
+	// EnterSat is called when entering the sat production.
 	EnterSat(c *SatContext)
 
 	// EnterParenthetical_authentication_method is called when entering the parenthetical_authentication_method production.
@@ -285,6 +351,18 @@ type ACIParserListener interface {
 
 	// EnterSasl is called when entering the sasl production.
 	EnterSasl(c *SaslContext)
+
+	// EnterAnonAuth is called when entering the anonAuth production.
+	EnterAnonAuth(c *AnonAuthContext)
+
+	// EnterSimpleAuth is called when entering the simpleAuth production.
+	EnterSimpleAuth(c *SimpleAuthContext)
+
+	// EnterSSLAuth is called when entering the sSLAuth production.
+	EnterSSLAuth(c *SSLAuthContext)
+
+	// EnterSASLAuth is called when entering the sASLAuth production.
+	EnterSASLAuth(c *SASLAuthContext)
 
 	// EnterParenthetical_bind_userdn is called when entering the parenthetical_bind_userdn production.
 	EnterParenthetical_bind_userdn(c *Parenthetical_bind_userdnContext)
@@ -427,19 +505,34 @@ type ACIParserListener interface {
 	// EnterAttr_bind_type_or_value is called when entering the attr_bind_type_or_value production.
 	EnterAttr_bind_type_or_value(c *Attr_bind_type_or_valueContext)
 
-	// EnterUSERDN is called when entering the USERDN production.
-	EnterUSERDN(c *USERDNContext)
+	// EnterBtUSERDN is called when entering the btUSERDN production.
+	EnterBtUSERDN(c *BtUSERDNContext)
 
-	// EnterGROUPDN is called when entering the GROUPDN production.
-	EnterGROUPDN(c *GROUPDNContext)
+	// EnterBtGROUPDN is called when entering the btGROUPDN production.
+	EnterBtGROUPDN(c *BtGROUPDNContext)
 
-	// EnterROLEDN is called when entering the ROLEDN production.
-	EnterROLEDN(c *ROLEDNContext)
+	// EnterBtROLEDN is called when entering the btROLEDN production.
+	EnterBtROLEDN(c *BtROLEDNContext)
 
-	// EnterSELFDN is called when entering the SELFDN production.
-	EnterSELFDN(c *SELFDNContext)
+	// EnterBtSELFDN is called when entering the btSELFDN production.
+	EnterBtSELFDN(c *BtSELFDNContext)
 
-	// EnterLDAPURL is called when entering the LDAPURL production.
+	// EnterBtLDAPURL is called when entering the btLDAPURL production.
+	EnterBtLDAPURL(c *BtLDAPURLContext)
+
+	// EnterUserDN is called when entering the userDN production.
+	EnterUserDN(c *UserDNContext)
+
+	// EnterRoleDN is called when entering the roleDN production.
+	EnterRoleDN(c *RoleDNContext)
+
+	// EnterSelfDN is called when entering the selfDN production.
+	EnterSelfDN(c *SelfDNContext)
+
+	// EnterGroupDN is called when entering the groupDN production.
+	EnterGroupDN(c *GroupDNContext)
+
+	// EnterLDAPURL is called when entering the lDAPURL production.
 	EnterLDAPURL(c *LDAPURLContext)
 
 	// EnterKey_or_value is called when entering the key_or_value production.
@@ -532,6 +625,12 @@ type ACIParserListener interface {
 	// ExitDeny_access is called when exiting the deny_access production.
 	ExitDeny_access(c *Deny_accessContext)
 
+	// ExitAllow is called when exiting the allow production.
+	ExitAllow(c *AllowContext)
+
+	// ExitDeny is called when exiting the deny production.
+	ExitDeny(c *DenyContext)
+
 	// ExitSearch_privilege is called when exiting the search_privilege production.
 	ExitSearch_privilege(c *Search_privilegeContext)
 
@@ -564,6 +663,33 @@ type ACIParserListener interface {
 
 	// ExitNo_privileges is called when exiting the no_privileges production.
 	ExitNo_privileges(c *No_privilegesContext)
+
+	// ExitSearchPrivilege is called when exiting the searchPrivilege production.
+	ExitSearchPrivilege(c *SearchPrivilegeContext)
+
+	// ExitReadPrivilege is called when exiting the readPrivilege production.
+	ExitReadPrivilege(c *ReadPrivilegeContext)
+
+	// ExitComparePrivilege is called when exiting the comparePrivilege production.
+	ExitComparePrivilege(c *ComparePrivilegeContext)
+
+	// ExitAddPrivilege is called when exiting the addPrivilege production.
+	ExitAddPrivilege(c *AddPrivilegeContext)
+
+	// ExitDeletePrivilege is called when exiting the deletePrivilege production.
+	ExitDeletePrivilege(c *DeletePrivilegeContext)
+
+	// ExitSelfWritePrivilege is called when exiting the selfWritePrivilege production.
+	ExitSelfWritePrivilege(c *SelfWritePrivilegeContext)
+
+	// ExitProxyPrivilege is called when exiting the proxyPrivilege production.
+	ExitProxyPrivilege(c *ProxyPrivilegeContext)
+
+	// ExitExportPrivilege is called when exiting the exportPrivilege production.
+	ExitExportPrivilege(c *ExportPrivilegeContext)
+
+	// ExitImportPrivilege is called when exiting the importPrivilege production.
+	ExitImportPrivilege(c *ImportPrivilegeContext)
 
 	// ExitNoPrivileges is called when exiting the noPrivileges production.
 	ExitNoPrivileges(c *NoPrivilegesContext)
@@ -639,6 +765,18 @@ type ACIParserListener interface {
 
 	// ExitSubordinate_targetscope is called when exiting the subordinate_targetscope production.
 	ExitSubordinate_targetscope(c *Subordinate_targetscopeContext)
+
+	// ExitBaseTargetScope is called when exiting the baseTargetScope production.
+	ExitBaseTargetScope(c *BaseTargetScopeContext)
+
+	// ExitOneLevelTargetScope is called when exiting the oneLevelTargetScope production.
+	ExitOneLevelTargetScope(c *OneLevelTargetScopeContext)
+
+	// ExitSubTreeTargetScope is called when exiting the subTreeTargetScope production.
+	ExitSubTreeTargetScope(c *SubTreeTargetScopeContext)
+
+	// ExitSubordinateTargetScope is called when exiting the subordinateTargetScope production.
+	ExitSubordinateTargetScope(c *SubordinateTargetScopeContext)
 
 	// ExitQuoted_object_identifier_list is called when exiting the quoted_object_identifier_list production.
 	ExitQuoted_object_identifier_list(c *Quoted_object_identifier_listContext)
@@ -751,25 +889,46 @@ type ACIParserListener interface {
 	// ExitDayofweek_bind_rule is called when exiting the dayofweek_bind_rule production.
 	ExitDayofweek_bind_rule(c *Dayofweek_bind_ruleContext)
 
-	// ExitSun is called when exiting the Sun production.
+	// ExitSunday is called when exiting the Sunday production.
+	ExitSunday(c *SundayContext)
+
+	// ExitMonday is called when exiting the Monday production.
+	ExitMonday(c *MondayContext)
+
+	// ExitTuesday is called when exiting the Tuesday production.
+	ExitTuesday(c *TuesdayContext)
+
+	// ExitWednesday is called when exiting the Wednesday production.
+	ExitWednesday(c *WednesdayContext)
+
+	// ExitThurday is called when exiting the Thurday production.
+	ExitThurday(c *ThurdayContext)
+
+	// ExitFriday is called when exiting the Friday production.
+	ExitFriday(c *FridayContext)
+
+	// ExitSaturday is called when exiting the Saturday production.
+	ExitSaturday(c *SaturdayContext)
+
+	// ExitSun is called when exiting the sun production.
 	ExitSun(c *SunContext)
 
-	// ExitMon is called when exiting the Mon production.
+	// ExitMon is called when exiting the mon production.
 	ExitMon(c *MonContext)
 
-	// ExitTues is called when exiting the Tues production.
+	// ExitTues is called when exiting the tues production.
 	ExitTues(c *TuesContext)
 
-	// ExitWed is called when exiting the Wed production.
+	// ExitWed is called when exiting the wed production.
 	ExitWed(c *WedContext)
 
-	// ExitThur is called when exiting the Thur production.
+	// ExitThur is called when exiting the thur production.
 	ExitThur(c *ThurContext)
 
-	// ExitFri is called when exiting the Fri production.
+	// ExitFri is called when exiting the fri production.
 	ExitFri(c *FriContext)
 
-	// ExitSat is called when exiting the Sat production.
+	// ExitSat is called when exiting the sat production.
 	ExitSat(c *SatContext)
 
 	// ExitParenthetical_authentication_method is called when exiting the parenthetical_authentication_method production.
@@ -789,6 +948,18 @@ type ACIParserListener interface {
 
 	// ExitSasl is called when exiting the sasl production.
 	ExitSasl(c *SaslContext)
+
+	// ExitAnonAuth is called when exiting the anonAuth production.
+	ExitAnonAuth(c *AnonAuthContext)
+
+	// ExitSimpleAuth is called when exiting the simpleAuth production.
+	ExitSimpleAuth(c *SimpleAuthContext)
+
+	// ExitSSLAuth is called when exiting the sSLAuth production.
+	ExitSSLAuth(c *SSLAuthContext)
+
+	// ExitSASLAuth is called when exiting the sASLAuth production.
+	ExitSASLAuth(c *SASLAuthContext)
 
 	// ExitParenthetical_bind_userdn is called when exiting the parenthetical_bind_userdn production.
 	ExitParenthetical_bind_userdn(c *Parenthetical_bind_userdnContext)
@@ -931,19 +1102,34 @@ type ACIParserListener interface {
 	// ExitAttr_bind_type_or_value is called when exiting the attr_bind_type_or_value production.
 	ExitAttr_bind_type_or_value(c *Attr_bind_type_or_valueContext)
 
-	// ExitUSERDN is called when exiting the USERDN production.
-	ExitUSERDN(c *USERDNContext)
+	// ExitBtUSERDN is called when exiting the btUSERDN production.
+	ExitBtUSERDN(c *BtUSERDNContext)
 
-	// ExitGROUPDN is called when exiting the GROUPDN production.
-	ExitGROUPDN(c *GROUPDNContext)
+	// ExitBtGROUPDN is called when exiting the btGROUPDN production.
+	ExitBtGROUPDN(c *BtGROUPDNContext)
 
-	// ExitROLEDN is called when exiting the ROLEDN production.
-	ExitROLEDN(c *ROLEDNContext)
+	// ExitBtROLEDN is called when exiting the btROLEDN production.
+	ExitBtROLEDN(c *BtROLEDNContext)
 
-	// ExitSELFDN is called when exiting the SELFDN production.
-	ExitSELFDN(c *SELFDNContext)
+	// ExitBtSELFDN is called when exiting the btSELFDN production.
+	ExitBtSELFDN(c *BtSELFDNContext)
 
-	// ExitLDAPURL is called when exiting the LDAPURL production.
+	// ExitBtLDAPURL is called when exiting the btLDAPURL production.
+	ExitBtLDAPURL(c *BtLDAPURLContext)
+
+	// ExitUserDN is called when exiting the userDN production.
+	ExitUserDN(c *UserDNContext)
+
+	// ExitRoleDN is called when exiting the roleDN production.
+	ExitRoleDN(c *RoleDNContext)
+
+	// ExitSelfDN is called when exiting the selfDN production.
+	ExitSelfDN(c *SelfDNContext)
+
+	// ExitGroupDN is called when exiting the groupDN production.
+	ExitGroupDN(c *GroupDNContext)
+
+	// ExitLDAPURL is called when exiting the lDAPURL production.
 	ExitLDAPURL(c *LDAPURLContext)
 
 	// ExitKey_or_value is called when exiting the key_or_value production.
