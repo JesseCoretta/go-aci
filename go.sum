@@ -1,0 +1,4 @@
+github.com/JesseCoretta/go-objectid v0.0.6-alpha.0 h1:2WjaaZMnC5BEKckaBy0txCDSH7Np8QMTc8tIA8Ar3IA=
+github.com/JesseCoretta/go-objectid v0.0.6-alpha.0/go.mod h1:dOPQhGxLieMBl4WF1gq0Z3yb3KppfNGV/XrPrudjyuw=
+github.com/JesseCoretta/go-stackage v0.0.1-alpha.1 h1:MzrDf4Sp7q/SghQf6Li3QQY/4kPjAIlyQtMOSKInpTU=
+github.com/JesseCoretta/go-stackage v0.0.1-alpha.1/go.mod h1:kfcMUggHyU8LQOldjir3KdXkZMeh1E/FWivmuPklZyQ=
