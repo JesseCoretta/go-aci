@@ -104,7 +104,7 @@ parse
   ;
 
 instruction
-  : targetRules? LPAREN ANCHOR quotedValue SEMI permissionBindRule+ RPAREN
+  : targetRules? openingParenthesis ANCHOR quotedValue SEMI permissionBindRule+ closingParenthesis
   ;
 
 permissionBindRule
@@ -140,19 +140,6 @@ targetOperator
   ;
 
 targetRules: targetRule+ ;
-
-/*
-//bindRule
-//  : bindKeyword compOperator quotedValue
-//  | openingParenthesis bindKeyword compOperator quotedValue closingParenthesis
-//  ;
-//
-//bindRules
-//  : bindRule
-//  | ( bindRule ( wordOperator bindRule )* )
-//  | openingParenthesis bindRule+ closingParenthesis
-//  ;
-*/
 
 bindRule
   : bindKeyword bindOperator quotedValue
