@@ -1475,6 +1475,41 @@ func TDNs() Rule {
 }
 
 /*
+attributeValueAssertionOperator is a private type used to allow the
+diverse array of LDAP AttributeValueAssertion (AVA) comparison operators
+to be used to fashion new Condition instances. This is a requirement of
+the go-stackage Operator interface signature and is used only during the
+parsing (marshaling) of string-based LDAP Filters (et al) into usable
+objects extended by the go-aci package.
+*/
+type attributeValueAssertionOperator string
+
+/*
+avaOperatorContext is a static string value that is used to "label" an
+attributeValueAssertionOperator instance.
+*/
+const avaOperatorContext = `ava_op`
+
+/*
+String is a stringer method that returns the string representation
+of the attributeValueAssertion comparison operator. It exists solely
+to satisfy go-stackage's Operator interface signature requirements.
+*/
+func (r attributeValueAssertionOperator) String() string {
+	return string(r)
+}
+
+/*
+Context is a stringer method that returns the string representation
+of the attributeValueAssertion comparison operator's context, which
+should always be `ava_op`. This method exists solely to satisfy the
+go-stackage Operator interface signature requirements.
+*/
+func (r attributeValueAssertionOperator) Context() string {
+	return avaOperatorContext
+}
+
+/*
 Commonly-used distinguished name expression preambles.
 */
 var (

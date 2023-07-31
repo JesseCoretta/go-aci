@@ -149,4 +149,9 @@ func newObjectID(kw TargetKeyword, x ...any) (o *objectIdentifier, err error) {
 	return
 }
 
+func isDotNot(x string) bool {
+	o, err := objectid.NewDotNotation(x)
+	return err == nil && o.Valid()
+}
+
 // future parsers go here...

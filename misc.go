@@ -40,9 +40,9 @@ var (
 
 var ops []string = []string{
 	`AND NOT`,
-        `NOT`, `!(`,
-        `OR`, `||`, `|(`,
-        `AND`, `&&`, `&(`,
+        `NOT`, `!`,
+        `OR`, `||`, `|`,
+        `AND`, `&&`, `&`,
 }
 
 /*
@@ -50,6 +50,66 @@ Version defines the ACI syntax version number implemented by
 this package.
 */
 const Version float32 = 3.0
+
+/*
+unquote removes leading and trailing quotation characters from
+str.
+
+This function considers any of ASCII #34 ("), ASCII #39 (') and
+ASCII #96 (`) to be eligible candidates for truncation, though
+only matches of the first and final slices are considered.
+*/
+func unquote(str string) string {
+	for len(str) > 0 {
+		var done bool
+
+		// remove leading candidate
+		switch c := rune(str[0]); c {
+		case '"', '\'', '`':
+			str = str[1:]
+			continue
+		}
+
+		// remove trailing candidate
+		switch c := rune(str[len(str)-1]); c {
+		case '"', '\'', '`':
+			str = str[:len(str)-1]
+			done = true
+		}
+
+		if done {
+			break
+		}
+	}
+
+	return str
+}
+
+/*
+isQuoted looks at the first and final indices of the input
+string value to determine whether both are quotation ASCII
+characters, and returns a Boolean value indicative of the
+result.
+
+This function considers any of ASCII #34 ("), ASCII #39 (')
+and ASCII #96 (`) to be eligible candidates for quotation.
+*/
+func isQuoted(str string) bool {
+	if len(str) < 2 {
+		return false
+	}
+
+	for _, idx := range []int{0,len(str)-1} {
+		switch c := rune(str[idx]); c {
+		case '"', '\'', '`':
+			// ok
+		default:
+			return false
+		}
+	}
+
+	return true
+}
 
 /*
 isNumber returns a boolean value indicative of whether the provided value (which can be string or []byte instances)
@@ -77,6 +137,89 @@ func isNumber(val any) bool {
 	}
 
 	return true
+}
+
+func isAlnum(r rune) bool {
+        return isLower(r) || isUpper(r) || isDigit(r)
+}
+
+/*
+isIdentifier scans the input string val and judges whether
+it appears to qualify as an identifier, in that:
+
+- it begins with a lower alpha
+- it contains only alphanumeric characters, hyphens or semicolons
+
+This is used, specifically, it identify an LDAP attributeType (with
+or without a tag), or an LDAP matchingRule.
+*/
+func isIdentifier(val string) bool {
+	if len(val) == 0 {
+		return false
+	}
+
+	// must begin with lower alpha.
+	if !isLower(rune(val[0])) {
+	        return false
+	}
+
+	// can only end in alnum.
+        if !isAlnum(rune(val[len(val)-1])) {
+                return false
+        }
+
+	for i := 0; i < len(val); i++ {
+		ch := rune(val[i])
+		switch {
+		case isAlnum(ch):
+			// ok
+		case ch == ';', ch == '-':
+			// ok
+		default:
+			return false
+		}
+	}
+
+	return true
+}
+
+/*
+isAVAOperatorComponent returns a boolean value indicative of whether
+the string input val conforms to a valid LDAP AttributeValueAssertion
+comparison operator character (e.g.: `=`) or perhaps a complete token,
+e.g.: '~=', ':dn:2.5.14.3:=', et al. Note that the return value should
+not be taken as a definitive answer, considering values or keywords
+might contain some of the very same characters. This function merely
+determines whether val qualifies the desired "signature", but does NOT
+know (in context) that this is its true nature.
+*/
+func isAVAOperatorComponent(val string) bool {
+        if len(val) == 0 {
+                return false
+        }
+
+	// equality, order and approx,
+	for _, v := range []string{
+		`=`,
+		`<=`,
+		`>=`,
+		`~=`,
+		`:`,
+		`dn`,
+	} {
+		if val == v {
+			return true
+		}
+	}
+
+	switch {
+	case isDotNot(val), isIdentifier(val):
+		return true
+
+	}
+
+	// does not conform
+        return false
 }
 
 /*
@@ -294,6 +437,26 @@ func kwIdxFunc(c rune) bool {
 	return isLower(c)
 }
 
+func isBoolOp(c any) bool {
+	switch tv := c.(type) {
+	case string:
+		return tv == `&` || tv == `|` || tv == `!`
+	case rune:
+		return tv == '&' || tv == '|' || tv == '!'
+	}
+
+	return false
+}
+
+func isWordOp(w string) bool {
+	switch W := lc(w); W {
+	case `and`, `or`, `and not`:
+		return true
+	}
+
+	return false
+}
+
 /*
 operators can conceivably contain any characters other than
 WHSP. This function returns a boolean value which indicates
@@ -313,3 +476,8 @@ func chopACITerm(def string) string {
 
 	return def[:len(def)-2]
 }
+
+func isPowerOfTwo(x int) bool {
+	return x&(x-1) == 0
+}
+

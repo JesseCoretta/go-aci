@@ -48,6 +48,16 @@ const (
 	Ge stackage.ComparisonOperator = stackage.Ge	// 0x6, "Greater Than Or Equal"
 )
 
+var comparisonOperatorMap map[string]stackage.ComparisonOperator
+
+func matchOp(op string) (stackage.Operator, bool) {
+	if val, found := comparisonOperatorMap[op]; found {
+		return val, found
+	}
+
+	return stackage.ComparisonOperator(0), false
+}
+
 /*
 idOp attempts to identify an operator based on string input.
 */
@@ -55,9 +65,12 @@ func idOp(raw string) (op stackage.Operator, ok bool) {
 	// try compops first
 	for i := 0x1; i < 0x6; i++ {
 		if raw == stackage.ComparisonOperator(i).String() {
+			printf("%s [IS] %s\n", raw, stackage.ComparisonOperator(i).String())
 			op = stackage.ComparisonOperator(i)
 			ok = true
-			return
+			break
+		} else {
+			printf("%s [IS NOT] %s\n", raw, stackage.ComparisonOperator(i).String())
 		}
 	}
 
@@ -101,8 +114,18 @@ custom operators introduced by the user, if needed (such as ~= for "approximate"
 However, it is unlikely any operators would be needed beyond the aforementioned go-stackage
 ComparisonOperator constants.
 */
-func Cond(kw, ex any, op stackage.Operator) Condition {
-	return Condition(stackage.Cond(kw, op, ex))
+func Cond(kw, ex, op any) Condition {
+	switch tv := op.(type) {
+	case string:
+		oper, _ := idOp(tv)
+		return Condition(stackage.Cond(kw, oper, ex))
+	case stackage.ComparisonOperator:
+		return Condition(stackage.Cond(kw, tv, ex))
+	case stackage.Operator:
+		return Condition(stackage.Cond(kw, tv, ex))
+	}
+
+	return Condition{}
 }
 
 /*
@@ -125,6 +148,10 @@ setID wraps go-stackage's Condition.SetID method.
 func (r Condition) setID(id string) Condition {
         stackage.Condition(r).SetID(id)
         return r
+}
+
+func (r Condition) ID() string {
+	return stackage.Condition(r).ID()
 }
 
 /*
@@ -194,3 +221,13 @@ func (r Condition) Value() any {
 	return stackage.Condition(r).Value()
 }
 
+func init() {
+	comparisonOperatorMap = map[string]stackage.ComparisonOperator{
+		Eq.String(): Eq,
+		Ne.String(): Ne,
+		Lt.String(): Lt,
+		Gt.String(): Gt,
+		Le.String(): Le,
+		Ge.String(): Ge,
+	}
+}

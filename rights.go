@@ -26,6 +26,7 @@ const (
 const badPerm = `<invalid_permission>`
 
 var rightsMap map[Right]string
+var rightsNames map[string]Right
 
 /*
 Right contains the specific bit value of a single user privilege. Constants of this
@@ -50,7 +51,7 @@ type permission struct {
 Allow returns a granting Permission instance bearing the provided
 instances of Right.
 */
-func Allow(x ...Right) Permission {
+func Allow(x ...any) Permission {
 	return Permission{newPermission(true, x...)}
 }
 
@@ -58,7 +59,7 @@ func Allow(x ...Right) Permission {
 Deny returns a withholding Permission instance bearing the provided
 instances of Right.
 */
-func Deny(x ...Right) Permission {
+func Deny(x ...any) Permission {
 	return Permission{newPermission(false, x...)}
 }
 
@@ -66,7 +67,7 @@ func Deny(x ...Right) Permission {
 newPermission returns a newly initialized instance of *permission
 bearing the provided disposition and Right instance(s).
 */
-func newPermission(disp bool, x ...Right) (p *permission) {
+func newPermission(disp bool, x ...any) (p *permission) {
 	p = new(permission)
 	p.bool = &disp
 	p.Right = new(Right)
@@ -74,35 +75,131 @@ func newPermission(disp bool, x ...Right) (p *permission) {
 	return p
 }
 
-func (r *permission) shift(x ...Right) {
+func (r *permission) shift(x ...any) {
 	if r.isZero() {
 		return
 	}
 
+	// iterate through the sequence of "anys"
+	// and assert to a Right (or the abstraction
+	// of a Right).
 	for i := 0; i < len(x); i++ {
-		if x[i] == NoAccess {
-			(*r.Right) = NoAccess
-			continue
+		switch tv := x[i].(type) {
+		case int:
+			// so long as the integer magnitude does
+			// not fall out of uint8 bounds AND is a
+			// power of two (2), we can interpolate
+			// as a Right.
+			if isPowerOfTwo(tv) && ( 0 <= tv && tv <= int(^uint16(0)) ) {
+				(*r.Right) |= Right(tv)
+			}
+		case string:
+			// Resolve the name of a Right into a Right.
+			if priv, found := rightsNames[lc(tv)]; found {
+				(*r.Right) |= priv
+			}
+		case Right:
+			if tv == NoAccess {
+				// NoAccess should stop the party
+				// dead in its tracks, regardless
+				// of any other iterated value.
+				(*r.Right) = NoAccess
+				return
+			} else if tv == AllAccess {
+				// AllAccess should stop the party
+				// dead in its tracks, regardless
+				// of any other iterated value.
+				(*r.Right) = AllAccess
+				return
+			}
+
+			(*r.Right) |= tv
 		}
-		(*r.Right) |= x[i]
 	}
 }
 
-func (r *permission) unshift(x ...Right) {
+func (r *permission) unshift(x ...any) {
 	if r.isZero() {
 		return
 	}
 
+	// iterate through the sequence of "anys"
+	// and assert to a Right (or the abstraction
+	// of a Right).
 	for i := 0; i < len(x); i++ {
-		(*r.Right) = (*r.Right) &^ x[i]
+		switch tv := x[i].(type) {
+                case int:
+                        // so long as the integer magnitude does
+                        // not fall out of uint8 bounds AND is a
+                        // power of two (2), we can interpolate
+                        // as a Right.
+                        if isPowerOfTwo(tv) && ( 0 <= tv && tv <= int(^uint16(0)) ) {
+				(*r.Right) = (*r.Right) &^ Right(tv)
+                        }
+                case string:
+                        if lc(tv) == NoAccess.String() {
+				// Asking to remove NoAccess will
+				// not accomplish anything definitive.
+                                return
+                        } else if lc(tv) == AllAccess.String() {
+                                // Asking to remove all access
+				// privileges is the same as
+				// setting NoAccess outright.
+                                (*r.Right) = NoAccess
+                                return
+                        }
+
+                        // Resolve the name of a Right into a Right.
+                        if priv, found := rightsNames[lc(tv)]; found {
+				(*r.Right) = (*r.Right) &^ priv
+                        }
+                case Right:
+                        if tv == NoAccess {
+				// Asking to remove NoAccess will
+				// not accomplish anything definitive.
+                                return
+                        } else if tv == AllAccess {
+                                // Asking to remove all access
+				// privileges is the same as
+				// setting NoAccess outright.
+                                (*r.Right) = NoAccess
+                                return
+                        }
+			(*r.Right) = (*r.Right) &^ tv
+		}
 	}
 }
 
-func (r permission) positive(x Right) bool {
+func (r permission) positive(x any) bool {
 	if r.isZero() {
 		return false
 	}
-	return ((*r.Right) & x) > 0
+	switch tv := x.(type) {
+	case int:
+		if isPowerOfTwo(tv) && ( 0 <= tv && tv <= int(^uint16(0)) ) {
+			return ((*r.Right) & Right(tv)) > 0
+		}
+	case string:
+	        if lc(tv) == NoAccess.String() {
+			// NoAccess always equals zero (0)
+	                return int(*r.Right) == 0
+	        } else if lc(tv) == AllAccess.String() {
+			// See if the effective bit value
+			// is equalTo the known "all"
+			// compound value.
+	                return int(*r.Right) == 895
+	        }
+
+		// Resolve the name of a Right into a Right.
+	        if priv, found := rightsNames[lc(tv)]; found {
+			return ((*r.Right) & priv) > 0
+	        }
+	case Right:
+		return ((*r.Right) & tv) > 0
+	}
+
+	// unsupported type?
+	return false
 }
 
 /*
@@ -187,7 +284,7 @@ func (r permission) kind() string {
 /*
 Positive returns a boolean value indicative of whether a particular bit is positive (is set). Negation implies negative, or unset.
 */
-func (r Permission) Positive(x Right) bool {
+func (r Permission) Positive(x any) bool {
 	if err := r.Valid(); err != nil {
 		return false
 	}
@@ -197,7 +294,7 @@ func (r Permission) Positive(x Right) bool {
 /*
 Shift left-shifts the receiver instance to include Right x, if not already present.
 */
-func (r Permission) Shift(x Right) Permission {
+func (r Permission) Shift(x any) Permission {
 	if err := r.Valid(); err != nil {
 		return r
 	}
@@ -208,7 +305,7 @@ func (r Permission) Shift(x Right) Permission {
 /*
 Unshift right-shifts the receiver instance to remove Right x, if present.
 */
-func (r Permission) Unshift(x Right) Permission {
+func (r Permission) Unshift(x any) Permission {
 	if err := r.Valid(); err != nil {
 		return r
 	}
@@ -264,4 +361,13 @@ func init() {
 		ImportAccess:    `import`,
 		ExportAccess:    `export`,
 	}
+
+        // we want to resolve the name
+        // of a Right into an actual
+        // Right instance.
+	rightsNames = make(map[string]Right, 0)
+        for k, v := range rightsMap {
+                rightsNames[v] = k
+        }
+
 }

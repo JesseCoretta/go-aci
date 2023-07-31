@@ -130,6 +130,9 @@ func (r Rule) IsZero() bool {
 ID wraps go-stackage's Stack.ID method.
 */
 func (r Rule) ID() string {
+	if r.IsZero() {
+		return ``
+	}
 	return stackage.Stack(r).ID()
 }
 
@@ -137,6 +140,9 @@ func (r Rule) ID() string {
 Category wraps go-stackage's Stack.Category method.
 */
 func (r Rule) Category() string {
+	if r.IsZero() {
+		return ``
+	}
 	return stackage.Stack(r).Category()
 }
 
@@ -152,6 +158,9 @@ func (r Rule) setID(id string) Rule {
 Len wraps go-stackage's Stack.Len method.
 */
 func (r Rule) Len() int {
+	if r.IsZero() {
+		return 0
+	}
 	return stackage.Stack(r).Len()
 }
 
@@ -333,7 +342,10 @@ func (r Rule) canPush(x any) (err error) {
 	switch r.ID() {
 	case `instructions`:
 		ok = aciCanPush(x)
-	case `bind`, `and`, `or`, `not`:
+	case `parenthetical_bind`,
+		`enveloped_parenthetical_bind`,
+		`enveloped_bind`,
+		`bind`, `and`, `or`, `not`:
 		ok = bindRuleCanPush(x)
 	case `target`:
 		// only allow unique Condition instances which
@@ -353,6 +365,7 @@ func (r Rule) canPush(x any) (err error) {
 
 	if !ok {
 		err = errorf("PushPolicy violation: %T (%s) does not allow appends of %T instances",r,r.ID(),x)
+		printf("%v\n", err)
 	}
 
 	return
@@ -370,7 +383,7 @@ func bindRuleCanPush(x any) (ok bool) {
 			ok = true
 		}
 	case Condition:
-		if matchBKW(tv.Category()) != BindKeyword(0x0) {
+		if matchBKW(tv.Keyword()) != BindKeyword(0x0) {
 			ok = true
 		}
 	case PermissionBindRule:
@@ -509,24 +522,24 @@ func ruleByLoP(op string) Rule {
 	if eq(op,`NOT`) || eq(op, `AND NOT`) {
 		// NOT (word)
 		return Not()
-	} else if eq(op,`!(`) {
+	} else if eq(op,`!`) {
 		// NOT (filter)
-		return Rule(stackageNot().LeadOnce().NoPadding().Symbol(`!`)).setCategory(`not`)
+		return Rule(stackageNot().LeadOnce().Paren().NoPadding().Symbol(`!`)).setCategory(`filter`).setID(`not`)
 	} else if eq(op,`OR`) {
 		// OR (word)
 		return Or()
-	} else if eq(op,`|(`) {
+	} else if eq(op,`|`) {
 		// OR (filter)
-		return Rule(stackageOr().LeadOnce().NoPadding().Symbol(`|`)).setCategory(`or`)
+		return Rule(stackageOr().LeadOnce().Paren().NoPadding().Symbol(`|`)).setCategory(`filter`).setID(`or`)
 	} else if eq(op,`||`) {
 		// OR (dsymbol)
 		return Rule(stackageOr().Symbol(`||`)).setCategory(`or`)
-	} else if eq(op, `&(`) {
+	} else if eq(op, `&`) {
 		// AND (filter)
-		return Rule(stackageAnd().LeadOnce().NoPadding().Symbol(`&`)).setCategory(`or`)
+		return Rule(stackageAnd().LeadOnce().Paren().NoPadding().Symbol(`&`)).setCategory(`filter`).setID(`and`)
 	} else if eq(op,`&&`) {
 		// AND (dsymbol)
-		return Rule(stackageAnd().Symbol(`&&`)).setCategory(`or`)
+		return Rule(stackageAnd().Symbol(`&&`)).setCategory(`and`)
 	}
 
 	// Fallback AND (word)
