@@ -1,6 +1,5 @@
 /*
-Package aci implements bidirectional marshaling and component abstractions pertaining to the third (3rd) version of the ACI
-syntax specification.
+Package aci implements the complete ACIv3 syntax in a vendor-agnostic manner with rich features.
 
 # Status
 
@@ -23,6 +22,8 @@ are listed below:
 
 • Target Rule scoping, through the targetscope keyword
 
+• Bind Rule roles, through the roledn keyword
+
 • Group attribute-based value matching, through the groupattr keyword
 
 • LDAP Extended Operation OID definitions, through the extop keyword
@@ -31,9 +32,9 @@ are listed below:
 
 • Rights definitions, such as Import and Export
 
-This package aims to support all of the facets of the ACIv3 syntax without exception. Users will need to verify, however,
+This package aims to support *ALL* of the facets of the ACIv3 syntax without exception. Users will need to verify, however,
 that any ACI definitions generated -- in part or in whole as a result of using this package -- are compatible with their
-particular X.500/LDAP product.
+particular X.500/LDAP product; check the docs!
 
 # License
 
@@ -54,18 +55,18 @@ specific directory product implementation
 • Flexible: ACI composition can be approached in a variety of ways, without enforcing any particular style; for example,
 parenthetical encapsulation can be enabled or disabled for select (and eligible) type instances when desired
 
-• High visibility: each Stack instance may be equipped with a channel object, thereby allowing real-time debug/error message
-output via a user-controlled instance; see the Stack.SetMessageChan method for details
+• Bidirectional: parsers process text ACIs into proper type-based instances defined in this package; conversely, these same
+types can be used to "manually assemble" ACIs without the need for said text definitions
 
 # Marshaling and Unmarshaling
 
+This package (internally) implements an ANTLR4 parsing subsystem to facilitate the marshaling of ACI textual definitions.
+
 Within the terms of this package, marshaling is defined through a process that reads the user-provided textual ACI definition,
-parses the components and generates a proper instance of the package-provided *ACI struct type. The marshaling process can be
-used to allow object-oriented manipulation and interrogation of an ACI's individual component, or to simply gauge the syntactical
-validity of a text-based definition.
+parses the components and generates a proper instance of the package-provided Instruction type.
 
 Conversely, unmarshaling is defined through a process that generates a textual ACI definition based upon the contexts of a
-preexisting ACI type instance.
+preexisting Instruction type instance.
 
 # Potential Use Cases
 
@@ -75,7 +76,8 @@ This package could conceivably be used in any of the following scenarios:
 
 • For Directory personnel in charge of authoring and/or managing documentation
 
-• For Directory personnel who desire a means to author and/or manage ACI stacks in a more programmatic / automated manner
+• For Directory personnel who desire a means to author and/or manage sets of ACIs in a more programmatic / automated manner, perhaps
+through templating
 
 • For use as an access control framework within an actual (Go-based) Directory System Agent implementation that honors the ACI syntax
 
@@ -96,17 +98,19 @@ any user-provided LDAP Search Filter (i.e.: when crafting a `targetfilter` Targe
 This will be improved in the near future, at which point an LDAP Search Filter string value shall be interrogated, deconstructed
 verified and recomposed into (nested) Rule instances correctly (or will return a meaningful error).
 
+# Users who wish to verify filter values discovered within an Instruction
+
 # Contribution Encouraged
 
 The ACIv3 syntax is fairly complex, rendering its innate flexibility akin to a double-edged sword. As such there may be errors, or
-concepts overlooked by the author, within this package. Users are strongly encouraged to speak up if they perceive a feature or some
-behavioral trait of the package to be suboptimal in some manner.
+concepts overlooked by the author within this package.  Users are STRONGLY ENCOURAGETO SPEAK UP if they perceive a feature or some
+behavioral trait of the package to be suboptimal or incomplete in some manner.
 
-See https://github.com/JesseCoretta/go-aci/issues for current bug reports, as well as a means to file new ones.
+See https://github.com/JesseCoretta/go-aci/issues for all bug reports past and present, as well as a means to file new ones.
 
 # Warning
 
-The concepts of access control -- whether related to the security of databases or not -- is an extremely critical component of effective
+The concept of access control -- whether related to the security of databases or not -- is an extremely critical component of effective
 cybersecurity design as a whole. Permissions, such as ACIs, should never be implemented in an untested or cavalier fashion. Though this
 package can reduce much of the tedium associated with directory security through the use of permissions, it can just as easily generate
 completely bogus rules that will have the opposite intended effect. Those who choose to leverage this package are strongly advised to
