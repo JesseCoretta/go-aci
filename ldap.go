@@ -215,9 +215,9 @@ of the receiver instance.
 */
 func (r AttributeOperation) String() string {
 	if r == DelOp {
-		return DelOp.String()
+		return `delete`
 	}
-	return AddOp.String()
+	return `add`
 }
 
 /*
