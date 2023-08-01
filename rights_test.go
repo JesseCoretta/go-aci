@@ -15,7 +15,7 @@ func TestAllow(t *testing.T) {
 }
 
 func TestAllow_all(t *testing.T) {
-        G := Allow(ReadAccess,
+	G := Allow(ReadAccess,
 		CompareAccess,
 		SearchAccess,
 		ImportAccess,
@@ -24,11 +24,11 @@ func TestAllow_all(t *testing.T) {
 		DeleteAccess,
 		AddAccess,
 		WriteAccess)
-        want := `allow(all)`
-        got := G.String()
-        if want != got {
-                t.Errorf("%s failed: want '%s', got '%s'", t.Name(), want, got)
-        }
+	want := `allow(all)`
+	got := G.String()
+	if want != got {
+		t.Errorf("%s failed: want '%s', got '%s'", t.Name(), want, got)
+	}
 }
 
 /*

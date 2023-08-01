@@ -16,22 +16,22 @@ func TestSecurityStrengthFactor_Set_stringTermMaximum(t *testing.T) {
 }
 
 func TestSecurityStrengthFactor_Set_stringTermNone(t *testing.T) {
-        var s SecurityStrengthFactor
-        s.Set(`noNe`) // test case insignificance
-        want := `0`
-        if want != s.String() {
-                t.Errorf("%s failed; want '%s', got '%s'", t.Name(), want, s)
-        }
+	var s SecurityStrengthFactor
+	s.Set(`noNe`) // test case insignificance
+	want := `0`
+	if want != s.String() {
+		t.Errorf("%s failed; want '%s', got '%s'", t.Name(), want, s)
+	}
 }
 
 func TestSecurityStrengthFactor_noSet(t *testing.T) {
 	// same test as stringTermNone, except don'
 	// actually set any value ...
-        var x SecurityStrengthFactor
-        want := `0`
-        if want != x.String() {
-                t.Errorf("%s failed; want '%s', got '%s'", t.Name(), want, x)
-        }
+	var x SecurityStrengthFactor
+	want := `0`
+	if want != x.String() {
+		t.Errorf("%s failed; want '%s', got '%s'", t.Name(), want, x)
+	}
 }
 
 func TestSecurityStrengthFactor_Set_noInit(t *testing.T) {
@@ -44,25 +44,25 @@ func TestSecurityStrengthFactor_Set_noInit(t *testing.T) {
 }
 
 func TestSecurityStrengthFactor_Set_fromInit(t *testing.T) {
-        var s SecurityStrengthFactor
+	var s SecurityStrengthFactor
 	s.Set(71)
-        want := `71`
-        if want != s.String() {
-                t.Errorf("%s failed; want '%s', got '%s'", t.Name(), want, s)
-        }
+	want := `71`
+	if want != s.String() {
+		t.Errorf("%s failed; want '%s', got '%s'", t.Name(), want, s)
+	}
 }
 
 func ExampleSecurityStrengthFactor_Set_byWordNoFactor() {
-        var s SecurityStrengthFactor
-        s.Set(`noNe`) // case is not significant
+	var s SecurityStrengthFactor
+	s.Set(`noNe`) // case is not significant
 	fmt.Printf("%s", s)
 	// Output: 0
 }
 
 func ExampleSecurityStrengthFactor_Set_byWordMaxFactor() {
-        var s SecurityStrengthFactor
-        s.Set(`FULL`) // case is not significant
-        //s.Set(`max`) // alternative term
+	var s SecurityStrengthFactor
+	s.Set(`FULL`) // case is not significant
+	//s.Set(`max`) // alternative term
 	fmt.Printf("%s", s)
 	// Output: 256
 }

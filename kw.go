@@ -55,7 +55,7 @@ type BindType uint8
 keyword/type placeholders for bad definitions.
 */
 const (
-	badBT = `<invalid_bind_type>`
+	badBT  = `<invalid_bind_type>`
 	badBKW = `<invalid_bind_keyword>`
 	badTKW = `<invalid_target_keyword>`
 )
@@ -80,18 +80,18 @@ BindKeyword constants are intended for singular use within
 a Bind Rule condition.
 */
 const (
-	_     BindKeyword = iota // <invalid_bind_keyword>
-	BindUDN                  // `userdn`
-	BindRDN                  // `roledn`
-	BindGDN                  // `groupdn`
-	BindUAT                  // `userattr`
-	BindGAT                  // `groupattr`
-	BindIP                   // `ip`
-	BindDNS                  // `dns`
-	BindDoW                  // `dayofweek`
-	BindToD                  // `timeofday`
-	BindAM                   // `authmethod`
-	BindSSF                  // `ssf`
+	_       BindKeyword = iota // <invalid_bind_keyword>
+	BindUDN                    // `userdn`
+	BindRDN                    // `roledn`
+	BindGDN                    // `groupdn`
+	BindUAT                    // `userattr`
+	BindGAT                    // `groupattr`
+	BindIP                     // `ip`
+	BindDNS                    // `dns`
+	BindDoW                    // `dayofweek`
+	BindToD                    // `timeofday`
+	BindAM                     // `authmethod`
+	BindSSF                    // `ssf`
 )
 
 /*
@@ -99,16 +99,16 @@ TargetKeyword constants are intended for singular use within
 a Target Rule condition.
 */
 const (
-	_      TargetKeyword = iota	// <invalid_target_keyword>
-	Target				// 0x1, target
-	TargetTo			// 0x2, target_to
-	TargetAttr			// 0x3, targetattr
-	TargetCtrl			// 0x4, targetcontrol
-	TargetFrom			// 0x5, target_from
-	TargetScope			// 0x6, targetscope
-	TargetFilter			// 0x7, targetfilter
-	TargetAttrFilters		// 0x8, targattrfilters (yes, "targ". As in "wild Klingon boars").
-	TargetExtOp			// 0x9, extop
+	_                 TargetKeyword = iota // <invalid_target_keyword>
+	Target                                 // 0x1, target
+	TargetTo                               // 0x2, target_to
+	TargetAttr                             // 0x3, targetattr
+	TargetCtrl                             // 0x4, targetcontrol
+	TargetFrom                             // 0x5, target_from
+	TargetScope                            // 0x6, targetscope
+	TargetFilter                           // 0x7, targetfilter
+	TargetAttrFilters                      // 0x8, targattrfilters (yes, "targ". As in "wild Klingon boars").
+	TargetExtOp                            // 0x9, extop
 )
 
 /*
@@ -117,9 +117,9 @@ of the receiver instance of BindType.
 */
 func (r BindType) String() (b string) {
 	b = badBT
-        if kw, found := btMap[r]; found {
-                b = kw
-        }
+	if kw, found := btMap[r]; found {
+		b = kw
+	}
 	return
 }
 
@@ -162,7 +162,7 @@ Or wraps go-stackage's Or function for the purpose of creating Ored
 Bind Rule statements.
 */
 func (r BindKeyword) Or() Rule {
-        return Rule(stackageOr()).setCategory(`bind`).setPushPolicy()
+	return Rule(stackageOr()).setCategory(`bind`).setPushPolicy()
 }
 
 /*
@@ -170,7 +170,7 @@ Not wraps go-stackage's Not function for the purpose of creating NOTed
 Bind Rule statements.
 */
 func (r BindKeyword) Not() Rule {
-        return Rule(stackageNot()).setCategory(`bind`).setPushPolicy()
+	return Rule(stackageNot()).setCategory(`bind`).setPushPolicy()
 }
 
 /*
@@ -190,13 +190,13 @@ matchTKW will return the matching TargetKeyword constant
 for the input kw string value.
 */
 func matchTKW(kw string) TargetKeyword {
-        for k, v := range tkwMap {
-                if eq(kw,v) {
-                        return k
-                }
-        }
+	for k, v := range tkwMap {
+		if eq(kw, v) {
+			return k
+		}
+	}
 
-        return TargetKeyword(0x0)
+	return TargetKeyword(0x0)
 }
 
 /*
@@ -204,13 +204,13 @@ matchBKW will return the matching BindKeyword constant
 for the input kw string value.
 */
 func matchBKW(kw string) BindKeyword {
-        for k, v := range bkwMap {
-                if eq(kw,v) {
-                        return k
-                }
-        }
+	for k, v := range bkwMap {
+		if eq(kw, v) {
+			return k
+		}
+	}
 
-        return BindKeyword(0x0)
+	return BindKeyword(0x0)
 }
 
 /*
@@ -218,13 +218,13 @@ matchBT will return the matching BindType constant
 for the input kw string value.
 */
 func matchBT(kw string) BindType {
-        for k, v := range btMap {
-                if eq(kw,v) {
-                        return k
-                }
-        }
+	for k, v := range btMap {
+		if eq(kw, v) {
+			return k
+		}
+	}
 
-        return BindType(0x0)
+	return BindType(0x0)
 }
 
 /*

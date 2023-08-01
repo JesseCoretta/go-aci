@@ -25,4 +25,3 @@ func ExampleCtrl() {
 	fmt.Printf("%s", o)
 	// Output: 1.3.6.1.4.1.56521.999.5
 }
-

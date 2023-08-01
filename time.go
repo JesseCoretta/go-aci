@@ -10,12 +10,12 @@ Day constants can be shifted into an instance of DayOfWeek, allowing effective e
 const (
 	noDay Day = 0         // 0 <invalid_day>
 	Sun   Day = 1 << iota // 1
-	Mon                  // 2
-	Tues                 // 4
-	Wed                  // 8
-	Thur                 // 16
-	Fri                  // 32
-	Sat                  // 64
+	Mon                   // 2
+	Tues                  // 4
+	Wed                   // 8
+	Thur                  // 16
+	Fri                   // 32
+	Sat                   // 64
 )
 
 const badDoW = `<invalid_days>`
@@ -43,21 +43,21 @@ DayOfWeek instance alongside a Boolean
 value indicative of success.
 */
 func parseDoW(d string) (D DayOfWeek, err error) {
-        X := split(repAll(d,` `,``), `,`)
-        for i := 0; i < len(X); i++ {
-                dw := matchStrDoW(X[i])
+	X := split(repAll(d, ` `, ``), `,`)
+	for i := 0; i < len(X); i++ {
+		dw := matchStrDoW(X[i])
 		if dw == noDay {
-                        return
-                }
+			return
+		}
 		D.Shift(dw)
-        }
+	}
 	err = D.Valid()
 	return
 }
 
 func matchDoW(d any) Day {
 	switch tv := d.(type) {
-        case int:
+	case int:
 		return matchIntDoW(tv)
 	case string:
 		return matchStrDoW(tv)
@@ -67,43 +67,43 @@ func matchDoW(d any) Day {
 }
 
 func matchStrDoW(d string) Day {
-        switch lc(d) {
-        case `sun`:
-                return Sun
-        case `mon`:
-                return Mon
-        case `tues`:
-                return Tues
-        case `wed`:
-                return Wed
-        case `thur`:
-                return Thur
-        case `fri`:
-                return Fri
-        case `sat`:
-                return Sat
-        }
+	switch lc(d) {
+	case `sun`:
+		return Sun
+	case `mon`:
+		return Mon
+	case `tues`:
+		return Tues
+	case `wed`:
+		return Wed
+	case `thur`:
+		return Thur
+	case `fri`:
+		return Fri
+	case `sat`:
+		return Sat
+	}
 
-        return noDay
+	return noDay
 }
 
 func matchIntDoW(d int) Day {
-        switch d {
-        case 0, 1:
-                return Sun
-        case 2:
-                return Mon
-        case 3:
-                return Tues
-        case 4:
-                return Wed
-        case 5:
-                return Thur
-        case 6:
-                return Fri
-        case 7:
-                return Sat
-        }
+	switch d {
+	case 0, 1:
+		return Sun
+	case 2:
+		return Mon
+	case 3:
+		return Tues
+	case 4:
+		return Wed
+	case 5:
+		return Thur
+	case 6:
+		return Fri
+	case 7:
+		return Sat
+	}
 
 	return noDay
 }
@@ -416,5 +416,5 @@ func (r *timeOfDay) set(t any) {
 	if r.isZero() {
 		r = new(timeOfDay)
 	}
-	assertToD(r,t)
+	assertToD(r, t)
 }

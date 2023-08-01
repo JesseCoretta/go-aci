@@ -90,7 +90,7 @@ func (r *permission) shift(x ...any) {
 			// not fall out of uint8 bounds AND is a
 			// power of two (2), we can interpolate
 			// as a Right.
-			if isPowerOfTwo(tv) && ( 0 <= tv && tv <= int(^uint16(0)) ) {
+			if isPowerOfTwo(tv) && (0 <= tv && tv <= int(^uint16(0))) {
 				(*r.Right) |= Right(tv)
 			}
 		case string:
@@ -128,43 +128,43 @@ func (r *permission) unshift(x ...any) {
 	// of a Right).
 	for i := 0; i < len(x); i++ {
 		switch tv := x[i].(type) {
-                case int:
-                        // so long as the integer magnitude does
-                        // not fall out of uint8 bounds AND is a
-                        // power of two (2), we can interpolate
-                        // as a Right.
-                        if isPowerOfTwo(tv) && ( 0 <= tv && tv <= int(^uint16(0)) ) {
+		case int:
+			// so long as the integer magnitude does
+			// not fall out of uint8 bounds AND is a
+			// power of two (2), we can interpolate
+			// as a Right.
+			if isPowerOfTwo(tv) && (0 <= tv && tv <= int(^uint16(0))) {
 				(*r.Right) = (*r.Right) &^ Right(tv)
-                        }
-                case string:
-                        if lc(tv) == NoAccess.String() {
+			}
+		case string:
+			if lc(tv) == NoAccess.String() {
 				// Asking to remove NoAccess will
 				// not accomplish anything definitive.
-                                return
-                        } else if lc(tv) == AllAccess.String() {
-                                // Asking to remove all access
+				return
+			} else if lc(tv) == AllAccess.String() {
+				// Asking to remove all access
 				// privileges is the same as
 				// setting NoAccess outright.
-                                (*r.Right) = NoAccess
-                                return
-                        }
+				(*r.Right) = NoAccess
+				return
+			}
 
-                        // Resolve the name of a Right into a Right.
-                        if priv, found := rightsNames[lc(tv)]; found {
+			// Resolve the name of a Right into a Right.
+			if priv, found := rightsNames[lc(tv)]; found {
 				(*r.Right) = (*r.Right) &^ priv
-                        }
-                case Right:
-                        if tv == NoAccess {
+			}
+		case Right:
+			if tv == NoAccess {
 				// Asking to remove NoAccess will
 				// not accomplish anything definitive.
-                                return
-                        } else if tv == AllAccess {
-                                // Asking to remove all access
+				return
+			} else if tv == AllAccess {
+				// Asking to remove all access
 				// privileges is the same as
 				// setting NoAccess outright.
-                                (*r.Right) = NoAccess
-                                return
-                        }
+				(*r.Right) = NoAccess
+				return
+			}
 			(*r.Right) = (*r.Right) &^ tv
 		}
 	}
@@ -176,24 +176,24 @@ func (r permission) positive(x any) bool {
 	}
 	switch tv := x.(type) {
 	case int:
-		if isPowerOfTwo(tv) && ( 0 <= tv && tv <= int(^uint16(0)) ) {
+		if isPowerOfTwo(tv) && (0 <= tv && tv <= int(^uint16(0))) {
 			return ((*r.Right) & Right(tv)) > 0
 		}
 	case string:
-	        if lc(tv) == NoAccess.String() {
+		if lc(tv) == NoAccess.String() {
 			// NoAccess always equals zero (0)
-	                return int(*r.Right) == 0
-	        } else if lc(tv) == AllAccess.String() {
+			return int(*r.Right) == 0
+		} else if lc(tv) == AllAccess.String() {
 			// See if the effective bit value
 			// is equalTo the known "all"
 			// compound value.
-	                return int(*r.Right) == 895
-	        }
+			return int(*r.Right) == 895
+		}
 
 		// Resolve the name of a Right into a Right.
-	        if priv, found := rightsNames[lc(tv)]; found {
+		if priv, found := rightsNames[lc(tv)]; found {
 			return ((*r.Right) & priv) > 0
-	        }
+		}
 	case Right:
 		return ((*r.Right) & tv) > 0
 	}
@@ -221,7 +221,7 @@ matched, NoAccess is returned alongside false bool.
 func idRight(def string) (r Right, ok bool) {
 	r = NoAccess
 	for k, v := range rightsMap {
-		if eq(def,v) {
+		if eq(def, v) {
 			r = k
 			ok = uint8(k) != 0x0
 			break
@@ -362,12 +362,12 @@ func init() {
 		ExportAccess:    `export`,
 	}
 
-        // we want to resolve the name
-        // of a Right into an actual
-        // Right instance.
+	// we want to resolve the name
+	// of a Right into an actual
+	// Right instance.
 	rightsNames = make(map[string]Right, 0)
-        for k, v := range rightsMap {
-                rightsNames[v] = k
-        }
+	for k, v := range rightsMap {
+		rightsNames[v] = k
+	}
 
 }

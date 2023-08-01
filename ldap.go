@@ -8,7 +8,7 @@ LDAP concepts, such as Search Scopes and DNs.
 /*
 AttributeBindTypeOrValue contains a statement of the following syntax:
 
- <AttributeName>#<BindType -OR- AttributeValue>
+	<AttributeName>#<BindType -OR- AttributeValue>
 
 Instances of this type are used in certain Bind Rules, particularly those that
 involve user-attribute or group-attribute keywords.
@@ -33,9 +33,9 @@ func (r AttributeBindTypeOrValue) IsZero() bool {
 /*
 atbtv is an "Any Triple" type of the following structure:
 
- 0: <dn> <DistinguishedName>
- 1: <atname> (AttributeType)
- 2: <atv> (AttributeValue OR BindType Keyword constant)
+	0: <dn> <DistinguishedName>
+	1: <atname> (AttributeType)
+	2: <atv> (AttributeValue OR BindType Keyword constant)
 
 Not all slices shall be populated at all times. Certain cases only call for one
 or two particular slice values per use case.
@@ -74,7 +74,7 @@ instances based on one (1) of the possible two (2) constants defined below.
 */
 const (
 	AddOp AttributeOperation = iota // add=
-	DelOp				// delete=
+	DelOp                           // delete=
 )
 
 /*
@@ -84,7 +84,7 @@ which is a critical component of the `targattrfilters` Target Rule.
 The at argument must be an attributeType string name, or an actual (valid)
 AttributeType instance.
 */
-func AF(at,f any) AttributeFilter {
+func AF(at, f any) AttributeFilter {
 	af := new(atf)
 	// create the symbol-based
 	// AND stack to act as the
@@ -167,20 +167,20 @@ setFilter is a private method that returns a boolean value indicative of whether
 the attempt to set the receiver's filter value (string or filter Rule) succeeded.
 */
 func (r AttributeFilter) setFilter(f any) (ok bool) {
-        switch tv := f.(type) {
-        case string:
+	switch tv := f.(type) {
+	case string:
 		if len(tv) > 0 {
 			r.atf.Rule = Filter().Push(tv)
 			ok = true
 		}
-        case Rule:
-		if tv.Category() == `targetfilter` && !tv.IsZero() {
+	case Rule:
+		if tv.Category() == TargetFilter.String() && !tv.IsZero() {
 			r.atf.Rule = tv
 			ok = true
 		}
-        }
+	}
 
-        return
+	return
 }
 
 /*
@@ -215,9 +215,9 @@ of the receiver instance.
 */
 func (r AttributeOperation) String() string {
 	if r == DelOp {
-		return `delete`
+		return DelOp.String()
 	}
-	return `add`
+	return AddOp.String()
 }
 
 /*
@@ -229,15 +229,15 @@ and bears the categorical string label of `attrfilters`.
 */
 func (r AttributeOperation) AF(x ...AttributeFilter) AttributeFilters {
 	ppol := func(x any) (err error) {
-                switch tv := x.(type) {
-                case AttributeFilter:
-                        if tv.IsZero() {
-                                err = errorf("%T denied per PushPolicy method; zero length filter", tv)
-                        }
-                default:
-                        err = errorf("%T denied per PushPolicy method", tv)
-                }
-                return
+		switch tv := x.(type) {
+		case AttributeFilter:
+			if tv.IsZero() {
+				err = errorf("%T denied per PushPolicy method; zero length filter", tv)
+			}
+		default:
+			err = errorf("%T denied per PushPolicy method", tv)
+		}
+		return
 	}
 
 	afs := AttributeFilters{new(atfs)}
@@ -271,7 +271,7 @@ Eq initializes and returns a new Condition instance configured to express the
 evaluation of the receiver value as Equal-To a `targattrfilters`.
 */
 func (r AttributeFilters) Eq() Condition {
-        return Cond(TargetAttrFilters, r, Eq).
+	return Cond(TargetAttrFilters, r, Eq).
 		Paren().
 		Encap(`"`).
 		setID(`target`).
@@ -316,7 +316,7 @@ func (r *atfs) set(x ...AttributeFilter) {
 AttributeFilters embeds a pointer value that reflects the following `targattrfilters`
 expression syntax:
 
- "ldapOperation=attributeType:filter [&& attributeType:filter ...], ..."
+	"ldapOperation=attributeType:filter [&& attributeType:filter ...], ..."
 */
 type AttributeFilters struct {
 	*atfs
@@ -505,9 +505,9 @@ some other abstraction.
 Negated equality Condition instances should be used with caution.
 */
 func (r AttributeBindTypeOrValue) Ne() (c Condition) {
-        if r.atbtv.isZero() {
-                return
-        }
+	if r.atbtv.isZero() {
+		return
+	}
 
 	return Cond(r.BindKeyword, r, Ne).Encap(`"`).setID(`bind`).setCategory(r.BindKeyword.String())
 }
@@ -520,7 +520,7 @@ func (r *atbtv) isZero() bool {
 	if r == nil {
 		return true
 	}
-	return ( r[0] == nil && r[1] == nil && r[2] == nil )
+	return (r[0] == nil && r[1] == nil && r[2] == nil)
 }
 
 /*
@@ -652,22 +652,22 @@ instance. This will change in the future to leverage a more sophisticated means
 of parsing/decompiling LDAP Search Filters.
 */
 func TFilter() Rule {
-        ppol := func(x any) (err error) {
-                switch tv := x.(type) {
-                case string:
-                        if len(tv) == 0 {
-                                err = errorf("%T denied per PushPolicy method; zero length filter", tv)
-                        }
-                default:
-                        err = errorf("%T denied per PushPolicy method", tv)
-                }
-                return
-        }
+	ppol := func(x any) (err error) {
+		switch tv := x.(type) {
+		case string:
+			if len(tv) == 0 {
+				err = errorf("%T denied per PushPolicy method; zero length filter", tv)
+			}
+		default:
+			err = errorf("%T denied per PushPolicy method", tv)
+		}
+		return
+	}
 
-        // Temporarily place the filter in a Rule
-        // with a maximum capacity of one (1). This
-        // will be reworked in the near future.
-        return Rule(stackageList(1).SetPushPolicy(ppol)).setID(`target`).setCategory(`targetfilter`)
+	// Temporarily place the filter in a Rule
+	// with a maximum capacity of one (1). This
+	// will be reworked in the near future.
+	return Rule(stackageList(1).SetPushPolicy(ppol)).setID(`target`).setCategory(TargetFilter.String())
 }
 
 /*
@@ -766,7 +766,7 @@ func (r SearchScope) Target() string {
 /*
 DistinguishedName describes an LDAP distinguished name. For example:
 
- ou=People,dc=example,dc=com
+	ou=People,dc=example,dc=com
 
 Executing the String method exported through instances of this type
 shall automatically prepend the DN with the recommended LDAP "local
@@ -819,21 +819,21 @@ type ldapURI struct {
 URI initializes, (optionally) sets and returns a new instance of LDAPURI,
 which represents a fully-qualified LDAP Search URI of the following syntax:
 
- scheme:///<dn>?<at[,...]>?<scope>?<filter>
+	scheme:///<dn>?<at[,...]>?<scope>?<filter>
 
 As a practical example:
 
- ldap:///ou=People,dc=example,dc=com?sn,cn,givenName?one?(objectClass=*)
+	ldap:///ou=People,dc=example,dc=com?sn,cn,givenName?one?(objectClass=*)
 
 Additionally, the ACI syntax specification honored by this package allows
 the use of an AttributeBindTypeOrValue instance instead of a scope and
 filter:
 
- scheme:///<dn>?<atbtv>
+	scheme:///<dn>?<atbtv>
 
 As a practical example:
 
- ldap:///ou=People,dc=example,dc=com?owner#GROUPDN
+	ldap:///ou=People,dc=example,dc=com?owner#GROUPDN
 
 Generally, the latter case applies to `userattr` and/or `groupattr` Bind
 Rules involving static groups, but may have applications elsewhere.
@@ -882,21 +882,21 @@ func (r ldapURI) string() string {
 		return badURI
 	}
 
-        var param string
-        if !r.filter.IsZero() {
-                if !r.attrs.IsZero() {
-                        param = sprintf("?%s", r.attrs)
-                } else {
+	var param string
+	if !r.filter.IsZero() {
+		if !r.attrs.IsZero() {
+			param = sprintf("?%s", r.attrs)
+		} else {
 			param = "?"
 		}
-                param += sprintf("?%s?%s", r.scope, r.filter)
-        } else if !r.avbt.IsZero() {
-                param = sprintf("?%s", r.avbt)
-        } else {
+		param += sprintf("?%s?%s", r.scope, r.filter)
+	} else if !r.avbt.IsZero() {
+		param = sprintf("?%s", r.avbt)
+	} else {
 		return sprintf("%s???", r.dn)
 	}
 
-        return sprintf("%s%s", r.dn, param)
+	return sprintf("%s%s", r.dn, param)
 }
 
 /*
@@ -992,7 +992,7 @@ The return value shall be suitable for use in creating a Bind Rule Condition tha
 `userdn` keyword.
 */
 func UDN(x string) DistinguishedName {
-	return DistinguishedName{newDistinguishedName(x,BindUDN)}
+	return DistinguishedName{newDistinguishedName(x, BindUDN)}
 }
 
 /*
@@ -1004,7 +1004,7 @@ The return value shall be suitable for use in creating a Bind Rule Condition tha
 `roledn` keyword.
 */
 func RDN(x string) DistinguishedName {
-        return DistinguishedName{newDistinguishedName(x,BindRDN)}
+	return DistinguishedName{newDistinguishedName(x, BindRDN)}
 }
 
 /*
@@ -1016,7 +1016,7 @@ The return value shall be suitable for use in creating a Bind Rule Condition tha
 `groupdn` keyword.
 */
 func GDN(x string) DistinguishedName {
-        return DistinguishedName{newDistinguishedName(x,BindGDN)}
+	return DistinguishedName{newDistinguishedName(x, BindGDN)}
 }
 
 /*
@@ -1028,7 +1028,7 @@ The return value shall be suitable for use in creating a Target Rule Condition t
 `target` keyword.
 */
 func TDN(x string) DistinguishedName {
-        return DistinguishedName{newDistinguishedName(x,Target)}
+	return DistinguishedName{newDistinguishedName(x, Target)}
 }
 
 /*
@@ -1040,7 +1040,7 @@ The return value shall be suitable for use in creating a Target Rule Condition t
 `target_to` keyword.
 */
 func TTDN(x string) DistinguishedName {
-        return DistinguishedName{newDistinguishedName(x,TargetTo)}
+	return DistinguishedName{newDistinguishedName(x, TargetTo)}
 }
 
 /*
@@ -1052,11 +1052,11 @@ The return value shall be suitable for use in creating a Target Rule Condition t
 `target_from` keyword.
 */
 func TFDN(x string) DistinguishedName {
-        return DistinguishedName{newDistinguishedName(x,TargetFrom)}
+	return DistinguishedName{newDistinguishedName(x, TargetFrom)}
 }
 
 /*
-newDistinguishedName is a private function that returns a new instance of 
+newDistinguishedName is a private function that returns a new instance of
 *distinguishedName. This function is called by the UDN, GDN, TDN, TTDN and
 TFDN functions.
 */
@@ -1075,7 +1075,9 @@ func newDistinguishedName(x string, kw Keyword) (d *distinguishedName) {
 Eq initializes and returns a new Condition instance configured to express the
 evaluation of the receiver value as Equal-To one (1) of the following keywords:
 
-• `userdn` (Bind Rule), 
+• `userdn` (Bind Rule),
+
+• `roledn` (Bind Rule),
 
 • `groupdn` (Bind Rule)
 
@@ -1093,22 +1095,18 @@ Note that any Condition bearing a Target Rule keyword will automatically be
 configured to encapsulate within parenthesis during string representation.
 */
 func (r DistinguishedName) Eq() Condition {
-        if r.distinguishedName.isZero() {
-                return Condition{}
-        }
+	if r.distinguishedName.isZero() {
+		return Condition{}
+	}
 
-        switch r.distinguishedName.Keyword {
-        case BindGDN:
-                return Cond(BindGDN, r, Eq).Encap(`"`).setCategory(`groupdn`)
-	case Target:
-                return Cond(Target, r, Eq).Encap(`"`).Paren().setCategory(`target`)
-	case TargetTo:
-                return Cond(TargetTo, r, Eq).Encap(`"`).Paren().setCategory(`target_to`)
-	case TargetFrom:
-                return Cond(TargetFrom, r, Eq).Encap(`"`).Paren().setCategory(`target_to`)
-        }
+	switch key := r.distinguishedName.Keyword; key {
+	case BindRDN, BindGDN:
+		return Cond(key, r, Eq).Encap(`"`).setCategory(key.String())
+	case Target, TargetTo, TargetFrom:
+		return Cond(key, r, Eq).Encap(`"`).Paren().setCategory(key.String())
+	}
 
-	return Cond(BindUDN, r, Eq).Encap(`"`).setCategory(`userdn`)
+	return Cond(BindUDN, r, Eq).Encap(`"`).setCategory(BindUDN.String())
 }
 
 /*
@@ -1117,6 +1115,8 @@ evaluation of the receiver value as Not-Equal-To one (1) of the following
 keywords:
 
 • `userdn` (Bind Rule),
+
+• `roledn` (Bind Rule),
 
 • `groupdn` (Bind Rule)
 
@@ -1136,22 +1136,18 @@ configured to encapsulate within parenthesis during string representation.
 Negated equality Condition instances should be used with caution.
 */
 func (r DistinguishedName) Ne() Condition {
-        if r.distinguishedName.isZero() {
-                return Condition{}
-        }
-
-        switch r.distinguishedName.Keyword {
-        case BindGDN:
-                return Cond(BindGDN, r, Ne).Encap(`"`).setCategory(`groupdn`)
-        case Target:
-                return Cond(Target, r, Ne).Encap(`"`).Paren().setCategory(`target`)
-        case TargetTo:
-                return Cond(TargetTo, r, Ne).Encap(`"`).Paren().setCategory(`target_to`)
-        case TargetFrom:
-                return Cond(TargetFrom, r, Ne).Encap(`"`).Paren().setCategory(`target_from`)
+	if r.distinguishedName.isZero() {
+		return Condition{}
 	}
 
-        return Cond(BindUDN, r, Ne).Encap(`"`).setCategory(`userdn`)
+	switch key := r.distinguishedName.Keyword; key {
+	case BindRDN, BindGDN:
+		return Cond(key, r, Ne).Encap(`"`).setCategory(key.String())
+	case Target, TargetTo, TargetFrom:
+		return Cond(key, r, Ne).Encap(`"`).Paren().setCategory(key.String())
+	}
+
+	return Cond(BindUDN, r, Ne).Encap(`"`).setCategory(BindUDN.String())
 }
 
 /*
@@ -1180,7 +1176,7 @@ func (r DistinguishedName) String() string {
 		return ``
 	}
 
-	return sprintf("%s%s",LocalScheme,(*r.distinguishedName.string))
+	return sprintf("%s%s", LocalScheme, (*r.distinguishedName.string))
 }
 
 /*
@@ -1272,37 +1268,36 @@ Poached go-ldap filter-related constants and global vars for
 future use.
 */
 const (
-        equalityMatch ldapFilterOperator = ldapFilterOperator(Eq)
-        greaterThanOrEqualMatch ldapFilterOperator = ldapFilterOperator(Ge)
-        lessThanOrEqualMatch ldapFilterOperator = ldapFilterOperator(Le)
-        extensibleRuleDN ldapFilterOperator = iota + ldapFilterOperator(Ge)
-        extensibleRuleDNOID
-        extensibleRuleAttr
-        extensibleRuleNoDN
-        approximateMatch
+	equalityMatch           ldapFilterOperator = ldapFilterOperator(Eq)
+	greaterThanOrEqualMatch ldapFilterOperator = ldapFilterOperator(Ge)
+	lessThanOrEqualMatch    ldapFilterOperator = ldapFilterOperator(Le)
+	extensibleRuleDN        ldapFilterOperator = iota + ldapFilterOperator(Ge)
+	extensibleRuleDNOID
+	extensibleRuleAttr
+	extensibleRuleNoDN
+	approximateMatch
 )
 
 var filterMatchOps map[ldapFilterOperator]string = map[ldapFilterOperator]string{
-        equalityMatch: Eq.String(),
-        greaterThanOrEqualMatch: `>=`,
-        lessThanOrEqualMatch: `<=`,
-        extensibleRuleDN: `:dn:=`,
-        extensibleRuleDNOID: `:dn:`,
-        extensibleRuleAttr: `:=`,
-        extensibleRuleNoDN: `:`,
-        approximateMatch: `~=`,
+	equalityMatch:           Eq.String(),
+	greaterThanOrEqualMatch: `>=`,
+	lessThanOrEqualMatch:    `<=`,
+	extensibleRuleDN:        `:dn:=`,
+	extensibleRuleDNOID:     `:dn:`,
+	extensibleRuleAttr:      `:=`,
+	extensibleRuleNoDN:      `:`,
+	approximateMatch:        `~=`,
 }
 
-
 func (r ldapFilterOperator) String() string {
-        if val, found := filterMatchOps[r]; found {
-                return val
-        }
-        return ``
+	if val, found := filterMatchOps[r]; found {
+		return val
+	}
+	return ``
 }
 
 func (r ldapFilterOperator) Context() string {
-        return `filter` // TODO - return the go-ldap map names?
+	return `filter` // TODO - return the go-ldap map names?
 }
 
 /*
@@ -1317,27 +1312,27 @@ considered for push requests.
 func TAttrs() Rule {
 	// define a push policy that limits slice candidates to
 	// valid strings or bonafide AttributeType instances.
-        ppol := func(x any) (err error) {
-                switch tv := x.(type) {
-                case string:
-                        if len(tv) == 0 {
-                                err = errorf("%T denied per PushPolicy method; zero length string", tv)
-                        }
-                case AttributeType:
-                        if tv.String() == badAT {
-                                err = errorf("%T denied per PushPolicy method; zero length", tv)
-                        }
+	ppol := func(x any) (err error) {
+		switch tv := x.(type) {
+		case string:
+			if len(tv) == 0 {
+				err = errorf("%T denied per PushPolicy method; zero length string", tv)
+			}
+		case AttributeType:
+			if tv.String() == badAT {
+				err = errorf("%T denied per PushPolicy method; zero length", tv)
+			}
 		default:
-                        err = errorf("%T denied per PushPolicy method", tv)
-                }
-                return
-        }
+			err = errorf("%T denied per PushPolicy method", tv)
+		}
+		return
+	}
 
-        return Rule(stackageOr().
+	return Rule(stackageOr().
 		Symbol(`||`).
-                SetPushPolicy(ppol)).
+		SetPushPolicy(ppol)).
 		setID(`target`).
-		setCategory(`targetattr`)
+		setCategory(TargetAttr.String())
 }
 
 /*
@@ -1349,23 +1344,23 @@ requested.
 Comma-based delimitation is automatically invoked.
 */
 func Attrs() Rule {
-        ppol := func(x any) (err error) {
-                switch tv := x.(type) {
-                case string:
-                        if len(tv) == 0 {
-                                err = errorf("%T denied per PushPolicy method; zero length string", tv)
-                        }
+	ppol := func(x any) (err error) {
+		switch tv := x.(type) {
+		case string:
+			if len(tv) == 0 {
+				err = errorf("%T denied per PushPolicy method; zero length string", tv)
+			}
 		case AttributeType:
 			if tv.IsZero() {
-                                err = errorf("%T denied per PushPolicy method; zero length", tv)
+				err = errorf("%T denied per PushPolicy method; zero length", tv)
 			}
-                default:
-                        err = errorf("%T denied per PushPolicy method", tv)
-                }
-                return
-        }
+		default:
+			err = errorf("%T denied per PushPolicy method", tv)
+		}
+		return
+	}
 
-        return Rule(stackageList().
+	return Rule(stackageList().
 		SetPushPolicy(ppol).
 		JoinDelim(`,`)).
 		setCategory(`attributes`)
@@ -1386,27 +1381,27 @@ suitable for push requests.
 func Ctrls() Rule {
 	// define a push policy that limits slice candidates to
 	// valid strings or bonafide ObjectIdentifier instances.
-        ppol := func(x any) (err error) {
-                switch tv := x.(type) {
-                case string:
-                        if len(tv) == 0 {
-                                err = errorf("Cannot use zero string for objectIdentifier push")
-                        }
-                case ObjectIdentifier:
-                        if tv.IsZero() {
-                                err = errorf("%T is nil", tv)
-                        }
+	ppol := func(x any) (err error) {
+		switch tv := x.(type) {
+		case string:
+			if len(tv) == 0 {
+				err = errorf("Cannot use zero string for objectIdentifier push")
+			}
+		case ObjectIdentifier:
+			if tv.IsZero() {
+				err = errorf("%T is nil", tv)
+			}
 		default:
 			err = errorf("%T type violates PushPolicy", tv)
-                }
-                return
-        }
+		}
+		return
+	}
 
-        return Rule(stackageOr().
+	return Rule(stackageOr().
 		Symbol(`||`).
-                SetPushPolicy(ppol)).
+		SetPushPolicy(ppol)).
 		setID(`target`).
-		setCategory(`targetcontrol`)
+		setCategory(TargetCtrl.String())
 }
 
 /*
@@ -1422,27 +1417,27 @@ translate correctly into ObjectIdentifier instances should be deemed
 suitable for push requests.
 */
 func ExtOps() Rule {
-        ppol := func(x any) (err error) {
-                switch tv := x.(type) {
-                case string:
-                        if len(tv) == 0 {
-                                err = errorf("Cannot use zero string for objectIdentifier push")
-                        }
-                case ObjectIdentifier:
-                        if tv.IsZero() {
-                                err = errorf("%T is nil", tv)
-                        }
+	ppol := func(x any) (err error) {
+		switch tv := x.(type) {
+		case string:
+			if len(tv) == 0 {
+				err = errorf("Cannot use zero string for objectIdentifier push")
+			}
+		case ObjectIdentifier:
+			if tv.IsZero() {
+				err = errorf("%T is nil", tv)
+			}
 		default:
 			err = errorf("%T type violates PushPolicy", tv)
-                }
-                return
-        }
+		}
+		return
+	}
 
-        return Rule(stackageOr().
-                Symbol(`||`).
-                SetPushPolicy(ppol)).
+	return Rule(stackageOr().
+		Symbol(`||`).
+		SetPushPolicy(ppol)).
 		setID(`target`).
-                setCategory(`extop`)
+		setCategory(TargetExtOp.String())
 }
 
 /*
@@ -1457,16 +1452,16 @@ TTDN or TFDN package level functions OR non-zero strings, are to
 be considered eligible for push requests.
 */
 func TDNs() Rule {
-        ppol := func(x any) (err error) {
-                switch tv := x.(type) {
-                case string:
-                        if len(tv) == 0 {
-                                err = errorf("%T cannot use zero string for DN push", tv)
-                        }
-                case DistinguishedName:
-                        if tv.IsZero() {
-                                err = errorf("%T is nil", tv)
-                        } else if !strInSlice(tv.distinguishedName.Keyword.String(), []string{
+	ppol := func(x any) (err error) {
+		switch tv := x.(type) {
+		case string:
+			if len(tv) == 0 {
+				err = errorf("%T cannot use zero string for DN push", tv)
+			}
+		case DistinguishedName:
+			if tv.IsZero() {
+				err = errorf("%T is nil", tv)
+			} else if !strInSlice(tv.distinguishedName.Keyword.String(), []string{
 				Target.String(),
 				TargetTo.String(),
 				TargetFrom.String(),
@@ -1475,14 +1470,14 @@ func TDNs() Rule {
 			}
 		default:
 			err = errorf("%T type violates PushPolicy", tv)
-                }
-                return
-        }
+		}
+		return
+	}
 
-        return Rule(stackageOr().
-                Symbol(`||`).
-                SetPushPolicy(ppol)).
-                setCategory(`target`)
+	return Rule(stackageOr().
+		Symbol(`||`).
+		SetPushPolicy(ppol)).
+		setCategory(Target.String())
 }
 
 /*
@@ -1495,28 +1490,28 @@ Only valid instances of DistinguishedName create using the UDN,
 OR non-zero strings, are to be considered eligible for push requests.
 */
 func UDNs() Rule {
-        ppol := func(x any) (err error) {
-                switch tv := x.(type) {
-                case string:
-                        if len(tv) == 0 {
-                                err = errorf("%T cannot use zero string for DN push", tv)
-                        }
-                case DistinguishedName:
-                        if tv.IsZero() {
-                                err = errorf("%T is nil", tv)
+	ppol := func(x any) (err error) {
+		switch tv := x.(type) {
+		case string:
+			if len(tv) == 0 {
+				err = errorf("%T cannot use zero string for DN push", tv)
+			}
+		case DistinguishedName:
+			if tv.IsZero() {
+				err = errorf("%T is nil", tv)
 			} else if tv.distinguishedName.Keyword != BindUDN {
-                                err = errorf("%T failed during keyword verification (not a UserDN-based Bind Rule)", tv)
-                        }
-                default:
-                        err = errorf("%T type violates PushPolicy", tv)
-                }
-                return
-        }
+				err = errorf("%T failed during keyword verification (not a UserDN-based Bind Rule)", tv)
+			}
+		default:
+			err = errorf("%T type violates PushPolicy", tv)
+		}
+		return
+	}
 
-        return Rule(stackageOr().
-                Symbol(`||`).
-                SetPushPolicy(ppol)).
-                setCategory(BindUDN.String())
+	return Rule(stackageOr().
+		Symbol(`||`).
+		SetPushPolicy(ppol)).
+		setCategory(BindUDN.String())
 }
 
 /*
@@ -1529,28 +1524,28 @@ Only valid instances of DistinguishedName create using the RDN,
 OR non-zero strings, are to be considered eligible for push requests.
 */
 func RDNs() Rule {
-        ppol := func(x any) (err error) {
-                switch tv := x.(type) {
-                case string:
-                        if len(tv) == 0 {
-                                err = errorf("%T cannot use zero string for DN push", tv)
-                        }
-                case DistinguishedName:
-                        if tv.IsZero() {
-                                err = errorf("%T is nil", tv)
-                        } else if tv.distinguishedName.Keyword != BindRDN {
-                                err = errorf("%T failed during keyword verification (not a RoleDN-based Bind Rule)", tv)
-                        }
-                default:
-                        err = errorf("%T type violates PushPolicy", tv)
-                }
-                return
-        }
+	ppol := func(x any) (err error) {
+		switch tv := x.(type) {
+		case string:
+			if len(tv) == 0 {
+				err = errorf("%T cannot use zero string for DN push", tv)
+			}
+		case DistinguishedName:
+			if tv.IsZero() {
+				err = errorf("%T is nil", tv)
+			} else if tv.distinguishedName.Keyword != BindRDN {
+				err = errorf("%T failed during keyword verification (not a RoleDN-based Bind Rule)", tv)
+			}
+		default:
+			err = errorf("%T type violates PushPolicy", tv)
+		}
+		return
+	}
 
-        return Rule(stackageOr().
-                Symbol(`||`).
-                SetPushPolicy(ppol)).
-                setCategory(BindRDN.String())
+	return Rule(stackageOr().
+		Symbol(`||`).
+		SetPushPolicy(ppol)).
+		setCategory(BindRDN.String())
 }
 
 /*
@@ -1563,28 +1558,28 @@ Only valid instances of DistinguishedName create using the GDN,
 OR non-zero strings, are to be considered eligible for push requests.
 */
 func GDNs() Rule {
-        ppol := func(x any) (err error) {
-                switch tv := x.(type) {
-                case string:
-                        if len(tv) == 0 {
-                                err = errorf("%T cannot use zero string for DN push", tv)
-                        }
-                case DistinguishedName:
-                        if tv.IsZero() {
-                                err = errorf("%T is nil", tv)
-                        } else if tv.distinguishedName.Keyword != BindGDN {
-                                err = errorf("%T failed during keyword verification (not a GroupDN-based Bind Rule)", tv)
-                        }
-                default:
-                        err = errorf("%T type violates PushPolicy", tv)
-                }
-                return
-        }
+	ppol := func(x any) (err error) {
+		switch tv := x.(type) {
+		case string:
+			if len(tv) == 0 {
+				err = errorf("%T cannot use zero string for DN push", tv)
+			}
+		case DistinguishedName:
+			if tv.IsZero() {
+				err = errorf("%T is nil", tv)
+			} else if tv.distinguishedName.Keyword != BindGDN {
+				err = errorf("%T failed during keyword verification (not a GroupDN-based Bind Rule)", tv)
+			}
+		default:
+			err = errorf("%T type violates PushPolicy", tv)
+		}
+		return
+	}
 
-        return Rule(stackageOr().
-                Symbol(`||`).
-                SetPushPolicy(ppol)).
-                setCategory(BindGDN.String())
+	return Rule(stackageOr().
+		Symbol(`||`).
+		SetPushPolicy(ppol)).
+		setCategory(BindGDN.String())
 }
 
 /*
@@ -1638,19 +1633,19 @@ var (
 	// representation of DistinguishedName instances. It is exported and visible
 	// to users for reference purposes only, and generally need not be accessed
 	// directly.
-        LocalScheme = `ldap:///`
+	LocalScheme = `ldap:///`
 
 	// AllDN is the abstraction of all known user DNs; this does not imply ANONYMOUS DNs
-        AllDN       DistinguishedName
+	AllDN DistinguishedName
 
 	// AnyDN is the abstraction of all user DNs, known or anonymous
-        AnyDN       DistinguishedName
+	AnyDN DistinguishedName
 
 	// SelfDN is the abstraction of a user's own DN
-        SelfDN      DistinguishedName
+	SelfDN DistinguishedName
 
 	// ParentDN is the abstraction of a user's superior DN
-        ParentDN    DistinguishedName
+	ParentDN DistinguishedName
 )
 
 const (
@@ -1663,8 +1658,8 @@ const (
 init will initialize any global vars residing in this file.
 */
 func init() {
-	AllDN = UDN(`all`)
-	AnyDN = UDN(`anyone`)
-	SelfDN = UDN(`self`)
-	ParentDN = UDN(`parent`)
+	AllDN = UDN(`all`)       // ldap:///all
+	AnyDN = UDN(`anyone`)    // ldap:///anyone
+	SelfDN = UDN(`self`)     // ldap:///self
+	ParentDN = UDN(`parent`) // ldap:///parent
 }

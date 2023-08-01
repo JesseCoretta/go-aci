@@ -17,15 +17,15 @@ func TestInheritance(t *testing.T) {
 func ExampleInherit_uAT() {
 	attr := ATName(`manager`)
 	uat := UAT(attr, ATValue(`uid=frank,ou=People,dc=example,dc=com`))
-        inh := Inherit(uat, 1, 3)
-        fmt.Printf("%s", inh.Eq())
-        // Output: userattr = "parent[1,3].manager#uid=frank,ou=People,dc=example,dc=com"
+	inh := Inherit(uat, 1, 3)
+	fmt.Printf("%s", inh.Eq())
+	// Output: userattr = "parent[1,3].manager#uid=frank,ou=People,dc=example,dc=com"
 }
 
 func ExampleInherit_gAT() {
 	attr := ATName(`owner`)
-	gat := GAT(attr,USERDN)
-        inh := Inherit(gat, 3, 4)
-        fmt.Printf("%s", inh.Eq())
-        // Output: groupattr = "parent[3,4].owner#USERDN"
+	gat := GAT(attr, USERDN)
+	inh := Inherit(gat, 3, 4)
+	fmt.Printf("%s", inh.Eq())
+	// Output: groupattr = "parent[3,4].owner#USERDN"
 }

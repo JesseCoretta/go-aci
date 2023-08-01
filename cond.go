@@ -40,12 +40,12 @@ within this package for convenience, without the need for user-invoked stackage
 package import.
 */
 const (
-	Eq stackage.ComparisonOperator = stackage.Eq	// 0x1, "Equal To"
-	Ne stackage.ComparisonOperator = stackage.Ne	// 0x2, "Not Equal to"	// USE WITH CAUTION
-	Lt stackage.ComparisonOperator = stackage.Lt	// 0x3, "Less Than"
-	Le stackage.ComparisonOperator = stackage.Le	// 0x4, "Less Than Or Equal"
-	Gt stackage.ComparisonOperator = stackage.Gt	// 0x5, "Greater Than"
-	Ge stackage.ComparisonOperator = stackage.Ge	// 0x6, "Greater Than Or Equal"
+	Eq stackage.ComparisonOperator = stackage.Eq // 0x1, "Equal To"
+	Ne stackage.ComparisonOperator = stackage.Ne // 0x2, "Not Equal to"	// USE WITH CAUTION
+	Lt stackage.ComparisonOperator = stackage.Lt // 0x3, "Less Than"
+	Le stackage.ComparisonOperator = stackage.Le // 0x4, "Less Than Or Equal"
+	Gt stackage.ComparisonOperator = stackage.Gt // 0x5, "Greater Than"
+	Ge stackage.ComparisonOperator = stackage.Ge // 0x6, "Greater Than Or Equal"
 )
 
 var comparisonOperatorMap map[string]stackage.ComparisonOperator
@@ -97,11 +97,11 @@ in which Condition instances need to be manually created from scratch (rare).
 
 A condition is represented through the following abstract structure:
 
- <keyword> <operator> <expression value>
+	<keyword> <operator> <expression value>
 
 An example:
 
- userdn = "ldap:///uid=jesse,ou=People,dc=example,dc=com"
+	userdn = "ldap:///uid=jesse,ou=People,dc=example,dc=com"
 
 As such, three (3) parameters are required:
 
@@ -146,8 +146,8 @@ func (r Condition) Category() string {
 setID wraps go-stackage's Condition.SetID method.
 */
 func (r Condition) setID(id string) Condition {
-        stackage.Condition(r).SetID(id)
-        return r
+	stackage.Condition(r).SetID(id)
+	return r
 }
 
 func (r Condition) ID() string {

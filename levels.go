@@ -49,7 +49,7 @@ is called by Inherit.
 */
 func newInheritance(x AttributeBindTypeOrValue, lvl ...any) (i *inheritance) {
 	i = new(inheritance)
-	for j := 0 ; j < len(lvl); j++ {
+	for j := 0; j < len(lvl); j++ {
 		i.shift(lvl[j])
 	}
 	i.AttributeBindTypeOrValue = x
@@ -82,7 +82,7 @@ func (r Inheritance) Eq() Condition {
 		return Condition{}
 	}
 	kw := r.inheritance.AttributeBindTypeOrValue.BindKeyword
-        return Cond(kw, r, Eq).Encap(`"`).setID(`bind`).setCategory(kw.String())
+	return Cond(kw, r, Eq).Encap(`"`).setID(`bind`).setCategory(kw.String())
 }
 
 /*
@@ -90,11 +90,11 @@ Ne initializes and returns a new Condition instance configured to express the
 evaluation of the receiver value as Not-Equal-To a `userattr`.
 */
 func (r Inheritance) Ne() Condition {
-        if r.IsZero() {
-                return Condition{}
-        }
+	if r.IsZero() {
+		return Condition{}
+	}
 	kw := r.inheritance.AttributeBindTypeOrValue.BindKeyword
-        return Cond(kw, r, Ne).Encap(`"`).setID(`bind`).setCategory(kw.String())
+	return Cond(kw, r, Ne).Encap(`"`).setID(`bind`).setCategory(kw.String())
 }
 
 /*

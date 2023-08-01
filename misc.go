@@ -14,35 +14,35 @@ import (
 frequently-accessed import function aliases.
 */
 var (
-	lc       func(string) string                  = strings.ToLower
-	uc       func(string) string                  = strings.ToUpper
-	eq       func(string,string) bool             = strings.EqualFold
-	idxf     func(string, func(rune) bool) int    = strings.IndexFunc
-	idxr     func(string, rune) int               = strings.IndexRune
-	idxs     func(string, string) int             = strings.Index
-	hasPfx   func(string, string) bool            = strings.HasPrefix
-	hasSfx   func(string, string) bool            = strings.HasSuffix
-	repAll   func(string, string, string) string  = strings.ReplaceAll
-	contains func(string, string) bool            = strings.Contains
-	split    func(string, string) []string        = strings.Split
-	trimS    func(string) string                  = strings.TrimSpace
-	join     func([]string, string) string        = strings.Join
-	printf   func(string, ...any) (int, error)    = fmt.Printf
-	sprintf  func(string, ...any) string          = fmt.Sprintf
-	atoi     func(string) (int, error)            = strconv.Atoi
-	isDigit  func(rune) bool                      = unicode.IsDigit
-	isLetter func(rune) bool                      = unicode.IsLetter
-	isLower  func(rune) bool		      = unicode.IsLower
-	isUpper  func(rune) bool		      = unicode.IsUpper
-	uint16g  func([]byte) uint16                  = binary.BigEndian.Uint16
-	uint16p  func([]byte, uint16)		      = binary.BigEndian.PutUint16
+	lc       func(string) string                 = strings.ToLower
+	uc       func(string) string                 = strings.ToUpper
+	eq       func(string, string) bool           = strings.EqualFold
+	idxf     func(string, func(rune) bool) int   = strings.IndexFunc
+	idxr     func(string, rune) int              = strings.IndexRune
+	idxs     func(string, string) int            = strings.Index
+	hasPfx   func(string, string) bool           = strings.HasPrefix
+	hasSfx   func(string, string) bool           = strings.HasSuffix
+	repAll   func(string, string, string) string = strings.ReplaceAll
+	contains func(string, string) bool           = strings.Contains
+	split    func(string, string) []string       = strings.Split
+	trimS    func(string) string                 = strings.TrimSpace
+	join     func([]string, string) string       = strings.Join
+	printf   func(string, ...any) (int, error)   = fmt.Printf
+	sprintf  func(string, ...any) string         = fmt.Sprintf
+	atoi     func(string) (int, error)           = strconv.Atoi
+	isDigit  func(rune) bool                     = unicode.IsDigit
+	isLetter func(rune) bool                     = unicode.IsLetter
+	isLower  func(rune) bool                     = unicode.IsLower
+	isUpper  func(rune) bool                     = unicode.IsUpper
+	uint16g  func([]byte) uint16                 = binary.BigEndian.Uint16
+	uint16p  func([]byte, uint16)                = binary.BigEndian.PutUint16
 )
 
 var ops []string = []string{
 	`AND NOT`,
-        `NOT`, `!`,
-        `OR`, `||`, `|`,
-        `AND`, `&&`, `&`,
+	`NOT`, `!`,
+	`OR`, `||`, `|`,
+	`AND`, `&&`, `&`,
 }
 
 /*
@@ -100,7 +100,7 @@ func isQuoted(str string) bool {
 	// iterate through the first (0) and final (len-1)
 	// indices, scanning the characters encountered as
 	// we advance ...
-	for i, idx := range []int{0,len(str)-1} {
+	for i, idx := range []int{0, len(str) - 1} {
 
 		// Perform a rune (Unicode char) switch
 		switch q := rune(str[idx]); q {
@@ -162,7 +162,7 @@ func isNumber(val any) bool {
 }
 
 func isAlnum(r rune) bool {
-        return isLower(r) || isUpper(r) || isDigit(r)
+	return isLower(r) || isUpper(r) || isDigit(r)
 }
 
 /*
@@ -182,13 +182,13 @@ func isIdentifier(val string) bool {
 
 	// must begin with lower alpha.
 	if !isLower(rune(val[0])) {
-	        return false
+		return false
 	}
 
 	// can only end in alnum.
-        if !isAlnum(rune(val[len(val)-1])) {
-                return false
-        }
+	if !isAlnum(rune(val[len(val)-1])) {
+		return false
+	}
 
 	for i := 0; i < len(val); i++ {
 		ch := rune(val[i])
@@ -216,9 +216,9 @@ determines whether val qualifies the desired "signature", but does NOT
 know (in context) that this is its true nature.
 */
 func isAVAOperatorComponent(val string) bool {
-        if len(val) == 0 {
-                return false
-        }
+	if len(val) == 0 {
+		return false
+	}
 
 	// equality, order and approx,
 	for _, v := range []string{
@@ -241,7 +241,7 @@ func isAVAOperatorComponent(val string) bool {
 	}
 
 	// does not conform
-        return false
+	return false
 }
 
 /*
@@ -366,12 +366,12 @@ along with a positive index are returned. If unsuccessful
 a null rune and negative one (-1) index are returned.
 */
 func nextRune(raw string, idx int) (rune, int) {
-        n := -1
-        if idx >= len(raw)-1 {
-                return rune(0), n
-        }
+	n := -1
+	if idx >= len(raw)-1 {
+		return rune(0), n
+	}
 
-        return rune(raw[idx+1]), idx+1
+	return rune(raw[idx+1]), idx + 1
 }
 
 /*
@@ -381,12 +381,12 @@ along with a positive index are returned. If unsuccessful
 a null rune and negative one (-1) index are returned.
 */
 func lastRune(raw string, idx int) (rune, int) {
-        n := -1
-        if idx <= 0 {
-                return rune(0), n
-        }
+	n := -1
+	if idx <= 0 {
+		return rune(0), n
+	}
 
-        return rune(raw[idx-1]), idx-1
+	return rune(raw[idx-1]), idx - 1
 }
 
 /*
@@ -395,33 +395,33 @@ handling a potential clock time value for use in a Bind
 Rule statement.
 */
 func assertToD(r *timeOfDay, t any) {
-        switch tv := t.(type) {
-        case time.Time:
-                // time.Time input results in a recursive
-                // run of this method.
-                if tv.IsZero() {
-                        break
-                }
-                r.set(sprintf("%02d%02d", tv.Hour(), tv.Minute()))
-        case string:
-                // Handle discrepancy between ACI time, which ends
-                // at 2400, and Golang Time, which ends at 2359.
-                var offset int
-                if tv == `2400` {
-                        tv = `2359` // so time.Parse doesn't flip
-                        offset = 41 // so we can use it as intended per ACI time syntax.
-                }
+	switch tv := t.(type) {
+	case time.Time:
+		// time.Time input results in a recursive
+		// run of this method.
+		if tv.IsZero() {
+			break
+		}
+		r.set(sprintf("%02d%02d", tv.Hour(), tv.Minute()))
+	case string:
+		// Handle discrepancy between ACI time, which ends
+		// at 2400, and Golang Time, which ends at 2359.
+		var offset int
+		if tv == `2400` {
+			tv = `2359` // so time.Parse doesn't flip
+			offset = 41 // so we can use it as intended per ACI time syntax.
+		}
 
-                if _, err := time.Parse(`1504`, tv); err == nil {
-                        if n, err := atoi(tv); err == nil {
-                                x := make([]byte, 2)
-                                uint16p(x, uint16(n+offset))
-                                for i := 0; i < 2; i++ {
-                                        (*r)[i] = x[i]
-                                }
-                        }
-                }
-        }
+		if _, err := time.Parse(`1504`, tv); err == nil {
+			if n, err := atoi(tv); err == nil {
+				x := make([]byte, 2)
+				uint16p(x, uint16(n+offset))
+				for i := 0; i < 2; i++ {
+					(*r)[i] = x[i]
+				}
+			}
+		}
+	}
 }
 
 /*
@@ -436,14 +436,14 @@ func trimLRParen(raw string) (val string, trimmed bool) {
 		val = trimS(raw)
 		return
 	} else if rune(raw[0]) != '(' || rune(raw[len(raw)-1]) != ')' {
-		// just as a courtesy, trim L/T WHSP chars 
+		// just as a courtesy, trim L/T WHSP chars
 		val = trimS(raw)
 		trimmed = len(val) < len(raw)
 		return
 	}
 
 	// trim any L/T WHSP chars left over ...
-	val = trimS(raw[1:len(raw)-1])
+	val = trimS(raw[1 : len(raw)-1])
 
 	// we should be shorter than the original.
 	trimmed = len(val) < len(raw)
@@ -488,7 +488,7 @@ should be interpreted as an indication that the operator is
 done.
 */
 func opIdxFunc(c rune) bool {
-        return c == rune(32)
+	return c == rune(32)
 }
 
 func chopACITerm(def string) string {
@@ -502,4 +502,3 @@ func chopACITerm(def string) string {
 func isPowerOfTwo(x int) bool {
 	return x&(x-1) == 0
 }
-

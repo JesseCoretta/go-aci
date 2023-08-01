@@ -67,10 +67,10 @@ the evaluation of the receiver value as Not-Equal-To a `targetcontrol` or
 `extop` Target Rule, depending on the receiver's configuration.
 */
 func (r ObjectIdentifier) Ne() Condition {
-        if r.IsZero() {
-                return Condition{}
-        }
-        return Cond(r.objectIdentifier.TargetKeyword, r, Ne).
+	if r.IsZero() {
+		return Condition{}
+	}
+	return Cond(r.objectIdentifier.TargetKeyword, r, Ne).
 		Encap(`"`).
 		Paren().
 		setID(`target`).
@@ -87,8 +87,8 @@ func (r ObjectIdentifier) Valid() (err error) {
 		return
 	}
 
-	if !( r.objectIdentifier.DotNotation.Len() > 0 &&
-		r.objectIdentifier.TargetKeyword != TargetKeyword(0x0) ) {
+	if !(r.objectIdentifier.DotNotation.Len() > 0 &&
+		r.objectIdentifier.TargetKeyword != TargetKeyword(0x0)) {
 		err = errorf("Invalid %T and/or %T value(s)",
 			r.objectIdentifier.DotNotation,
 			r.objectIdentifier.TargetKeyword)
@@ -107,7 +107,7 @@ produced as a result of this function are generally expected
 to be LDAP Control Object Identifiers.
 */
 func Ctrl(x ...any) ObjectIdentifier {
-	o, _ := newObjectID(TargetCtrl,x...)
+	o, _ := newObjectID(TargetCtrl, x...)
 	return ObjectIdentifier{o}
 }
 
@@ -121,8 +121,8 @@ as a result of this function are generally expected to be LDAP
 Extended Operation Object Identifiers.
 */
 func ExtOp(x ...any) ObjectIdentifier {
-        o, _ := newObjectID(TargetExtOp,x...)
-        return ObjectIdentifier{o}
+	o, _ := newObjectID(TargetExtOp, x...)
+	return ObjectIdentifier{o}
 }
 
 /*
@@ -132,9 +132,9 @@ func (r *objectIdentifier) set(x ...any) (err error) {
 	for i := 0; i < len(x); i++ {
 		switch tv := x[i].(type) {
 		case string:
-		        r.DotNotation, err = objectid.NewDotNotation(tv)
+			r.DotNotation, err = objectid.NewDotNotation(tv)
 		}
-        }
+	}
 	return
 }
 

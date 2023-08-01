@@ -31,7 +31,7 @@ which bear one (1) of the following Target Rule keyword constants:
 
 • TargetExtOp
 
-Please note that Rule instances of this design are set with a maximum 
+Please note that Rule instances of this design are set with a maximum
 capacity of nine (9) for both the following reasons:
 
 • There are only said number of Target Rule keywords supported within the
@@ -39,7 +39,7 @@ ACI syntax specification honored by this package, and ...
 
 • Individual Target Rule keywords can only be used once per ACI; in other
 words, one cannot specify have multiple `target` conditions within the same
-ACI. 
+ACI.
 
 Instances of this design generally are assigned to top-level instances of
 Instruction.
@@ -220,8 +220,8 @@ func (r Rule) Fold(state ...bool) Rule {
 leadOnce wraps go-stackage's Stack.LeadOnce method.
 */
 func (r Rule) leadOnce(state ...bool) Rule {
-        stackage.Stack(r).LeadOnce(state...)
-        return r
+	stackage.Stack(r).LeadOnce(state...)
+	return r
 }
 
 /*
@@ -244,8 +244,8 @@ func (r Rule) Encap(x ...any) Rule {
 JoinDelim wraps go-stackage's Stack.JoinDelim method.
 */
 func (r Rule) JoinDelim(x string) Rule {
-        stackage.Stack(r).JoinDelim(x)
-        return r
+	stackage.Stack(r).JoinDelim(x)
+	return r
 }
 
 /*
@@ -322,20 +322,20 @@ result in the creation of a `targetcontrol` Target Rule.
 Negated equality matching operators should be used with caution.
 */
 func (r Rule) Ne() (c Condition) {
-        if r.IsZero() {
-                return Condition{}
-        }
+	if r.IsZero() {
+		return Condition{}
+	}
 
-        for k, v := range tkwMap {
-                if r.Category() == v {
-                        c = Cond(k, r.Paren(false), Ne).
+	for k, v := range tkwMap {
+		if r.Category() == v {
+			c = Cond(k, r.Paren(false), Ne).
 				Encap(`"`).Paren().
 				setCategory(k.String())
-                        break
-                }
-        }
+			break
+		}
+	}
 
-        return
+	return
 }
 
 func (r Rule) canPush(x any) (err error) {
@@ -356,7 +356,7 @@ func (r Rule) canPush(x any) (err error) {
 		// already reside within a Condition present
 		// within the receiver (e.g.: `targetfilter`).
 		if ok = targetRuleCanPush(x); ok {
-			if found, isCond := targetInRule(r,x); !found && isCond {
+			if found, isCond := targetInRule(r, x); !found && isCond {
 				ok = targetRuleCanPush(x)
 			} else {
 				printf("FAIL1\n")
@@ -371,7 +371,7 @@ func (r Rule) canPush(x any) (err error) {
 	}
 
 	if !ok {
-		err = errorf("PushPolicy violation: %T (%s) does not allow appends of %T instances",r,r.ID(),x)
+		err = errorf("PushPolicy violation: %T (%s) does not allow appends of %T instances", r, r.ID(), x)
 		printf("%v\n", err)
 	}
 
@@ -405,14 +405,14 @@ func bindRuleCanPush(x any) (ok bool) {
 }
 
 func aciCanPush(x any) (ok bool) {
-        switch tv := x.(type) {
+	switch tv := x.(type) {
 	case string:
 		// TODO - invoke high level ACI parser here.
-        case Instruction:
-                ok = tv.Valid() == nil
-        }
+	case Instruction:
+		ok = tv.Valid() == nil
+	}
 
-        return
+	return
 }
 
 func targetInRule(r Rule, t any) (found, isCond bool) {
@@ -441,7 +441,7 @@ func targetInRule(r Rule, t any) (found, isCond bool) {
 		switch tv := sl.(type) {
 		case Condition:
 			isCond = true
-			if found = eq(tv.Keyword(),kw); found {
+			if found = eq(tv.Keyword(), kw); found {
 				return
 			}
 		case Rule:
@@ -498,9 +498,9 @@ func listRuleCanPush(x any) (ok bool) {
 	return
 }
 
-func stackageAnd() stackage.Stack { return stackage.And() }
-func stackageOr() stackage.Stack { return stackage.Or() }
-func stackageNot() stackage.Stack { return stackage.Not() }
+func stackageAnd() stackage.Stack                 { return stackage.And() }
+func stackageOr() stackage.Stack                  { return stackage.Or() }
+func stackageNot() stackage.Stack                 { return stackage.Not() }
 func stackageList(capacity ...int) stackage.Stack { return stackage.List(capacity...) }
 
 /*
@@ -527,25 +527,25 @@ An unrecognized operator word will return a fallback And() Rule.
 */
 func ruleByLoP(op string) Rule {
 
-	if eq(op,`NOT`) || eq(op, `AND NOT`) {
+	if eq(op, `NOT`) || eq(op, `AND NOT`) {
 		// NOT (word)
 		return Not()
-	} else if eq(op,`!`) {
+	} else if eq(op, `!`) {
 		// NOT (filter)
 		return Rule(stackageNot().LeadOnce().Paren().NoPadding().Symbol(`!`)).setCategory(`filter`).setID(`not`)
-	} else if eq(op,`OR`) {
+	} else if eq(op, `OR`) {
 		// OR (word)
 		return Or()
-	} else if eq(op,`|`) {
+	} else if eq(op, `|`) {
 		// OR (filter)
 		return Rule(stackageOr().LeadOnce().Paren().NoPadding().Symbol(`|`)).setCategory(`filter`).setID(`or`)
-	} else if eq(op,`||`) {
+	} else if eq(op, `||`) {
 		// OR (dsymbol)
 		return Rule(stackageOr().Symbol(`||`)).setCategory(`or`)
 	} else if eq(op, `&`) {
 		// AND (filter)
 		return Rule(stackageAnd().LeadOnce().Paren().NoPadding().Symbol(`&`)).setCategory(`filter`).setID(`and`)
-	} else if eq(op,`&&`) {
+	} else if eq(op, `&&`) {
 		// AND (dsymbol)
 		return Rule(stackageAnd().Symbol(`&&`)).setCategory(`and`)
 	}
@@ -553,4 +553,3 @@ func ruleByLoP(op string) Rule {
 	// Fallback AND (word)
 	return And()
 }
-

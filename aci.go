@@ -88,21 +88,21 @@ PB returns the Permission/Bind Rule found within the underlying receiver instanc
 Note that a bogus Rule is returned if the receiver is nil, or unset.
 */
 func (r Instruction) PB() Rule {
-        var p Rule
-        if r.IsZero() {
-                return p
-        }
-        return r.instruction.PB
+	var p Rule
+	if r.IsZero() {
+		return p
+	}
+	return r.instruction.PB
 }
 
 /*
 N returns the name (or "ACL") of the receiver, else a zero string if unset.
 */
 func (r Instruction) N() string {
-        if r.IsZero() {
-                return ``
-        }
-        return r.instruction.N
+	if r.IsZero() {
+		return ``
+	}
+	return r.instruction.N
 }
 
 /*
@@ -123,7 +123,7 @@ func (r instruction) valid() (err error) {
 	}
 
 	if len(r.N) == 0 {
-		err = errorf("%T has no name (ACL); set a string name value using %T.Set", r,r)
+		err = errorf("%T has no name (ACL); set a string name value using %T.Set", r, r)
 		return
 	}
 
@@ -160,8 +160,8 @@ Users may compose instances of this type manually, or using the PB package
 level function, which automatically invokes value checks.
 */
 type PermissionBindRule struct {
-        P Permission `aci:"permission_rule"`
-        B Rule       `aci:"bind_rule"`
+	P Permission `aci:"permission_rule"`
+	B Rule       `aci:"bind_rule"`
 }
 
 /*
@@ -174,7 +174,7 @@ instances of this type are allowed per the syntax specification honored
 by this package.
 */
 func PB(P Permission, B Rule) PermissionBindRule {
-	r := PermissionBindRule{P,B}
+	r := PermissionBindRule{P, B}
 	if err := r.Valid(); err != nil {
 		return PermissionBindRule{}
 	}
@@ -228,10 +228,10 @@ func (r PermissionBindRule) String() string {
 string is a private method called by PermissionBindRule.String.
 */
 func (r PermissionBindRule) string() string {
-        if err := r.valid(); err != nil {
-                return badPB
-        }
-        return sprintf("%s %s", r.P, r.B)
+	if err := r.valid(); err != nil {
+		return badPB
+	}
+	return sprintf("%s %s", r.P, r.B)
 }
 
 /*
@@ -319,22 +319,22 @@ func (r *instruction) set(x ...any) {
 }
 
 func (r *instruction) assertInstruction(x any) {
-        switch tv := x.(type) {
-        case string:
-                // Only set if non-zero and if field IS zero
-                // (i.e.: don't allow renaming).
-                if len(tv) > 0 && len(r.N) == 0 {
-                        r.N = tv
-                }
-        case Condition:
-		if K := matchTKW(tv.Category()); K != TargetKeyword(0x0) {
-                        r.T.Push(tv)
+	switch tv := x.(type) {
+	case string:
+		// Only set if non-zero and if field IS zero
+		// (i.e.: don't allow renaming).
+		if len(tv) > 0 && len(r.N) == 0 {
+			r.N = tv
 		}
-        case Rule:
-                r.assertPushRule(tv)
-        case PermissionBindRule:
+	case Condition:
+		if K := matchTKW(tv.Category()); K != TargetKeyword(0x0) {
+			r.T.Push(tv)
+		}
+	case Rule:
+		r.assertPushRule(tv)
+	case PermissionBindRule:
 		r.PB.Push(tv)
-        }
+	}
 }
 
 /*
@@ -343,19 +343,18 @@ when type assertion reveals a Rule instance containing Target Rule slices
 meant for append within the receiver.
 */
 func (r *instruction) assertPushRule(x Rule) {
-        if x.Len() > 0 && matchBKW(x.Category()) != BindKeyword(0x0) || matchTKW(x.Category()) != TargetKeyword(0x0) {
-                for t := 0; t < x.Len(); t++ {
-                        tgt, ok := x.Index(t)
-                        if !ok {
-                                continue
-                        }
-                        r.T.Push(tgt)
-                }
-        } else if x.ID() == `pb` && x.Len() > 0 {
+	if x.Len() > 0 && matchBKW(x.Category()) != BindKeyword(0x0) || matchTKW(x.Category()) != TargetKeyword(0x0) {
+		for t := 0; t < x.Len(); t++ {
+			tgt, ok := x.Index(t)
+			if !ok {
+				continue
+			}
+			r.T.Push(tgt)
+		}
+	} else if x.ID() == `pb` && x.Len() > 0 {
 		r.PB.Push(x)
 	}
 }
-
 
 /*
 pbrule is a private function that returns a new Permission/Bind Rule stack,
@@ -371,4 +370,3 @@ func pbrule() Rule {
 		setCategory(`bind`).
 		setPushPolicy()
 }
-
