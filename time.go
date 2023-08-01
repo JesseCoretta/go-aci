@@ -8,8 +8,8 @@ time.go contains temporal methods involving days and clock values for use in ACI
 Day constants can be shifted into an instance of DayOfWeek, allowing effective expressions such as "Sun,Tues". See the DayOfWeek.Set method.
 */
 const (
-	_    Day = 0         // 0 <invalid_day>
-	Sun  Day = 1 << iota // 1
+	noDay Day = 0         // 0 <invalid_day>
+	Sun   Day = 1 << iota // 1
 	Mon                  // 2
 	Tues                 // 4
 	Wed                  // 8
@@ -37,20 +37,98 @@ type DayOfWeek struct {
 type days uint8
 
 /*
+iterate a comma-delimited list and verify
+each slice as a day of the week. return a
+DayOfWeek instance alongside a Boolean
+value indicative of success.
+*/
+func parseDoW(d string) (D DayOfWeek, err error) {
+        X := split(repAll(d,` `,``), `,`)
+        for i := 0; i < len(X); i++ {
+                dw := matchStrDoW(X[i])
+		if dw == noDay {
+                        return
+                }
+		D.Shift(dw)
+        }
+	err = D.Valid()
+	return
+}
+
+func matchDoW(d any) Day {
+	switch tv := d.(type) {
+        case int:
+		return matchIntDoW(tv)
+	case string:
+		return matchStrDoW(tv)
+	}
+
+	return noDay
+}
+
+func matchStrDoW(d string) Day {
+        switch lc(d) {
+        case `sun`:
+                return Sun
+        case `mon`:
+                return Mon
+        case `tues`:
+                return Tues
+        case `wed`:
+                return Wed
+        case `thur`:
+                return Thur
+        case `fri`:
+                return Fri
+        case `sat`:
+                return Sat
+        }
+
+        return noDay
+}
+
+func matchIntDoW(d int) Day {
+        switch d {
+        case 0, 1:
+                return Sun
+        case 2:
+                return Mon
+        case 3:
+                return Tues
+        case 4:
+                return Wed
+        case 5:
+                return Thur
+        case 6:
+                return Fri
+        case 7:
+                return Sat
+        }
+
+	return noDay
+}
+
+/*
 DoW initializes, shifts and returns a new instance of DayOfWeek in one shot. This
 function an alternative to separate assignment and set procedures.
 */
-func DoW(x ...Day) (D DayOfWeek) {
+func DoW(x ...any) (D DayOfWeek) {
 	d := DayOfWeek{new(days)}
 
-	// TODO - add support for int and str
-	// day identifiers, switch input type
-	// to 'any'.
+	// assert each dow's type and analyze.
+	// If deemed a valid dow, left-shift
+	// into D.
 	for i := 0; i < len(x); i++ {
-		if x[i].String() == badDoW {
-			return
+		switch tv := x[i].(type) {
+		case int, string:
+			if dw := matchDoW(tv); dw != noDay {
+				d.Shift(dw)
+			}
+		case Day:
+			if tv.String() != badDoW {
+				d.Shift(tv)
+			}
 		}
-		d.Shift(x[i])
 	}
 
 	D.days = d.days
@@ -140,8 +218,8 @@ func (r DayOfWeek) Valid() (err error) {
 		return
 	}
 
-	if r.String() != badDoW {
-		err = errorf("%T instance produced a bad string result")
+	if r.String() == badDoW {
+		err = errorf("%T instance produced a bad string result", r)
 	}
 
 	return

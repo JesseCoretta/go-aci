@@ -60,26 +60,20 @@ ASCII #96 (`) to be eligible candidates for truncation, though
 only matches of the first and final slices are considered.
 */
 func unquote(str string) string {
-	for len(str) > 0 {
-		var done bool
+	if len(str) <= 2 {
+		return str
+	}
 
-		// remove leading candidate
-		switch c := rune(str[0]); c {
-		case '"', '\'', '`':
-			str = str[1:]
-			continue
-		}
+	// remove leading candidate
+	switch c := rune(str[0]); c {
+	case '"', '\'', '`':
+		str = str[1:]
+	}
 
-		// remove trailing candidate
-		switch c := rune(str[len(str)-1]); c {
-		case '"', '\'', '`':
-			str = str[:len(str)-1]
-			done = true
-		}
-
-		if done {
-			break
-		}
+	// remove trailing candidate
+	switch c := rune(str[len(str)-1]); c {
+	case '"', '\'', '`':
+		str = str[:len(str)-1]
 	}
 
 	return str
@@ -87,9 +81,11 @@ func unquote(str string) string {
 
 /*
 isQuoted looks at the first and final indices of the input
-string value to determine whether both are quotation ASCII
+string value to determine whether BOTH are quotation ASCII
 characters, and returns a Boolean value indicative of the
-result.
+result. Any values found within unbalanced (e.g.: "Jesse')
+OR incomplete (e.g.: "Jesse) quotation schemes will result
+in a false return value.
 
 This function considers any of ASCII #34 ("), ASCII #39 (')
 and ASCII #96 (`) to be eligible candidates for quotation.
@@ -99,15 +95,41 @@ func isQuoted(str string) bool {
 		return false
 	}
 
-	for _, idx := range []int{0,len(str)-1} {
-		switch c := rune(str[idx]); c {
+	var char rune
+
+	// iterate through the first (0) and final (len-1)
+	// indices, scanning the characters encountered as
+	// we advance ...
+	for i, idx := range []int{0,len(str)-1} {
+
+		// Perform a rune (Unicode char) switch
+		switch q := rune(str[idx]); q {
+
+		// We've encountered a valid rune:
 		case '"', '\'', '`':
-			// ok
-		default:
-			return false
+
+			// These characters are all fine
+			// theoretically, BUT we *MUST*
+			// take special actions based on
+			// whether we're on the first or
+			// final index.
+			if i == 0 {
+				// Index #0 (current) defines
+				// the quotation character we
+				// expect to find later ...
+				char = q
+
+			} else {
+				// Determine that the final (current)
+				// quote char is consistent with the
+				// first char (index #0).
+				return q == char
+			}
 		}
+
 	}
 
+	// Fallback for everything unsupported
 	return true
 }
 

@@ -781,7 +781,7 @@ distinguishedName is the embedded type (as a pointer!) within instances of
 DistinguishedName.
 */
 type distinguishedName struct {
-	Keyword // `target`, `target_[to|from]` `groupdn`, or `userdn`
+	Keyword // `target`, `target_[to|from]` `userdn`, `groupdn` or `roledn`
 	*string
 }
 
@@ -993,6 +993,18 @@ The return value shall be suitable for use in creating a Bind Rule Condition tha
 */
 func UDN(x string) DistinguishedName {
 	return DistinguishedName{newDistinguishedName(x,BindUDN)}
+}
+
+/*
+RDN initializes, sets and returns an instance of DistinguishedName in one shot.
+
+An LDAP distinguished name, in string form and WITHOUT the leading `ldap:///` scheme, is required.
+
+The return value shall be suitable for use in creating a Bind Rule Condition that bears the
+`roledn` keyword.
+*/
+func RDN(x string) DistinguishedName {
+        return DistinguishedName{newDistinguishedName(x,BindRDN)}
 }
 
 /*
@@ -1392,7 +1404,6 @@ func Ctrls() Rule {
 
         return Rule(stackageOr().
 		Symbol(`||`).
-		Encap(``).
                 SetPushPolicy(ppol)).
 		setID(`target`).
 		setCategory(`targetcontrol`)
@@ -1472,6 +1483,108 @@ func TDNs() Rule {
                 Symbol(`||`).
                 SetPushPolicy(ppol)).
                 setCategory(`target`)
+}
+
+/*
+UDNs returns a new instance of Rule with an initialized embedded
+stack configured to function as a simple list containing a single
+level of LDAP distinguished namess. Generally instances of this
+type are used in Bind Rule instances bearing the `userdn` keyword.
+
+Only valid instances of DistinguishedName create using the UDN,
+OR non-zero strings, are to be considered eligible for push requests.
+*/
+func UDNs() Rule {
+        ppol := func(x any) (err error) {
+                switch tv := x.(type) {
+                case string:
+                        if len(tv) == 0 {
+                                err = errorf("%T cannot use zero string for DN push", tv)
+                        }
+                case DistinguishedName:
+                        if tv.IsZero() {
+                                err = errorf("%T is nil", tv)
+			} else if tv.distinguishedName.Keyword != BindUDN {
+                                err = errorf("%T failed during keyword verification (not a UserDN-based Bind Rule)", tv)
+                        }
+                default:
+                        err = errorf("%T type violates PushPolicy", tv)
+                }
+                return
+        }
+
+        return Rule(stackageOr().
+                Symbol(`||`).
+                SetPushPolicy(ppol)).
+                setCategory(BindUDN.String())
+}
+
+/*
+RDNs returns a new instance of Rule with an initialized embedded
+stack configured to function as a simple list containing a single
+level of LDAP distinguished namess. Generally instances of this
+type are used in Bind Rule instances bearing the `roledn` keyword.
+
+Only valid instances of DistinguishedName create using the RDN,
+OR non-zero strings, are to be considered eligible for push requests.
+*/
+func RDNs() Rule {
+        ppol := func(x any) (err error) {
+                switch tv := x.(type) {
+                case string:
+                        if len(tv) == 0 {
+                                err = errorf("%T cannot use zero string for DN push", tv)
+                        }
+                case DistinguishedName:
+                        if tv.IsZero() {
+                                err = errorf("%T is nil", tv)
+                        } else if tv.distinguishedName.Keyword != BindRDN {
+                                err = errorf("%T failed during keyword verification (not a RoleDN-based Bind Rule)", tv)
+                        }
+                default:
+                        err = errorf("%T type violates PushPolicy", tv)
+                }
+                return
+        }
+
+        return Rule(stackageOr().
+                Symbol(`||`).
+                SetPushPolicy(ppol)).
+                setCategory(BindRDN.String())
+}
+
+/*
+GDNs returns a new instance of Rule with an initialized embedded
+stack configured to function as a simple list containing a single
+level of LDAP distinguished namess. Generally instances of this
+type are used in Bind Rule instances bearing the `groupdn` keyword.
+
+Only valid instances of DistinguishedName create using the GDN,
+OR non-zero strings, are to be considered eligible for push requests.
+*/
+func GDNs() Rule {
+        ppol := func(x any) (err error) {
+                switch tv := x.(type) {
+                case string:
+                        if len(tv) == 0 {
+                                err = errorf("%T cannot use zero string for DN push", tv)
+                        }
+                case DistinguishedName:
+                        if tv.IsZero() {
+                                err = errorf("%T is nil", tv)
+                        } else if tv.distinguishedName.Keyword != BindGDN {
+                                err = errorf("%T failed during keyword verification (not a GroupDN-based Bind Rule)", tv)
+                        }
+                default:
+                        err = errorf("%T type violates PushPolicy", tv)
+                }
+                return
+        }
+
+        return Rule(stackageOr().
+                Symbol(`||`).
+                SetPushPolicy(ppol)).
+                setCategory(BindGDN.String())
 }
 
 /*

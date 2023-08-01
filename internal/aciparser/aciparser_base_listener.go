@@ -98,11 +98,23 @@ func (s *BaseACIParserListener) EnterBindRules(ctx *BindRulesContext) {}
 // ExitBindRules is called when production bindRules is exited.
 func (s *BaseACIParserListener) ExitBindRules(ctx *BindRulesContext) {}
 
+// EnterQuotedValues is called when production quotedValues is entered.
+func (s *BaseACIParserListener) EnterQuotedValues(ctx *QuotedValuesContext) {}
+
+// ExitQuotedValues is called when production quotedValues is exited.
+func (s *BaseACIParserListener) ExitQuotedValues(ctx *QuotedValuesContext) {}
+
 // EnterQuotedValue is called when production quotedValue is entered.
 func (s *BaseACIParserListener) EnterQuotedValue(ctx *QuotedValueContext) {}
 
 // ExitQuotedValue is called when production quotedValue is exited.
 func (s *BaseACIParserListener) ExitQuotedValue(ctx *QuotedValueContext) {}
+
+// EnterSymbolicOr is called when production symbolicOr is entered.
+func (s *BaseACIParserListener) EnterSymbolicOr(ctx *SymbolicOrContext) {}
+
+// ExitSymbolicOr is called when production symbolicOr is exited.
+func (s *BaseACIParserListener) ExitSymbolicOr(ctx *SymbolicOrContext) {}
 
 // EnterBindOperator is called when production bindOperator is entered.
 func (s *BaseACIParserListener) EnterBindOperator(ctx *BindOperatorContext) {}

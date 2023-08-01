@@ -263,3 +263,16 @@ func stringToIntSSF(x string) (i int) {
 
 	return
 }
+
+func matchAuthMethod(x string) AuthMethod {
+	switch lc(x) {
+	case Simple.String():
+		return Simple
+	case SSL.String():
+		return SSL
+	case SASL.String():
+		return SASL
+	}
+
+	return Anonymous
+}

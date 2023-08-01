@@ -82,6 +82,7 @@ a Bind Rule condition.
 const (
 	_     BindKeyword = iota // <invalid_bind_keyword>
 	BindUDN                  // `userdn`
+	BindRDN                  // `roledn`
 	BindGDN                  // `groupdn`
 	BindUAT                  // `userattr`
 	BindGAT                  // `groupattr`
@@ -243,6 +244,7 @@ func init() {
 	// bindkeyword map
 	bkwMap = map[BindKeyword]string{
 		BindUDN: `userdn`,
+		BindRDN: `roledn`,
 		BindGDN: `groupdn`,
 		BindUAT: `userattr`,
 		BindGAT: `groupattr`,

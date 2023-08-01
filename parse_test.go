@@ -22,6 +22,10 @@ func TestParseFilter(t *testing.T) {
 
 var testInstructions []string = []string{
 	`(targetfilter = "(&(objectClass=employee)(objectClass=engineering))")(targetscope = "onelevel")(version 3.0; acl "Allow anonymous onelevel searches for engineering employees"; allow(read,search,compare) userdn = "ldap:///anyone";)`,
+	`(targetattr = "*")(version 3.0; acl "Allow anonymous onelevel searches for engineering employees"; allow(read,search,compare) (userdn = "ldap:///anyone || ldap:///parent || ldap:///self");)`,
+	`(targetfilter = "(&(objectClass=employee)(objectClass=engineering))")(targetcontrol = "1.3.6.1.4.1.56521.999.5 || 1.3.6.1.4.1.56521.999.6")(targetscope = "onelevel")(version 3.0; acl "Allow anonymous onelevel searches for engineering employees"; allow(read,search,compare) (userdn = "ldap:///anyone");)`,
+	`(targetfilter = "(&(objectClass=employee)(objectClass=engineering))")(targetcontrol = "1.3.6.1.4.1.56521.999.5" || "1.3.6.1.4.1.56521.999.6")(targetscope = "onelevel")(version 3.0; acl "Allow anonymous onelevel searches for engineering employees"; allow(read,search,compare) (userdn = "ldap:///anyone");)`,
+	`(target = "ldap:///anyone" || "ldap:///uid=jesse,ou=People,dc=example.com")(targetscope = "subordinate")(version 3.0; acl "Allow subordinate searches of any account by authenticated users"; allow(read,search,compare) (userdn = "ldap:///all");)`,
 	`(version 3.0; acl "Allow read and compare for anyone using less than 128 SSF"; allow(read,compare) userdn = "ldap:///anyone" AND ssf < "128";)`,
 	`(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF"; allow(read,write) ( userdn = "ldap:///anyone" AND ssf >= "128" ) AND NOT dayofweek = "Fri";)`,
 	`(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF"; allow(read,write) (( userdn = "ldap:///anyone" AND ssf >= "128" ) AND NOT dayofweek = "Fri");)`,
@@ -33,7 +37,7 @@ var testInstructions []string = []string{
 func TestParseInstruction(t *testing.T) {
 	for i := 0; i < len(testInstructions); i++ {
 		want := testInstructions[i]
-		//t.Logf("WANT [%d]: %s\n", i, want)
+
 		a, err := parseInstruction(want)
 		if err != nil {
 			t.Errorf("%s failed: %v", t.Name(), err)

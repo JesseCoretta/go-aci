@@ -46,8 +46,14 @@ type ACIParserListener interface {
 	// EnterBindRules is called when entering the bindRules production.
 	EnterBindRules(c *BindRulesContext)
 
+	// EnterQuotedValues is called when entering the quotedValues production.
+	EnterQuotedValues(c *QuotedValuesContext)
+
 	// EnterQuotedValue is called when entering the quotedValue production.
 	EnterQuotedValue(c *QuotedValueContext)
+
+	// EnterSymbolicOr is called when entering the symbolicOr production.
+	EnterSymbolicOr(c *SymbolicOrContext)
 
 	// EnterBindOperator is called when entering the bindOperator production.
 	EnterBindOperator(c *BindOperatorContext)
@@ -121,8 +127,14 @@ type ACIParserListener interface {
 	// ExitBindRules is called when exiting the bindRules production.
 	ExitBindRules(c *BindRulesContext)
 
+	// ExitQuotedValues is called when exiting the quotedValues production.
+	ExitQuotedValues(c *QuotedValuesContext)
+
 	// ExitQuotedValue is called when exiting the quotedValue production.
 	ExitQuotedValue(c *QuotedValueContext)
+
+	// ExitSymbolicOr is called when exiting the symbolicOr production.
+	ExitSymbolicOr(c *SymbolicOrContext)
 
 	// ExitBindOperator is called when exiting the bindOperator production.
 	ExitBindOperator(c *BindOperatorContext)

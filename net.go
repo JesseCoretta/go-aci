@@ -55,6 +55,16 @@ func (r IPAddr) Ne() Condition {
 }
 
 /*
+Len returns the integer length of the receiver instance.
+*/
+func (r IPAddr) Len() int {
+	if r.ipAddrs == nil {
+		return 0
+	}
+	return len(*r.ipAddrs)
+}
+
+/*
 Set assigns the provided address component to the receiver and
 returns the receiver instance in fluent-form.
 

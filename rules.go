@@ -297,13 +297,14 @@ func (r Rule) Eq() (c Condition) {
 		return Condition{}
 	}
 
-	for k, v := range tkwMap {
-		if r.Category() == v {
-			c = Cond(k, r.Paren(false), Eq).
-				Encap(`"`).Paren().
-				setCategory(k.String())
-			break
-		}
+	if k := matchTKW(r.Category()); k != TargetKeyword(0x0) {
+		c = Cond(k, r.Paren(false), Eq).
+			Encap(`"`).Paren().
+			setCategory(k.String())
+	} else if j := matchBKW(r.Category()); j != BindKeyword(0x0) {
+		c = Cond(j, r.Paren(false), Eq).
+			Encap(`"`).Paren().
+			setCategory(j.String())
 	}
 
 	return
@@ -354,8 +355,14 @@ func (r Rule) canPush(x any) (err error) {
 		// true if the given target keyword does not
 		// already reside within a Condition present
 		// within the receiver (e.g.: `targetfilter`).
-		if found, isCond := targetInRule(r,x); !found && isCond {
-			ok = targetRuleCanPush(x)
+		if ok = targetRuleCanPush(x); ok {
+			if found, isCond := targetInRule(r,x); !found && isCond {
+				ok = targetRuleCanPush(x)
+			} else {
+				printf("FAIL1\n")
+			}
+		} else {
+			printf("FAIL0\n")
 		}
 	case `pb`:
 		ok = pbRuleCanPush(x)
@@ -409,10 +416,10 @@ func aciCanPush(x any) (ok bool) {
 }
 
 func targetInRule(r Rule, t any) (found, isCond bool) {
-	var c Condition
+	var kw string
 	switch tv := t.(type) {
 	case Condition:
-		c = tv
+		kw = tv.Keyword()
 		// if nothing resides within the
 		// Rule, just give it the go-ahead.
 		if r.Len() == 0 {
@@ -426,18 +433,19 @@ func targetInRule(r Rule, t any) (found, isCond bool) {
 	}
 
 	for i := 0; i < r.Len(); i++ {
-		sl, found := r.Index(i)
-		if !found {
+		var sl any
+		if sl, found = r.Index(i); !found {
 			continue
 		}
 
-		var C Condition
-		if C, isCond = sl.(Condition); !isCond {
-			continue
-		}
-
-		if found = C.Keyword() == c.Keyword(); found {
-			break
+		switch tv := sl.(type) {
+		case Condition:
+			isCond = true
+			if found = eq(tv.Keyword(),kw); found {
+				return
+			}
+		case Rule:
+			isCond = true
 		}
 	}
 
@@ -447,7 +455,7 @@ func targetInRule(r Rule, t any) (found, isCond bool) {
 func targetRuleCanPush(x any) (ok bool) {
 	switch tv := x.(type) {
 	case Condition:
-		if matchTKW(tv.Category()) != TargetKeyword(0x0) {
+		if matchTKW(tv.Keyword()) != TargetKeyword(0x0) {
 			ok = true
 		}
 	case Rule:

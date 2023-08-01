@@ -131,7 +131,7 @@ privilege
   ;
 
 targetRule
-  : openingParenthesis targetKeyword targetOperator quotedValue closingParenthesis
+  : openingParenthesis targetKeyword targetOperator quotedValues closingParenthesis
   ;
 
 targetOperator
@@ -143,7 +143,7 @@ targetRules: targetRule+ ;
 
 bindRule
   : bindKeyword bindOperator quotedValue
-  | openingParenthesis bindKeyword bindOperator quotedValue closingParenthesis
+  | openingParenthesis bindKeyword bindOperator quotedValues closingParenthesis
   ;
 
 wordAnd: WORD_AND;
@@ -161,7 +161,10 @@ bindRules
   | bindRule
   ;
 
+quotedValues: QUOTED_STRING ( symbolicOr QUOTED_STRING )*;
 quotedValue: QUOTED_STRING;
+
+symbolicOr: SYMBOLIC_OR;
 
 bindOperator
   : equalTo

@@ -25,84 +25,365 @@ comparison operator and a doubled-quoted expression value. Note that Target
 Rule conditions are **ALWAYS** parenthetical.
 */
 func parseTR(tokens []string) (chop int, targetRules Rule, err error) {
-	isKW := func(o string) bool {
-		return matchTKW(lc(o)) != TargetKeyword(0x0)
-	}
 
-	isTokOp := func(o string) (ok bool) {
-		_, ok = matchOp(o)
-		return
-	}
+	// vals stores a sequence of value (and value RELATED)
+	// tokens when detected. This var is purged of its
+	// contents whenever the end of the value sequence is
+	// reached.
+	var vals []string = make([]string, 0)
 
-	// Prepare a target stack, max capacity is nine (9)
+	// Initialize our target rule stack; max capacity is nine (9)
 	targetRules = T()
 
-	// Create a condition using components k, t and o,
-	// and push condition into target stack. Return an
-	// error if any issues are encountered.
-	pushTR := func(k, t string, o any) (err error) {
+	var kw string		// target rule keyword
+	var cop string		// target rule comparison operator
+	var last string		// previous token
+	var next string		// upcoming token
+	var cready bool		// condition ready for assembly
 
-		// iterate all targetRules processed thus far.
-		// If a duplicate keyword is found, abort.
-		for i := 0; i < targetRules.Len(); i++ {
-			tr, _ := targetRules.Index(i)
-			if targ, ok := tr.(Condition); ok {
-				// target rule (keyword) was already
-				// specified; abort!
-				if eq(k, targ.Keyword()) {
-					err = errorf("Duplicate keyword found (%s)", k)
-					return
-				}
-			}
-		}
-
-		val := unquote(t)
-		trc := Cond(k,val,o).
-			Encap(`"`).
-			Paren(true).
-			setCategory(`target`)
-
-		if err = trc.Valid(); err != nil {
-			return
-		}
-
-		targetRules.Push(trc)
-		return
-	}
-
-	var oper any
-	var kw string
-	var cready bool
+	var done bool
 	for index, token := range tokens {
+		if index > 0 {
+			last = tokens[index-1]
+		}
 
-		if isKW(token) {
+                if index+1 < len(tokens) {
+                        // look-ahead to the next iteration's token
+                        next = tokens[index+1]
+                }
+
+		_, istok := matchOp(token)
+
+		switch {
+
+		// token is a target rule keyword
+		case matchTKW(lc(token)) != TargetKeyword(0x0):
 			kw = lc(token)
 
-		} else if isTokOp(token) {
-			if len(kw) > 0 {
-				var mo bool
-				if oper, mo = matchOp(token); !mo {
-					err = errorf("Unidentified or misaligned target rule comparison operator '%s'; aborting", token)
-					return
-				}
-				cready = true
-			}
-
-		} else if token == `version 3.0; acl` {
-			if chop = index; chop > 0 {
-				break
-			}
-
-		} else if cready {
-			if err = pushTR(kw, token, oper); err != nil {
+		// token is a target rule comparison operator
+		case istok:
+			cop = token
+                        if cready = len(kw) > 0 && len(cop) > 0; !cready {
+				err = errorf("Target Rule comparison operator and/or keyword not detected near '%s'; cannot declare target rule condition readiness",token)
 				return
 			}
 
-			kw = ``
-			oper = nil
-			cready = false
+		// token is anchor, meaning there are no more
+		// target rules to process. 
+		case token == `version 3.0; acl`:
+			if chop = index; chop > 0 {
+				done = true
+				break
+			}
+
+		// generalized token fallback will capture quoted values as well as
+		// logical symbolic operators (||, &&) between quoted values (or as
+		// part of a quoted value).
+		default:
+			if cready {
+	                        // condition is ready for assembly AND a non-zero
+	                        // double-quoted value is the current token. We
+	                        // will also accept symbolic operators if we're
+	                        // dealing with a multi-valued expression.
+	                        if !isQuoted(token) && (token != `||` && token != `&&`) {
+	                                err = errorf("Bogus Target Rule condition expression between '%s' [%d] and '%s' [%d]; value must be a non-zero string enclosed within double quotes, or a symbolic list (||,&&) of same",
+	                                        last, index-1, next, index+1)
+	                                return
+	                        }
+	                        // strip quotes, as go-stackage provides encaps
+	                        // without the need for literal storage of such
+	                        // characters.
+
+	                        // increment chop index by one (1)
+	                        chop++
+
+	                        // Save this value; we don't yet know if this
+				// value is merely one (1) of multiple values
+				// as opposed to a single value alone.
+	                        vals = append(vals, token)
+
+				// Look ahead to see what is coming next. If
+				// another quoted value or symbolic operator
+				// are detected, we know we're not done yet.
+				// In that case, break out of this case to
+				// continue at the next for-loop iteration.
+	                        if next == `||` || next == `&&` || isQuoted(next) {
+	                                break
+	                        }
+
+				// Keep track of when individual values, not
+				// an entire value, are quoted in a list.
+				var vEncapsulated bool
+
+				// assert the comparison operator
+	                        oper, mo := matchOp(cop)
+				if !mo {
+	                                err = errorf("Unidentified or misaligned target rule comparison operator '%s'; aborting",
+						cop)
+	                                return
+	                        }
+
+				// This is the last (or only!) value component. We can
+				// now analyze the keyword and the value(s) to ascertain
+				// the appropriate instance type for condition storage
+				// (and to perform other context-specific sanity checks).
+				//
+				// Begin with an assertion switch upon the target keyword
+				// (which we already vetted as sane) ...
+				switch key := matchTKW(kw); key {
+
+				case TargetScope:
+                                        if len(vals) != 1 {
+                                                err = errorf("Unexpected number of %s search scopes; want %d, got %d",
+                                                        key, 1, len(vals))
+                                                return
+                                        }
+
+					scn := unquote(vals[0])
+					sc := strToScope(scn)
+
+					// base is a fallback for a bogus scope, so
+					// if the user did not originally request
+					// base, we know they requested something
+					// totally unsupported.
+					if sc.String() == `base` && !eq(scn, `base`) {
+						err = errorf("Bogus %s value: '%s'", key, scn)
+						return
+					}
+
+					targetRules.Push(sc.Eq().Encap(`"`).Paren(true))
+
+				case TargetFilter:
+                                        if len(vals) != 1 {
+                                                err = errorf("Unexpected number of %s search filters; want %d, got %d",
+                                                        key, 1, len(vals))
+                                                return
+                                        }
+
+					f := unquote(vals[0])
+					targetRules.Push(TFilter().Push(f).Eq())
+
+                                case TargetAttr:
+                                        var tat Rule = TAttrs().Encap()
+
+                                        // target rule is either or both of the following:
+                                        // A: one (1) double-quoted AT
+                                        // B: one (1) double-quoted LIST of unquoted ATs in symbolic OR context
+                                        for x := 0; x < len(vals); x++ {
+                                                var value string = vals[x]
+
+                                                if contains(value, `||`) {
+
+                                                        // Type-B confirmed
+                                                        for ix, O := range split(unquote(value),`||`) {
+                                                                if len(O) == 0 {
+                                                                        continue
+                                                                }
+
+                                                                if x == 0 && ix == 0 {
+                                                                        if !isQuoted(vals[x]) && isQuoted(O) {
+                                                                                vEncapsulated = true
+                                                                                tat.Encap()
+                                                                        } else if !isQuoted(O) {
+                                                                                tat.Encap(`"`)
+                                                                        }
+                                                                }
+
+                                                                tat.Push(ATName(trimS(unquote(O))))
+                                                        }
+
+                                                } else {
+                                                        // Type-A confirmed
+                                                        if x == 0 {
+                                                                if isQuoted(value) {
+                                                                        vEncapsulated = true
+                                                                        tat.Encap(`"`)
+                                                                }
+                                                        }
+                                                        tat.Push(ATName(trimS(unquote(value))))
+                                                }
+                                        }
+
+                                        var c Condition
+                                        if oper == Ne {
+                                                if !vEncapsulated {
+                                                        c = tat.Ne().Encap(`"`)
+                                                } else {
+                                                        c = tat.Ne().Encap()
+                                                }
+                                        } else {
+                                                if !vEncapsulated {
+                                                        c = tat.Eq().Encap(`"`)
+                                                } else {
+                                                        c = tat.Eq().Encap()
+                                                }
+                                        }
+
+					targetRules.Push(c)
+
+                                case TargetCtrl, TargetExtOp:
+                                        var toid Rule
+					if key == TargetExtOp {
+						toid = ExtOps()
+					} else {
+						toid = Ctrls()
+					}
+
+                                        // target rule is either or both of the following:
+                                        // A: one (1) double-quoted OID
+                                        // B: one (1) double-quoted LIST of unquoted OIDs in symbolic OR context
+                                        for x := 0; x < len(vals); x++ {
+						var value string = vals[x]
+
+                                                if contains(value, `||`) {
+
+                                                        // Type-B confirmed
+                                                        for ix, O := range split(unquote(value),`||`) {
+								if len(O) == 0 {
+									continue
+								}
+
+								if x == 0 && ix == 0 {
+									if !isQuoted(vals[x]) && isQuoted(O) {
+										vEncapsulated = true
+										toid.Encap()
+									} else if !isQuoted(O) {
+										toid.Encap(`"`)
+									}
+								}
+
+								value = trimS(unquote(O))
+								o, _ := newObjectID(key,value)
+                                                                toid.Push(ObjectIdentifier{o})
+                                                        }
+                                                } else {
+							if x == 0 {
+								if isQuoted(value) {
+									vEncapsulated = true
+									toid.Encap(`"`)
+								}
+							}
+
+                                                        // Type-A confirmed
+							value = trimS(unquote(value))
+							o, _ := newObjectID(key,value)
+                                                        toid.Push(ObjectIdentifier{o})
+                                                }
+                                        }
+
+					var c Condition
+                                        if oper == Ne {
+                                                if !vEncapsulated {
+                                                        c = toid.Ne().Encap(`"`)
+                                                } else {
+                                                        c = toid.Ne().Encap()
+                                                }
+                                        } else {
+						if !vEncapsulated {
+							c = toid.Eq().Encap(`"`)
+						} else {
+							c = toid.Eq().Encap()
+						}
+                                        }
+
+					targetRules.Push(c)
+
+				case Target, TargetTo, TargetFrom:
+					var tdnr Rule = TDNs().setCategory(key.String())
+
+					// target rule is either or both of the following:
+					// A: one (1) double-quoted DN
+					// B: one (1) double-quoted LIST of unquoted DNs in symbolic OR context
+                                        for x := 0; x < len(vals); x++ {
+                                                var value string = vals[x]
+                                                if contains(value, `||`) {
+
+                                                        // Type-B confirmed
+                                                        for ix, O := range split(unquote(value),`||`) {
+                                                                if len(O) == 0 {
+                                                                        continue
+                                                                }
+
+                                                                if x == 0 && ix == 0 {
+                                                                        if !isQuoted(vals[x]) && isQuoted(O) {
+                                                                                vEncapsulated = true
+                                                                                tdnr.Encap()
+                                                                        } else if !isQuoted(O) {
+                                                                                tdnr.Encap(`"`)
+                                                                        }
+                                                                }
+
+								D := trimS(unquote(O))
+                                                                if !hasPfx(D, LocalScheme) {
+                                                                        err = errorf("Illegal %s distinguishedName slice: [index:%d;value:%s] missing LDAP local scheme (%s)",
+                                                                                key, x, D, LocalScheme)
+                                                                        return
+                                                                }
+
+                                                                tdnr.Push(DistinguishedName{newDistinguishedName(D[len(LocalScheme):],key)})
+                                                        }
+
+                                                } else {
+
+                                                        // Type-A confirmed
+                                                        if x == 0 {
+                                                                if isQuoted(value) {
+                                                                        vEncapsulated = true
+                                                                        tdnr.Encap(`"`)
+                                                                }
+                                                        }
+
+                                                        D := unquote(value)
+                                                        if !hasPfx(D, LocalScheme) {
+                                                                err = errorf("Illegal %s distinguishedName: [index:%d;value:%s] missing LDAP local scheme (%s)",
+                                                                        key, x, D, LocalScheme)
+                                                                return
+                                                        }
+
+                                                        tdnr.Push(DistinguishedName{newDistinguishedName(D[len(LocalScheme):],key)})
+                                                }
+                                        }
+
+                                        var c Condition
+                                        if oper == Ne {
+                                                if !vEncapsulated {
+                                                        c = tdnr.Ne().Encap(`"`)
+                                                } else {
+                                                        c = tdnr.Ne().Encap()
+                                                }
+                                        } else {
+                                                if !vEncapsulated {
+                                                        c = tdnr.Eq().Encap(`"`)
+                                                } else {
+                                                        c = tdnr.Eq().Encap()
+                                                }
+                                        }
+
+                                        targetRules.Push(c)
+
+				case TargetAttrFilters:
+					// TODO
+					//if len(vals) != 1 {
+					//	err = errorf("Target Rule keyword '%s' supports single values only, but %d values were found: %v",
+					//		kw,len(vals),vals)
+					//	return
+					//}
+				default:
+					err = errorf("Unhandled target rule type '%s'", key)
+					return
+				}
+
+				// Reset for next target rule condition, if any
+				kw = ``
+				oper = nil
+				cready = false
+				vals = make([]string, 0)
+			}
 		}
 
+		if done {
+			break
+		}
 	}
 
 	return
@@ -130,8 +411,9 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 	// Create temporary storage vars for some of
 	// the Condition components that will need
 	// to be preserved across loops.
-        var kw string // Bind Rule Condition keyword
-	var oper any  // Bind Rule Condition comparison operator
+        var kw string			      // Bind Rule Condition keyword
+	var cop string			      // Bind Rule Condition comparison operator
+	var vals []string = make([]string, 0) // Bind Rule Condition expression(s)
 
 	// convenient true/false bind rule keyword
 	// recognizer func.
@@ -177,22 +459,11 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 	// Whenever a valid Condition is ready to be assembled
 	// and pushed into the outer stack, this func is called.
 	pushBR := func(k, id string, t any, o any) (err error) {
-		// FORCE value encapsulation by
-		// double quotes, but ONLY if the
-		// value is not a Rule (stack).
-		var vencap string = `"` // default
-		switch o.(type) {
-		case Rule:
-			vencap = ``	// NO quotes plz!
-		}
 
 		// Assemble Condition instance c
 		// using keyword k, token value t
 		// and comparison operator o.
-		c := Cond(k,t,o).
-			setID(id).
-			Encap(vencap).
-			Paren(cparen)
+		c := Cond(k,t,o).setID(id).Paren(cparen)
 
 		// be double certain the condition
 		// is truly valid, else we do NOT
@@ -221,7 +492,6 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 	var next string
 	var last string
 	var seen []string
-	//var pspan int
 
 	// iterate each of the tokens.
 	var ct int = -1
@@ -287,7 +557,7 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 			}
 
 		// token is a parenthetical closer
-		case token == `)`:
+		case token == `)` && !cready:
 			chop++
 
 			// perform some checks to ensure the number
@@ -403,15 +673,11 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 		// token is a comparison operator
 		case isTokOp(token):
 			chop++
-			var mo bool
-			if oper, mo = matchOp(token); !mo {
-				err = errorf("Unidentified or misaligned bind rule comparison operator '%s'; aborting", token)
-				return
-			}
-			cready = len(kw) > 0
+			cop = token
+			cready = len(kw) > 0 && len(cop) > 0
 
 		// token is a boolean word operator
-		case isWordOp(token):
+		case isWordOp(token) && !cready:
 			chop++
 
 			var ttoken string = token
@@ -463,27 +729,60 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 		// token is a semicolon, which means the end of a PermissionBindRule
 		// instance. We don't need to do anything, and we don't need to keep
 		// this token, so we match it separately.
-		case token == `;`:
+		case token == `;` && !cready:
 
-		// generalized token fallback
+		// generalized token fallback will capture quoted values as well as
+		// logical symbolic operators (||, &&) between quoted values (or as
+		// part of a quoted value).
 		default:
 			if cready {
-				// condition is ready for assembly AND a non-zero
-				// double-quoted value is the current token.
-				if !isQuoted(token) {
-					err = errorf("Bogus Bind Rule condition expression between '%s' [%d] and '%s' [%d]; value must be a non-zero string enclosed within double quotes",
-						last, ct-1, next, ct+1)
+                                // condition is ready for assembly AND a non-zero
+                                // double-quoted value is the current token. We
+                                // will also accept symbolic operators if we're
+                                // dealing with a multi-valued expression.
+                                if !isQuoted(token) && (token != `||` && token != `&&`) {
+					err = errorf("Bogus Bind Rule condition expression between '%s' [%d] and '%s' [%d]; value must be a non-zero string enclosed within double quotes, or a symbolic list (||,&&) of same",
+                                                last, ct-1, next, ct+1)
+                                        return
+                                }
+
+                                // strip quotes, as go-stackage provides encaps
+                                // without the need for literal storage of such
+                                // characters.
+
+                                // increment chop index by one (1)
+                                chop++
+
+                                // Save this value; we don't yet know if this
+                                // value is merely one (1) of multiple values
+                                // as opposed to a single value alone.
+
+                                // Look ahead to see what is coming next. If
+                                // another symbolic operator is detected, we
+				// know we're not done yet. In that case, we
+				// break out of this case to continue at the
+				// next for-loop iteration.
+                                if ( next == `||` || next == `&&` ) {
+					// keep the delim for now, we need it for quote analysis!
+					vals = append(vals, token)
+					break
+				} else if !isQuoted(next) && next != `;` && next != `)` {
+					err = errorf("Misaligned value expression [%s -> %s]", token, next)
 					return
 				}
+				vals = append(vals, token)
 
-				// strip quotes, as go-stackage provides encaps
-				// without the need for literal storage of such
-				// characters.
-				val := unquote(token)
+                                // assert the comparison operator
+                                oper, mo := matchOp(cop)
+                                if !mo {
+                                        err = errorf("Unidentified or misaligned target rule comparison operator '%s'; aborting",
+                                                cop)
+                                        return
+                                }
 
-				// increment chop index by one (1)
-				chop++
-
+				// ascertain our parenthetical status, as well
+				// as our circumscribing (enclosing) rule, if
+				// applicable ...
 				var id string = `bind`
 				if (oparen || iparen ) && cparen {
 					id = `enveloped_parenthetical_bind`
@@ -493,18 +792,258 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 					id = `parenthetical_bind`
 				}
 
-				// assemble and store new bind rule condition
-				// components for eventual migration to stack
-				if err = pushBR(kw, id, val, oper); err != nil {
-					return
+                                // Keep track of when individual values, not
+                                // an entire value, are quoted in a list.
+                                var vEncapsulated bool
+
+                                // This is the last (or only!) value component. We can
+                                // now analyze the keyword and the value(s) to ascertain
+                                // the appropriate instance type for condition storage
+                                // (and to perform other context-specific sanity checks).
+                                //
+                                // Begin with an assertion switch upon the target keyword
+                                // (which we already vetted as sane) ...
+                                switch key := matchBKW(kw); key {
+
+				case BindUDN, BindRDN, BindGDN:
+					//if err = pushBR(key.String(), id, join(vals,``), oper); err != nil {
+					//	return
+					//}
+
+					// prepare a stack for our DN value(s)
+					var bdn Rule
+					if key == BindRDN {
+						bdn = RDNs()
+					} else if key == BindGDN {
+						bdn = GDNs()
+					} else {
+						bdn = UDNs()
+					}
+
+                                        // bind rule is either or both of the following:
+                                        // A: one (1) double-quoted DN
+                                        // B: one (1) double-quoted LIST of unquoted DNs in symbolic OR context
+                                        for x := 0; x < len(vals); x++ {
+                                                var value string = vals[x]
+                                                if contains(value, `||`) {
+
+                                                        // Type-B confirmed
+                                                        for ix, O := range split(unquote(value),`||`) {
+                                                                if len(O) == 0 {
+                                                                        continue
+                                                                }
+
+                                                                if x == 0 && ix == 0 {
+                                                                        if !isQuoted(vals[x]) && isQuoted(O) {
+                                                                                vEncapsulated = true
+                                                                                bdn.Encap()
+                                                                        } else if !isQuoted(O) {
+                                                                                bdn.Encap(`"`)
+                                                                        }
+                                                                }
+
+                                                                D := trimS(unquote(O))
+                                                                if !hasPfx(D, LocalScheme) {
+                                                                        err = errorf("Illegal %s distinguishedName slice: [index:%d;value:%s] missing LDAP local scheme (%s)",
+                                                                                key, x, D, LocalScheme)
+                                                                        return
+                                                                }
+
+                                                                bdn.Push(DistinguishedName{newDistinguishedName(D[len(LocalScheme):],key)})
+                                                        }
+
+                                                } else {
+
+                                                        // Type-A confirmed
+                                                        if x == 0 {
+                                                                if isQuoted(value) {
+                                                                        vEncapsulated = true
+                                                                        bdn.Encap(`"`)
+                                                                }
+                                                        }
+
+                                                        D := unquote(value)
+                                                        if !hasPfx(D, LocalScheme) {
+                                                                err = errorf("Illegal %s distinguishedName: [index:%d;value:%s] missing LDAP local scheme (%s)",
+                                                                        key, x, D, LocalScheme)
+                                                                return
+                                                        }
+
+                                                        bdn.Push(DistinguishedName{newDistinguishedName(D[len(LocalScheme):],key)})
+                                                }
+                                        }
+
+                                        var c Condition
+                                        if oper == Ne {
+                                                if !vEncapsulated {
+                                                        c = bdn.Ne().Encap(`"`)
+                                                } else {
+                                                        c = bdn.Ne().Encap()
+                                                }
+                                        } else {
+                                                if !vEncapsulated {
+                                                        c = bdn.Eq().Encap(`"`)
+                                                } else {
+                                                        c = bdn.Eq().Encap()
+                                                }
+                                        }
+
+                                        slices[len(slices)] = c.Paren(cparen).setID(id).setCategory(key.String())
+
+				case BindUAT, BindGAT:
+					// TEMPORARY
+					// assemble and store new bind rule condition
+					// components for eventual migration to stack
+					if err = pushBR(key.String(), id, join(vals,``), oper); err != nil {
+						return
+					}
+
+				case BindToD:
+                                        if len(vals) != 1 {
+                                                err = errorf("Unexpected number of %s values; want %d, got %d",
+                                                        key, 1, len(vals))
+                                                return
+                                        }
+
+                                        // extract clocktime from raw value, remove
+                                        // quotes and any L/T WHSP
+                                        raw := trimS(unquote(vals[0]))
+                                        thyme := ToD(raw)
+                                        if thyme.String() != raw {
+                                                err = errorf("Unexpected %s clock time parsing result; want '%s', got '%s' (hint: use military time; 0000 through 2400)",
+                                                        key, raw, thyme)
+                                                return
+                                        }
+
+					slices[len(slices)] = Cond(key, thyme, oper).
+						Paren(cparen).
+						Encap(`"`).
+						setID(id).
+						setCategory(key.String())
+
+				case BindDoW:
+                                        if len(vals) != 1 {
+                                                err = errorf("Unexpected number of %s values; want %d, got %d",
+                                                        key, 1, len(vals))
+                                                return
+                                        }
+
+                                        // extract auth method from raw value, remove
+                                        // quotes and any L/T WHSP and analyze
+                                        raw := trimS(unquote(vals[0]))
+					var dw DayOfWeek
+					if dw, err = parseDoW(raw); err != nil {
+                                                return
+                                        }
+
+                                        slices[len(slices)] = Cond(key, dw, oper).
+						Paren(cparen).
+						Encap(`"`).
+						setID(id).
+						setCategory(key.String())
+
+				case BindAM:
+                                        if len(vals) != 1 {
+                                                err = errorf("Unexpected number of %s values; want %d, got %d",
+                                                        key, 1, len(vals))
+                                                return
+                                        }
+
+                                        // extract auth method from raw value, remove
+                                        // quotes and any L/T WHSP and analyze
+                                        raw := trimS(unquote(vals[0]))
+					am := matchAuthMethod(raw)
+                                        if !eq(am.String(), raw) {
+                                                err = errorf("Unexpected %s auth method parsing result; want '%s', got '%s' (hint: choose one (1) of `none`, `simple`, `ssl` and `sasl`)",
+                                                        key, raw, am)
+                                                return
+                                        }
+
+                                        slices[len(slices)] = Cond(key, am, oper).
+						Paren(cparen).
+						Encap(`"`).
+						setID(id).
+						setCategory(key.String())
+
+				case BindSSF:
+                                        if len(vals) != 1 {
+                                                err = errorf("Unexpected number of %s values; want %d, got %d",
+                                                        key, 1, len(vals))
+                                                return
+                                        }
+
+					// extract factor from raw value, remove
+					// quotes and any L/T WHSP
+					raw := trimS(unquote(vals[0]))
+                                        fac := SSF(raw)
+					if fac.String() != raw {
+						err = errorf("Unexpected security strength factor parsing result; want '%s', got '%s' (hint: valid range is 0-256)",
+							raw, fac)
+						return
+					}
+
+                                        slices[len(slices)] = Cond(key, fac, oper).
+						Paren(cparen).
+						Encap(`"`).
+						setID(id).
+						setCategory(key.String())
+
+				case BindIP, BindDNS:
+                                        if len(vals) != 1 {
+                                                err = errorf("Unexpected number of %s values; want %d, got %d",
+                                                        key, 1, len(vals))
+                                                return
+                                        }
+
+					if key == BindIP {
+	                                        // extract IP Address(es) from raw value,
+						// remove quotes and any L/T WHSP and then
+						// split for iteration.
+	                                        raw := split(trimS(unquote(vals[0])),`,`)
+						var addr IPAddr
+						for ipa := 0; ipa < len(raw); ipa++ {
+							addr.Set(raw[ipa])
+						}
+
+	                                        if len(raw) != addr.Len() {
+	                                                err = errorf("Unexpected number of IP addresses parsed; want '%d', got '%d'",
+	                                                        len(raw), addr.Len())
+	                                                return
+	                                        }
+
+	                                        slices[len(slices)] = Cond(key, addr, oper).
+							Paren(cparen).
+							Encap(`"`).
+							setID(id).
+							setCategory(key.String())
+
+					} else {
+                                                // extract FQDN from raw value, remove
+						// quotes and any L/T WHSP.
+                                                raw := trimS(unquote(vals[0]))
+                                                fq := DNS(raw)
+
+                                                if fq.String() != raw {
+                                                        err = errorf("Unexpected FQDN parsing result; want '%s', got '%s'", raw, fq)
+                                                        return
+                                                }
+
+                                                slices[len(slices)] = Cond(key, fq, oper).
+							Paren(cparen).
+							Encap(`"`).
+							setID(id).
+							setCategory(key.String())
+					}
 				}
+
+				// ###################################################################
 
 				// We're done; reset for any subsequent
 				// conditions that might be present.
-				cready = false	// falsify bind rule condition readiness flag
-				cparen = false	// falsify bind rule condition parenthetical flag
-				kw = ``		// clear bind rule condition keyword
-				oper = nil	// clear bind rule condition comparison operator
+				cready = false		 // falsify bind rule condition readiness flag
+				cparen = false		 // falsify bind rule condition parenthetical flag
+				kw = ``			 // clear bind rule condition keyword
+				vals = make([]string, 0) // clear bind rule expression(s)
 			}
 		}
 
@@ -965,6 +1504,14 @@ func parseInstruction(expr string) (a Instruction, err error) {
 	// (what is likely) a nil error.
 	return
 }
+
+/*
+assertParsedConditionExpression will read the provided keyword and expression
+value (which should be a double-quoted non-zero value) and determine the correct
+destination type instance for storage.
+*/
+//func assertParsedConditionExpression(kw, expr string) (any, error) {
+//}
 
 /*
 func parseFilter(filter string) (r Rule, err error) {

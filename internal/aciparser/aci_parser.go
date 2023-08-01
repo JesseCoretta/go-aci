@@ -55,82 +55,90 @@ func aciparserParserInit() {
 	staticData.RuleNames = []string{
 		"parse", "instruction", "permissionBindRule", "permission", "privilege",
 		"targetRule", "targetOperator", "targetRules", "bindRule", "wordAnd",
-		"wordOr", "wordNot", "bindRules", "quotedValue", "bindOperator", "lessThan",
-		"lessThanOrEqual", "greaterThan", "greaterThanOrEqual", "equalTo", "notEqualTo",
-		"bindKeyword", "targetKeyword", "openingParenthesis", "closingParenthesis",
+		"wordOr", "wordNot", "bindRules", "quotedValues", "quotedValue", "symbolicOr",
+		"bindOperator", "lessThan", "lessThanOrEqual", "greaterThan", "greaterThanOrEqual",
+		"equalTo", "notEqualTo", "bindKeyword", "targetKeyword", "openingParenthesis",
+		"closingParenthesis",
 	}
 	staticData.PredictionContextCache = antlr.NewPredictionContextCache()
 	staticData.serializedATN = []int32{
-		4, 1, 55, 177, 2, 0, 7, 0, 2, 1, 7, 1, 2, 2, 7, 2, 2, 3, 7, 3, 2, 4, 7,
+		4, 1, 55, 192, 2, 0, 7, 0, 2, 1, 7, 1, 2, 2, 7, 2, 2, 3, 7, 3, 2, 4, 7,
 		4, 2, 5, 7, 5, 2, 6, 7, 6, 2, 7, 7, 7, 2, 8, 7, 8, 2, 9, 7, 9, 2, 10, 7,
 		10, 2, 11, 7, 11, 2, 12, 7, 12, 2, 13, 7, 13, 2, 14, 7, 14, 2, 15, 7, 15,
 		2, 16, 7, 16, 2, 17, 7, 17, 2, 18, 7, 18, 2, 19, 7, 19, 2, 20, 7, 20, 2,
-		21, 7, 21, 2, 22, 7, 22, 2, 23, 7, 23, 2, 24, 7, 24, 1, 0, 1, 0, 1, 0,
-		1, 1, 3, 1, 55, 8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 1, 62, 8, 1, 11,
-		1, 12, 1, 63, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 2, 1, 3, 1, 3, 1, 3, 1,
-		3, 1, 3, 5, 3, 77, 8, 3, 10, 3, 12, 3, 80, 9, 3, 1, 3, 1, 3, 1, 4, 1, 4,
-		1, 5, 1, 5, 1, 5, 1, 5, 1, 5, 1, 5, 1, 6, 1, 6, 3, 6, 94, 8, 6, 1, 7, 4,
-		7, 97, 8, 7, 11, 7, 12, 7, 98, 1, 8, 1, 8, 1, 8, 1, 8, 1, 8, 1, 8, 1, 8,
-		1, 8, 1, 8, 1, 8, 3, 8, 111, 8, 8, 1, 9, 1, 9, 1, 10, 1, 10, 1, 11, 1,
-		11, 1, 12, 1, 12, 1, 12, 1, 12, 1, 12, 1, 12, 1, 12, 1, 12, 3, 12, 127,
-		8, 12, 1, 12, 1, 12, 4, 12, 131, 8, 12, 11, 12, 12, 12, 132, 1, 12, 3,
-		12, 136, 8, 12, 1, 12, 1, 12, 1, 12, 1, 12, 5, 12, 142, 8, 12, 10, 12,
-		12, 12, 145, 9, 12, 1, 13, 1, 13, 1, 14, 1, 14, 1, 14, 1, 14, 1, 14, 1,
-		14, 3, 14, 155, 8, 14, 1, 15, 1, 15, 1, 16, 1, 16, 1, 17, 1, 17, 1, 18,
-		1, 18, 1, 19, 1, 19, 1, 20, 1, 20, 1, 21, 1, 21, 1, 22, 1, 22, 1, 23, 1,
-		23, 1, 24, 1, 24, 1, 24, 0, 1, 24, 25, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18,
-		20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 0, 4, 1, 0,
-		48, 49, 1, 0, 36, 47, 1, 0, 1, 11, 1, 0, 12, 20, 167, 0, 50, 1, 0, 0, 0,
-		2, 54, 1, 0, 0, 0, 4, 67, 1, 0, 0, 0, 6, 71, 1, 0, 0, 0, 8, 83, 1, 0, 0,
-		0, 10, 85, 1, 0, 0, 0, 12, 93, 1, 0, 0, 0, 14, 96, 1, 0, 0, 0, 16, 110,
-		1, 0, 0, 0, 18, 112, 1, 0, 0, 0, 20, 114, 1, 0, 0, 0, 22, 116, 1, 0, 0,
-		0, 24, 135, 1, 0, 0, 0, 26, 146, 1, 0, 0, 0, 28, 154, 1, 0, 0, 0, 30, 156,
-		1, 0, 0, 0, 32, 158, 1, 0, 0, 0, 34, 160, 1, 0, 0, 0, 36, 162, 1, 0, 0,
-		0, 38, 164, 1, 0, 0, 0, 40, 166, 1, 0, 0, 0, 42, 168, 1, 0, 0, 0, 44, 170,
-		1, 0, 0, 0, 46, 172, 1, 0, 0, 0, 48, 174, 1, 0, 0, 0, 50, 51, 3, 2, 1,
-		0, 51, 52, 5, 0, 0, 1, 52, 1, 1, 0, 0, 0, 53, 55, 3, 14, 7, 0, 54, 53,
-		1, 0, 0, 0, 54, 55, 1, 0, 0, 0, 55, 56, 1, 0, 0, 0, 56, 57, 3, 46, 23,
-		0, 57, 58, 5, 35, 0, 0, 58, 59, 3, 26, 13, 0, 59, 61, 5, 26, 0, 0, 60,
-		62, 3, 4, 2, 0, 61, 60, 1, 0, 0, 0, 62, 63, 1, 0, 0, 0, 63, 61, 1, 0, 0,
-		0, 63, 64, 1, 0, 0, 0, 64, 65, 1, 0, 0, 0, 65, 66, 3, 48, 24, 0, 66, 3,
-		1, 0, 0, 0, 67, 68, 3, 6, 3, 0, 68, 69, 3, 24, 12, 0, 69, 70, 5, 26, 0,
-		0, 70, 5, 1, 0, 0, 0, 71, 72, 7, 0, 0, 0, 72, 73, 3, 46, 23, 0, 73, 78,
-		3, 8, 4, 0, 74, 75, 5, 25, 0, 0, 75, 77, 3, 8, 4, 0, 76, 74, 1, 0, 0, 0,
-		77, 80, 1, 0, 0, 0, 78, 76, 1, 0, 0, 0, 78, 79, 1, 0, 0, 0, 79, 81, 1,
-		0, 0, 0, 80, 78, 1, 0, 0, 0, 81, 82, 3, 48, 24, 0, 82, 7, 1, 0, 0, 0, 83,
-		84, 7, 1, 0, 0, 84, 9, 1, 0, 0, 0, 85, 86, 3, 46, 23, 0, 86, 87, 3, 44,
-		22, 0, 87, 88, 3, 12, 6, 0, 88, 89, 3, 26, 13, 0, 89, 90, 3, 48, 24, 0,
-		90, 11, 1, 0, 0, 0, 91, 94, 3, 38, 19, 0, 92, 94, 3, 40, 20, 0, 93, 91,
-		1, 0, 0, 0, 93, 92, 1, 0, 0, 0, 94, 13, 1, 0, 0, 0, 95, 97, 3, 10, 5, 0,
-		96, 95, 1, 0, 0, 0, 97, 98, 1, 0, 0, 0, 98, 96, 1, 0, 0, 0, 98, 99, 1,
-		0, 0, 0, 99, 15, 1, 0, 0, 0, 100, 101, 3, 42, 21, 0, 101, 102, 3, 28, 14,
-		0, 102, 103, 3, 26, 13, 0, 103, 111, 1, 0, 0, 0, 104, 105, 3, 46, 23, 0,
-		105, 106, 3, 42, 21, 0, 106, 107, 3, 28, 14, 0, 107, 108, 3, 26, 13, 0,
-		108, 109, 3, 48, 24, 0, 109, 111, 1, 0, 0, 0, 110, 100, 1, 0, 0, 0, 110,
-		104, 1, 0, 0, 0, 111, 17, 1, 0, 0, 0, 112, 113, 5, 50, 0, 0, 113, 19, 1,
-		0, 0, 0, 114, 115, 5, 51, 0, 0, 115, 21, 1, 0, 0, 0, 116, 117, 5, 52, 0,
-		0, 117, 23, 1, 0, 0, 0, 118, 119, 6, 12, -1, 0, 119, 120, 3, 46, 23, 0,
-		120, 121, 3, 24, 12, 0, 121, 122, 3, 48, 24, 0, 122, 136, 1, 0, 0, 0, 123,
-		130, 3, 16, 8, 0, 124, 127, 3, 18, 9, 0, 125, 127, 3, 20, 10, 0, 126, 124,
-		1, 0, 0, 0, 126, 125, 1, 0, 0, 0, 127, 128, 1, 0, 0, 0, 128, 129, 3, 16,
-		8, 0, 129, 131, 1, 0, 0, 0, 130, 126, 1, 0, 0, 0, 131, 132, 1, 0, 0, 0,
-		132, 130, 1, 0, 0, 0, 132, 133, 1, 0, 0, 0, 133, 136, 1, 0, 0, 0, 134,
-		136, 3, 16, 8, 0, 135, 118, 1, 0, 0, 0, 135, 123, 1, 0, 0, 0, 135, 134,
-		1, 0, 0, 0, 136, 143, 1, 0, 0, 0, 137, 138, 10, 3, 0, 0, 138, 139, 3, 22,
-		11, 0, 139, 140, 3, 24, 12, 3, 140, 142, 1, 0, 0, 0, 141, 137, 1, 0, 0,
-		0, 142, 145, 1, 0, 0, 0, 143, 141, 1, 0, 0, 0, 143, 144, 1, 0, 0, 0, 144,
-		25, 1, 0, 0, 0, 145, 143, 1, 0, 0, 0, 146, 147, 5, 54, 0, 0, 147, 27, 1,
-		0, 0, 0, 148, 155, 3, 38, 19, 0, 149, 155, 3, 40, 20, 0, 150, 155, 3, 30,
-		15, 0, 151, 155, 3, 32, 16, 0, 152, 155, 3, 34, 17, 0, 153, 155, 3, 36,
-		18, 0, 154, 148, 1, 0, 0, 0, 154, 149, 1, 0, 0, 0, 154, 150, 1, 0, 0, 0,
-		154, 151, 1, 0, 0, 0, 154, 152, 1, 0, 0, 0, 154, 153, 1, 0, 0, 0, 155,
-		29, 1, 0, 0, 0, 156, 157, 5, 29, 0, 0, 157, 31, 1, 0, 0, 0, 158, 159, 5,
-		30, 0, 0, 159, 33, 1, 0, 0, 0, 160, 161, 5, 31, 0, 0, 161, 35, 1, 0, 0,
-		0, 162, 163, 5, 32, 0, 0, 163, 37, 1, 0, 0, 0, 164, 165, 5, 27, 0, 0, 165,
-		39, 1, 0, 0, 0, 166, 167, 5, 28, 0, 0, 167, 41, 1, 0, 0, 0, 168, 169, 7,
-		2, 0, 0, 169, 43, 1, 0, 0, 0, 170, 171, 7, 3, 0, 0, 171, 45, 1, 0, 0, 0,
-		172, 173, 5, 23, 0, 0, 173, 47, 1, 0, 0, 0, 174, 175, 5, 24, 0, 0, 175,
-		49, 1, 0, 0, 0, 11, 54, 63, 78, 93, 98, 110, 126, 132, 135, 143, 154,
+		21, 7, 21, 2, 22, 7, 22, 2, 23, 7, 23, 2, 24, 7, 24, 2, 25, 7, 25, 2, 26,
+		7, 26, 1, 0, 1, 0, 1, 0, 1, 1, 3, 1, 59, 8, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 4, 1, 66, 8, 1, 11, 1, 12, 1, 67, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1,
+		2, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 5, 3, 81, 8, 3, 10, 3, 12, 3, 84, 9, 3,
+		1, 3, 1, 3, 1, 4, 1, 4, 1, 5, 1, 5, 1, 5, 1, 5, 1, 5, 1, 5, 1, 6, 1, 6,
+		3, 6, 98, 8, 6, 1, 7, 4, 7, 101, 8, 7, 11, 7, 12, 7, 102, 1, 8, 1, 8, 1,
+		8, 1, 8, 1, 8, 1, 8, 1, 8, 1, 8, 1, 8, 1, 8, 3, 8, 115, 8, 8, 1, 9, 1,
+		9, 1, 10, 1, 10, 1, 11, 1, 11, 1, 12, 1, 12, 1, 12, 1, 12, 1, 12, 1, 12,
+		1, 12, 1, 12, 3, 12, 131, 8, 12, 1, 12, 1, 12, 4, 12, 135, 8, 12, 11, 12,
+		12, 12, 136, 1, 12, 3, 12, 140, 8, 12, 1, 12, 1, 12, 1, 12, 1, 12, 5, 12,
+		146, 8, 12, 10, 12, 12, 12, 149, 9, 12, 1, 13, 1, 13, 1, 13, 1, 13, 5,
+		13, 155, 8, 13, 10, 13, 12, 13, 158, 9, 13, 1, 14, 1, 14, 1, 15, 1, 15,
+		1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 3, 16, 170, 8, 16, 1, 17, 1,
+		17, 1, 18, 1, 18, 1, 19, 1, 19, 1, 20, 1, 20, 1, 21, 1, 21, 1, 22, 1, 22,
+		1, 23, 1, 23, 1, 24, 1, 24, 1, 25, 1, 25, 1, 26, 1, 26, 1, 26, 0, 1, 24,
+		27, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34,
+		36, 38, 40, 42, 44, 46, 48, 50, 52, 0, 4, 1, 0, 48, 49, 1, 0, 36, 47, 1,
+		0, 1, 11, 1, 0, 12, 20, 181, 0, 54, 1, 0, 0, 0, 2, 58, 1, 0, 0, 0, 4, 71,
+		1, 0, 0, 0, 6, 75, 1, 0, 0, 0, 8, 87, 1, 0, 0, 0, 10, 89, 1, 0, 0, 0, 12,
+		97, 1, 0, 0, 0, 14, 100, 1, 0, 0, 0, 16, 114, 1, 0, 0, 0, 18, 116, 1, 0,
+		0, 0, 20, 118, 1, 0, 0, 0, 22, 120, 1, 0, 0, 0, 24, 139, 1, 0, 0, 0, 26,
+		150, 1, 0, 0, 0, 28, 159, 1, 0, 0, 0, 30, 161, 1, 0, 0, 0, 32, 169, 1,
+		0, 0, 0, 34, 171, 1, 0, 0, 0, 36, 173, 1, 0, 0, 0, 38, 175, 1, 0, 0, 0,
+		40, 177, 1, 0, 0, 0, 42, 179, 1, 0, 0, 0, 44, 181, 1, 0, 0, 0, 46, 183,
+		1, 0, 0, 0, 48, 185, 1, 0, 0, 0, 50, 187, 1, 0, 0, 0, 52, 189, 1, 0, 0,
+		0, 54, 55, 3, 2, 1, 0, 55, 56, 5, 0, 0, 1, 56, 1, 1, 0, 0, 0, 57, 59, 3,
+		14, 7, 0, 58, 57, 1, 0, 0, 0, 58, 59, 1, 0, 0, 0, 59, 60, 1, 0, 0, 0, 60,
+		61, 3, 50, 25, 0, 61, 62, 5, 35, 0, 0, 62, 63, 3, 28, 14, 0, 63, 65, 5,
+		26, 0, 0, 64, 66, 3, 4, 2, 0, 65, 64, 1, 0, 0, 0, 66, 67, 1, 0, 0, 0, 67,
+		65, 1, 0, 0, 0, 67, 68, 1, 0, 0, 0, 68, 69, 1, 0, 0, 0, 69, 70, 3, 52,
+		26, 0, 70, 3, 1, 0, 0, 0, 71, 72, 3, 6, 3, 0, 72, 73, 3, 24, 12, 0, 73,
+		74, 5, 26, 0, 0, 74, 5, 1, 0, 0, 0, 75, 76, 7, 0, 0, 0, 76, 77, 3, 50,
+		25, 0, 77, 82, 3, 8, 4, 0, 78, 79, 5, 25, 0, 0, 79, 81, 3, 8, 4, 0, 80,
+		78, 1, 0, 0, 0, 81, 84, 1, 0, 0, 0, 82, 80, 1, 0, 0, 0, 82, 83, 1, 0, 0,
+		0, 83, 85, 1, 0, 0, 0, 84, 82, 1, 0, 0, 0, 85, 86, 3, 52, 26, 0, 86, 7,
+		1, 0, 0, 0, 87, 88, 7, 1, 0, 0, 88, 9, 1, 0, 0, 0, 89, 90, 3, 50, 25, 0,
+		90, 91, 3, 48, 24, 0, 91, 92, 3, 12, 6, 0, 92, 93, 3, 26, 13, 0, 93, 94,
+		3, 52, 26, 0, 94, 11, 1, 0, 0, 0, 95, 98, 3, 42, 21, 0, 96, 98, 3, 44,
+		22, 0, 97, 95, 1, 0, 0, 0, 97, 96, 1, 0, 0, 0, 98, 13, 1, 0, 0, 0, 99,
+		101, 3, 10, 5, 0, 100, 99, 1, 0, 0, 0, 101, 102, 1, 0, 0, 0, 102, 100,
+		1, 0, 0, 0, 102, 103, 1, 0, 0, 0, 103, 15, 1, 0, 0, 0, 104, 105, 3, 46,
+		23, 0, 105, 106, 3, 32, 16, 0, 106, 107, 3, 28, 14, 0, 107, 115, 1, 0,
+		0, 0, 108, 109, 3, 50, 25, 0, 109, 110, 3, 46, 23, 0, 110, 111, 3, 32,
+		16, 0, 111, 112, 3, 26, 13, 0, 112, 113, 3, 52, 26, 0, 113, 115, 1, 0,
+		0, 0, 114, 104, 1, 0, 0, 0, 114, 108, 1, 0, 0, 0, 115, 17, 1, 0, 0, 0,
+		116, 117, 5, 50, 0, 0, 117, 19, 1, 0, 0, 0, 118, 119, 5, 51, 0, 0, 119,
+		21, 1, 0, 0, 0, 120, 121, 5, 52, 0, 0, 121, 23, 1, 0, 0, 0, 122, 123, 6,
+		12, -1, 0, 123, 124, 3, 50, 25, 0, 124, 125, 3, 24, 12, 0, 125, 126, 3,
+		52, 26, 0, 126, 140, 1, 0, 0, 0, 127, 134, 3, 16, 8, 0, 128, 131, 3, 18,
+		9, 0, 129, 131, 3, 20, 10, 0, 130, 128, 1, 0, 0, 0, 130, 129, 1, 0, 0,
+		0, 131, 132, 1, 0, 0, 0, 132, 133, 3, 16, 8, 0, 133, 135, 1, 0, 0, 0, 134,
+		130, 1, 0, 0, 0, 135, 136, 1, 0, 0, 0, 136, 134, 1, 0, 0, 0, 136, 137,
+		1, 0, 0, 0, 137, 140, 1, 0, 0, 0, 138, 140, 3, 16, 8, 0, 139, 122, 1, 0,
+		0, 0, 139, 127, 1, 0, 0, 0, 139, 138, 1, 0, 0, 0, 140, 147, 1, 0, 0, 0,
+		141, 142, 10, 3, 0, 0, 142, 143, 3, 22, 11, 0, 143, 144, 3, 24, 12, 3,
+		144, 146, 1, 0, 0, 0, 145, 141, 1, 0, 0, 0, 146, 149, 1, 0, 0, 0, 147,
+		145, 1, 0, 0, 0, 147, 148, 1, 0, 0, 0, 148, 25, 1, 0, 0, 0, 149, 147, 1,
+		0, 0, 0, 150, 156, 5, 54, 0, 0, 151, 152, 3, 30, 15, 0, 152, 153, 5, 54,
+		0, 0, 153, 155, 1, 0, 0, 0, 154, 151, 1, 0, 0, 0, 155, 158, 1, 0, 0, 0,
+		156, 154, 1, 0, 0, 0, 156, 157, 1, 0, 0, 0, 157, 27, 1, 0, 0, 0, 158, 156,
+		1, 0, 0, 0, 159, 160, 5, 54, 0, 0, 160, 29, 1, 0, 0, 0, 161, 162, 5, 34,
+		0, 0, 162, 31, 1, 0, 0, 0, 163, 170, 3, 42, 21, 0, 164, 170, 3, 44, 22,
+		0, 165, 170, 3, 34, 17, 0, 166, 170, 3, 36, 18, 0, 167, 170, 3, 38, 19,
+		0, 168, 170, 3, 40, 20, 0, 169, 163, 1, 0, 0, 0, 169, 164, 1, 0, 0, 0,
+		169, 165, 1, 0, 0, 0, 169, 166, 1, 0, 0, 0, 169, 167, 1, 0, 0, 0, 169,
+		168, 1, 0, 0, 0, 170, 33, 1, 0, 0, 0, 171, 172, 5, 29, 0, 0, 172, 35, 1,
+		0, 0, 0, 173, 174, 5, 30, 0, 0, 174, 37, 1, 0, 0, 0, 175, 176, 5, 31, 0,
+		0, 176, 39, 1, 0, 0, 0, 177, 178, 5, 32, 0, 0, 178, 41, 1, 0, 0, 0, 179,
+		180, 5, 27, 0, 0, 180, 43, 1, 0, 0, 0, 181, 182, 5, 28, 0, 0, 182, 45,
+		1, 0, 0, 0, 183, 184, 7, 2, 0, 0, 184, 47, 1, 0, 0, 0, 185, 186, 7, 3,
+		0, 0, 186, 49, 1, 0, 0, 0, 187, 188, 5, 23, 0, 0, 188, 51, 1, 0, 0, 0,
+		189, 190, 5, 24, 0, 0, 190, 53, 1, 0, 0, 0, 12, 58, 67, 82, 97, 102, 114,
+		130, 136, 139, 147, 156, 169,
 	}
 	deserializer := antlr.NewATNDeserializer(nil)
 	staticData.atn = deserializer.Deserialize(staticData.serializedATN)
@@ -241,18 +249,20 @@ const (
 	ACIParserRULE_wordOr             = 10
 	ACIParserRULE_wordNot            = 11
 	ACIParserRULE_bindRules          = 12
-	ACIParserRULE_quotedValue        = 13
-	ACIParserRULE_bindOperator       = 14
-	ACIParserRULE_lessThan           = 15
-	ACIParserRULE_lessThanOrEqual    = 16
-	ACIParserRULE_greaterThan        = 17
-	ACIParserRULE_greaterThanOrEqual = 18
-	ACIParserRULE_equalTo            = 19
-	ACIParserRULE_notEqualTo         = 20
-	ACIParserRULE_bindKeyword        = 21
-	ACIParserRULE_targetKeyword      = 22
-	ACIParserRULE_openingParenthesis = 23
-	ACIParserRULE_closingParenthesis = 24
+	ACIParserRULE_quotedValues       = 13
+	ACIParserRULE_quotedValue        = 14
+	ACIParserRULE_symbolicOr         = 15
+	ACIParserRULE_bindOperator       = 16
+	ACIParserRULE_lessThan           = 17
+	ACIParserRULE_lessThanOrEqual    = 18
+	ACIParserRULE_greaterThan        = 19
+	ACIParserRULE_greaterThanOrEqual = 20
+	ACIParserRULE_equalTo            = 21
+	ACIParserRULE_notEqualTo         = 22
+	ACIParserRULE_bindKeyword        = 23
+	ACIParserRULE_targetKeyword      = 24
+	ACIParserRULE_openingParenthesis = 25
+	ACIParserRULE_closingParenthesis = 26
 )
 
 // IParseContext is an interface to support dynamic dispatch.
@@ -347,11 +357,11 @@ func (p *ACIParser) Parse() (localctx IParseContext) {
 	p.EnterRule(localctx, 0, ACIParserRULE_parse)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(50)
+		p.SetState(54)
 		p.Instruction()
 	}
 	{
-		p.SetState(51)
+		p.SetState(55)
 		p.Match(ACIParserEOF)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -564,12 +574,12 @@ func (p *ACIParser) Instruction() (localctx IInstructionContext) {
 	var _la int
 
 	p.EnterOuterAlt(localctx, 1)
-	p.SetState(54)
+	p.SetState(58)
 	p.GetErrorHandler().Sync(p)
 
 	if p.GetInterpreter().AdaptivePredict(p.BaseParser, p.GetTokenStream(), 0, p.GetParserRuleContext()) == 1 {
 		{
-			p.SetState(53)
+			p.SetState(57)
 			p.TargetRules()
 		}
 
@@ -577,11 +587,11 @@ func (p *ACIParser) Instruction() (localctx IInstructionContext) {
 		goto errorExit
 	}
 	{
-		p.SetState(56)
+		p.SetState(60)
 		p.OpeningParenthesis()
 	}
 	{
-		p.SetState(57)
+		p.SetState(61)
 		p.Match(ACIParserANCHOR)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -589,18 +599,18 @@ func (p *ACIParser) Instruction() (localctx IInstructionContext) {
 		}
 	}
 	{
-		p.SetState(58)
+		p.SetState(62)
 		p.QuotedValue()
 	}
 	{
-		p.SetState(59)
+		p.SetState(63)
 		p.Match(ACIParserSEMI)
 		if p.HasError() {
 			// Recognition error - abort rule
 			goto errorExit
 		}
 	}
-	p.SetState(61)
+	p.SetState(65)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -609,11 +619,11 @@ func (p *ACIParser) Instruction() (localctx IInstructionContext) {
 
 	for ok := true; ok; ok = _la == ACIParserALLOW || _la == ACIParserDENY {
 		{
-			p.SetState(60)
+			p.SetState(64)
 			p.PermissionBindRule()
 		}
 
-		p.SetState(63)
+		p.SetState(67)
 		p.GetErrorHandler().Sync(p)
 		if p.HasError() {
 			goto errorExit
@@ -621,7 +631,7 @@ func (p *ACIParser) Instruction() (localctx IInstructionContext) {
 		_la = p.GetTokenStream().LA(1)
 	}
 	{
-		p.SetState(65)
+		p.SetState(69)
 		p.ClosingParenthesis()
 	}
 
@@ -747,15 +757,15 @@ func (p *ACIParser) PermissionBindRule() (localctx IPermissionBindRuleContext) {
 	p.EnterRule(localctx, 4, ACIParserRULE_permissionBindRule)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(67)
+		p.SetState(71)
 		p.Permission()
 	}
 	{
-		p.SetState(68)
+		p.SetState(72)
 		p.bindRules(0)
 	}
 	{
-		p.SetState(69)
+		p.SetState(73)
 		p.Match(ACIParserSEMI)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -945,7 +955,7 @@ func (p *ACIParser) Permission() (localctx IPermissionContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(71)
+		p.SetState(75)
 		_la = p.GetTokenStream().LA(1)
 
 		if !(_la == ACIParserALLOW || _la == ACIParserDENY) {
@@ -956,14 +966,14 @@ func (p *ACIParser) Permission() (localctx IPermissionContext) {
 		}
 	}
 	{
-		p.SetState(72)
+		p.SetState(76)
 		p.OpeningParenthesis()
 	}
 	{
-		p.SetState(73)
+		p.SetState(77)
 		p.Privilege()
 	}
-	p.SetState(78)
+	p.SetState(82)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -972,7 +982,7 @@ func (p *ACIParser) Permission() (localctx IPermissionContext) {
 
 	for _la == ACIParserCOMMA {
 		{
-			p.SetState(74)
+			p.SetState(78)
 			p.Match(ACIParserCOMMA)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -980,11 +990,11 @@ func (p *ACIParser) Permission() (localctx IPermissionContext) {
 			}
 		}
 		{
-			p.SetState(75)
+			p.SetState(79)
 			p.Privilege()
 		}
 
-		p.SetState(80)
+		p.SetState(84)
 		p.GetErrorHandler().Sync(p)
 		if p.HasError() {
 			goto errorExit
@@ -992,7 +1002,7 @@ func (p *ACIParser) Permission() (localctx IPermissionContext) {
 		_la = p.GetTokenStream().LA(1)
 	}
 	{
-		p.SetState(81)
+		p.SetState(85)
 		p.ClosingParenthesis()
 	}
 
@@ -1141,7 +1151,7 @@ func (p *ACIParser) Privilege() (localctx IPrivilegeContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(83)
+		p.SetState(87)
 		_la = p.GetTokenStream().LA(1)
 
 		if !((int64(_la) & ^0x3f) == 0 && ((int64(1)<<_la)&281406257233920) != 0) {
@@ -1176,7 +1186,7 @@ type ITargetRuleContext interface {
 	OpeningParenthesis() IOpeningParenthesisContext
 	TargetKeyword() ITargetKeywordContext
 	TargetOperator() ITargetOperatorContext
-	QuotedValue() IQuotedValueContext
+	QuotedValues() IQuotedValuesContext
 	ClosingParenthesis() IClosingParenthesisContext
 
 	// IsTargetRuleContext differentiates from other interfaces.
@@ -1263,10 +1273,10 @@ func (s *TargetRuleContext) TargetOperator() ITargetOperatorContext {
 	return t.(ITargetOperatorContext)
 }
 
-func (s *TargetRuleContext) QuotedValue() IQuotedValueContext {
+func (s *TargetRuleContext) QuotedValues() IQuotedValuesContext {
 	var t antlr.RuleContext
 	for _, ctx := range s.GetChildren() {
-		if _, ok := ctx.(IQuotedValueContext); ok {
+		if _, ok := ctx.(IQuotedValuesContext); ok {
 			t = ctx.(antlr.RuleContext)
 			break
 		}
@@ -1276,7 +1286,7 @@ func (s *TargetRuleContext) QuotedValue() IQuotedValueContext {
 		return nil
 	}
 
-	return t.(IQuotedValueContext)
+	return t.(IQuotedValuesContext)
 }
 
 func (s *TargetRuleContext) ClosingParenthesis() IClosingParenthesisContext {
@@ -1320,23 +1330,23 @@ func (p *ACIParser) TargetRule() (localctx ITargetRuleContext) {
 	p.EnterRule(localctx, 10, ACIParserRULE_targetRule)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(85)
+		p.SetState(89)
 		p.OpeningParenthesis()
 	}
 	{
-		p.SetState(86)
+		p.SetState(90)
 		p.TargetKeyword()
 	}
 	{
-		p.SetState(87)
+		p.SetState(91)
 		p.TargetOperator()
 	}
 	{
-		p.SetState(88)
-		p.QuotedValue()
+		p.SetState(92)
+		p.QuotedValues()
 	}
 	{
-		p.SetState(89)
+		p.SetState(93)
 		p.ClosingParenthesis()
 	}
 
@@ -1455,7 +1465,7 @@ func (s *TargetOperatorContext) ExitRule(listener antlr.ParseTreeListener) {
 func (p *ACIParser) TargetOperator() (localctx ITargetOperatorContext) {
 	localctx = NewTargetOperatorContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 12, ACIParserRULE_targetOperator)
-	p.SetState(93)
+	p.SetState(97)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -1465,14 +1475,14 @@ func (p *ACIParser) TargetOperator() (localctx ITargetOperatorContext) {
 	case ACIParserEQ:
 		p.EnterOuterAlt(localctx, 1)
 		{
-			p.SetState(91)
+			p.SetState(95)
 			p.EqualTo()
 		}
 
 	case ACIParserNE:
 		p.EnterOuterAlt(localctx, 2)
 		{
-			p.SetState(92)
+			p.SetState(96)
 			p.NotEqualTo()
 		}
 
@@ -1608,7 +1618,7 @@ func (p *ACIParser) TargetRules() (localctx ITargetRulesContext) {
 	var _alt int
 
 	p.EnterOuterAlt(localctx, 1)
-	p.SetState(96)
+	p.SetState(100)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -1618,7 +1628,7 @@ func (p *ACIParser) TargetRules() (localctx ITargetRulesContext) {
 		switch _alt {
 		case 1:
 			{
-				p.SetState(95)
+				p.SetState(99)
 				p.TargetRule()
 			}
 
@@ -1627,7 +1637,7 @@ func (p *ACIParser) TargetRules() (localctx ITargetRulesContext) {
 			goto errorExit
 		}
 
-		p.SetState(98)
+		p.SetState(102)
 		p.GetErrorHandler().Sync(p)
 		_alt = p.GetInterpreter().AdaptivePredict(p.BaseParser, p.GetTokenStream(), 4, p.GetParserRuleContext())
 		if p.HasError() {
@@ -1660,6 +1670,7 @@ type IBindRuleContext interface {
 	BindOperator() IBindOperatorContext
 	QuotedValue() IQuotedValueContext
 	OpeningParenthesis() IOpeningParenthesisContext
+	QuotedValues() IQuotedValuesContext
 	ClosingParenthesis() IClosingParenthesisContext
 
 	// IsBindRuleContext differentiates from other interfaces.
@@ -1762,6 +1773,22 @@ func (s *BindRuleContext) OpeningParenthesis() IOpeningParenthesisContext {
 	return t.(IOpeningParenthesisContext)
 }
 
+func (s *BindRuleContext) QuotedValues() IQuotedValuesContext {
+	var t antlr.RuleContext
+	for _, ctx := range s.GetChildren() {
+		if _, ok := ctx.(IQuotedValuesContext); ok {
+			t = ctx.(antlr.RuleContext)
+			break
+		}
+	}
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IQuotedValuesContext)
+}
+
 func (s *BindRuleContext) ClosingParenthesis() IClosingParenthesisContext {
 	var t antlr.RuleContext
 	for _, ctx := range s.GetChildren() {
@@ -1801,7 +1828,7 @@ func (s *BindRuleContext) ExitRule(listener antlr.ParseTreeListener) {
 func (p *ACIParser) BindRule() (localctx IBindRuleContext) {
 	localctx = NewBindRuleContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 16, ACIParserRULE_bindRule)
-	p.SetState(110)
+	p.SetState(114)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -1811,38 +1838,38 @@ func (p *ACIParser) BindRule() (localctx IBindRuleContext) {
 	case ACIParserBKW_UDN, ACIParserBKW_GDN, ACIParserBKW_RDN, ACIParserBKW_UAT, ACIParserBKW_GAT, ACIParserBKW_SSF, ACIParserBKW_IP, ACIParserBKW_DNS, ACIParserBKW_AM, ACIParserBKW_TOD, ACIParserBKW_DOW:
 		p.EnterOuterAlt(localctx, 1)
 		{
-			p.SetState(100)
+			p.SetState(104)
 			p.BindKeyword()
 		}
 		{
-			p.SetState(101)
+			p.SetState(105)
 			p.BindOperator()
 		}
 		{
-			p.SetState(102)
+			p.SetState(106)
 			p.QuotedValue()
 		}
 
 	case ACIParserLPAREN:
 		p.EnterOuterAlt(localctx, 2)
 		{
-			p.SetState(104)
+			p.SetState(108)
 			p.OpeningParenthesis()
 		}
 		{
-			p.SetState(105)
+			p.SetState(109)
 			p.BindKeyword()
 		}
 		{
-			p.SetState(106)
+			p.SetState(110)
 			p.BindOperator()
 		}
 		{
-			p.SetState(107)
-			p.QuotedValue()
+			p.SetState(111)
+			p.QuotedValues()
 		}
 		{
-			p.SetState(108)
+			p.SetState(112)
 			p.ClosingParenthesis()
 		}
 
@@ -1939,7 +1966,7 @@ func (p *ACIParser) WordAnd() (localctx IWordAndContext) {
 	p.EnterRule(localctx, 18, ACIParserRULE_wordAnd)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(112)
+		p.SetState(116)
 		p.Match(ACIParserWORD_AND)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -2035,7 +2062,7 @@ func (p *ACIParser) WordOr() (localctx IWordOrContext) {
 	p.EnterRule(localctx, 20, ACIParserRULE_wordOr)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(114)
+		p.SetState(118)
 		p.Match(ACIParserWORD_OR)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -2131,7 +2158,7 @@ func (p *ACIParser) WordNot() (localctx IWordNotContext) {
 	p.EnterRule(localctx, 22, ACIParserRULE_wordNot)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(116)
+		p.SetState(120)
 		p.Match(ACIParserWORD_NOT)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -2456,7 +2483,7 @@ func (p *ACIParser) bindRules(_p int) (localctx IBindRulesContext) {
 	var _alt int
 
 	p.EnterOuterAlt(localctx, 1)
-	p.SetState(135)
+	p.SetState(139)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -2465,24 +2492,24 @@ func (p *ACIParser) bindRules(_p int) (localctx IBindRulesContext) {
 	switch p.GetInterpreter().AdaptivePredict(p.BaseParser, p.GetTokenStream(), 8, p.GetParserRuleContext()) {
 	case 1:
 		{
-			p.SetState(119)
+			p.SetState(123)
 			p.OpeningParenthesis()
 		}
 		{
-			p.SetState(120)
+			p.SetState(124)
 			p.bindRules(0)
 		}
 		{
-			p.SetState(121)
+			p.SetState(125)
 			p.ClosingParenthesis()
 		}
 
 	case 2:
 		{
-			p.SetState(123)
+			p.SetState(127)
 			p.BindRule()
 		}
-		p.SetState(130)
+		p.SetState(134)
 		p.GetErrorHandler().Sync(p)
 		if p.HasError() {
 			goto errorExit
@@ -2491,7 +2518,7 @@ func (p *ACIParser) bindRules(_p int) (localctx IBindRulesContext) {
 		for ok := true; ok; ok = _alt != 2 && _alt != antlr.ATNInvalidAltNumber {
 			switch _alt {
 			case 1:
-				p.SetState(126)
+				p.SetState(130)
 				p.GetErrorHandler().Sync(p)
 				if p.HasError() {
 					goto errorExit
@@ -2500,13 +2527,13 @@ func (p *ACIParser) bindRules(_p int) (localctx IBindRulesContext) {
 				switch p.GetTokenStream().LA(1) {
 				case ACIParserWORD_AND:
 					{
-						p.SetState(124)
+						p.SetState(128)
 						p.WordAnd()
 					}
 
 				case ACIParserWORD_OR:
 					{
-						p.SetState(125)
+						p.SetState(129)
 						p.WordOr()
 					}
 
@@ -2515,7 +2542,7 @@ func (p *ACIParser) bindRules(_p int) (localctx IBindRulesContext) {
 					goto errorExit
 				}
 				{
-					p.SetState(128)
+					p.SetState(132)
 					p.BindRule()
 				}
 
@@ -2524,7 +2551,7 @@ func (p *ACIParser) bindRules(_p int) (localctx IBindRulesContext) {
 				goto errorExit
 			}
 
-			p.SetState(132)
+			p.SetState(136)
 			p.GetErrorHandler().Sync(p)
 			_alt = p.GetInterpreter().AdaptivePredict(p.BaseParser, p.GetTokenStream(), 7, p.GetParserRuleContext())
 			if p.HasError() {
@@ -2534,7 +2561,7 @@ func (p *ACIParser) bindRules(_p int) (localctx IBindRulesContext) {
 
 	case 3:
 		{
-			p.SetState(134)
+			p.SetState(138)
 			p.BindRule()
 		}
 
@@ -2542,7 +2569,7 @@ func (p *ACIParser) bindRules(_p int) (localctx IBindRulesContext) {
 		goto errorExit
 	}
 	p.GetParserRuleContext().SetStop(p.GetTokenStream().LT(-1))
-	p.SetState(143)
+	p.SetState(147)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -2559,23 +2586,23 @@ func (p *ACIParser) bindRules(_p int) (localctx IBindRulesContext) {
 			_prevctx = localctx
 			localctx = NewBindRulesContext(p, _parentctx, _parentState)
 			p.PushNewRecursionContext(localctx, _startState, ACIParserRULE_bindRules)
-			p.SetState(137)
+			p.SetState(141)
 
 			if !(p.Precpred(p.GetParserRuleContext(), 3)) {
 				p.SetError(antlr.NewFailedPredicateException(p, "p.Precpred(p.GetParserRuleContext(), 3)", ""))
 				goto errorExit
 			}
 			{
-				p.SetState(138)
+				p.SetState(142)
 				p.WordNot()
 			}
 			{
-				p.SetState(139)
+				p.SetState(143)
 				p.bindRules(3)
 			}
 
 		}
-		p.SetState(145)
+		p.SetState(149)
 		p.GetErrorHandler().Sync(p)
 		if p.HasError() {
 			goto errorExit
@@ -2595,6 +2622,180 @@ errorExit:
 		p.SetError(nil)
 	}
 	p.UnrollRecursionContexts(_parentctx)
+	return localctx
+	goto errorExit // Trick to prevent compiler error if the label is not used
+}
+
+// IQuotedValuesContext is an interface to support dynamic dispatch.
+type IQuotedValuesContext interface {
+	antlr.ParserRuleContext
+
+	// GetParser returns the parser.
+	GetParser() antlr.Parser
+
+	// Getter signatures
+	AllQUOTED_STRING() []antlr.TerminalNode
+	QUOTED_STRING(i int) antlr.TerminalNode
+	AllSymbolicOr() []ISymbolicOrContext
+	SymbolicOr(i int) ISymbolicOrContext
+
+	// IsQuotedValuesContext differentiates from other interfaces.
+	IsQuotedValuesContext()
+}
+
+type QuotedValuesContext struct {
+	antlr.BaseParserRuleContext
+	parser antlr.Parser
+}
+
+func NewEmptyQuotedValuesContext() *QuotedValuesContext {
+	var p = new(QuotedValuesContext)
+	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, nil, -1)
+	p.RuleIndex = ACIParserRULE_quotedValues
+	return p
+}
+
+func InitEmptyQuotedValuesContext(p *QuotedValuesContext) {
+	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, nil, -1)
+	p.RuleIndex = ACIParserRULE_quotedValues
+}
+
+func (*QuotedValuesContext) IsQuotedValuesContext() {}
+
+func NewQuotedValuesContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *QuotedValuesContext {
+	var p = new(QuotedValuesContext)
+
+	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, parent, invokingState)
+
+	p.parser = parser
+	p.RuleIndex = ACIParserRULE_quotedValues
+
+	return p
+}
+
+func (s *QuotedValuesContext) GetParser() antlr.Parser { return s.parser }
+
+func (s *QuotedValuesContext) AllQUOTED_STRING() []antlr.TerminalNode {
+	return s.GetTokens(ACIParserQUOTED_STRING)
+}
+
+func (s *QuotedValuesContext) QUOTED_STRING(i int) antlr.TerminalNode {
+	return s.GetToken(ACIParserQUOTED_STRING, i)
+}
+
+func (s *QuotedValuesContext) AllSymbolicOr() []ISymbolicOrContext {
+	children := s.GetChildren()
+	len := 0
+	for _, ctx := range children {
+		if _, ok := ctx.(ISymbolicOrContext); ok {
+			len++
+		}
+	}
+
+	tst := make([]ISymbolicOrContext, len)
+	i := 0
+	for _, ctx := range children {
+		if t, ok := ctx.(ISymbolicOrContext); ok {
+			tst[i] = t.(ISymbolicOrContext)
+			i++
+		}
+	}
+
+	return tst
+}
+
+func (s *QuotedValuesContext) SymbolicOr(i int) ISymbolicOrContext {
+	var t antlr.RuleContext
+	j := 0
+	for _, ctx := range s.GetChildren() {
+		if _, ok := ctx.(ISymbolicOrContext); ok {
+			if j == i {
+				t = ctx.(antlr.RuleContext)
+				break
+			}
+			j++
+		}
+	}
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(ISymbolicOrContext)
+}
+
+func (s *QuotedValuesContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *QuotedValuesContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
+	return antlr.TreesStringTree(s, ruleNames, recog)
+}
+
+func (s *QuotedValuesContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(ACIParserListener); ok {
+		listenerT.EnterQuotedValues(s)
+	}
+}
+
+func (s *QuotedValuesContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(ACIParserListener); ok {
+		listenerT.ExitQuotedValues(s)
+	}
+}
+
+func (p *ACIParser) QuotedValues() (localctx IQuotedValuesContext) {
+	localctx = NewQuotedValuesContext(p, p.GetParserRuleContext(), p.GetState())
+	p.EnterRule(localctx, 26, ACIParserRULE_quotedValues)
+	var _la int
+
+	p.EnterOuterAlt(localctx, 1)
+	{
+		p.SetState(150)
+		p.Match(ACIParserQUOTED_STRING)
+		if p.HasError() {
+			// Recognition error - abort rule
+			goto errorExit
+		}
+	}
+	p.SetState(156)
+	p.GetErrorHandler().Sync(p)
+	if p.HasError() {
+		goto errorExit
+	}
+	_la = p.GetTokenStream().LA(1)
+
+	for _la == ACIParserSYMBOLIC_OR {
+		{
+			p.SetState(151)
+			p.SymbolicOr()
+		}
+		{
+			p.SetState(152)
+			p.Match(ACIParserQUOTED_STRING)
+			if p.HasError() {
+				// Recognition error - abort rule
+				goto errorExit
+			}
+		}
+
+		p.SetState(158)
+		p.GetErrorHandler().Sync(p)
+		if p.HasError() {
+			goto errorExit
+		}
+		_la = p.GetTokenStream().LA(1)
+	}
+
+errorExit:
+	if p.HasError() {
+		v := p.GetError()
+		localctx.SetException(v)
+		p.GetErrorHandler().ReportError(p, v)
+		p.GetErrorHandler().Recover(p, v)
+		p.SetError(nil)
+	}
+	p.ExitRule()
 	return localctx
 	goto errorExit // Trick to prevent compiler error if the label is not used
 }
@@ -2671,11 +2872,107 @@ func (s *QuotedValueContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *ACIParser) QuotedValue() (localctx IQuotedValueContext) {
 	localctx = NewQuotedValueContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 26, ACIParserRULE_quotedValue)
+	p.EnterRule(localctx, 28, ACIParserRULE_quotedValue)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(146)
+		p.SetState(159)
 		p.Match(ACIParserQUOTED_STRING)
+		if p.HasError() {
+			// Recognition error - abort rule
+			goto errorExit
+		}
+	}
+
+errorExit:
+	if p.HasError() {
+		v := p.GetError()
+		localctx.SetException(v)
+		p.GetErrorHandler().ReportError(p, v)
+		p.GetErrorHandler().Recover(p, v)
+		p.SetError(nil)
+	}
+	p.ExitRule()
+	return localctx
+	goto errorExit // Trick to prevent compiler error if the label is not used
+}
+
+// ISymbolicOrContext is an interface to support dynamic dispatch.
+type ISymbolicOrContext interface {
+	antlr.ParserRuleContext
+
+	// GetParser returns the parser.
+	GetParser() antlr.Parser
+
+	// Getter signatures
+	SYMBOLIC_OR() antlr.TerminalNode
+
+	// IsSymbolicOrContext differentiates from other interfaces.
+	IsSymbolicOrContext()
+}
+
+type SymbolicOrContext struct {
+	antlr.BaseParserRuleContext
+	parser antlr.Parser
+}
+
+func NewEmptySymbolicOrContext() *SymbolicOrContext {
+	var p = new(SymbolicOrContext)
+	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, nil, -1)
+	p.RuleIndex = ACIParserRULE_symbolicOr
+	return p
+}
+
+func InitEmptySymbolicOrContext(p *SymbolicOrContext) {
+	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, nil, -1)
+	p.RuleIndex = ACIParserRULE_symbolicOr
+}
+
+func (*SymbolicOrContext) IsSymbolicOrContext() {}
+
+func NewSymbolicOrContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *SymbolicOrContext {
+	var p = new(SymbolicOrContext)
+
+	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, parent, invokingState)
+
+	p.parser = parser
+	p.RuleIndex = ACIParserRULE_symbolicOr
+
+	return p
+}
+
+func (s *SymbolicOrContext) GetParser() antlr.Parser { return s.parser }
+
+func (s *SymbolicOrContext) SYMBOLIC_OR() antlr.TerminalNode {
+	return s.GetToken(ACIParserSYMBOLIC_OR, 0)
+}
+
+func (s *SymbolicOrContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *SymbolicOrContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
+	return antlr.TreesStringTree(s, ruleNames, recog)
+}
+
+func (s *SymbolicOrContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(ACIParserListener); ok {
+		listenerT.EnterSymbolicOr(s)
+	}
+}
+
+func (s *SymbolicOrContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(ACIParserListener); ok {
+		listenerT.ExitSymbolicOr(s)
+	}
+}
+
+func (p *ACIParser) SymbolicOr() (localctx ISymbolicOrContext) {
+	localctx = NewSymbolicOrContext(p, p.GetParserRuleContext(), p.GetState())
+	p.EnterRule(localctx, 30, ACIParserRULE_symbolicOr)
+	p.EnterOuterAlt(localctx, 1)
+	{
+		p.SetState(161)
+		p.Match(ACIParserSYMBOLIC_OR)
 		if p.HasError() {
 			// Recognition error - abort rule
 			goto errorExit
@@ -2864,8 +3161,8 @@ func (s *BindOperatorContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *ACIParser) BindOperator() (localctx IBindOperatorContext) {
 	localctx = NewBindOperatorContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 28, ACIParserRULE_bindOperator)
-	p.SetState(154)
+	p.EnterRule(localctx, 32, ACIParserRULE_bindOperator)
+	p.SetState(169)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -2875,42 +3172,42 @@ func (p *ACIParser) BindOperator() (localctx IBindOperatorContext) {
 	case ACIParserEQ:
 		p.EnterOuterAlt(localctx, 1)
 		{
-			p.SetState(148)
+			p.SetState(163)
 			p.EqualTo()
 		}
 
 	case ACIParserNE:
 		p.EnterOuterAlt(localctx, 2)
 		{
-			p.SetState(149)
+			p.SetState(164)
 			p.NotEqualTo()
 		}
 
 	case ACIParserLT:
 		p.EnterOuterAlt(localctx, 3)
 		{
-			p.SetState(150)
+			p.SetState(165)
 			p.LessThan()
 		}
 
 	case ACIParserLE:
 		p.EnterOuterAlt(localctx, 4)
 		{
-			p.SetState(151)
+			p.SetState(166)
 			p.LessThanOrEqual()
 		}
 
 	case ACIParserGT:
 		p.EnterOuterAlt(localctx, 5)
 		{
-			p.SetState(152)
+			p.SetState(167)
 			p.GreaterThan()
 		}
 
 	case ACIParserGE:
 		p.EnterOuterAlt(localctx, 6)
 		{
-			p.SetState(153)
+			p.SetState(168)
 			p.GreaterThanOrEqual()
 		}
 
@@ -3004,10 +3301,10 @@ func (s *LessThanContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *ACIParser) LessThan() (localctx ILessThanContext) {
 	localctx = NewLessThanContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 30, ACIParserRULE_lessThan)
+	p.EnterRule(localctx, 34, ACIParserRULE_lessThan)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(156)
+		p.SetState(171)
 		p.Match(ACIParserLT)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -3100,10 +3397,10 @@ func (s *LessThanOrEqualContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *ACIParser) LessThanOrEqual() (localctx ILessThanOrEqualContext) {
 	localctx = NewLessThanOrEqualContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 32, ACIParserRULE_lessThanOrEqual)
+	p.EnterRule(localctx, 36, ACIParserRULE_lessThanOrEqual)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(158)
+		p.SetState(173)
 		p.Match(ACIParserLE)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -3196,10 +3493,10 @@ func (s *GreaterThanContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *ACIParser) GreaterThan() (localctx IGreaterThanContext) {
 	localctx = NewGreaterThanContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 34, ACIParserRULE_greaterThan)
+	p.EnterRule(localctx, 38, ACIParserRULE_greaterThan)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(160)
+		p.SetState(175)
 		p.Match(ACIParserGT)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -3292,10 +3589,10 @@ func (s *GreaterThanOrEqualContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *ACIParser) GreaterThanOrEqual() (localctx IGreaterThanOrEqualContext) {
 	localctx = NewGreaterThanOrEqualContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 36, ACIParserRULE_greaterThanOrEqual)
+	p.EnterRule(localctx, 40, ACIParserRULE_greaterThanOrEqual)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(162)
+		p.SetState(177)
 		p.Match(ACIParserGE)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -3388,10 +3685,10 @@ func (s *EqualToContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *ACIParser) EqualTo() (localctx IEqualToContext) {
 	localctx = NewEqualToContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 38, ACIParserRULE_equalTo)
+	p.EnterRule(localctx, 42, ACIParserRULE_equalTo)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(164)
+		p.SetState(179)
 		p.Match(ACIParserEQ)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -3484,10 +3781,10 @@ func (s *NotEqualToContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *ACIParser) NotEqualTo() (localctx INotEqualToContext) {
 	localctx = NewNotEqualToContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 40, ACIParserRULE_notEqualTo)
+	p.EnterRule(localctx, 44, ACIParserRULE_notEqualTo)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(166)
+		p.SetState(181)
 		p.Match(ACIParserNE)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -3630,12 +3927,12 @@ func (s *BindKeywordContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *ACIParser) BindKeyword() (localctx IBindKeywordContext) {
 	localctx = NewBindKeywordContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 42, ACIParserRULE_bindKeyword)
+	p.EnterRule(localctx, 46, ACIParserRULE_bindKeyword)
 	var _la int
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(168)
+		p.SetState(183)
 		_la = p.GetTokenStream().LA(1)
 
 		if !((int64(_la) & ^0x3f) == 0 && ((int64(1)<<_la)&4094) != 0) {
@@ -3771,12 +4068,12 @@ func (s *TargetKeywordContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *ACIParser) TargetKeyword() (localctx ITargetKeywordContext) {
 	localctx = NewTargetKeywordContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 44, ACIParserRULE_targetKeyword)
+	p.EnterRule(localctx, 48, ACIParserRULE_targetKeyword)
 	var _la int
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(170)
+		p.SetState(185)
 		_la = p.GetTokenStream().LA(1)
 
 		if !((int64(_la) & ^0x3f) == 0 && ((int64(1)<<_la)&2093056) != 0) {
@@ -3872,10 +4169,10 @@ func (s *OpeningParenthesisContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *ACIParser) OpeningParenthesis() (localctx IOpeningParenthesisContext) {
 	localctx = NewOpeningParenthesisContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 46, ACIParserRULE_openingParenthesis)
+	p.EnterRule(localctx, 50, ACIParserRULE_openingParenthesis)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(172)
+		p.SetState(187)
 		p.Match(ACIParserLPAREN)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -3968,10 +4265,10 @@ func (s *ClosingParenthesisContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *ACIParser) ClosingParenthesis() (localctx IClosingParenthesisContext) {
 	localctx = NewClosingParenthesisContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 48, ACIParserRULE_closingParenthesis)
+	p.EnterRule(localctx, 52, ACIParserRULE_closingParenthesis)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(174)
+		p.SetState(189)
 		p.Match(ACIParserRPAREN)
 		if p.HasError() {
 			// Recognition error - abort rule
