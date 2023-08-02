@@ -408,7 +408,7 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 	// is parenthetical.
 	var oparen bool
 	if len(tokens) > 4 {
-		 oparen = (tokens[0] == `(` && tokens[4] != `)` && tokens[len(tokens)-3] == `)` && pspan <2)
+		oparen = (tokens[0] == `(` && tokens[4] != `)` && tokens[len(tokens)-3] == `)` && pspan < 2)
 	}
 
 	// Create temporary storage vars for some of
@@ -617,68 +617,68 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 			// are currently within a parenthetical bind
 			// rule expression component.
 			if isWordOp(next) {
-					chop++
-					var ttoken string = next
-					if eq(next, `and not`) {
-						// go-stackage's negation stacks use the
-						// category of 'NOT', as opposed to ACIv3's
-						// 'AND NOT' operator equivalent. Take the
-						// 'NOT' portion of the value, using its
-						// original case-folding scheme, and save
-						// it for stack tagging later.
-						ttoken = ttoken[4:]
+				chop++
+				var ttoken string = next
+				if eq(next, `and not`) {
+					// go-stackage's negation stacks use the
+					// category of 'NOT', as opposed to ACIv3's
+					// 'AND NOT' operator equivalent. Take the
+					// 'NOT' portion of the value, using its
+					// original case-folding scheme, and save
+					// it for stack tagging later.
+					ttoken = ttoken[4:]
+				}
+
+				// If the category (word operator) is not
+				// the same as the token, this means a new
+				// distinct (inner) stack is beginning (and
+				// not a continuation of outer).
+				if !eq(ttoken, outer.Category()) {
+					// We need to offset the truncation factor
+					// of our token slices when the 'AND NOT'
+					// logical Boolean WORD operator is used,
+					// as it will erroneously be interpreted
+					// as two (2) distinct tokens.
+					var offset int
+					if eq(ttoken, `not`) {
+						offset += 2 // +2 because we're in "look ahead" mode (and 'not' is 'and not').
 					}
 
-					// If the category (word operator) is not
-					// the same as the token, this means a new
-					// distinct (inner) stack is beginning (and
-					// not a continuation of outer).
-					if !eq(ttoken, outer.Category()) {
-						// We need to offset the truncation factor
-						// of our token slices when the 'AND NOT'
-						// logical Boolean WORD operator is used,
-						// as it will erroneously be interpreted
-						// as two (2) distinct tokens.
-						var offset int
-						if eq(ttoken, `not`) {
-							offset+=2 // +2 because we're in "look ahead" mode (and 'not' is 'and not').
-						}
+					// Launch a new inner recursion of this
+					// same function.
+					var inner Rule
+					if skipTo, inner, err = parseBR(tokens[offset:], pspan); err != nil {
+						return
+					}
 
-						// Launch a new inner recursion of this
-						// same function.
-						var inner Rule
-						if skipTo, inner, err = parseBR(tokens[offset:], pspan); err != nil {
-							return
-						}
+					// If the inner stack has at least one
+					// (1) element, preserve it for the end
+					// stack element, else take no action.
+					if inner.Len() > 0 {
+						inner.setCategory(ttoken)   // mark the inner stack's logical Boolean WORD operator
+						tokens = tokens[skipTo:]    // truncate tokens already processed through recursion
+						chop += skipTo              // sum our "skip to" index with our return chop index
+						slices[len(slices)] = inner // save stack
+					}
+				} else if tokens[1] == `(` && tokens[5] != `)` {
+					// Launch a new inner recursion of this
+					// same function.
+					var inner Rule
+					if skipTo, inner, err = parseBR(tokens[1:], pspan); err != nil {
+						return
+					}
 
-						// If the inner stack has at least one
-						// (1) element, preserve it for the end
-						// stack element, else take no action.
-						if inner.Len() > 0 {
-							inner.setCategory(ttoken)   // mark the inner stack's logical Boolean WORD operator
-							tokens = tokens[skipTo:]    // truncate tokens already processed through recursion
-							chop += skipTo              // sum our "skip to" index with our return chop index
-							slices[len(slices)] = inner // save stack
-						}
-					} else if tokens[1] == `(` && tokens[5] != `)` {
-		                                // Launch a new inner recursion of this
-		                                // same function.
-		                                var inner Rule
-		                                if skipTo, inner, err = parseBR(tokens[1:], pspan); err != nil {
-		                                        return
-		                                }
-
-		                                // If the inner stack has at least one
-		                                // (1) element, preserve it for the end
-		                                // stack element, else take no action.
-		                                if inner.Len() > 0 {
-							inner.Paren(true)
-		                                        inner.setCategory(ttoken)   // mark the inner stack's logical Boolean WORD operator
-		                                        tokens = tokens[skipTo:]    // truncate tokens already processed through recursion
-		                                        chop += skipTo              // sum our "skip to" index with our return chop index
-		                                        slices[len(slices)] = inner // save stack
-		                                }
-		                        }
+					// If the inner stack has at least one
+					// (1) element, preserve it for the end
+					// stack element, else take no action.
+					if inner.Len() > 0 {
+						inner.Paren(true)
+						inner.setCategory(ttoken)   // mark the inner stack's logical Boolean WORD operator
+						tokens = tokens[skipTo:]    // truncate tokens already processed through recursion
+						chop += skipTo              // sum our "skip to" index with our return chop index
+						slices[len(slices)] = inner // save stack
+					}
+				}
 			}
 
 		// token is a keyword
@@ -742,23 +742,23 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 				}
 
 			} else if tokens[1] == `(` && tokens[5] != `)` {
-                                // Launch a new inner recursion of this
-                                // same function.
-                                var inner Rule
-                                if skipTo, inner, err = parseBR(tokens[1:], pspan); err != nil {
-                                        return
-                                }
+				// Launch a new inner recursion of this
+				// same function.
+				var inner Rule
+				if skipTo, inner, err = parseBR(tokens[1:], pspan); err != nil {
+					return
+				}
 
-                                // If the inner stack has at least one
-                                // (1) element, preserve it for the end
-                                // stack element, else take no action.
-                                if inner.Len() > 0 {
+				// If the inner stack has at least one
+				// (1) element, preserve it for the end
+				// stack element, else take no action.
+				if inner.Len() > 0 {
 					inner.Paren(true)
-                                        inner.setCategory(ttoken)   // mark the inner stack's logical Boolean WORD operator
-                                        tokens = tokens[skipTo:]    // truncate tokens already processed through recursion
-                                        chop += skipTo              // sum our "skip to" index with our return chop index
-                                        slices[len(slices)] = inner // save stack
-                                }
+					inner.setCategory(ttoken)   // mark the inner stack's logical Boolean WORD operator
+					tokens = tokens[skipTo:]    // truncate tokens already processed through recursion
+					chop += skipTo              // sum our "skip to" index with our return chop index
+					slices[len(slices)] = inner // save stack
+				}
 			}
 
 		// token is a semicolon, which means the end of a PermissionBindRule

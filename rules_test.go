@@ -81,17 +81,17 @@ func ExampleExtOps_alternativeQuotationScheme() {
 	// Here we set double-quote encapsulation
 	// upon the Rule instance created by the
 	// ExtOps function.
-        ext := ExtOps().Encap(`"`).Paren().Push(
-                // These aren't real control OIDs.
-                ExtOp(`1.3.6.1.4.1.56521.999.5`),
-                ExtOp(`1.3.6.1.4.1.56521.999.6`),
-                ExtOp(`1.3.6.1.4.1.56521.999.7`),
-        )
+	ext := ExtOps().Encap(`"`).Paren().Push(
+		// These aren't real control OIDs.
+		ExtOp(`1.3.6.1.4.1.56521.999.5`),
+		ExtOp(`1.3.6.1.4.1.56521.999.6`),
+		ExtOp(`1.3.6.1.4.1.56521.999.7`),
+	)
 
 	// Note we UNset encapsulation for the
 	// Condition instance returned by Eq.
-        fmt.Printf("%s", ext.Eq().Encap())
-        // Output: ( extop = "1.3.6.1.4.1.56521.999.5" || "1.3.6.1.4.1.56521.999.6" || "1.3.6.1.4.1.56521.999.7" )
+	fmt.Printf("%s", ext.Eq().Encap())
+	// Output: ( extop = "1.3.6.1.4.1.56521.999.5" || "1.3.6.1.4.1.56521.999.6" || "1.3.6.1.4.1.56521.999.7" )
 }
 
 /*
