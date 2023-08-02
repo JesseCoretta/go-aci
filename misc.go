@@ -11,6 +11,34 @@ import (
 )
 
 /*
+ConditionPadding is a global variable that will be applies to ALL
+Condition instances assembled during package operations. This is
+a convenient alternative to manually invoking the NoPadding method
+on a case-by-case basis.
+
+Padding is enabled by default, and can be disabled here globally,
+or overridden for individual Condition instances as needed.
+
+Note that altering this value will not impact instances that were
+already created; this only impacts the creation of new instances.
+*/
+var ConditionPadding bool = true
+
+/*
+RulePadding is a global variable that will be applies to ALL Rule
+instances assembled during package operations. This is a convenient
+alternative to manually invoking the NoPadding method on a case by
+case basis.
+
+Padding is enabled by default, and can be disabled here globally,
+or overridden for individual Rule instances as needed.
+
+Note that altering this value will not impact instances that were
+already created; this only impacts the creation of new instances.
+*/
+var RulePadding bool = true
+
+/*
 frequently-accessed import function aliases.
 */
 var (

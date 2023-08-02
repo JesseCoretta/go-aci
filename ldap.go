@@ -31,18 +31,13 @@ func (r AttributeBindTypeOrValue) IsZero() bool {
 }
 
 /*
-atbtv is an "Any Triple" type of the following structure:
+atbtv is the embedded (POINTER!) type found within instances of AttributeBindTypeOrValue.
 
-	0: <dn> <DistinguishedName>
-	1: <atname> (AttributeType)
-	2: <atv> (AttributeValue OR BindType Keyword constant)
-
-Not all slices shall be populated at all times. Certain cases only call for one
-or two particular slice values per use case.
-
-Instances of this type are embedded within AttributeBindTypeOrValue instances.
+Slices are as follows:
+  - 0: <atname> (AttributeType)
+  - 1: <atv> (BindType Keyword -OR- AttributeValue)
 */
-type atbtv [3]any
+type atbtv [2]any
 
 /*
 AttributeFilter is a struct type that embeds an AttributeTyp and filter-style Rule.
@@ -58,7 +53,7 @@ atf is the embedded type (as a pointer!) within instances of AttributeFilter.
 */
 type atf struct {
 	AttributeType // single attributeType
-	Rule          // single filter
+	string        // single filter (TODO: replace with Rule)
 }
 
 /*
@@ -106,6 +101,7 @@ func (r AttributeFilter) Eq() Condition {
 		Paren().
 		Encap(`"`).
 		setID(`target`).
+		NoPadding(!ConditionPadding).
 		setCategory(TargetAttrFilters.String())
 }
 
@@ -126,7 +122,7 @@ func (r AttributeFilter) String() string {
 		return ``
 	}
 
-	return sprintf("%s:%s", r.atf.AttributeType, r.atf.Rule)
+	return sprintf("%s:%s", r.atf.AttributeType, r.atf.string)
 }
 
 /*
@@ -170,14 +166,16 @@ func (r AttributeFilter) setFilter(f any) (ok bool) {
 	switch tv := f.(type) {
 	case string:
 		if len(tv) > 0 {
-			r.atf.Rule = Filter().Push(tv)
+			// TODO: LDAP Filter decompiler / stack
+			r.atf.string = tv
 			ok = true
 		}
-	case Rule:
-		if tv.Category() == TargetFilter.String() && !tv.IsZero() {
-			r.atf.Rule = tv
-			ok = true
-		}
+		// TODO: LDAP Filter decompiler / stack
+		//case Rule:
+		//if tv.Category() == TargetFilter.String() && !tv.IsZero() {
+		//	r.atf.Rule = tv
+		//	ok = true
+		//}
 	}
 
 	return
@@ -191,8 +189,8 @@ func (r AttributeFilter) IsZero() bool {
 	if r.atf == nil {
 		return true
 	}
-	return r.atf.Rule.IsZero() &&
-		r.atf.AttributeType.string == nil
+	return len(r.atf.string) == 0 &&
+		r.atf.AttributeType.IsZero()
 }
 
 /*
@@ -244,6 +242,7 @@ func (r AttributeOperation) AF(x ...AttributeFilter) AttributeFilters {
 	afs.atfs.AttributeOperation = r
 	afs.atfs.Rule = Rule(stackageAnd().
 		Symbol(`&&`).
+		NoPadding(!RulePadding).
 		SetPushPolicy(ppol)).
 		setCategory(TargetAttrFilters.String())
 	if len(x) > 0 {
@@ -275,6 +274,7 @@ func (r AttributeFilters) Eq() Condition {
 		Paren().
 		Encap(`"`).
 		setID(`target`).
+		NoPadding(!ConditionPadding).
 		setCategory(TargetAttrFilters.String())
 }
 
@@ -343,7 +343,7 @@ type AttributeType struct {
 
 /*
 AttributeValue embeds a pointer value that reflects an attributeType
-assertion value, OR a BindType constant such as USERDN.
+assertion value.
 */
 type AttributeValue struct {
 	*string
@@ -391,37 +391,10 @@ ATValue initializes, sets and returns an ATValue instance in one shot. The
 input value x shall be a known BindType constant, such as USERDN, OR a raw
 string attributeType value, such as `uid=bob,ou=People,dc=example,dc=com`.
 */
-func ATValue(x any) (A AttributeValue) {
-	switch tv := x.(type) {
-	case string:
-		A = AttributeValue{&tv}
-	case BindType:
-		if s := tv.String(); s != badBT {
-			A = AttributeValue{&s}
-		}
+func ATValue(x string) (A AttributeValue) {
+	if len(x) > 0 {
+		A = AttributeValue{&x}
 	}
-
-	return
-}
-
-/*
-Kind returns the string identifier for the kind of underlying
-value within the receiver. The return value shall be one of:
-
-• `bind_type`
-
-• `attribute_value`
-*/
-func (r AttributeValue) Kind() (k string) {
-	k = `attribute_value`
-
-	for _, v := range btMap {
-		if *r.string == v {
-			k = `bind_type`
-			break
-		}
-	}
-
 	return
 }
 
@@ -494,7 +467,11 @@ func (r AttributeBindTypeOrValue) Eq() (c Condition) {
 		return
 	}
 
-	return Cond(r.BindKeyword, r, Eq).Encap(`"`).setID(`bind`).setCategory(r.BindKeyword.String())
+	return Cond(r.BindKeyword, r, Eq).
+		Encap(`"`).
+		setID(`bind`).
+		NoPadding(!ConditionPadding).
+		setCategory(r.BindKeyword.String())
 }
 
 /*
@@ -509,7 +486,11 @@ func (r AttributeBindTypeOrValue) Ne() (c Condition) {
 		return
 	}
 
-	return Cond(r.BindKeyword, r, Ne).Encap(`"`).setID(`bind`).setCategory(r.BindKeyword.String())
+	return Cond(r.BindKeyword, r, Ne).
+		Encap(`"`).
+		setID(`bind`).
+		NoPadding(!ConditionPadding).
+		setCategory(r.BindKeyword.String())
 }
 
 /*
@@ -520,7 +501,7 @@ func (r *atbtv) isZero() bool {
 	if r == nil {
 		return true
 	}
-	return (r[0] == nil && r[1] == nil && r[2] == nil)
+	return (r[0] == nil && r[1] == nil)
 }
 
 /*
@@ -531,22 +512,41 @@ func (r atbtv) String() string {
 	if r.isZero() {
 		return ``
 	}
-	var val []string
 
-	for i := 0; i < len(r); i++ {
-		switch tv := r[i].(type) {
-		case DistinguishedName:
-			val = append(val, tv.String())
-		case AttributeType:
-			val = append(val, tv.String())
-		case AttributeValue:
-			val = append(val, sprintf("#%s", tv))
-		case BindType:
-			val = append(val, sprintf("#%s", tv))
-		}
+	// AttributeType will always
+	// be used.
+	var at AttributeType
+
+	// Only one (1) of the following
+	// vars will be used.
+	var bt BindType
+	var av AttributeValue
+
+	// Assert the attributeType value
+	// or bail out.
+	at, assert := r[0].(AttributeType)
+	if !assert {
+		return ``
 	}
 
-	return join(val, ``)
+	// First see if the value is a BindType
+	// keyword, as those are few and easily
+	// identified.
+	if bt, assert = r[1].(BindType); !assert || bt == BindType(0x0) {
+		// If not a BindType kw, see if it
+		// appears to be an AttributeValue.
+		if av, assert = r[1].(AttributeValue); !assert || len(*av.string) == 0 {
+			// value is neither an AttributeValue
+			// nor BindType kw; bail out.
+			return ``
+		}
+
+		// AttributeValue wins
+		return sprintf("%s#%s", at, av)
+	}
+
+	// BindType wins
+	return sprintf("%s#%s", at, bt)
 }
 
 /*
@@ -558,9 +558,9 @@ func (r *atbtv) set(x ...any) {
 	for i := 0; i < len(x); i++ {
 		switch tv := x[i].(type) {
 		case AttributeType:
-			r[1] = tv
+			r[0] = tv
 		case AttributeValue, BindType:
-			r[2] = tv
+			r[1] = tv
 		}
 	}
 }
@@ -574,6 +574,59 @@ func (r AttributeBindTypeOrValue) String() string {
 		return ``
 	}
 	return r.atbtv.String()
+}
+
+/*
+parseATBTV parses the input string (x) in an attempt to marshal its contents
+into an instance of AttributeBindTypeOrValue (A), which is returned alongside
+an error (err).
+
+The optional BindKeyword argument (bkw) allows the BindGAT (groupattr) Bind
+Rule keyword to be set, else the default of BindUAT (userattr) will take
+precedence.
+*/
+func parseATBTV(x string, bkw ...any) (A AttributeBindTypeOrValue, err error) {
+	// Obtain the index number for ASCII #35 (NUMBER SIGN).
+	// If minus one (-1), input value x is totally bogus.
+	idx := idxr(x, '#')
+	if idx == -1 {
+		err = badAttributeBindTypeOrValueErr(x)
+		return
+	}
+
+	// Set the groupattr keyword if requested, else
+	// use the default of userattr.
+	kw := BindUAT
+	if len(bkw) > 0 {
+		switch tv := bkw[0].(type) {
+		case BindKeyword:
+			if tv == BindGAT {
+				kw = tv
+			}
+		case int:
+			if tv == 3 {
+				kw = BindGAT
+			}
+		case string:
+			if eq(tv, BindGAT.String()) {
+				kw = BindGAT
+			}
+		}
+	}
+
+	// If the remaining portion of the value is, in
+	// fact, a known BIND TYPE keyword, pack it up
+	// and ship it out.
+	if bt := matchBT(x[idx+1:]); bt != BindType(0x0) {
+		A = userOrGroupAttr(kw, ATName(x[:idx]), bt)
+		return
+	}
+
+	// Remaining portion of the value would appear
+	// to be an attribute value, so pack it up and
+	// send it off.
+	A = userOrGroupAttr(kw, ATName(x[:idx]), ATValue(x[idx+1:]))
+	return
 }
 
 /*
@@ -630,7 +683,10 @@ func Filter() Rule {
 	// Temporarily place the filter in a Rule
 	// with a maximum capacity of one (1). This
 	// will be reworked in the near future.
-	return Rule(stackageList(1).SetPushPolicy(ppol)).setCategory(`filter`)
+	return Rule(stackageList(1).
+		SetPushPolicy(ppol)).
+		NoPadding(!RulePadding).
+		setCategory(`filter`)
 }
 
 /*
@@ -667,7 +723,10 @@ func TFilter() Rule {
 	// Temporarily place the filter in a Rule
 	// with a maximum capacity of one (1). This
 	// will be reworked in the near future.
-	return Rule(stackageList(1).SetPushPolicy(ppol)).setID(`target`).setCategory(TargetFilter.String())
+	return Rule(stackageList(1).
+		SetPushPolicy(ppol)).
+		setID(`target`).
+		setCategory(TargetFilter.String())
 }
 
 /*
@@ -724,7 +783,10 @@ Eq initializes and returns a new Condition instance configured to express
 the evaluation of the receiver value as Equal-To a `targetscope`.
 */
 func (r SearchScope) Eq() Condition {
-	return Cond(TargetScope, r.Target(), Eq).Encap(`"`).Paren()
+	return Cond(TargetScope, r.Target(), Eq).
+		NoPadding(!ConditionPadding).
+		Encap(`"`).
+		Paren()
 }
 
 /*
@@ -962,6 +1024,7 @@ set is a private method called by LDAPURI.Set.
 func (r *ldapURI) set(x ...any) {
 	if r.isZero() {
 		r = new(ldapURI)
+		r.attrs = Attrs()
 	}
 
 	for i := 0; i < len(x); i++ {
@@ -972,10 +1035,21 @@ func (r *ldapURI) set(x ...any) {
 			r.scope = tv
 		case AttributeBindTypeOrValue:
 			r.avbt = tv
+		case AttributeType:
+			if r.attrs.Category() != `attributes` {
+				r.attrs = Attrs()
+			}
+			r.attrs.Push(tv)
 		case Rule:
 			switch c := tv.Category(); c {
 			case `attributes`:
-				r.attrs = tv
+				if r.attrs.Category() != `attributes` {
+					r.attrs = Attrs()
+				}
+				for j := 0; j < tv.Len(); j++ {
+					a, _ := tv.Index(j)
+					r.attrs.Push(a)
+				}
 			case `filter`:
 				r.filter = tv
 			}
@@ -1101,12 +1175,23 @@ func (r DistinguishedName) Eq() Condition {
 
 	switch key := r.distinguishedName.Keyword; key {
 	case BindRDN, BindGDN:
-		return Cond(key, r, Eq).Encap(`"`).setCategory(key.String())
+		return Cond(key, r, Eq).
+			Encap(`"`).
+			NoPadding(!ConditionPadding).
+			setCategory(key.String())
+
 	case Target, TargetTo, TargetFrom:
-		return Cond(key, r, Eq).Encap(`"`).Paren().setCategory(key.String())
+		return Cond(key, r, Eq).
+			Encap(`"`).
+			Paren().
+			NoPadding(!ConditionPadding).
+			setCategory(key.String())
 	}
 
-	return Cond(BindUDN, r, Eq).Encap(`"`).setCategory(BindUDN.String())
+	return Cond(BindUDN, r, Eq).
+		Encap(`"`).
+		NoPadding(!ConditionPadding).
+		setCategory(BindUDN.String())
 }
 
 /*
@@ -1142,12 +1227,24 @@ func (r DistinguishedName) Ne() Condition {
 
 	switch key := r.distinguishedName.Keyword; key {
 	case BindRDN, BindGDN:
-		return Cond(key, r, Ne).Encap(`"`).setCategory(key.String())
+		return Cond(key, r, Ne).
+			Encap(`"`).
+			NoPadding(!ConditionPadding).
+			setCategory(key.String())
+
 	case Target, TargetTo, TargetFrom:
-		return Cond(key, r, Ne).Encap(`"`).Paren().setCategory(key.String())
+		return Cond(key, r, Ne).
+			Encap(`"`).
+			Paren().
+			NoPadding(!ConditionPadding).
+			setCategory(key.String())
 	}
 
-	return Cond(BindUDN, r, Ne).Encap(`"`).setCategory(BindUDN.String())
+	return Cond(BindUDN, r, Ne).
+		Encap(`"`).
+		NoPadding(!ConditionPadding).
+		setCategory(BindUDN.String())
+
 }
 
 /*
@@ -1312,26 +1409,30 @@ considered for push requests.
 func TAttrs() Rule {
 	// define a push policy that limits slice candidates to
 	// valid strings or bonafide AttributeType instances.
-	ppol := func(x any) (err error) {
-		switch tv := x.(type) {
-		case string:
-			if len(tv) == 0 {
-				err = errorf("%T denied per PushPolicy method; zero length string", tv)
+	/*
+		ppol := func(x any) (err error) {
+			switch tv := x.(type) {
+			case string:
+				if len(tv) == 0 {
+					err = errorf("%T denied per PushPolicy method; zero length string", tv)
+				}
+			case AttributeType:
+				if tv.String() == badAT {
+					err = errorf("%T denied per PushPolicy method; zero length", tv)
+				}
+			default:
+				err = errorf("%T denied per PushPolicy method", tv)
 			}
-		case AttributeType:
-			if tv.String() == badAT {
-				err = errorf("%T denied per PushPolicy method; zero length", tv)
-			}
-		default:
-			err = errorf("%T denied per PushPolicy method", tv)
+			return
 		}
-		return
-	}
+	*/
 
+	//SetPushPolicy(ppol)).
 	return Rule(stackageOr().
-		Symbol(`||`).
-		SetPushPolicy(ppol)).
+		Symbol(`||`)).
+		setPushPolicy().
 		setID(`target`).
+		NoPadding(!RulePadding).
 		setCategory(TargetAttr.String())
 }
 
@@ -1341,28 +1442,15 @@ instances. Generally Rule instances of this design are intended for use in fully
 qualified LDAP URI instances in which one (1) or more AttributeType values are
 requested.
 
-Comma-based delimitation is automatically invoked.
+Comma-based delimitation is automatically invoked, and uniqueness of attributeType
+slice members is maintained for all push attempts.
 */
 func Attrs() Rule {
-	ppol := func(x any) (err error) {
-		switch tv := x.(type) {
-		case string:
-			if len(tv) == 0 {
-				err = errorf("%T denied per PushPolicy method; zero length string", tv)
-			}
-		case AttributeType:
-			if tv.IsZero() {
-				err = errorf("%T denied per PushPolicy method; zero length", tv)
-			}
-		default:
-			err = errorf("%T denied per PushPolicy method", tv)
-		}
-		return
-	}
-
 	return Rule(stackageList().
-		SetPushPolicy(ppol).
 		JoinDelim(`,`)).
+		setPushPolicy().
+		setID(`attributes`).
+		NoPadding(!RulePadding).
 		setCategory(`attributes`)
 }
 
@@ -1401,6 +1489,7 @@ func Ctrls() Rule {
 		Symbol(`||`).
 		SetPushPolicy(ppol)).
 		setID(`target`).
+		NoPadding(!RulePadding).
 		setCategory(TargetCtrl.String())
 }
 
@@ -1437,6 +1526,7 @@ func ExtOps() Rule {
 		Symbol(`||`).
 		SetPushPolicy(ppol)).
 		setID(`target`).
+		NoPadding(!RulePadding).
 		setCategory(TargetExtOp.String())
 }
 
@@ -1477,6 +1567,7 @@ func TDNs() Rule {
 	return Rule(stackageOr().
 		Symbol(`||`).
 		SetPushPolicy(ppol)).
+		NoPadding(!RulePadding).
 		setCategory(Target.String())
 }
 
@@ -1511,6 +1602,7 @@ func UDNs() Rule {
 	return Rule(stackageOr().
 		Symbol(`||`).
 		SetPushPolicy(ppol)).
+		NoPadding(!RulePadding).
 		setCategory(BindUDN.String())
 }
 
@@ -1545,6 +1637,7 @@ func RDNs() Rule {
 	return Rule(stackageOr().
 		Symbol(`||`).
 		SetPushPolicy(ppol)).
+		NoPadding(!RulePadding).
 		setCategory(BindRDN.String())
 }
 
@@ -1579,6 +1672,7 @@ func GDNs() Rule {
 	return Rule(stackageOr().
 		Symbol(`||`).
 		SetPushPolicy(ppol)).
+		NoPadding(!RulePadding).
 		setCategory(BindGDN.String())
 }
 
@@ -1653,6 +1747,10 @@ const (
 	// string representation of an LDAPURI instance.
 	badURI = `<invalid_ldap_uri>`
 )
+
+func badAttributeBindTypeOrValueErr(x string) error {
+	return errorf("Invalid AttributeBindTyoeOrValue instance: must conform to '<at>#<bt_or_av>', got '%s'", x)
+}
 
 /*
 init will initialize any global vars residing in this file.

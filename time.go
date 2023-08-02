@@ -233,7 +233,11 @@ func (r DayOfWeek) Eq() Condition {
 	if err := r.Valid(); err != nil {
 		return Condition{}
 	}
-	return Cond(BindDoW, r, Eq).Encap(`"`).setID(`bind`).setCategory(`dayofweek`)
+	return Cond(BindDoW, r, Eq).
+		Encap(`"`).
+		setID(`bind`).
+		NoPadding(!ConditionPadding).
+		setCategory(`dayofweek`)
 }
 
 /*
@@ -244,7 +248,11 @@ func (r DayOfWeek) Ne() Condition {
 	if err := r.Valid(); err != nil {
 		return Condition{}
 	}
-	return Cond(BindDoW, r, Ne).Encap(`"`).setID(`bind`).setCategory(`dayofweek`)
+	return Cond(BindDoW, r, Ne).
+		Encap(`"`).
+		setID(`bind`).
+		NoPadding(!ConditionPadding).
+		setCategory(`dayofweek`)
 }
 
 /*
@@ -308,7 +316,11 @@ Eq initializes and returns a new *Condition instance configured
 to evaluate TimeOfDay as Equal-To the request time.
 */
 func (r TimeOfDay) Eq() Condition {
-	return Cond(BindToD, r, Eq).Encap(`"`).setID(`bind`).setCategory(`timeofday`)
+	return Cond(BindToD, r, Eq).
+		Encap(`"`).
+		setID(`bind`).
+		NoPadding(!ConditionPadding).
+		setCategory(`timeofday`)
 }
 
 /*
@@ -316,7 +328,11 @@ Ne initializes and returns a new *Condition instance configured
 to evaluate TimeOfDay as Not-Equal-To the request time.
 */
 func (r TimeOfDay) Ne() Condition {
-	return Cond(BindToD, r, Ne).Encap(`"`).setID(`bind`).setCategory(`timeofday`)
+	return Cond(BindToD, r, Ne).
+		Encap(`"`).
+		setID(`bind`).
+		NoPadding(!ConditionPadding).
+		setCategory(`timeofday`)
 }
 
 /*
@@ -324,7 +340,11 @@ Lt initializes and returns a new *Condition instance configured
 to evaluate TimeOfDay as Less-Than the request time.
 */
 func (r TimeOfDay) Lt() Condition {
-	return Cond(BindToD, r, Lt).Encap(`"`).setID(`bind`).setCategory(`timeofday`)
+	return Cond(BindToD, r, Lt).
+		Encap(`"`).
+		setID(`bind`).
+		NoPadding(!ConditionPadding).
+		setCategory(`timeofday`)
 }
 
 /*
@@ -332,7 +352,11 @@ Le initializes and returns a new *Condition instance configured
 to evaluate TimeOfDay as Less-Than-Or-Equal-To the request time.
 */
 func (r TimeOfDay) Le() Condition {
-	return Cond(BindToD, r, Le).Encap(`"`).setID(`bind`).setCategory(`timeofday`)
+	return Cond(BindToD, r, Le).
+		Encap(`"`).
+		setID(`bind`).
+		NoPadding(!ConditionPadding).
+		setCategory(`timeofday`)
 }
 
 /*
@@ -340,7 +364,11 @@ Gt initializes and returns a new *Condition instance configured
 to evaluate TimeOfDay as Greater-Than the request time.
 */
 func (r TimeOfDay) Gt() Condition {
-	return Cond(BindToD, r, Gt).Encap(`"`).setID(`bind`).setCategory(`timeofday`)
+	return Cond(BindToD, r, Gt).
+		Encap(`"`).
+		setID(`bind`).
+		NoPadding(!ConditionPadding).
+		setCategory(`timeofday`)
 }
 
 /*
@@ -348,7 +376,11 @@ Ge initializes and returns a new *Condition instance configured
 to evaluate TimeOfDay as Greater-Than-Or-Equal-To the request time.
 */
 func (r TimeOfDay) Ge() Condition {
-	return Cond(BindToD, r, Ge).Encap(`"`).setID(`bind`).setCategory(`timeofday`)
+	return Cond(BindToD, r, Ge).
+		Encap(`"`).
+		setID(`bind`).
+		NoPadding(!ConditionPadding).
+		setCategory(`timeofday`)
 }
 
 /*

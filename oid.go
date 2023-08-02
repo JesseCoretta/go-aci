@@ -58,6 +58,7 @@ func (r ObjectIdentifier) Eq() Condition {
 		Encap(`"`).
 		Paren().
 		setID(`target`).
+		NoPadding(!ConditionPadding).
 		setCategory(r.objectIdentifier.TargetKeyword.String())
 }
 
@@ -74,6 +75,7 @@ func (r ObjectIdentifier) Ne() Condition {
 		Encap(`"`).
 		Paren().
 		setID(`target`).
+		NoPadding(!ConditionPadding).
 		setCategory(r.objectIdentifier.TargetKeyword.String())
 }
 

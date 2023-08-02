@@ -37,7 +37,7 @@ func TestCtrls(t *testing.T) {
 
 func TestTargetKeyword_Set_targetScope(t *testing.T) {
 	got := SingleLevel.Eq()
-	want := `(targetscope = "onelevel")`
+	want := `( targetscope = "onelevel" )`
 	if want != got.String() {
 		t.Errorf("%s failed: want '%s', got '%s'", t.Name(), want, got)
 	}
@@ -55,7 +55,7 @@ func ExampleCtrls() {
 		Ctrl(`1.3.6.1.4.1.56521.999.7`),
 	)
 	fmt.Printf("%s", ctrls.Eq())
-	// Output: (targetcontrol = "1.3.6.1.4.1.56521.999.5 || 1.3.6.1.4.1.56521.999.6 || 1.3.6.1.4.1.56521.999.7")
+	// Output: ( targetcontrol = "1.3.6.1.4.1.56521.999.5 || 1.3.6.1.4.1.56521.999.6 || 1.3.6.1.4.1.56521.999.7" )
 }
 
 /*
@@ -70,7 +70,28 @@ func ExampleExtOps() {
 		ExtOp(`1.3.6.1.4.1.56521.999.7`),
 	)
 	fmt.Printf("%s", ext.Eq())
-	// Output: (extop = "1.3.6.1.4.1.56521.999.5 || 1.3.6.1.4.1.56521.999.6 || 1.3.6.1.4.1.56521.999.7")
+	// Output: ( extop = "1.3.6.1.4.1.56521.999.5 || 1.3.6.1.4.1.56521.999.6 || 1.3.6.1.4.1.56521.999.7" )
+}
+
+/*
+This example demonstrates a similar scenario to the one described in the above example, but with
+an alternative means of quotation demonstrated.
+*/
+func ExampleExtOps_alternativeQuotationScheme() {
+	// Here we set double-quote encapsulation
+	// upon the Rule instance created by the
+	// ExtOps function.
+        ext := ExtOps().Encap(`"`).Paren().Push(
+                // These aren't real control OIDs.
+                ExtOp(`1.3.6.1.4.1.56521.999.5`),
+                ExtOp(`1.3.6.1.4.1.56521.999.6`),
+                ExtOp(`1.3.6.1.4.1.56521.999.7`),
+        )
+
+	// Note we UNset encapsulation for the
+	// Condition instance returned by Eq.
+        fmt.Printf("%s", ext.Eq().Encap())
+        // Output: ( extop = "1.3.6.1.4.1.56521.999.5" || "1.3.6.1.4.1.56521.999.6" || "1.3.6.1.4.1.56521.999.7" )
 }
 
 /*
@@ -80,7 +101,7 @@ Condition.
 func ExampleDistinguishedName_Eq_target() {
 	dn := TDN(`uid=jesse,ou=People,dc=example,dc=com`)
 	fmt.Printf("%s", dn.Eq())
-	// Output: (target = "ldap:///uid=jesse,ou=People,dc=example,dc=com")
+	// Output: ( target = "ldap:///uid=jesse,ou=People,dc=example,dc=com" )
 }
 
 /*
@@ -95,7 +116,7 @@ func ExampleRule_Eq_targetDNs() {
 	)
 	// Craft an equality Condition
 	fmt.Printf("%s", tdns.Eq())
-	// Output: (target = "ldap:///uid=jesse,ou=People,dc=example,dc=com || ldap:///uid=courtney,ou=People,dc=example,dc=com")
+	// Output: ( target = "ldap:///uid=jesse,ou=People,dc=example,dc=com || ldap:///uid=courtney,ou=People,dc=example,dc=com" )
 }
 
 /*
@@ -122,7 +143,7 @@ func ExampleRule_Eq_targetAttr() {
 		ATName(`givenName`),
 	)
 	fmt.Printf("%s", attrs.Eq())
-	// Output: (targetattr = "cn || sn || givenName")
+	// Output: ( targetattr = "cn || sn || givenName" )
 }
 
 /*
@@ -130,7 +151,7 @@ This example demonstrates how to craft a Target Scope Rule Condition for a onele
 */
 func ExampleSearchScope_Eq_targetScopeOneLevel() {
 	fmt.Printf("%s", SingleLevel.Eq())
-	// Output: (targetscope = "onelevel")
+	// Output: ( targetscope = "onelevel" )
 }
 
 /*
@@ -140,7 +161,7 @@ and an LDAP Search Filter.
 func ExampleTFilter() {
 	tf := TFilter().Push(`(&(uid=jesse)(objectClass=*))`)
 	fmt.Printf("%s", tf.Eq())
-	// Output: (targetfilter = "(&(uid=jesse)(objectClass=*))")
+	// Output: ( targetfilter = "(&(uid=jesse)(objectClass=*))" )
 }
 
 /*
@@ -153,5 +174,5 @@ func ExampleT() {
 		ExtOp(`1.3.6.1.4.1.56521.999.5`).Eq(),
 	)
 	fmt.Printf("%s", t)
-	// Output: (target = "ldap:///uid=jesse,ou=People,dc=example,dc=com")(targetfilter = "(&(uid=jesse)(objectClass=*))")(extop = "1.3.6.1.4.1.56521.999.5")
+	// Output: ( target = "ldap:///uid=jesse,ou=People,dc=example,dc=com" ) ( targetfilter = "(&(uid=jesse)(objectClass=*))" ) ( extop = "1.3.6.1.4.1.56521.999.5" )
 }

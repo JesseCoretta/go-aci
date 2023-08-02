@@ -43,7 +43,10 @@ Eq initializes and returns a new *Condition instance configured
 to evaluate IPAddr as Equal-To the the request address.
 */
 func (r IPAddr) Eq() Condition {
-	return Cond(BindIP, r, Eq).Encap(`"`).setCategory(`ip`)
+	return Cond(BindIP, r, Eq).
+		Encap(`"`).
+		NoPadding(!ConditionPadding).
+		setCategory(`ip`)
 }
 
 /*
@@ -51,7 +54,10 @@ Ne initializes and returns a new *Condition instance configured
 to evaluate IPAddr as Not-Equal-To the the request address.
 */
 func (r IPAddr) Ne() Condition {
-	return Cond(BindIP, r, Ne).Encap(`"`).setCategory(`ip`)
+	return Cond(BindIP, r, Ne).
+		Encap(`"`).
+		NoPadding(!ConditionPadding).
+		setCategory(`ip`)
 }
 
 /*
@@ -314,7 +320,10 @@ to evaluate FQDN as Equal-To the the request address.
 */
 func (r FQDN) Eq() (C Condition) {
 	if !r.IsZero() {
-		C = Cond(BindDNS, r, Eq).Encap(`"`).setCategory(`dns`)
+		C = Cond(BindDNS, r, Eq).
+			Encap(`"`).
+			NoPadding(!ConditionPadding).
+			setCategory(`dns`)
 	}
 	return
 }
@@ -325,7 +334,10 @@ to evaluate FQDN as Not-Equal-To the the request address.
 */
 func (r FQDN) Ne() (C Condition) {
 	if !r.IsZero() {
-		C = Cond(BindDNS, r, Ne).Encap(`"`).setCategory(`dns`)
+		C = Cond(BindDNS, r, Ne).
+			Encap(`"`).
+			NoPadding(!ConditionPadding).
+			setCategory(`dns`)
 	}
 	return
 }

@@ -11,14 +11,21 @@ to define a range of vertical (depth) rule statements.
 */
 const (
 	noLvl  Level = 0         //  0 - <no levels>
-	Level0 Level = 1 << iota //  1 - baseObject
+	Level0 Level = 1 << iota //  1 - base (current Object)
 	Level1                   //  2 - one (1) level below baseObject
 	Level2                   //  4 - two (2) levels below baseObject
 	Level3                   //  8 - three (3) levels below baseObject
 	Level4                   // 16 - four (4) levels below baseObject
 
-	AllLevels Level = Level(31)
+	AllLevels Level = Level(31) // all levels; zero (0) through four (4)
 )
+
+/*
+badInhErr returns an error describing the appropriate syntax and displaying the offending value.
+*/
+func badInhErr(bad string) error {
+	return errorf("Bad Inheritance value '%s'; must conform to 'parent[0-4+].<at>#<bt_or_av>'", bad)
+}
 
 /*
 Inheritance describes an inherited Bind Rule syntax, allowing access
@@ -28,6 +35,11 @@ type Inheritance struct {
 	*inheritance
 }
 
+/*
+inheritance is the private embedded (POINTER!) type found within
+instances of Inheritance. It contains a Level bit container and
+an AttributeBindTypeOrValue instance.
+*/
 type inheritance struct {
 	Level
 	AttributeBindTypeOrValue
@@ -49,9 +61,7 @@ is called by Inherit.
 */
 func newInheritance(x AttributeBindTypeOrValue, lvl ...any) (i *inheritance) {
 	i = new(inheritance)
-	for j := 0; j < len(lvl); j++ {
-		i.shift(lvl[j])
-	}
+	i.shift(lvl...)
 	i.AttributeBindTypeOrValue = x
 
 	return
@@ -82,7 +92,11 @@ func (r Inheritance) Eq() Condition {
 		return Condition{}
 	}
 	kw := r.inheritance.AttributeBindTypeOrValue.BindKeyword
-	return Cond(kw, r, Eq).Encap(`"`).setID(`bind`).setCategory(kw.String())
+	return Cond(kw, r, Eq).
+		Encap(`"`).
+		setID(`bind`).
+		NoPadding(!ConditionPadding).
+		setCategory(kw.String())
 }
 
 /*
@@ -94,7 +108,11 @@ func (r Inheritance) Ne() Condition {
 		return Condition{}
 	}
 	kw := r.inheritance.AttributeBindTypeOrValue.BindKeyword
-	return Cond(kw, r, Ne).Encap(`"`).setID(`bind`).setCategory(kw.String())
+	return Cond(kw, r, Ne).
+		Encap(`"`).
+		setID(`bind`).
+		NoPadding(!ConditionPadding).
+		setCategory(kw.String())
 }
 
 /*
@@ -105,6 +123,70 @@ func (r *inheritance) isZero() bool {
 		return true
 	}
 	return r.AttributeBindTypeOrValue.IsZero()
+}
+
+/*
+parseInheritance is a private function that reads the input string (inh)
+and attempts to marshal its contents into an instance of Inheritance (I),
+which is returned alongside an error (err).
+
+This function is called during the bind rule parsing phase if and when
+an inheritance-related userattr/groupattr rule is encountered.
+*/
+func parseInheritance(inh string) (I Inheritance, err error) {
+	// Bail out immediately if the prefix is
+	// non conformant.
+	if !hasPfx(lc(inh), `parent[`) {
+		err = badInhErr(inh)
+		return
+	}
+
+	// chop off the 'parent[' prefix; we don't need
+	// to preserve it following the presence check.
+	raw := inh[7:]
+
+	// Grab the sequence of level identifiers up to
+	// and NOT including the right (closing) bracket.
+	// The integer index (idx) marks the boundary of
+	// the identifier sequence.
+	idx := idxr(raw, ']')
+	if idx == -1 {
+		// non conformant!
+		err = badInhErr(inh)
+		return
+	}
+
+	// Initialize our return instance, as we're about
+	// to begin storing things in it.
+	I = Inheritance{new(inheritance)}
+
+	// Iterate the split sequence of level identifiers.
+	// Also, obliterate any ASCII #32 (SPACE) chars
+	// (e.g.: ', ' -> ',').
+	for _, r := range split(repAll(raw[:idx], ` `, ``), `,`) {
+		I.inheritance.shift(r) // left shift
+	}
+
+	// Bail if nothing was found (do not fall
+	// back to default when parsing).
+	if I.inheritance.Level == noLvl {
+		// bogus or unsupported identifiers?
+		err = errorf("No level identifiers parsed; aborting")
+		return
+	}
+
+	// Call our AttributeBindTypeOrValue parser
+	// and marshal a new instance to finish up.
+	// At this phase, we begin value parsing
+	// one (1) character after the identifier
+	// boundary (see above).
+	var abv AttributeBindTypeOrValue
+	if abv, err = parseATBTV(raw[idx+1:]); err != nil {
+		// non conformant ATBTV
+		return
+	}
+	I.inheritance.AttributeBindTypeOrValue = abv
+	return
 }
 
 /*
@@ -157,34 +239,84 @@ func (r Level) String() (lvl string) {
 /*
 Shift shifts the receiver instance of Levels to include Level x, if not already present.
 */
-func (r *Inheritance) Shift(x any) *Inheritance {
-	r.inheritance.shift(x)
+func (r *Inheritance) Shift(x ...any) *Inheritance {
+	r.inheritance.shift(x...)
 	return r
 }
 
-func (r *inheritance) shift(x any) {
-	var lvl Level
-	switch tv := x.(type) {
-	case Level:
-		lvl = tv
-	case int:
-		switch tv {
-		case 0:
-			lvl = Level0
-		case 1:
-			lvl = Level1
-		case 2:
-			lvl = Level2
-		case 3:
-			lvl = Level3
-		case 4:
-			lvl = Level4
+func (r *inheritance) shift(x ...any) {
+	for i := 0; i < len(x); i++ {
+		var lvl Level
+		switch tv := x[i].(type) {
+		case Level:
+			if tv == noLvl {
+				continue
+			}
+			lvl = tv
+		case int:
+			if lvl = assertIntInheritance(tv); lvl == noLvl {
+				continue
+			}
+		case string:
+			if lvl = assertStrInheritance(tv); lvl == noLvl {
+				continue
+			}
+		default:
+			continue
 		}
-	default:
-		return
+
+		(*r).Level |= lvl
+	}
+}
+
+/*
+assertStrInheritance returns the appropriate Level instance
+logically associated with the string value (x) input by the
+user. Valid levels are zero (0) through four (4), else noLvl
+is returned.
+*/
+func assertStrInheritance(x string) (l Level) {
+	l = noLvl
+
+	switch lc(x) {
+	case `base`, `zero`, `0`:
+		l = Level0
+	case `one`, `1`:
+		l = Level1
+	case `two`, `2`:
+		l = Level2
+	case `three`, `3`:
+		l = Level3
+	case `four`, `4`:
+		l = Level4
 	}
 
-	(*r).Level |= lvl
+	return
+}
+
+/*
+assertIntInheritance returns the appropriate Level instance
+logically associated with the integer value (x) input by the
+user. Valid levels are zero (0) through four (4), else noLvl
+is returned.
+*/
+func assertIntInheritance(x int) (l Level) {
+	l = noLvl
+
+	switch x {
+	case 0:
+		l = Level0
+	case 1:
+		l = Level1
+	case 2:
+		l = Level2
+	case 3:
+		l = Level3
+	case 4:
+		l = Level4
+	}
+
+	return
 }
 
 /*
@@ -194,49 +326,65 @@ func (r Inheritance) Positive(x any) bool {
 	return r.inheritance.positive(x)
 }
 
-func (r *inheritance) positive(x any) bool {
+func (r *inheritance) positive(x any) (posi bool) {
 	if r.isZero() {
-		return false
+		return
 	}
 
 	var lvl Level
 	switch tv := x.(type) {
 	case Level:
+		if tv == noLvl {
+			return
+		}
 		lvl = tv
 	case int:
-		if !(0 <= tv && tv <= 4) {
-			return false
+		if lvl = assertIntInheritance(tv); lvl == noLvl {
+			return
 		}
-		lvl = Level(uint8(tv + 1))
+	case string:
+		if lvl = assertStrInheritance(tv); lvl == noLvl {
+			return
+		}
 	default:
-		return false
+		return
 	}
 
-	return (r.Level & lvl) > 0
+	posi = (r.Level & lvl) > 0
+	return
 }
 
 /*
 Unshift right-shifts the receiver instance of Levels to remove Level x, if present.
 */
-func (r *Inheritance) Unshift(x any) *Inheritance {
-	r.inheritance.unshift(x)
+func (r *Inheritance) Unshift(x ...any) *Inheritance {
+	r.inheritance.unshift(x...)
 	return r
 }
 
-func (r *inheritance) unshift(x any) {
-	var lvl Level
-	switch tv := x.(type) {
-	case Level:
-		lvl = tv
-	case int:
-		if !(0 <= tv && tv <= 4) {
-			return
+func (r *inheritance) unshift(x ...any) {
+	for i := 0; i < len(x); i++ {
+		var lvl Level
+		switch tv := x[0].(type) {
+		case Level:
+			if tv == noLvl {
+				continue
+			}
+			lvl = tv
+		case int:
+			if lvl = assertIntInheritance(tv); lvl == noLvl {
+				continue
+			}
+		case string:
+			if lvl = assertStrInheritance(tv); lvl == noLvl {
+				continue
+			}
+		default:
+			continue
 		}
-		lvl = Level(uint8(tv + 1))
-	default:
-		return
+
+		r.Level = r.Level &^ lvl
 	}
 
-	r.Level = r.Level &^ lvl
 	return
 }

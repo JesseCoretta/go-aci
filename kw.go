@@ -154,7 +154,10 @@ And wraps go-stackage's And function for the purpose of creating ANDed
 Bind Rule statements.
 */
 func (r BindKeyword) And() Rule {
-	return Rule(stackageAnd()).setCategory(`bind`).setPushPolicy()
+	return Rule(stackageAnd()).
+		NoPadding(!RulePadding).
+		setCategory(`bind`).
+		setPushPolicy()
 }
 
 /*
@@ -162,7 +165,10 @@ Or wraps go-stackage's Or function for the purpose of creating Ored
 Bind Rule statements.
 */
 func (r BindKeyword) Or() Rule {
-	return Rule(stackageOr()).setCategory(`bind`).setPushPolicy()
+	return Rule(stackageOr()).
+		NoPadding(!RulePadding).
+		setCategory(`bind`).
+		setPushPolicy()
 }
 
 /*
@@ -170,7 +176,10 @@ Not wraps go-stackage's Not function for the purpose of creating NOTed
 Bind Rule statements.
 */
 func (r BindKeyword) Not() Rule {
-	return Rule(stackageNot()).setCategory(`bind`).setPushPolicy()
+	return Rule(stackageNot()).
+		NoPadding(!RulePadding).
+		setCategory(`bind`).
+		setPushPolicy()
 }
 
 /*

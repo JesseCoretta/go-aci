@@ -33,7 +33,7 @@ func TestACI(t *testing.T) {
 	// Finally, craft the Instruction instance
 	aci := ACI(acl, tgt, pbrule)
 
-	want := `(target = "ldap:///uid=*,ou=People,dc=example,dc=com")(version 3.0; acl "Limit people access to timeframe"; allow(read,search,compare) ( timeofday >= "1730" AND timeofday < "2400" );)`
+	want := `( target = "ldap:///uid=*,ou=People,dc=example,dc=com" )(version 3.0; acl "Limit people access to timeframe"; allow(read,search,compare) ( timeofday >= "1730" AND timeofday < "2400" );)`
 	if want != aci.String() {
 		t.Errorf("%s failed: want '%s', got '%s'", t.Name(), want, aci)
 	}
@@ -69,7 +69,7 @@ func ExampleInstruction_build() {
 	aci.Set(acl, tgt, pbrule)
 
 	fmt.Printf("%s", aci)
-	// Output: (target = "ldap:///uid=*,ou=People,dc=example,dc=com")(version 3.0; acl "Limit people access to timeframe"; allow(read,search,compare) ( timeofday >= "1730" AND timeofday < "2400" );)
+	// Output: ( target = "ldap:///uid=*,ou=People,dc=example,dc=com" )(version 3.0; acl "Limit people access to timeframe"; allow(read,search,compare) ( timeofday >= "1730" AND timeofday < "2400" );)
 }
 
 func ExampleInstruction_buildNested() {
@@ -116,5 +116,5 @@ func ExampleInstruction_buildNested() {
 	aci.Set(acl, tgt, pbrule)
 
 	fmt.Printf("%s", aci)
-	// Output: (target = "ldap:///uid=*,ou=People,dc=example,dc=com")(version 3.0; acl "Limit people access to timeframe"; allow(read,search,compare) (( timeofday >= "1730" AND timeofday < "2400" ) AND ( ldap:///uid=jesse,ou=admin,dc=example,dc=com OR ldap:///uid=courtney,ou=admin,dc=example,dc=com ) AND NOT ( "terminated#TRUE" ));)
+	// Output: ( target = "ldap:///uid=*,ou=People,dc=example,dc=com" )(version 3.0; acl "Limit people access to timeframe"; allow(read,search,compare) ( ( timeofday >= "1730" AND timeofday < "2400" ) AND ( ldap:///uid=jesse,ou=admin,dc=example,dc=com OR ldap:///uid=courtney,ou=admin,dc=example,dc=com ) AND NOT ( "terminated#TRUE" ) );)
 }

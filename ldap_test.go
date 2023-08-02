@@ -214,7 +214,7 @@ func ExampleAttributeFilters_Eq() {
 	)
 
 	fmt.Printf("%s", afs.Eq())
-	// Output: (targattrfilters = "add=objectClass:(&(objectClass=employee)(|(objectClass=shareholder)(objectClass=engineeringLead))) && homeDirectory:(&(objectClass=executive)(|(objectClass=shareholder)(objectClass=legal)))")
+	// Output: ( targattrfilters = "add=objectClass:(&(objectClass=employee)(|(objectClass=shareholder)(objectClass=engineeringLead))) && homeDirectory:(&(objectClass=executive)(|(objectClass=shareholder)(objectClass=legal)))" )
 }
 
 func TestURI_standardURI(t *testing.T) {

@@ -45,8 +45,11 @@ Instances of this design generally are assigned to top-level instances of
 Instruction.
 */
 func T() Rule {
-	return Rule(stackageList(9).
-		NoPadding()).setID(`target`).setCategory(`target`).setPushPolicy()
+	return Rule(stackageList(9)).
+		setID(`target`).
+		setCategory(`target`).
+		NoPadding(!RulePadding).
+		setPushPolicy()
 }
 
 /*
@@ -61,7 +64,11 @@ The embedded type within the return is stackage.Stack via the go-stackage
 package's And function.
 */
 func And() Rule {
-	return Rule(stackageAnd()).setID(`bind`).setCategory(`and`).setPushPolicy()
+	return Rule(stackageAnd()).
+		setID(`bind`).
+		setCategory(`and`).
+		NoPadding(!RulePadding).
+		setPushPolicy()
 }
 
 /*
@@ -76,7 +83,11 @@ The embedded type within the return is stackage.Stack via the go-stackage
 package's Or function.
 */
 func Or() Rule {
-	return Rule(stackageOr()).setID(`bind`).setCategory(`or`).setPushPolicy()
+	return Rule(stackageOr()).
+		setID(`bind`).
+		setCategory(`or`).
+		NoPadding(!RulePadding).
+		setPushPolicy()
 }
 
 /*
@@ -88,7 +99,11 @@ The embedded type within the return is stackage.Stack via the go-stackage
 package's Not function.
 */
 func Not() Rule {
-	return Rule(stackageNot()).setID(`bind`).setCategory(`not`).setPushPolicy()
+	return Rule(stackageNot()).
+		setID(`bind`).
+		setCategory(`not`).
+		NoPadding(!RulePadding).
+		setPushPolicy()
 }
 
 /*
@@ -286,7 +301,9 @@ func (r Rule) Valid() (err error) {
 /*
 Eq is a convenience method that crafts a particular equality-based
 Condition instance based upon the categorical string label value
-assigned to the receiver.
+assigned to the receiver. The return instance may be used within
+Target and Bind Rule expressions, and will automatically bear the
+appropriate keyword and label.
 
 For example, if a receiver instance were created with the Ctrls()
 package level function, its categorical label `controls` would
@@ -298,11 +315,16 @@ func (r Rule) Eq() (c Condition) {
 	}
 
 	if k := matchTKW(r.Category()); k != TargetKeyword(0x0) {
+		// Rule is Target Rule related
 		c = Cond(k, r.Paren(false), Eq).
+			NoPadding(!ConditionPadding).
 			Encap(`"`).Paren().
 			setCategory(k.String())
+
 	} else if j := matchBKW(r.Category()); j != BindKeyword(0x0) {
+		// Rule is Bind Rule related
 		c = Cond(j, r.Paren(false), Eq).
+			NoPadding(!ConditionPadding).
 			Encap(`"`).Paren().
 			setCategory(j.String())
 	}
@@ -313,41 +335,66 @@ func (r Rule) Eq() (c Condition) {
 /*
 Ne is a convenience method that crafts a particular negated-equality
 Condition instance based upon the categorical string label value
-assigned to the receiver.
+assigned to the receiver. The return instance may be used within
+Target and Bind Rule expressions, and will automatically bear the
+appropriate keyword and label.
 
 For example, if a receiver instance were created with the Ctrls()
 package level function, its categorical label `controls` would
 result in the creation of a `targetcontrol` Target Rule.
 
-Negated equality matching operators should be used with caution.
+Negated equality matching operators should be used with EXTREME CAUTION.
 */
 func (r Rule) Ne() (c Condition) {
 	if r.IsZero() {
 		return Condition{}
 	}
 
-	for k, v := range tkwMap {
-		if r.Category() == v {
-			c = Cond(k, r.Paren(false), Ne).
-				Encap(`"`).Paren().
-				setCategory(k.String())
-			break
-		}
+	if k := matchTKW(r.Category()); k != TargetKeyword(0x0) {
+		// Rule is Target Rule related
+		c = Cond(k, r.Paren(false), Ne).
+			NoPadding(!ConditionPadding).
+			Encap(`"`).Paren().
+			setCategory(k.String())
+
+	} else if j := matchBKW(r.Category()); j != BindKeyword(0x0) {
+		// Rule is Bind Rule related
+		c = Cond(j, r.Paren(false), Ne).
+			NoPadding(!ConditionPadding).
+			Encap(`"`).Paren().
+			setCategory(j.String())
 	}
 
 	return
 }
 
+/*
+canPush is a go-stackage PushPolicy-compliant method
+assigned to various Rule instances for the purpose
+of vetting all push attempts upon a given Rule instance.
+It is executed for ALL push attempts upon Rule instances
+within which this method has been implemented.
+
+As an example, this method allows uniqueness enforcement
+for Rule instances containing attributeType values.
+*/
 func (r Rule) canPush(x any) (err error) {
 	var ok bool
 	switch r.ID() {
+
+	// list of Instruction instances
 	case `instructions`:
 		ok = aciCanPush(x)
+
+	// bind rules in varied parenthetical
+	// states
 	case `parenthetical_bind`,
 		`enveloped_parenthetical_bind`,
 		`enveloped_bind`,
 		`bind`, `and`, `or`, `not`:
 		ok = bindRuleCanPush(x)
+
+	// target rules
 	case `target`:
 		// only allow unique Condition instances which
 		// bear the categorical string label `target`
@@ -355,34 +402,44 @@ func (r Rule) canPush(x any) (err error) {
 		// true if the given target keyword does not
 		// already reside within a Condition present
 		// within the receiver (e.g.: `targetfilter`).
-		if ok = targetRuleCanPush(x); ok {
-			if found, isCond := targetInRule(r, x); !found && isCond {
-				ok = targetRuleCanPush(x)
-			} else {
-				printf("FAIL1\n")
-			}
-		} else {
-			printf("FAIL0\n")
-		}
+		ok = targetRuleCanPush(r, x)
+
+	// target attribute / URI search attribute lists
+	case `attributes`, TargetAttr.String():
+		ok = attrRuleCanPush(r, x)
+
+	// permission bind rule
 	case `pb`:
 		ok = pbRuleCanPush(x)
+
+	// arbitrary list
 	case `list`:
 		ok = listRuleCanPush(x)
 	}
 
+	// Return an error if the PushPolicy denies a request
+	// for any reason.
 	if !ok {
-		err = errorf("PushPolicy violation: %T (%s) does not allow appends of %T instances", r, r.ID(), x)
-		printf("%v\n", err)
+		err = pushPolicyViolationErr(r, x)
 	}
 
 	return
 }
 
+/*
+setPushPolicy assigns the default Rule.canPush push policy
+method to the receiver instance, which shall be executed
+for all push attempts for verification reasons.
+*/
 func (r Rule) setPushPolicy() Rule {
 	stackage.Stack(r).SetPushPolicy(r.canPush)
 	return r
 }
 
+/*
+bindRuleCanPush analyzes the input argument (x) to determine
+eligibility for push into a Bind Rule.
+*/
 func bindRuleCanPush(x any) (ok bool) {
 	switch tv := x.(type) {
 	case string:
@@ -404,10 +461,68 @@ func bindRuleCanPush(x any) (ok bool) {
 	return
 }
 
+/*
+attrRuleCanPush is a handler function for Rule instances bearing
+the `attributes` categorical string label value. This function
+shall ensure uniqueness is maintained amongst slice members, and
+that all pushed attributeType values are well-formed and valid.
+
+A boolean return value indicative of "push authorization" will be
+returned.
+*/
+func attrRuleCanPush(r Rule, x any) (ok bool) {
+	// don't process any Rule instance that is
+	// ill-suited for attributeType storage.
+	var cat string = r.Category()
+	if !eq(cat, `attributes`) && !eq(cat, TargetAttr.String()) {
+		return
+	}
+
+	// Assert to string, or bail out
+	at, assert := x.(string)
+	if !assert {
+		return
+	}
+
+	// Ensure AttributeType is well
+	// formed and conformant, or is
+	// an asterisk (ASCII #42).
+	if !isIdentifier(at) && x != string(rune(42)) {
+		return
+	}
+
+	// Iterate all indices present within
+	// Rule r at this time. If the input
+	// string matches one of these, push
+	// shall be denied.
+	for i := 0; i < r.Len(); i++ {
+
+		// Call index number
+		a, _ := r.Index(i)
+
+		// Assert slice index to AttributeType
+		// or continue at next iteration
+		atyp, assert := a.(AttributeType)
+		if !assert {
+			continue
+		}
+
+		// Does input value x match current
+		// iteration attributeType value?
+		if eq(at, atyp.String()) {
+			return
+		}
+	}
+
+	// seems fine ...
+	ok = true
+	return
+}
+
 func aciCanPush(x any) (ok bool) {
 	switch tv := x.(type) {
 	case string:
-		// TODO - invoke high level ACI parser here.
+		ok = len(tv) > 0 // parser will do the real legwork
 	case Instruction:
 		ok = tv.Valid() == nil
 	}
@@ -415,58 +530,121 @@ func aciCanPush(x any) (ok bool) {
 	return
 }
 
-func targetInRule(r Rule, t any) (found, isCond bool) {
-	var kw string
-	switch tv := t.(type) {
+func targetRuleCanPush(r Rule, x any) (ok bool) {
+	switch tv := x.(type) {
+
+	// scan Rule r for all Condition instances,
+	// and compare their keyword with that of
+	// input argument x, also an instance of
+	// Condition.
+
+	// Matched Target Rule Condition
 	case Condition:
-		kw = tv.Keyword()
-		// if nothing resides within the
-		// Rule, just give it the go-ahead.
-		if r.Len() == 0 {
-			isCond = true
+		if matchTKW(tv.Keyword()) == TargetKeyword(0x0) {
 			return
 		}
+
+		// Iterate all slice members of r.
+		for i := 0; i < r.Len(); i++ {
+			// call index i
+			sl, _ := r.Index(i)
+
+			// If i is a Condition, perform
+			// keyword comparison.
+			switch uv := sl.(type) {
+			case Condition:
+				if eq(uv.Keyword(), tv.Keyword()) {
+					return
+				}
+			}
+		}
+		ok = true
+
+	// matched Object Identifier
+	case AttributeType:
+
+		// Iterate all slice members of r.
+		for i := 0; i < r.Len(); i++ {
+			// call index i
+			sl, _ := r.Index(i)
+
+			// If i is an OID or string, perform
+			// string literal comparison
+			switch uv := sl.(type) {
+			case AttributeType:
+				if tv.String() == uv.String() {
+					return
+				}
+			case string:
+				if tv.String() == uv {
+					return
+				}
+			}
+		}
+		ok = true
+
+	// matched Object Identifier
+	case ObjectIdentifier:
+
+		// Iterate all slice members of r.
+		for i := 0; i < r.Len(); i++ {
+			// call index i
+			sl, _ := r.Index(i)
+
+			// If i is an OID or string, perform
+			// string literal comparison
+			switch uv := sl.(type) {
+			case ObjectIdentifier:
+				if tv.String() == uv.String() {
+					return
+				}
+			case string:
+				if tv.String() == uv {
+					return
+				}
+			}
+		}
+		ok = true
+
+	// matched Object Identifier
+	case DistinguishedName:
+
+		// Iterate all slice members of r.
+		for i := 0; i < r.Len(); i++ {
+			// call index i
+			sl, _ := r.Index(i)
+
+			// If i is a DN or string, perform
+			// string literal comparison
+			switch uv := sl.(type) {
+			case DistinguishedName:
+				if tv.String() == uv.String() {
+					return
+				}
+			case string:
+				if tv.String() == uv {
+					return
+				}
+			}
+		}
+		ok = true
+
+	case Rule:
+		if matchTKW(tv.Category()) == TargetKeyword(0x0) && tv.Len() > 0 {
+			return
+		}
+		ok = true
 	default:
-		// only Condition instances are
-		// valid target rule slices.
+		// bad type
 		return
 	}
 
-	for i := 0; i < r.Len(); i++ {
-		var sl any
-		if sl, found = r.Index(i); !found {
-			continue
-		}
-
-		switch tv := sl.(type) {
-		case Condition:
-			isCond = true
-			if found = eq(tv.Keyword(), kw); found {
-				return
-			}
-		case Rule:
-			isCond = true
-		}
-	}
-
 	return
 }
 
-func targetRuleCanPush(x any) (ok bool) {
-	switch tv := x.(type) {
-	case Condition:
-		if matchTKW(tv.Keyword()) != TargetKeyword(0x0) {
-			ok = true
-		}
-	case Rule:
-		if matchTKW(tv.Category()) != TargetKeyword(0x0) {
-			ok = true
-		}
-	}
-
-	return
-}
-
+/*
+TODO: improve this.
+*/
 func pbRuleCanPush(x any) (ok bool) {
 	switch x.(type) {
 	case Rule:
@@ -552,4 +730,24 @@ func ruleByLoP(op string) Rule {
 
 	// Fallback AND (word)
 	return And()
+}
+
+/*
+pushPolicyViolationErr returns an instance of error to be thrown when
+a push attempt of instance x is rejected by Rule stack r.
+*/
+func pushPolicyViolationErr(r Rule, x any, err ...error) error {
+	id := r.ID()
+	if len(id) == 0 {
+		id = `<null>`
+	}
+
+	if len(err) > 0 {
+		// caller passed a supplemental error to use
+		if err[0] != nil {
+			return errorf("PushPolicy violation [%T:%s]: %v", r, id, err[0])
+		}
+	}
+
+	return errorf("PushPolicy violation: Stack %T [id:%s] rejected %T instance", r, id, x)
 }

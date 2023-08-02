@@ -406,7 +406,10 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 	// oparen remembers whether the entirely of the
 	// bind rule statement, whether nested or not,
 	// is parenthetical.
-	var oparen bool = (tokens[0] == `(` && tokens[len(tokens)-3] == `)`)
+	var oparen bool
+	if len(tokens) > 4 {
+		 oparen = (tokens[0] == `(` && tokens[4] != `)` && tokens[len(tokens)-3] == `)` && pspan <2)
+	}
 
 	// Create temporary storage vars for some of
 	// the Condition components that will need
@@ -463,7 +466,10 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 		// Assemble Condition instance c
 		// using keyword k, token value t
 		// and comparison operator o.
-		c := Cond(k, t, o).setID(id).Paren(cparen)
+		c := Cond(k, t, o).
+			setID(id).
+			Paren(cparen).
+			NoPadding(!ConditionPadding)
 
 		// be double certain the condition
 		// is truly valid, else we do NOT
@@ -534,7 +540,6 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 						chop = skipTo - 2
 						tokens = tokens[len(tokens)-2:]
 						if inner.Len() > 0 {
-							inner.Paren(oparen)
 							slices[len(slices)] = inner // save stack
 						}
 						break
@@ -544,11 +549,10 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 					// (1) element, preserve it for the end
 					// stack element, else take no action.
 					if inner.Len() > 0 {
-						inner.Paren(oparen)
+						inner.Paren(true)
 						tokens = tokens[skipTo:]    // truncate tokens already processed through recursion
 						chop += skipTo              // sum our "skip to" index with our return chop index
 						slices[len(slices)] = inner // save stack
-						iparen = false              // reset inner parenthetical marker
 					}
 
 					break
@@ -601,7 +605,11 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 			// evaluate condition parentheticals inside
 			// (superior) closing parenthetical.
 			if len(seen) >= 3 {
-				cparen = seen[len(seen)-4] == `(` && isKW(seen[len(seen)-3]) && pspan > 0
+
+				cparen = seen[len(seen)-4] == `(` &&
+					isKW(seen[len(seen)-3]) &&
+					isQuoted(seen[len(seen)-1]) &&
+					pspan > 0
 			}
 
 			// If the NEXT token is a logical Boolean WORD
@@ -609,10 +617,6 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 			// are currently within a parenthetical bind
 			// rule expression component.
 			if isWordOp(next) {
-				if hasPfx(last, `"`) && pspan == 0 {
-					cparen = true
-
-				} else {
 					chop++
 					var ttoken string = next
 					if eq(next, `and not`) {
@@ -635,9 +639,9 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 						// logical Boolean WORD operator is used,
 						// as it will erroneously be interpreted
 						// as two (2) distinct tokens.
-						var offset int = 1
+						var offset int
 						if eq(ttoken, `not`) {
-							offset++
+							offset+=2 // +2 because we're in "look ahead" mode (and 'not' is 'and not').
 						}
 
 						// Launch a new inner recursion of this
@@ -655,10 +659,26 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 							tokens = tokens[skipTo:]    // truncate tokens already processed through recursion
 							chop += skipTo              // sum our "skip to" index with our return chop index
 							slices[len(slices)] = inner // save stack
-							iparen = false              // reset inner parenthetical marker
 						}
-					}
-				}
+					} else if tokens[1] == `(` && tokens[5] != `)` {
+		                                // Launch a new inner recursion of this
+		                                // same function.
+		                                var inner Rule
+		                                if skipTo, inner, err = parseBR(tokens[1:], pspan); err != nil {
+		                                        return
+		                                }
+
+		                                // If the inner stack has at least one
+		                                // (1) element, preserve it for the end
+		                                // stack element, else take no action.
+		                                if inner.Len() > 0 {
+							inner.Paren(true)
+		                                        inner.setCategory(ttoken)   // mark the inner stack's logical Boolean WORD operator
+		                                        tokens = tokens[skipTo:]    // truncate tokens already processed through recursion
+		                                        chop += skipTo              // sum our "skip to" index with our return chop index
+		                                        slices[len(slices)] = inner // save stack
+		                                }
+		                        }
 			}
 
 		// token is a keyword
@@ -699,7 +719,7 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 				// logical Boolean WORD operator is used,
 				// as it will erroneously be interpreted
 				// as two (2) distinct tokens.
-				var offset int = 0
+				var offset int
 				if eq(ttoken, `not`) {
 					offset++
 				}
@@ -720,6 +740,25 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 					chop += skipTo              // sum our "skip to" index with our return chop index
 					slices[len(slices)] = inner // save stack
 				}
+
+			} else if tokens[1] == `(` && tokens[5] != `)` {
+                                // Launch a new inner recursion of this
+                                // same function.
+                                var inner Rule
+                                if skipTo, inner, err = parseBR(tokens[1:], pspan); err != nil {
+                                        return
+                                }
+
+                                // If the inner stack has at least one
+                                // (1) element, preserve it for the end
+                                // stack element, else take no action.
+                                if inner.Len() > 0 {
+					inner.Paren(true)
+                                        inner.setCategory(ttoken)   // mark the inner stack's logical Boolean WORD operator
+                                        tokens = tokens[skipTo:]    // truncate tokens already processed through recursion
+                                        chop += skipTo              // sum our "skip to" index with our return chop index
+                                        slices[len(slices)] = inner // save stack
+                                }
 			}
 
 		// token is a semicolon, which means the end of a PermissionBindRule
@@ -750,10 +789,6 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 				// increment chop index by one (1)
 				chop++
 
-				// Save this value; we don't yet know if this
-				// value is merely one (1) of multiple values
-				// as opposed to a single value alone.
-
 				// Look ahead to see what is coming next. If
 				// another symbolic operator is detected, we
 				// know we're not done yet. In that case, we
@@ -768,6 +803,10 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 					err = errorf("Misaligned value expression [%s -> %s]", token, next)
 					return
 				}
+
+				// Save this value; we don't yet know if this
+				// value is merely one (1) of multiple values
+				// as opposed to a single value alone.
 				vals = append(vals, token)
 
 				// assert the comparison operator
@@ -916,6 +955,7 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 						Paren(cparen).
 						Encap(`"`).
 						setID(id).
+						NoPadding(!ConditionPadding).
 						setCategory(key.String())
 
 				case BindDoW:
@@ -937,6 +977,7 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 						Paren(cparen).
 						Encap(`"`).
 						setID(id).
+						NoPadding(!ConditionPadding).
 						setCategory(key.String())
 
 				case BindAM:
@@ -960,6 +1001,7 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 						Paren(cparen).
 						Encap(`"`).
 						setID(id).
+						NoPadding(!ConditionPadding).
 						setCategory(key.String())
 
 				case BindSSF:
@@ -983,6 +1025,7 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 						Paren(cparen).
 						Encap(`"`).
 						setID(id).
+						NoPadding(!ConditionPadding).
 						setCategory(key.String())
 
 				case BindIP, BindDNS:
@@ -1012,6 +1055,7 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 							Paren(cparen).
 							Encap(`"`).
 							setID(id).
+							NoPadding(!ConditionPadding).
 							setCategory(key.String())
 
 					} else {
@@ -1029,6 +1073,7 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 							Paren(cparen).
 							Encap(`"`).
 							setID(id).
+							NoPadding(!ConditionPadding).
 							setCategory(key.String())
 					}
 				}
@@ -1094,6 +1139,9 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 		// Initialize our transfer map
 		R := make(map[int]Rule, 0)
 
+		// Set outer parenthesis, if applicable
+		outer.Paren(oparen)
+
 		var prev string
 		for i := 0; i < len(slices); i++ {
 			// If we've progressed at least one (1)
@@ -1123,13 +1171,17 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 				// slice was a Rule (and not a Condition)
 				if len(R) == 0 || prev == `R` {
 					R[len(R)] = ruleByLoP(outer.Category()).
-						Paren(tv.ID() == `enveloped_bind` || hasSfx(tv.ID(), `parenthetical_bind`))
+						Paren(hasSfx(tv.ID(), `_bind`) && tv.ID() != `parenthetical_bind`)
 				}
 
 				// Push the current condition instance
 				// into the most recent stack found
 				// within our temporary map.
 				R[len(R)-1].Push(tv)
+				//if tv.ID() == `parenthetical_bind` {
+				//	printf("NNOW[%s] %s\n", tv.ID(), R[len(R)-1])
+				//	R[len(R)-1].Paren(true)
+				//}
 
 				// Set "C" (for Condition) as the last-seen
 				// marker value.
@@ -1188,6 +1240,8 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 		// piece (in the original order) into our return
 		// stack.
 		for i := 0; i < len(R); i++ {
+			xxx := R[i].ID()
+			printf("[%s] %s %s\n", outer.ID(), xxx, R[i])
 			outer.Push(R[i].
 				setID(outer.ID()).
 				setCategory(outer.Category()))

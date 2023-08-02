@@ -116,13 +116,19 @@ ComparisonOperator constants.
 */
 func Cond(kw, ex, op any) Condition {
 	switch tv := op.(type) {
+
 	case string:
 		oper, _ := idOp(tv)
-		return Condition(stackage.Cond(kw, oper, ex))
+		return Condition(stackage.Cond(kw, oper, ex)).
+			NoPadding(!ConditionPadding)
+
 	case stackage.ComparisonOperator:
-		return Condition(stackage.Cond(kw, tv, ex))
+		return Condition(stackage.Cond(kw, tv, ex)).
+			NoPadding(!ConditionPadding)
+
 	case stackage.Operator:
-		return Condition(stackage.Cond(kw, tv, ex))
+		return Condition(stackage.Cond(kw, tv, ex)).
+			NoPadding(!ConditionPadding)
 	}
 
 	return Condition{}

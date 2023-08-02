@@ -29,7 +29,10 @@ Eq initializes and returns a new *Condition instance configured
 to evaluate AuthMethod as Equal-To the the request address.
 */
 func (r AuthMethod) Eq() Condition {
-	return Cond(BindAM, r, Eq).Encap(`"`).setCategory(`authmethod`)
+	return Cond(BindAM, r, Eq).
+		Encap(`"`).
+		NoPadding(!ConditionPadding).
+		setCategory(`authmethod`)
 }
 
 /*
@@ -37,7 +40,10 @@ Ne initializes and returns a new *Condition instance configured
 to evaluate AuthMethod as Not-Equal-To the the request address.
 */
 func (r AuthMethod) Ne() Condition {
-	return Cond(BindAM, r, Ne).Encap(`"`).setCategory(`authmethod`)
+	return Cond(BindAM, r, Ne).
+		Encap(`"`).
+		NoPadding(!ConditionPadding).
+		setCategory(`authmethod`)
 }
 
 /*
@@ -119,7 +125,9 @@ to evaluate SSF as Equal-To the the request confidentility factor.
 Value encapsulation in double-quotes (") is imposed.
 */
 func (r SecurityStrengthFactor) Eq() Condition {
-	return Cond(BindSSF, r, Eq).Encap(`"`).setCategory(`ssf`)
+	return Cond(BindSSF, r, Eq).
+		Encap(`"`).
+		setCategory(`ssf`)
 }
 
 /*
@@ -129,7 +137,10 @@ to evaluate SSF as Not-Equal-To the the request confidentility factor.
 Value encapsulation in double-quotes (") is imposed.
 */
 func (r SecurityStrengthFactor) Ne() Condition {
-	return Cond(BindSSF, r, Ne).Encap(`"`).setCategory(`ssf`)
+	return Cond(BindSSF, r, Ne).
+		Encap(`"`).
+		NoPadding(!ConditionPadding).
+		setCategory(`ssf`)
 }
 
 /*
@@ -137,7 +148,10 @@ Lt initializes and returns a new *Condition instance configured
 to evaluate SSF as Less-Than the request confidentility factor.
 */
 func (r SecurityStrengthFactor) Lt() Condition {
-	return Cond(BindSSF, r, Lt).setCategory(`ssf`)
+	return Cond(BindSSF, r, Lt).
+		Encap(`"`).
+		NoPadding(!ConditionPadding).
+		setCategory(`ssf`)
 }
 
 /*
@@ -145,7 +159,10 @@ Gt initializes and returns a new *Condition instance configured
 to evaluate SSF as Greather-Than the request confidentility factor.
 */
 func (r SecurityStrengthFactor) Gt() Condition {
-	return Cond(BindSSF, r, Gt).setCategory(`ssf`)
+	return Cond(BindSSF, r, Gt).
+		Encap(`"`).
+		NoPadding(!ConditionPadding).
+		setCategory(`ssf`)
 }
 
 /*
@@ -153,7 +170,10 @@ Le initializes and returns a new *Condition instance configured to
 evaluate SSF as Less-Than-Or-Equal to the request confidentility factor.
 */
 func (r SecurityStrengthFactor) Le() Condition {
-	return Cond(BindSSF, r, Le).setCategory(`ssf`)
+	return Cond(BindSSF, r, Le).
+		Encap(`"`).
+		NoPadding(!ConditionPadding).
+		setCategory(`ssf`)
 }
 
 /*
@@ -162,7 +182,10 @@ evaluate SSF as Greater-Than-Or-Equal to the request confidentility
 factor.
 */
 func (r SecurityStrengthFactor) Ge() Condition {
-	return Cond(BindSSF, r, Ge).setCategory(`ssf`)
+	return Cond(BindSSF, r, Ge).
+		Encap(`"`).
+		NoPadding(!ConditionPadding).
+		setCategory(`ssf`)
 }
 
 func (r SecurityStrengthFactor) String() string {

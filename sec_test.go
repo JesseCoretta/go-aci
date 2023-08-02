@@ -77,7 +77,7 @@ func ExampleSecurityStrengthFactor_Set_byNumber() {
 func ExampleSecurityStrengthFactor_Eq() {
 	var s SecurityStrengthFactor
 	fmt.Printf("%s", s.Set(128).Eq().Paren())
-	// Output: (ssf = "128")
+	// Output: ( ssf = "128" )
 }
 
 func ExampleSSF() {

@@ -52,6 +52,7 @@ to store valid Instruction instances.
 func ACIs() Rule {
 	return Rule(stackageList().JoinDelim("\n")).
 		setPushPolicy().
+		NoPadding(!RulePadding).
 		setID(`instructions`)
 }
 
@@ -368,5 +369,6 @@ func pbrule() Rule {
 	return Rule(stackageList().JoinDelim(`; `)).
 		setID(`pb`).
 		setCategory(`bind`).
+		NoPadding(!RulePadding).
 		setPushPolicy()
 }
