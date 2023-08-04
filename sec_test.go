@@ -97,14 +97,14 @@ func ExampleSSF_setLater() {
 }
 
 func TestAnonymous_eqne(t *testing.T) {
-	want := `authmethod != "none"`
+	want := `authmethod != "NONE"`
 	got := Anonymous.Ne()
 	if want != got.String() {
 		t.Errorf("%s failed: want '%s', got '%s'", t.Name(), want, got)
 	}
 
 	// reset
-	want = `authmethod = "none"`
+	want = `authmethod = "NONE"`
 	got = Anonymous.Eq()
 	if want != got.String() {
 		t.Errorf("%s failed: want '%s', got '%s'", t.Name(), want, got)
@@ -113,7 +113,7 @@ func TestAnonymous_eqne(t *testing.T) {
 
 func ExampleAuthMethod_Ne() {
 	fmt.Printf("%s", Anonymous.Ne())
-	// Output: authmethod != "none"
+	// Output: authmethod != "NONE"
 }
 
 func ExampleAuthMethod_Eq() {

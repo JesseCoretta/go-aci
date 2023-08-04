@@ -13,15 +13,36 @@ authentication.
 */
 type AuthMethod uint8
 
+var (
+	authMap   map[int]AuthMethod
+	authNames map[string]AuthMethod
+)
+
+/*
+AuthMethodLowerCase allows control over the case folding of
+AuthMethod string representation.
+
+A value of true shall force lowercase normalization, while
+a value of false (default) forces uppercase normalization.
+*/
+var AuthMethodLowerCase bool
+
 /*
 AuthMethod contants define the available LDAP authentication
-mechanisms that are recognized within the ACI syntax.
+mechanisms that are recognized within the ACI syntax honored
+by this package.
+
+NOTE: Supported SASL mechanisms vary per impl.
 */
 const (
-	Anonymous AuthMethod = iota // default
-	Simple
-	SSL
-	SASL
+	noAuth    AuthMethod = iota // invalid
+	Anonymous                   // 0
+	Simple                      // 1
+	SSL                         // 2
+	SASL                        // 3
+	EXTERNAL                    // 4
+	DIGESTMD5                   // 5
+	GSSAPI                      // 6
 )
 
 /*
@@ -38,6 +59,8 @@ func (r AuthMethod) Eq() Condition {
 /*
 Ne initializes and returns a new *Condition instance configured
 to evaluate AuthMethod as Not-Equal-To the the request address.
+
+Negated equality Condition instances should be used with caution.
 */
 func (r AuthMethod) Ne() Condition {
 	return Cond(BindAM, r, Ne).
@@ -50,18 +73,15 @@ func (r AuthMethod) Ne() Condition {
 String is a stringer method that returns the string representation
 of the receiver instance.
 */
-func (r AuthMethod) String() string {
-	var am string = `none` // anon
-	switch r {
-	case Simple:
-		am = `simple`
-	case SSL:
-		am = `SSL`
-	case SASL:
-		am = `SASL`
+func (r AuthMethod) String() (am string) {
+	for k, v := range authNames {
+		if v == r {
+			am = foldAuthMethod(k)
+			break
+		}
 	}
 
-	return am
+	return
 }
 
 /*
@@ -287,15 +307,77 @@ func stringToIntSSF(x string) (i int) {
 	return
 }
 
-func matchAuthMethod(x string) AuthMethod {
-	switch lc(x) {
-	case Simple.String():
-		return Simple
-	case SSL.String():
-		return SSL
-	case SASL.String():
-		return SASL
+/*
+matchAuthMethod resolves a given authentication method
+based on an integer or string input (x). If no match,
+Anonymous is returned.
+*/
+func matchAuthMethod(x any) (am AuthMethod) {
+	am = Anonymous // anonymous is default
+
+	switch tv := x.(type) {
+	case int:
+		for k, v := range authMap {
+			if k == tv {
+				am = v
+				break
+			}
+		}
+	case string:
+		for k, v := range authNames {
+			if eq(k, tv) {
+				am = v
+				break
+			}
+		}
 	}
 
-	return Anonymous
+	return
+}
+
+/*
+foldAuthMethod executes the string representation
+case-folding, per whatever value is assigned to the
+global AuthMethodLowerCase variable.
+*/
+func foldAuthMethod(x string) string {
+	if AuthMethodLowerCase {
+		return lc(x)
+	}
+	return uc(x)
+}
+
+func init() {
+
+	// authMap facilitates lookups of AuthMethod
+	// instances using their underlying numerical
+	// const value; this is mostly used internally.
+	authMap = map[int]AuthMethod{
+		0: Anonymous,
+		1: Simple,
+		2: SSL,
+		3: SASL,
+		5: EXTERNAL,
+		4: DIGESTMD5,
+		6: GSSAPI,
+	}
+
+	// authNames facilities lookups of AuthMethod
+	// instances using their string representation.
+	// as the lookup key.
+	//
+	// NOTE: case is not significant during string
+	// *matching* (resolution); this is regardless
+	// of the state of AuthMethodLowerCase.
+	authNames = map[string]AuthMethod{
+		`none`:   Anonymous, // anonymous is ALWAYS default
+		`simple`: Simple,    // simple auth (DN + Password); no confidentiality is implied
+		`ssl`:    SSL,       // authentication w/ confidentiality; SSL (LDAPS) and TLS (LDAP + STARTTLS)
+
+		// NOTE: Supported SASL methods vary per impl.
+		`sasl`:            SASL,      // *any* SASL mechanism
+		`sasl EXTERNAL`:   EXTERNAL,  // only SASL/EXTERNAL mechanism, e.g.: TLS Client Auth w/ personal cert
+		`sasl DIGEST-MD5`: DIGESTMD5, // only SASL/DIGEST-MD5 mechanism, e.g.: password encipherment
+		`sasl GSSAPI`:     GSSAPI,    // only SASL/GSSAPI mechanism, e.g.: Kerberos Single Sign-On
+	}
 }

@@ -508,6 +508,112 @@ func isWordOp(w string) bool {
 }
 
 /*
+parenState analyzes the parenthetical nature of input string x.
+It will scan for parenthetical characters (ASCII #40 and #41
+respectively) and will return information describing its findings.
+
+Scans shall not occur within quoted values, and such values are
+skipped until quotation ends.
+
+Integer variables for total and pairs, along with Boolean values
+for outer and balanced, are returned.
+
+A total value of zero (0) indicates no parentheticals were found.
+
+A pairs value of zero (0) indicates no parentheticals were found. A
+pairs value of one (1) indicates that a single left parenthesis '('
+and right parenthesis ')' found found, thus indicating a "pair".
+
+Neither total nor pairs shall ever be negative.
+
+An outer value of true indicates that, in addition to at least one
+(1) balanced pair of parentheticals being present, the input string
+x is parenthetical on its outermost ends (in other words, x begins
+with a left parenthetical, and ends with a right parenthetical).
+
+A balanced value of true indicates the count is even numbered, and
+thus no unmatched parentheticals were observed.
+*/
+func parenState(x string) (total, pairs int, outer, balanced bool) {
+	// L and R integers record the progressive
+	// counts of left and right parenthetical
+	// character occurrences.
+	var L, R int
+
+	// Can't process a null string, so bail out
+	// early and declare balance.
+	if len(x) == 0 {
+		balanced = true
+		return
+	}
+
+	// Keep track of our quotation state.
+	var q bool
+
+	// Iterate each character found within
+	// input string x.
+	for i := 0; i < len(x); i++ {
+
+		// Perform a rune switch (c) upon
+		// the current character to begin
+		// case matching ...
+		switch c := rune(x[i]); c {
+
+		// We found a left parenthetical
+		case '(':
+			if !q {
+				if L++; L == R {
+					pairs++
+				}
+			}
+
+		// We found a right parenthetical
+		case ')':
+			if !q {
+				if R++; R == L {
+					pairs++
+				}
+			}
+
+		// Quote characters detected. We
+		// will toggle the quote state. A
+		// state of true shall result in
+		// parentheticals being ignores
+		// until the state returns to false.
+		case '"', '\'', '`':
+			q = !q
+		}
+	}
+
+	// Sum our total for all parenthetical occurrences
+	// regardless of balance. Don't bother going any
+	// further if the sum total turns out to be zero
+	// (0), as none of the other checks would return
+	// a meaningful result ...
+	if total = L + R; total == 0 {
+		balanced = true
+		return
+	}
+
+	// See if we found at least one (1) parenthetical
+	// pair. If so, perform outer and balance checks.
+	if pairs > 0 {
+
+		// Assuming we found at least one (1) balanced pair
+		// of parentheticals, check to see if the entirety
+		// of input string x is parenthetical itself.
+		outer = (x[0] == '(' && x[len(x)-1] == ')')
+
+		// Determine whether the total is 'balanced', in that
+		// it is an even number; this indicates that every L
+		// parenthetical had an accompanying R parenthetical.
+		balanced = total%2 == 0
+	}
+
+	return
+}
+
+/*
 operators can conceivably contain any characters other than
 WHSP. This function returns a boolean value which indicates
 whether rune c is such a char.  A value of true indicates a

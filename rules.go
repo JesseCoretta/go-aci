@@ -224,6 +224,13 @@ func (r Rule) Paren(state ...bool) Rule {
 }
 
 /*
+IsParen wraps go-stackage's Stack.IsParen method.
+*/
+func (r Rule) isParen() bool {
+	return stackage.Stack(r).IsParen()
+}
+
+/*
 Fold wraps go-stackage's Stack.Fold method.
 */
 func (r Rule) Fold(state ...bool) Rule {
@@ -730,6 +737,36 @@ func ruleByLoP(op string) Rule {
 
 	// Fallback AND (word)
 	return And()
+}
+
+/*
+ruleByDNKeyword returns an instance of Rule based on the following:
+
+• BindGDN (groupdn) keyword returns the Rule instance created by GDNs()
+
+• BindRDN (roledn) keyword returns the Rule instance created by RDNs()
+
+• BindUDN (userdn) keyword returns the Rule instance created by UDNs()
+
+Note that the latter case, BindUDN, is a fallback for any BindKeyword
+not matching any of the above.
+
+This function is private and is used only during parsing of bind rules
+which permit a list of DNs as a single logical value. It exists mainly
+to keep cyclomatics low.
+*/
+func ruleByDNKeyword(key BindKeyword) Rule {
+        // prepare a stack for our DN value(s)
+	// based on the input keyword (key)
+        if key == BindRDN {
+                return RDNs()
+        }
+
+	if key == BindGDN {
+                return GDNs()
+        }
+
+	return UDNs()
 }
 
 /*

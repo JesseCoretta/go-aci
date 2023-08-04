@@ -6,12 +6,20 @@ import (
 )
 
 func TestInheritance(t *testing.T) {
-	inh := Inherit(UAT(ATName(`manager`), USERDN), Level0, Level1, Level2)
-	want := `userattr = "parent[0,1,2].manager#USERDN"`
+	inh := Inherit(UAT(ATName(`manager`), USERDN), Level0, Level1, Level2, Level8)
+	want := `userattr = "parent[0,1,2,8].manager#USERDN"`
 	got := inh.Eq()
 	if want != got.String() {
 		t.Errorf("%s failed: want '%s', got '%s'", t.Name(), want, got)
 	}
+}
+
+func ExampleInherit_uSERDN() {
+	attr := ATName(`manager`)
+	uat := UAT(attr, ATValue(`USERDN`))
+	inh := Inherit(uat, 0, 1, 2, 8)
+	fmt.Printf("%s", inh.Eq())
+	// Output: userattr = "parent[0,1,2,8].manager#USERDN"
 }
 
 func ExampleInherit_uAT() {

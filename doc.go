@@ -32,6 +32,8 @@ are listed below:
 
 • Rights definitions, such as Import and Export
 
+• Permitted 'levels' for inheritance value matching
+
 This package aims to support *ALL* of the facets of the ACIv3 syntax without exception. Users will need to verify, however,
 that any ACI definitions generated -- in part or in whole as a result of using this package -- are compatible with their
 particular X.500/LDAP product; check the docs!
@@ -45,7 +47,8 @@ further details, see the LICENSE file within the aforementioned repository.
 
 • Intuitive: well-documented with numerous examples
 
-• Efficient: a package-wide cyclomatic complexity factor limit of nine (9) is imposed
+• Efficient: a package-wide cyclomatic complexity factor limit of nine (9) is imposed; the imported go-stackage and go-objectid
+packages both exercise similar criteria.
 
 • Convenient: a Fluent design is implemented where possible, allowing the chaining of certain command sequences
 
@@ -53,7 +56,7 @@ further details, see the LICENSE file within the aforementioned repository.
 specific directory product implementation
 
 • Flexible: ACI composition can be approached in a variety of ways, without enforcing any particular style; for example,
-parenthetical encapsulation can be enabled or disabled for select (and eligible) type instances when desired
+parenthetical encapsulation can be enabled or disabled for select (and eligible) type instances when desired, or set globally
 
 • Bidirectional: parsers process text ACIs into proper type-based instances defined in this package; conversely, these same
 types can be used to "manually assemble" ACIs without the need for said text definitions
@@ -74,14 +77,14 @@ This package could conceivably be used in any of the following scenarios:
 
 • For Directory security audits that pertain to, or include, access control review
 
-• For Directory personnel in charge of authoring and/or managing documentation
+• For Directory personnel in charge of authoring and/or managing rich documentation
 
 • For Directory personnel who desire a means to author and/or manage sets of ACIs in a more programmatic / automated manner, perhaps
-through templating
+with the aid of a templating system
 
 • For use as an access control framework within an actual (Go-based) Directory System Agent implementation that honors the ACI syntax
 
-• For general experimentation within the realm of Directory System Agent access control design
+• For generalized experimentation within the realm of Directory System Agent access control design and even penetration testing
 
 # Limitations
 
@@ -96,9 +99,33 @@ of matchingRule and ldapSyntax operations that precede attribute value disclosur
 Another limitation is the lack of comprehensive LDAP Search Filter parsing and decompilation into Rule instances. For the moment,
 any user-provided LDAP Search Filter (i.e.: when crafting a `targetfilter` Target Rule) is taken at face-value and is NOT verified.
 This will be improved in the near future, at which point an LDAP Search Filter string value shall be interrogated, deconstructed
-verified and recomposed into (nested) Rule instances correctly (or will return a meaningful error).
+verified and recomposed into (potentially nested) Rule instances correctly (or will return a meaningful error).
 
-# Users who wish to verify filter values discovered within an Instruction
+Users who wish to verify filter values for any reason are advised to make use of the (most excellent!) LDAP Search Filter decompiling
+capabilities found within the go-ldap/ldap package. To learn more, see https://github.com/go-ldap/ldap.
+
+# Quotation Schemes
+
+Another trait of this package's flexibility is the ability to handle either of the following quotation schemes when parsing or
+building rule statements that reference a multi-valued expression:
+
+	"value" || "value" || "value" ...
+
+	"value || value || value" ...
+
+In particular, these sorts of quotation schemes appear in the following Target/Bind rule scenarios:
+
+• targetattr Target Rules for lists of LDAP attribute types
+
+• target, target_to and target_from Target Rule distinguished names
+
+• userdn and groupdn Bind Rule distinguished names
+
+• extop and targetcontrol Target Rule ASN.1 object identifiers
+
+Users are advised to honor the quotation scheme recommended by their vendor or product documentation. This package aims to
+support either of the above schemes with no variance in the end result, but has no official position as to which of these
+schemes should be honored by the user.
 
 # Contribution Encouraged
 
@@ -106,23 +133,30 @@ The ACIv3 syntax is fairly complex, rendering its innate flexibility akin to a d
 concepts overlooked by the author within this package.  Users are STRONGLY ENCOURAGETO SPEAK UP if they perceive a feature or some
 behavioral trait of the package to be suboptimal or incomplete in some manner.
 
-See https://github.com/JesseCoretta/go-aci/issues for all bug reports past and present, as well as a means to file new ones.
+See https://github.com/JesseCoretta/go-aci/issues for all bug reports -- past and present -- as well as a means to file new ones.
 
-# Warning
+# Words of Warning
 
 The concept of access control -- whether related to the security of databases or not -- is an extremely critical component of effective
-cybersecurity design as a whole. Permissions, such as ACIs, should never be implemented in an untested or cavalier fashion. Though this
-package can reduce much of the tedium associated with directory security through the use of permissions, it can just as easily generate
-completely bogus rules that will have the opposite intended effect. Those who choose to leverage this package are strongly advised to
-triple-check their work. Make no assumptions. Take no unnecessary risks. TEST. TEST. TEST and then TEST some more!
+cybersecurity design as a whole. Permissions, such as ACIs, should never be implemented in an untested or cavalier fashion. Breaches
+associated with poor access control models can destroy companies, end careers and maybe even endanger human lives.
+
+Though this package can reduce much of the tedium associated with directory security through the use of permissions, it can just as
+easily generate completely bogus rules that will have the opposite intended effect. Even worse, it may generate rules that may expose
+sensitive DIT content!
+
+Those who choose to leverage this package are strongly advised to triple-check their work. Make no assumptions. Take no unnecessary risks.
+TEST. TEST. TEST and then TEST some more!
 
 Another area of risk is the disposition (or lack thereof) regarding so-called "ACI Best Practices", which do vary across the various
-supporting directory products on the market.
+supporting directory products on the market. Users uncertain as to the best approach for a desired action are strongly advised to ask
+their vendor, or consult an appropriate online community forum.
 
-Again, this package aims to provide everything one could possibly need to compose an ACI. However, this package does not discriminate
-ACIs that may be overtly "broad" in their influence or entry-matching potential.  One example of this is careless use of the negated
-equality operator (!=), which (when used improperly) can disclose myriad attribute values unintentionally. This particular case is well
-documented in vendor manuals for supporting directory products (likely for legal CYA reasons). Users are advised to LEARN the syntax
-well enough to know when to take such risks.
+By now, it is likely obvious this package aims to provide everything one could possibly need to compose an ACI. However, this package does
+not discriminate ACIs that may be overtly "broad" in their influence or entry-matching potential.
+
+One such example of this is careless use of the negated equality operator (!=), which (when used improperly) can disclose myriad attribute
+values unintentionally. This particular case is well-documented in vendor manuals for supporting directory products (likely for legal CYA
+reasons). Users are advised to LEARN the syntax well enough to know when to take such risks.
 */
 package aci

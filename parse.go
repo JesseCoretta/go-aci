@@ -6,8 +6,6 @@ parser/lexer subsystems for various ACIv3 and LDAP components.
 */
 
 import (
-	//"bytes"
-	//"github.com/JesseCoretta/go-aci/internal/ldapparser"
 	"github.com/JesseCoretta/go-aci/internal/aciparser"
 )
 
@@ -115,13 +113,8 @@ func parseTR(tokens []string) (chop int, targetRules Rule, err error) {
 				// an entire value, are quoted in a list.
 				var vEncapsulated bool
 
-				// assert the comparison operator
-				oper, mo := matchOp(cop)
-				if !mo {
-					err = errorf("Unidentified or misaligned target rule comparison operator '%s'; aborting",
-						cop)
-					return
-				}
+				// Prepare our condition for target rule creation
+				var c Condition
 
 				// This is the last (or only!) value component. We can
 				// now analyze the keyword and the value(s) to ascertain
@@ -132,234 +125,28 @@ func parseTR(tokens []string) (chop int, targetRules Rule, err error) {
 				// (which we already vetted as sane) ...
 				switch key := matchTKW(kw); key {
 
-				case TargetScope:
+				case TargetScope, TargetFilter:
 					if len(vals) != 1 {
-						err = errorf("Unexpected number of %s search scopes; want %d, got %d",
+						err = errorf("Unexpected number of %s values; want %d, got %d",
 							key, 1, len(vals))
 						return
 					}
 
-					scn := unquote(vals[0])
-					sc := strToScope(scn)
-
-					// base is a fallback for a bogus scope, so
-					// if the user did not originally request
-					// base, we know they requested something
-					// totally unsupported.
-					if sc.String() == `base` && !eq(scn, `base`) {
-						err = errorf("Bogus %s value: '%s'", key, scn)
-						return
+					if key == TargetScope {
+						c, err = assertTargetScope(unquote(vals[0]), cop, vEncapsulated)
+					} else {
+						f := unquote(vals[0])
+						c = TFilter().Push(f).Eq()
 					}
-
-					targetRules.Push(sc.Eq().Encap(`"`).Paren(true))
-
-				case TargetFilter:
-					if len(vals) != 1 {
-						err = errorf("Unexpected number of %s search filters; want %d, got %d",
-							key, 1, len(vals))
-						return
-					}
-
-					f := unquote(vals[0])
-					targetRules.Push(TFilter().Push(f).Eq())
 
 				case TargetAttr:
-					var tat Rule = TAttrs().Encap()
-
-					// target rule is either or both of the following:
-					// A: one (1) double-quoted AT
-					// B: one (1) double-quoted LIST of unquoted ATs in symbolic OR context
-					for x := 0; x < len(vals); x++ {
-						var value string = vals[x]
-
-						if contains(value, `||`) {
-
-							// Type-B confirmed
-							for ix, O := range split(unquote(value), `||`) {
-								if len(O) == 0 {
-									continue
-								}
-
-								if x == 0 && ix == 0 {
-									if !isQuoted(vals[x]) && isQuoted(O) {
-										vEncapsulated = true
-										tat.Encap()
-									} else if !isQuoted(O) {
-										tat.Encap(`"`)
-									}
-								}
-
-								tat.Push(ATName(trimS(unquote(O))))
-							}
-
-						} else {
-							// Type-A confirmed
-							if x == 0 {
-								if isQuoted(value) {
-									vEncapsulated = true
-									tat.Encap(`"`)
-								}
-							}
-							tat.Push(ATName(trimS(unquote(value))))
-						}
-					}
-
-					var c Condition
-					if oper == Ne {
-						if !vEncapsulated {
-							c = tat.Ne().Encap(`"`)
-						} else {
-							c = tat.Ne().Encap()
-						}
-					} else {
-						if !vEncapsulated {
-							c = tat.Eq().Encap(`"`)
-						} else {
-							c = tat.Eq().Encap()
-						}
-					}
-
-					targetRules.Push(c)
+					c, err = assertTargetAttributes(vals, cop, vEncapsulated)
 
 				case TargetCtrl, TargetExtOp:
-					var toid Rule
-					if key == TargetExtOp {
-						toid = ExtOps()
-					} else {
-						toid = Ctrls()
-					}
-
-					// target rule is either or both of the following:
-					// A: one (1) double-quoted OID
-					// B: one (1) double-quoted LIST of unquoted OIDs in symbolic OR context
-					for x := 0; x < len(vals); x++ {
-						var value string = vals[x]
-
-						if contains(value, `||`) {
-
-							// Type-B confirmed
-							for ix, O := range split(unquote(value), `||`) {
-								if len(O) == 0 {
-									continue
-								}
-
-								if x == 0 && ix == 0 {
-									if !isQuoted(vals[x]) && isQuoted(O) {
-										vEncapsulated = true
-										toid.Encap()
-									} else if !isQuoted(O) {
-										toid.Encap(`"`)
-									}
-								}
-
-								value = trimS(unquote(O))
-								o, _ := newObjectID(key, value)
-								toid.Push(ObjectIdentifier{o})
-							}
-						} else {
-							if x == 0 {
-								if isQuoted(value) {
-									vEncapsulated = true
-									toid.Encap(`"`)
-								}
-							}
-
-							// Type-A confirmed
-							value = trimS(unquote(value))
-							o, _ := newObjectID(key, value)
-							toid.Push(ObjectIdentifier{o})
-						}
-					}
-
-					var c Condition
-					if oper == Ne {
-						if !vEncapsulated {
-							c = toid.Ne().Encap(`"`)
-						} else {
-							c = toid.Ne().Encap()
-						}
-					} else {
-						if !vEncapsulated {
-							c = toid.Eq().Encap(`"`)
-						} else {
-							c = toid.Eq().Encap()
-						}
-					}
-
-					targetRules.Push(c)
+					c, err = assertTargetOID(vals, cop, key, vEncapsulated)
 
 				case Target, TargetTo, TargetFrom:
-					var tdnr Rule = TDNs().setCategory(key.String())
-
-					// target rule is either or both of the following:
-					// A: one (1) double-quoted DN
-					// B: one (1) double-quoted LIST of unquoted DNs in symbolic OR context
-					for x := 0; x < len(vals); x++ {
-						var value string = vals[x]
-						if contains(value, `||`) {
-
-							// Type-B confirmed
-							for ix, O := range split(unquote(value), `||`) {
-								if len(O) == 0 {
-									continue
-								}
-
-								if x == 0 && ix == 0 {
-									if !isQuoted(vals[x]) && isQuoted(O) {
-										vEncapsulated = true
-										tdnr.Encap()
-									} else if !isQuoted(O) {
-										tdnr.Encap(`"`)
-									}
-								}
-
-								D := trimS(unquote(O))
-								if !hasPfx(D, LocalScheme) {
-									err = errorf("Illegal %s distinguishedName slice: [index:%d;value:%s] missing LDAP local scheme (%s)",
-										key, x, D, LocalScheme)
-									return
-								}
-
-								tdnr.Push(DistinguishedName{newDistinguishedName(D[len(LocalScheme):], key)})
-							}
-
-						} else {
-
-							// Type-A confirmed
-							if x == 0 {
-								if isQuoted(value) {
-									vEncapsulated = true
-									tdnr.Encap(`"`)
-								}
-							}
-
-							D := unquote(value)
-							if !hasPfx(D, LocalScheme) {
-								err = errorf("Illegal %s distinguishedName: [index:%d;value:%s] missing LDAP local scheme (%s)",
-									key, x, D, LocalScheme)
-								return
-							}
-
-							tdnr.Push(DistinguishedName{newDistinguishedName(D[len(LocalScheme):], key)})
-						}
-					}
-
-					var c Condition
-					if oper == Ne {
-						if !vEncapsulated {
-							c = tdnr.Ne().Encap(`"`)
-						} else {
-							c = tdnr.Ne().Encap()
-						}
-					} else {
-						if !vEncapsulated {
-							c = tdnr.Eq().Encap(`"`)
-						} else {
-							c = tdnr.Eq().Encap()
-						}
-					}
-
-					targetRules.Push(c)
+					c, err = assertTargetDN(vals, cop, key, vEncapsulated)
 
 				case TargetAttrFilters:
 					// TODO
@@ -368,14 +155,18 @@ func parseTR(tokens []string) (chop int, targetRules Rule, err error) {
 					//		kw,len(vals),vals)
 					//	return
 					//}
+
 				default:
 					err = errorf("Unhandled target rule type '%s'", key)
+				}
+
+				if err != nil {
 					return
 				}
+				targetRules.Push(c)
 
 				// Reset for next target rule condition, if any
 				kw = ``
-				oper = nil
 				cready = false
 				vals = make([]string, 0)
 			}
@@ -385,6 +176,211 @@ func parseTR(tokens []string) (chop int, targetRules Rule, err error) {
 			break
 		}
 	}
+
+	return
+}
+
+func assertTargetScope(value string, op string, vencap bool) (c Condition, err error) {
+       if len(value) == 0 {
+               err = errorf("Zero-length LDAP Search Scope detected; aborting")
+               return
+       }
+
+       scn := unquote(value)
+       sc := strToScope(scn)
+
+       // base is a fallback for a bogus scope, so
+       // if the user did not originally request
+       // base, we know they requested something
+       // totally unsupported.
+       if sc == noScope {
+               err = errorf("Bogus %s value: '%s'", TargetScope, scn)
+               return
+       }
+
+       c, err = conditionByOperator(op, sc)
+        if !vencap {
+                c.Encap(`"`)
+                return
+        }
+        c.Encap()
+
+	return
+}
+
+func assertTargetOID(vals []string, op string, key TargetKeyword, vencap bool) (c Condition, err error) {
+                                        var toid Rule
+                                        if key == TargetExtOp {
+                                                toid = ExtOps()
+                                        } else {
+                                                toid = Ctrls()
+                                        }
+
+                                        // target rule is either or both of the following:
+                                        // A: one (1) double-quoted OID
+                                        // B: one (1) double-quoted LIST of unquoted OIDs in symbolic OR context
+                                        for x := 0; x < len(vals); x++ {
+                                                var value string = vals[x]
+
+                                                if contains(value, `||`) {
+
+                                                        // Type-B confirmed
+                                                        for ix, O := range split(unquote(value), `||`) {
+                                                                if len(O) == 0 {
+                                                                        continue
+                                                                }
+
+                                                                if x == 0 && ix == 0 {
+                                                                        if !isQuoted(vals[x]) && isQuoted(O) {
+                                                                                vencap = true
+                                                                                toid.Encap()
+                                                                        } else if !isQuoted(O) {
+                                                                                toid.Encap(`"`)
+                                                                        }
+                                                                }
+
+                                                                value = trimS(unquote(O))
+                                                                o, _ := newObjectID(key, value)
+                                                                toid.Push(ObjectIdentifier{o})
+                                                        }
+                                                } else {
+                                                        if x == 0 {
+                                                                if isQuoted(value) {
+                                                                        vencap = true
+                                                                        toid.Encap(`"`)
+                                                                }
+                                                        }
+
+                                                        // Type-A confirmed
+                                                        value = trimS(unquote(value))
+                                                        o, _ := newObjectID(key, value)
+                                                        toid.Push(ObjectIdentifier{o})
+                                                }
+                                        }
+
+        c, err = conditionByOperator(op, toid)
+        if !vencap {
+                c.Encap(`"`)
+                return
+        }
+        c.Encap()
+
+	return
+}
+
+func assertTargetDN(vals []string, op string, key TargetKeyword, vencap bool) (c Condition, err error) {
+        var tdnr Rule = TDNs().setCategory(key.String())
+
+        // target rule is either or both of the following:
+        // A: one (1) double-quoted DN
+        // B: one (1) double-quoted LIST of unquoted DNs in symbolic OR context
+        for x := 0; x < len(vals); x++ {
+                var value string = vals[x]
+                if contains(value, `||`) {
+
+                        // Type-B confirmed
+                        for ix, O := range split(unquote(value), `||`) {
+                                if len(O) == 0 {
+                                        continue
+                                }
+
+                                if x == 0 && ix == 0 {
+                                        if !isQuoted(vals[x]) && isQuoted(O) {
+                                                vencap = true
+                                                tdnr.Encap()
+                                        } else if !isQuoted(O) {
+                                                tdnr.Encap(`"`)
+                                        }
+                                }
+
+                                D := trimS(unquote(O))
+                                if !hasPfx(D, LocalScheme) {
+                                        err = errorf("Illegal %s distinguishedName slice: [index:%d;value:%s] missing LDAP local scheme (%s)",
+                                                key, x, D, LocalScheme)
+                                        return
+                                }
+
+                                tdnr.Push(DistinguishedName{newDistinguishedName(D[len(LocalScheme):], key)})
+                        }
+
+                } else {
+
+                        // Type-A confirmed
+                        if x == 0 {
+                                if isQuoted(value) {
+                                        vencap = true
+                                        tdnr.Encap(`"`)
+                                }
+                        }
+
+                        D := unquote(value)
+                        if !hasPfx(D, LocalScheme) {
+                                err = errorf("Illegal %s distinguishedName: [index:%d;value:%s] missing LDAP local scheme (%s)",
+                                        key, x, D, LocalScheme)
+                                return
+                        }
+
+                        tdnr.Push(DistinguishedName{newDistinguishedName(D[len(LocalScheme):], key)})
+                }
+        }
+
+        c, err = conditionByOperator(op, tdnr)
+        if !vencap {
+                c.Encap(`"`)
+                return
+        }
+        c.Encap()
+
+	return
+}
+
+func assertTargetAttributes(vals []string, op string, vencap bool) (c Condition, err error) {
+	var tat Rule = TAttrs().Encap()
+
+        // target rule is either or both of the following:
+        // A: one (1) double-quoted AT
+        // B: one (1) double-quoted LIST of unquoted ATs in symbolic OR context
+        for x := 0; x < len(vals); x++ {
+                var value string = vals[x]
+
+                if contains(value, `||`) {
+
+                        // Type-B confirmed
+                        for ix, O := range split(unquote(value), `||`) {
+                                if len(O) == 0 {
+                                        continue
+                                }
+
+                                if x == 0 && ix == 0 {
+                                        if !isQuoted(vals[x]) && isQuoted(O) {
+                                                vencap = true
+                                                tat.Encap()
+                                        } else if !isQuoted(O) {
+                                                tat.Encap(`"`)
+                                        }
+                                }
+
+                                tat.Push(ATName(trimS(unquote(O))))
+                        }
+
+                } else {
+                        // Type-A confirmed
+                        if x == 0 {
+                                if isQuoted(value) {
+                                        vencap = true
+                                        tat.Encap(`"`)
+                                }
+                        }
+                        tat.Push(ATName(trimS(unquote(value))))
+                }
+        }
+
+        c, err = conditionByOperator(op, tat)
+        if !vencap {
+                c.Encap(`"`)
+                return
+        }
+        c.Encap()
 
 	return
 }
@@ -406,10 +402,7 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 	// oparen remembers whether the entirely of the
 	// bind rule statement, whether nested or not,
 	// is parenthetical.
-	var oparen bool
-	if len(tokens) > 4 {
-		oparen = (tokens[0] == `(` && tokens[4] != `)` && tokens[len(tokens)-3] == `)` && pspan < 2)
-	}
+	//var oparen bool
 
 	// Create temporary storage vars for some of
 	// the Condition components that will need
@@ -453,7 +446,7 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 	}
 
 	var cparen bool // parenthetical condition marker
-	var iparen bool // parenthetical inner stack marker
+	//var iparen bool // parenthetical inner stack marker
 
 	// Create a temporary map to store
 	// Condition and Rule instances.
@@ -461,28 +454,28 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 
 	// Whenever a valid Condition is ready to be assembled
 	// and pushed into the outer stack, this func is called.
-	pushBR := func(k, id string, t any, o any) (err error) {
+	//pushBR := func(k, id string, t any, o any) (err error) {
 
-		// Assemble Condition instance c
-		// using keyword k, token value t
-		// and comparison operator o.
-		c := Cond(k, t, o).
-			setID(id).
-			Paren(cparen).
-			NoPadding(!ConditionPadding)
+	//	// Assemble Condition instance c
+	//	// using keyword k, token value t
+	//	// and comparison operator o.
+	//	c := Cond(k, t, o).
+	//		setID(id).
+	//		Paren(cparen).
+	//		NoPadding(!ConditionPadding)
 
-		// be double certain the condition
-		// is truly valid, else we do NOT
-		// want to add it to the stack.
-		if err = c.Valid(); err != nil {
-			return
-		}
+	//	// be double certain the condition
+	//	// is truly valid, else we do NOT
+	//	// want to add it to the stack.
+	//	if err = c.Valid(); err != nil {
+	//		return
+	//	}
 
-		// Assignh Condition c into temporary
-		// component map
-		slices[len(slices)] = c
-		return
-	}
+	//	// Assignh Condition c into temporary
+	//	// component map
+	//	slices[len(slices)] = c
+	//	return
+	//}
 
 	// make it known when we're ready to push a new
 	// (complete) condition into the outer stack.
@@ -494,13 +487,12 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 	// should "jump ahead" once the recursion(s)
 	// finish.
 	var skipTo int
+	var ct int = -1
 
-	var next string
-	var last string
+	var next, last string
 	var seen []string
 
 	// iterate each of the tokens.
-	var ct int = -1
 	for _, token := range tokens {
 		// actual iteration counter. We're unable to
 		// rely on range index because the iterable
@@ -508,7 +500,7 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 		// along the way.
 		ct++
 
-		if len(tokens) > 1 {
+		if len(tokens) > 2 {
 			// look-ahead to the next iteration's token
 			next = tokens[1]
 		}
@@ -521,6 +513,7 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 		case token == `(`:
 			chop++
 			pspan++
+			outer.Paren(true)
 
 			// Before beginning this loop, check to see if the fifth
 			// (5th) token is a Boolean WORD operator. Also check to
@@ -531,15 +524,22 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 					// Launch a new inner recursion of this
 					// same function.
 					var inner Rule
+					tat, pai, oip, bal := parenState(join(tokens[1:],``))
+					printf("QQQQ Recursing[T:%d;P:%d;O:%t;B:%t] %v\n", tat,pai,oip,bal,tokens[1:])
 					if skipTo, inner, err = parseBR(tokens[1:], pspan); err != nil {
 						return
 					}
+
+					// Inner is parenthetical (per next token),
+					// so flip Paren method to on.
+					inner.Paren(true)
 
 					// Done processing!
 					if skipTo-1 == len(tokens) {
 						chop = skipTo - 2
 						tokens = tokens[len(tokens)-2:]
 						if inner.Len() > 0 {
+							printf("QQQQ Recursion returned [%d]: %s\n", inner.Len(), inner)
 							slices[len(slices)] = inner // save stack
 						}
 						break
@@ -549,20 +549,14 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 					// (1) element, preserve it for the end
 					// stack element, else take no action.
 					if inner.Len() > 0 {
-						inner.Paren(true)
 						tokens = tokens[skipTo:]    // truncate tokens already processed through recursion
-						chop += skipTo              // sum our "skip to" index with our return chop index
+						printf("ALT QQQQ Recursion returned [%d]: %s\n", inner.Len(), inner)
 						slices[len(slices)] = inner // save stack
 					}
-
-					break
+				} else {
+					// evaluate condition parentheticals
+					//cparen = isKW(tokens[1]) && tokens[4] == `)`
 				}
-
-				// evaluate inner parentheticals
-				iparen = isWordOp(tokens[4]) && tokens[len(tokens)-3] != `)`
-
-				// evaluate condition parentheticals
-				cparen = isKW(tokens[1]) && tokens[4] == `)`
 			}
 
 		// token is a parenthetical closer. Match only if we're
@@ -602,16 +596,6 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 				break
 			}
 
-			// evaluate condition parentheticals inside
-			// (superior) closing parenthetical.
-			if len(seen) >= 3 {
-
-				cparen = seen[len(seen)-4] == `(` &&
-					isKW(seen[len(seen)-3]) &&
-					isQuoted(seen[len(seen)-1]) &&
-					pspan > 0
-			}
-
 			// If the NEXT token is a logical Boolean WORD
 			// operator, we take special steps because we
 			// are currently within a parenthetical bind
@@ -647,35 +631,24 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 					// Launch a new inner recursion of this
 					// same function.
 					var inner Rule
+					tat, pai, oip, bal := parenState(join(tokens[offset:],``))
+					printf("Recursing[T:%d;P:%d;O:%t;B:%t] %v\n", tat,pai,oip,bal,tokens[offset:])
+
 					if skipTo, inner, err = parseBR(tokens[offset:], pspan); err != nil {
 						return
 					}
+					tokens = tokens[skipTo:]    // truncate tokens already processed through recursion
+					chop += skipTo              // sum our "skip to" index with our return chop index
 
 					// If the inner stack has at least one
 					// (1) element, preserve it for the end
 					// stack element, else take no action.
 					if inner.Len() > 0 {
+						if !outer.isParen() {
+							inner.Paren(true)
+						}
+						printf("Recursion returned [%d]: %s\n", inner.Len(), inner)
 						inner.setCategory(ttoken)   // mark the inner stack's logical Boolean WORD operator
-						tokens = tokens[skipTo:]    // truncate tokens already processed through recursion
-						chop += skipTo              // sum our "skip to" index with our return chop index
-						slices[len(slices)] = inner // save stack
-					}
-				} else if tokens[1] == `(` && tokens[5] != `)` {
-					// Launch a new inner recursion of this
-					// same function.
-					var inner Rule
-					if skipTo, inner, err = parseBR(tokens[1:], pspan); err != nil {
-						return
-					}
-
-					// If the inner stack has at least one
-					// (1) element, preserve it for the end
-					// stack element, else take no action.
-					if inner.Len() > 0 {
-						inner.Paren(true)
-						inner.setCategory(ttoken)   // mark the inner stack's logical Boolean WORD operator
-						tokens = tokens[skipTo:]    // truncate tokens already processed through recursion
-						chop += skipTo              // sum our "skip to" index with our return chop index
 						slices[len(slices)] = inner // save stack
 					}
 				}
@@ -691,6 +664,13 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 			chop++
 			cop = token
 			cready = len(kw) > 0 && len(cop) > 0
+
+                        // evaluate condition parentheticals inside
+                        // (superior) closing parenthetical.
+                        //if len(seen) >= 4 {
+                                //cparen = seen[len(seen)-4] == `(` &&
+				//	seen[len(seen)-2] == `)`
+                        //}
 
 		// token is a boolean word operator
 		case isWordOp(token) && !cready:
@@ -727,6 +707,9 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 				// Launch a new inner recursion of this
 				// same function.
 				var inner Rule
+				tat, pai, oip, bal := parenState(join(tokens[offset:],``))
+				printf("Recursing[T:%d;P:%d;O:%t;B:%t] %v\n", tat,pai,oip,bal,tokens[offset:])
+
 				if skipTo, inner, err = parseBR(tokens[offset:], pspan); err != nil {
 					return
 				}
@@ -735,30 +718,14 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 				// (1) element, preserve it for the end
 				// stack element, else take no action.
 				if inner.Len() > 0 {
+					//inner.Paren(oip)
+					printf("Recursion returned [%d]: %s\n", inner.Len(), inner)
 					inner.setCategory(ttoken)   // mark the inner stack's logical Boolean WORD operator
 					tokens = tokens[skipTo:]    // truncate tokens already processed through recursion
 					chop += skipTo              // sum our "skip to" index with our return chop index
 					slices[len(slices)] = inner // save stack
 				}
 
-			} else if tokens[1] == `(` && tokens[5] != `)` {
-				// Launch a new inner recursion of this
-				// same function.
-				var inner Rule
-				if skipTo, inner, err = parseBR(tokens[1:], pspan); err != nil {
-					return
-				}
-
-				// If the inner stack has at least one
-				// (1) element, preserve it for the end
-				// stack element, else take no action.
-				if inner.Len() > 0 {
-					inner.Paren(true)
-					inner.setCategory(ttoken)   // mark the inner stack's logical Boolean WORD operator
-					tokens = tokens[skipTo:]    // truncate tokens already processed through recursion
-					chop += skipTo              // sum our "skip to" index with our return chop index
-					slices[len(slices)] = inner // save stack
-				}
 			}
 
 		// token is a semicolon, which means the end of a PermissionBindRule
@@ -799,6 +766,7 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 					// it for quote analysis!
 					vals = append(vals, token)
 					break
+
 				} else if !isQuoted(next) && next != `;` && next != `)` {
 					err = errorf("Misaligned value expression [%s -> %s]", token, next)
 					return
@@ -821,17 +789,15 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 				// as our circumscribing (enclosing) rule, if
 				// applicable ...
 				var id string = `bind`
-				if (oparen || iparen) && cparen {
-					id = `enveloped_parenthetical_bind`
-				} else if (oparen || iparen) && !cparen {
-					id = `enveloped_bind`
-				} else if cparen {
-					id = `parenthetical_bind`
-				}
 
 				// Keep track of when individual values, not
 				// an entire value, are quoted in a list.
 				var vEncapsulated bool
+
+				if len(vals) == 0 {
+					err = errorf("No value found, aborting")
+					return
+				}
 
 				// This is the last (or only!) value component. We can
 				// now analyze the keyword and the value(s) to ascertain
@@ -844,95 +810,71 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 
 				case BindUDN, BindRDN, BindGDN:
 
-					// prepare a stack for our DN value(s)
-					var bdn Rule
-					if key == BindRDN {
-						bdn = RDNs()
-					} else if key == BindGDN {
-						bdn = GDNs()
-					} else {
-						bdn = UDNs()
-					}
-
-					// bind rule is either or both of the following:
-					// A: one (1) double-quoted DN
-					// B: one (1) double-quoted LIST of unquoted DNs in symbolic OR context
-					for x := 0; x < len(vals); x++ {
-						var value string = vals[x]
-						if contains(value, `||`) {
-
-							// Type-B confirmed
-							for ix, O := range split(unquote(value), `||`) {
-								if len(O) == 0 {
-									continue
-								}
-
-								if x == 0 && ix == 0 {
-									if !isQuoted(vals[x]) && isQuoted(O) {
-										vEncapsulated = true
-										bdn.Encap()
-									} else if !isQuoted(O) {
-										bdn.Encap(`"`)
-									}
-								}
-
-								D := trimS(unquote(O))
-								if !hasPfx(D, LocalScheme) {
-									err = errorf("Illegal %s distinguishedName slice: [index:%d;value:%s] missing LDAP local scheme (%s)",
-										key, x, D, LocalScheme)
-									return
-								}
-
-								bdn.Push(DistinguishedName{newDistinguishedName(D[len(LocalScheme):], key)})
-							}
-
-						} else {
-
-							// Type-A confirmed
-							if x == 0 {
-								if isQuoted(value) {
-									vEncapsulated = true
-									bdn.Encap(`"`)
-								}
-							}
-
-							D := unquote(value)
-							if !hasPfx(D, LocalScheme) {
-								err = errorf("Illegal %s distinguishedName: [index:%d;value:%s] missing LDAP local scheme (%s)",
-									key, x, D, LocalScheme)
-								return
-							}
-
-							bdn.Push(DistinguishedName{newDistinguishedName(D[len(LocalScheme):], key)})
-						}
-					}
-
 					var c Condition
-					if oper == Ne {
-						if !vEncapsulated {
-							c = bdn.Ne().Encap(`"`)
-						} else {
-							c = bdn.Ne().Encap()
-						}
-					} else {
-						if !vEncapsulated {
-							c = bdn.Eq().Encap(`"`)
-						} else {
-							c = bdn.Eq().Encap()
-						}
+					if c, err = assertBindRuleUGRDN(vals, key, cop, cparen, vEncapsulated); err != nil {
+						return
 					}
+					printf("COOL CONDITION!!! %s\n", c)
 
 					slices[len(slices)] = c.Paren(cparen).
 						setID(id).
 						setCategory(key.String())
 
 				case BindUAT, BindGAT:
-					// TEMPORARY
-					// assemble and store new bind rule condition
-					// components for eventual migration to stack
-					if err = pushBR(key.String(), id, join(vals, ``), oper); err != nil {
-						return
-					}
+					// Prepare a Condition instance in which
+					// we'll store the resultant expression
+					// components.
+                                        var c Condition
+
+                                        // Prepare the expression value for our
+					// Condition.
+                                        ugat := trimS(unquote(vals[0]))
+
+                                        if hasPfx(ugat, LocalScheme) {
+                                                // value is an LDAP URI
+						var uri LDAPURI
+						if uri, err = parseLDAPURI(ugat, key); err != nil {
+							return
+						}
+
+                                                if oper == Ne {
+                                                        c = uri.Ne()
+                                                } else {
+                                                        c = uri.Eq()
+                                                }
+
+                                        } else if hasPfx(ugat, `parent[`) {
+
+                                                // value is an inheritance attributeBindTypeOrValue
+                                                var inh Inheritance
+                                                if inh, err = parseInheritance(ugat); err != nil {
+                                                        return
+                                                }
+
+                                                if oper == Ne {
+                                                        c = inh.Ne()
+                                                } else {
+                                                        c = inh.Eq()
+                                                }
+
+                                        } else {
+
+                                                // value is a standard attributeBindTypeOrValue
+                                                var a AttributeBindTypeOrValue
+                                                if a, err = parseATBTV(ugat, key); err != nil {
+                                                        return
+                                                }
+
+                                                if oper == Ne {
+                                                        c = a.Ne()
+                                                } else {
+                                                        c = a.Eq()
+                                                }
+                                        }
+
+					// Whatever we got, pack it up and send it off.
+                                        slices[len(slices)] = c.Paren(cparen).
+                                                setID(id).setCategory(key.String())
 
 				case BindToD:
 					if len(vals) != 1 {
@@ -1135,12 +1077,18 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 	// an outer stack, which is then added to the
 	// return stack.
 	if len(slices) > 0 {
+		if len(seen) > 3 {
+			//if seen[len(seen)-1] == `;` && seen[len(seen)-2] == `)` {
+			//	seen = seen[:len(seen)-2]
+			//}
+			//J := join(seen,` `)
+			//_, pairs, oip, _ := parenState(J)
+			//outer.Paren(pairs>0 && oip)
+		}
+
 
 		// Initialize our transfer map
 		R := make(map[int]Rule, 0)
-
-		// Set outer parenthesis, if applicable
-		outer.Paren(oparen)
 
 		var prev string
 		for i := 0; i < len(slices); i++ {
@@ -1170,24 +1118,20 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 				// we've just started, OR if the previous
 				// slice was a Rule (and not a Condition)
 				if len(R) == 0 || prev == `R` {
-					R[len(R)] = ruleByLoP(outer.Category()).
-						Paren(hasSfx(tv.ID(), `_bind`) && tv.ID() != `parenthetical_bind`)
+					R[len(R)] = ruleByLoP(outer.Category())
 				}
 
 				// Push the current condition instance
 				// into the most recent stack found
 				// within our temporary map.
+				printf("COOL:%s\n", tv)
 				R[len(R)-1].Push(tv)
-				//if tv.ID() == `parenthetical_bind` {
-				//	printf("NNOW[%s] %s\n", tv.ID(), R[len(R)-1])
-				//	R[len(R)-1].Paren(true)
-				//}
 
 				// Set "C" (for Condition) as the last-seen
 				// marker value.
 				prev = `C`
 
-				// Slice value is a single stack (Rule)
+			// Slice value is a single stack (Rule)
 			case Rule:
 				// Bail out if at any point a stack (Rule)
 				// instance is encountered that contains no
@@ -1202,7 +1146,11 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 				// Envelope the current stack within an
 				// appropriate Boolean WORD-based stack
 				// and add to our transfer map.
-				R[len(R)] = ruleByLoP(tv.Category()).Push(tv).setID(tv.ID())
+				printf("ROOL:%s\n", tv)
+
+				R[len(R)] = ruleByLoP(tv.Category()).
+					Push(tv).
+					setID(tv.ID())
 
 				// Set "R" (for Rule) as the last-seen
 				// marker value.
@@ -1214,6 +1162,7 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 			// Empty bind rule is a fatal error.
 			err = errorf("Empty bind rule expression found; aborting")
 			return
+
 		} else if len(R) == 1 {
 			if R[0].Len() == 1 {
 				// If there is only one (1) element
@@ -1223,15 +1172,18 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 				Z, _ := R[0].Index(0)
 				if assert, aok := Z.(Rule); aok && assert.Len() > 0 {
 					outer = assert
-				} else if assert2, bok := Z.(Condition); bok {
+
+				} else if assert2, bok := Z.(Condition); bok && !assert2.IsZero() {
 					outer.Push(assert2)
 				}
-			} else if R[0].Len() != 0 {
-				outer = R[0]
-			} else {
+
+			} else if R[0].Len() == 0 {
 				err = errorf("Empty parenthetical expression found '()'; aborting")
-				return
+
+			} else {
+				outer = R[0].Paren(outer.isParen())
 			}
+
 			return
 		}
 
@@ -1240,13 +1192,114 @@ func parseBR(tokens []string, pspan int) (chop int, outer Rule, err error) {
 		// piece (in the original order) into our return
 		// stack.
 		for i := 0; i < len(R); i++ {
-			xxx := R[i].ID()
-			printf("[%s] %s %s\n", outer.ID(), xxx, R[i])
+			ident := R[i].ID()
+			tot, pairs, oip, bal := parenState(R[i].String())
+
+			printf("[%s|%d] [T:%d;P:%d;O:%t;B:%t] %s\n",
+				ident,
+				R[i].Len(),
+				tot,
+				pairs,
+				oip,
+				bal,
+				R[i])
+
+			//var doOParen bool
+			//switch {
+			//case pairs>0 && oip:
+			//	doOParen = !doOParen
+			//}
+
 			outer.Push(R[i].
-				setID(outer.ID()).
+				//Paren(oip).
+				//setID(outer.ID()).
 				setCategory(outer.Category()))
 		}
 	}
+
+	return
+}
+
+func assertBindRuleUGRDN(vals []string, key BindKeyword, op string, cparen, vencap bool) (c Condition, err error) {
+	if len(vals) == 0 {
+		err = errorf("Empty bind rule value")
+		return
+	}
+
+	var value string = vals[0]
+        if hasPfx(value, LocalScheme) && contains(vals[0], `?`) {
+                var uri LDAPURI
+
+                if uri, err = parseLDAPURI(value, key); err != nil {
+                        return
+                }
+
+		c, err = conditionByOperator(op, uri)
+                return
+        }
+
+        // prepare a stack for our DN value(s)
+	bdn := ruleByDNKeyword(key)
+
+        // bind rule is either or both of the following:
+        // A: one (1) double-quoted DN
+        // B: one (1) double-quoted LIST of unquoted DNs in symbolic OR context
+        for x := 0; x < len(vals); x++ {
+                value = vals[x]
+                if contains(value, `||`) {
+
+                        // Type-B confirmed
+                        for ix, O := range split(unquote(value), `||`) {
+                                if len(O) == 0 {
+                                        continue
+                                }
+
+                                if x == 0 && ix == 0 {
+                                        if !isQuoted(vals[x]) && isQuoted(O) {
+                                                vencap = true
+                                                bdn.Encap()
+                                        } else if !isQuoted(O) {
+                                                bdn.Encap(`"`)
+                                        }
+                                }
+
+                                D := trimS(unquote(O))
+                                if !hasPfx(D, LocalScheme) {
+                                        err = errorf("Illegal %s distinguishedName slice: [index:%d;value:%s] missing LDAP local scheme (%s)",
+                                                key, x, D, LocalScheme)
+                                        return
+                                }
+
+                                bdn.Push(DistinguishedName{newDistinguishedName(D[len(LocalScheme):], key)})
+                        }
+
+                } else {
+
+                        // Type-A confirmed
+                        if x == 0 {
+                                if isQuoted(value) {
+                                        vencap = true
+                                        bdn.Encap(`"`)
+                                }
+                        }
+
+                        D := unquote(value)
+                        if !hasPfx(D, LocalScheme) {
+                                err = errorf("Illegal %s distinguishedName: [index:%d;value:%s] missing LDAP local scheme (%s)",
+                                        key, x, D, LocalScheme)
+                                return
+                        }
+
+                        bdn.Push(DistinguishedName{newDistinguishedName(D[len(LocalScheme):], key)})
+                }
+        }
+
+        c, err = conditionByOperator(op, bdn)
+	if !vencap {
+                c.Encap(`"`)
+		return
+	}
+	c.Encap()
 
 	return
 }

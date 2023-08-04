@@ -120,8 +120,7 @@ func TestFilter(t *testing.T) {
 	// release of this package shall utilize a proper LDAP Search Filter
 	// decompiler that transfers conditions into a go-stackage Stack.
 	want := `(&(objectClass=employee)(|(objectClass=shareholder)(objectClass=engineeringLead)))`
-	F := Filter()
-	got := F.Push(want)
+	got := Filter(want)
 	if want != got.String() {
 		t.Errorf("%s failed: want '%s', got '%s'", t.Name(), want, got)
 	}
@@ -223,9 +222,7 @@ func TestURI_standardURI(t *testing.T) {
 		UDN(`ou=Contractors,ou=People,dc=example,dc=com`),
 		SingleLevel,
 		Attrs().Push(`cn`, `sn`, `givenName`, `objectClass`, `drink`),
-		Filter().Push(
-			`(objectClass=*)`,
-		),
+		Filter(`(objectClass=*)`),
 	)
 
 	want := `ldap:///ou=Contractors,ou=People,dc=example,dc=com?cn,sn,givenName,objectClass,drink?one?(objectClass=*)`
@@ -236,11 +233,9 @@ func TestURI_standardURI(t *testing.T) {
 	// dn, filter, no attrs, no scope
 	got = URI(
 		UDN(`ou=Contractors,ou=People,dc=example,dc=com`),
-		Filter().Push(
-			`(objectClass=*)`,
-		),
+		Filter(`(objectClass=*)`),
 	)
-	want = `ldap:///ou=Contractors,ou=People,dc=example,dc=com??base?(objectClass=*)`
+	want = `ldap:///ou=Contractors,ou=People,dc=example,dc=com???(objectClass=*)`
 	if want != got.String() {
 		t.Errorf("%s failed: want '%s', got '%s'", t.Name(), want, got)
 	}
@@ -266,9 +261,7 @@ func ExampleURI_standard() {
 		UDN(`ou=Contractors,ou=People,dc=example,dc=com`),
 		SingleLevel,
 		Attrs().Push(`cn`, `sn`, `givenName`, `objectClass`, `drink`),
-		Filter().Push(
-			`(objectClass=*)`,
-		),
+		Filter(`(objectClass=*)`),
 	)
 	fmt.Printf("%s", u)
 	// Output: ldap:///ou=Contractors,ou=People,dc=example,dc=com?cn,sn,givenName,objectClass,drink?one?(objectClass=*)
@@ -277,19 +270,18 @@ func ExampleURI_standard() {
 /*
 This example demonstrates the creation of an LDAP Search URI bearing a DN, Filter and default scope w/o attributeType enumeration.
 */
-func ExampleURI_dnAndFilterWithoutAttrsAndScope() {
+func ExampleURI_dnAndFilterNoAttributes() {
 	u := URI(
 		UDN(`ou=Contractors,ou=People,dc=example,dc=com`),
-		Filter().Push(
-			`(objectClass=*)`,
-		),
+		Subtree,
+		Filter(`(objectClass=*)`),
 	)
 
 	// Note that no explicit scope will introduce the default
 	// of base.
 
 	fmt.Printf("%s", u)
-	// Output: ldap:///ou=Contractors,ou=People,dc=example,dc=com??base?(objectClass=*)
+	// Output: ldap:///ou=Contractors,ou=People,dc=example,dc=com??sub?(objectClass=*)
 }
 
 /*

@@ -5,6 +5,7 @@ cond.go contains rule condition types and methods.
 */
 
 import (
+	"reflect"
 	"github.com/JesseCoretta/go-stackage"
 )
 
@@ -48,36 +49,16 @@ const (
 	Ge stackage.ComparisonOperator = stackage.Ge // 0x6, "Greater Than Or Equal"
 )
 
-var comparisonOperatorMap map[string]stackage.ComparisonOperator
+var comparisonOperatorMethMap map[stackage.ComparisonOperator]string
 
 func matchOp(op string) (stackage.Operator, bool) {
-	if val, found := comparisonOperatorMap[op]; found {
-		return val, found
-	}
-
-	return stackage.ComparisonOperator(0), false
-}
-
-/*
-idOp attempts to identify an operator based on string input.
-*/
-func idOp(raw string) (op stackage.Operator, ok bool) {
-	// try compops first
-	for i := 0x1; i < 0x6; i++ {
-		if raw == stackage.ComparisonOperator(i).String() {
-			printf("%s [IS] %s\n", raw, stackage.ComparisonOperator(i).String())
-			op = stackage.ComparisonOperator(i)
-			ok = true
-			break
-		} else {
-			printf("%s [IS NOT] %s\n", raw, stackage.ComparisonOperator(i).String())
+	for k, v := range comparisonOperatorMethMap {
+		if eq(v,op) || eq(k.String(), op) {
+			return k, true
 		}
 	}
 
-	// TODO - add LDAP Search Filter operators
-	// for fallback ...
-
-	return
+	return stackage.ComparisonOperator(0), false
 }
 
 /*
@@ -118,7 +99,7 @@ func Cond(kw, ex, op any) Condition {
 	switch tv := op.(type) {
 
 	case string:
-		oper, _ := idOp(tv)
+		oper, _ := matchOp(tv)
 		return Condition(stackage.Cond(kw, oper, ex)).
 			NoPadding(!ConditionPadding)
 
@@ -192,6 +173,13 @@ func (r Condition) Paren(x ...bool) Condition {
 }
 
 /*
+IsParen wraps go-stackage's Condition.IsParen method.
+*/
+func (r Condition) isParen() bool {
+	return stackage.Condition(r).IsParen()
+}
+
+/*
 NoPadding wraps go-stackage's Condition.NoPadding method.
 */
 func (r Condition) NoPadding(x ...bool) Condition {
@@ -227,13 +215,77 @@ func (r Condition) Value() any {
 	return stackage.Condition(r).Value()
 }
 
+/*
+conditionByOperator uses reflect to obtain and execute the
+comparison operator (op) Condition-creating method extended
+by expression x. An instance of Condition, alongside an error,
+are returned.
+*/
+func conditionByOperator(op, x any) (c Condition, err error) {
+	var m, rv reflect.Value
+
+	// See if x is nil
+        if rv = reflect.ValueOf(x); rv.IsZero() {
+		err = errorf("%T instance is nil, cannot initialize %T",x,c)
+		return
+        }
+
+	// Perform operator switch under the assumption
+	// the operator is a stackage.ComparisonOperator.
+	var found bool
+	switch top := op.(type) {
+	case stackage.ComparisonOperator:
+
+		// See if the operator maps to a
+		// known method-named map value.
+		for k, v := range comparisonOperatorMethMap {
+			if found = k == top; found {
+				m = rv.MethodByName(v)
+				break
+			}
+		}
+
+	case string:
+
+		// string could be the literal operator (>),
+		// or simply the method name (Gt); try to
+		// resolve either.
+		for k, v := range comparisonOperatorMethMap {
+			if found = (k.String() == top); found {
+				m = rv.MethodByName(v)
+				break
+			}
+		}
+	}
+
+	if !found {
+		err = errorf("Invalid or unknown method '%#v' (%T)", op, op)
+		return
+	}
+
+	// Call the desired method, or fail with an error.
+        meth, ok := m.Interface().(func() Condition)
+	if !ok {
+		err = errorf("Unable to locate suitable %T creator method from %T using operator '%s'",c,x,op)
+		return
+        }
+
+	// Execute method and execute its
+	// validity checker, returning the
+	// error produced, nil or no.
+	c = meth()
+	err = c.Valid()
+
+        return
+}
+
 func init() {
-	comparisonOperatorMap = map[string]stackage.ComparisonOperator{
-		Eq.String(): Eq,
-		Ne.String(): Ne,
-		Lt.String(): Lt,
-		Gt.String(): Gt,
-		Le.String(): Le,
-		Ge.String(): Ge,
+	comparisonOperatorMethMap = map[stackage.ComparisonOperator]string{
+		Eq: `Eq`,
+		Ne: `Ne`,
+		Lt: `Lt`,
+		Gt: `Gt`,
+		Le: `Le`,
+		Ge: `Ge`,
 	}
 }

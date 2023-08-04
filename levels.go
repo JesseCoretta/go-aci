@@ -5,19 +5,30 @@ levels.go contains methods pertaining to types based upon concepts of "inheritan
 within the ACIv3 standard.
 */
 
+// Maps for resolving level instances
+var (
+	levelMap     = make(map[int]Level, 0)
+	levelNumbers = make(map[string]Level, 0)
+)
+
 /*
-Level uint8 constants are left-shifted into an instance of Levels
+Level uint16 constants are left-shifted into an instance of Levels
 to define a range of vertical (depth) rule statements.
 */
 const (
-	noLvl  Level = 0         //  0 - <no levels>
-	Level0 Level = 1 << iota //  1 - base (current Object)
-	Level1                   //  2 - one (1) level below baseObject
-	Level2                   //  4 - two (2) levels below baseObject
-	Level3                   //  8 - three (3) levels below baseObject
-	Level4                   // 16 - four (4) levels below baseObject
+	noLvl  Level = 0         //   0 - <no levels>
+	Level0 Level = 1 << iota //   1 - base  (0) (current Object)
+	Level1                   //   2 - one   (1) level below baseObject
+	Level2                   //   4 - two   (2) levels below baseObject
+	Level3                   //   8 - three (3) levels below baseObject
+	Level4                   //  16 - four  (4) levels below baseObject
+	Level5                   //  32 - five  (5) levels below baseObject
+	Level6                   //  64 - six   (6) levels below baseObject
+	Level7                   // 128 - seven (7) levels below baseObject
+	Level8                   // 256 - eight (8) levels below baseObject
+	Level9                   // 512 - nine  (9) levels below baseObject
 
-	AllLevels Level = Level(31) // all levels; zero (0) through four (4)
+	AllLevels Level = Level(1023) // ALL levels; zero (0) through nine (9)
 )
 
 /*
@@ -72,8 +83,11 @@ Level describes a discrete numerical abstract of a subordinate level.
 Level describes one (1) or more additive values of Level that collectively
 express the subordinate level condition within a given Bind Rule that involves
 inheritance.
+
+Valid levels are level zero (0) through level nine (9), though this may
+vary across implementations.
 */
-type Level uint8
+type Level uint16
 
 /*
 IsZero returns a boolean value indicative of whether the receiver instance
@@ -181,7 +195,9 @@ func parseInheritance(inh string) (I Inheritance, err error) {
 	// one (1) character after the identifier
 	// boundary (see above).
 	var abv AttributeBindTypeOrValue
-	if abv, err = parseATBTV(raw[idx+1:]); err != nil {
+	printf("IDX+1: %v\n", raw[idx+2:])
+
+	if abv, err = parseATBTV(raw[idx+2:]); err != nil {
 		// non conformant ATBTV
 		return
 	}
@@ -201,9 +217,10 @@ func (r Inheritance) String() string {
 
 	var levels []string
 	if r.inheritance.Level == noLvl {
-		return `parent[0]`
+		// No levels? default to level 0 (baseObject)
+		levels = append(levels, Level0.String())
 	} else {
-		for i := 1; i < 6; i++ {
+		for i := 1; i < 12; i++ {
 			shift := Level(1 << i)
 			if r.Positive(shift) {
 				levels = append(levels, shift.String())
@@ -211,8 +228,7 @@ func (r Inheritance) String() string {
 		}
 	}
 
-	return sprintf("parent[%s].%s",
-		join(levels, `,`),
+	return sprintf("parent[%s].%s", join(levels, `,`),
 		r.inheritance.AttributeBindTypeOrValue)
 }
 
@@ -220,17 +236,11 @@ func (r Inheritance) String() string {
 String is a stringer method that returns a single string name value for receiver instance of Level.
 */
 func (r Level) String() (lvl string) {
-	switch r {
-	case Level0:
-		lvl = `0`
-	case Level1:
-		lvl = `1`
-	case Level2:
-		lvl = `2`
-	case Level3:
-		lvl = `3`
-	case Level4:
-		lvl = `4`
+	for k, v := range levelNumbers {
+		if r == v {
+			lvl = k
+			return
+		}
 	}
 
 	return
@@ -275,20 +285,14 @@ logically associated with the string value (x) input by the
 user. Valid levels are zero (0) through four (4), else noLvl
 is returned.
 */
-func assertStrInheritance(x string) (l Level) {
-	l = noLvl
-
-	switch lc(x) {
-	case `base`, `zero`, `0`:
-		l = Level0
-	case `one`, `1`:
-		l = Level1
-	case `two`, `2`:
-		l = Level2
-	case `three`, `3`:
-		l = Level3
-	case `four`, `4`:
-		l = Level4
+func assertStrInheritance(x string) (lvl Level) {
+	lvl = noLvl
+	for k, v := range levelNumbers {
+		if x == k {
+			printf("STRINH: %s, %s==%s\n", v, k, x)
+			lvl = v
+			break
+		}
 	}
 
 	return
@@ -300,20 +304,11 @@ logically associated with the integer value (x) input by the
 user. Valid levels are zero (0) through four (4), else noLvl
 is returned.
 */
-func assertIntInheritance(x int) (l Level) {
-	l = noLvl
-
-	switch x {
-	case 0:
-		l = Level0
-	case 1:
-		l = Level1
-	case 2:
-		l = Level2
-	case 3:
-		l = Level3
-	case 4:
-		l = Level4
+func assertIntInheritance(x int) (lvl Level) {
+	lvl = noLvl
+	if L, found := levelMap[x]; found {
+		lvl = L
+		return
 	}
 
 	return
@@ -387,4 +382,32 @@ func (r *inheritance) unshift(x ...any) {
 	}
 
 	return
+}
+
+func init() {
+	levelMap = map[int]Level{
+		0: Level0,
+		1: Level1,
+		2: Level2,
+		3: Level3,
+		4: Level4,
+		5: Level5,
+		6: Level6,
+		7: Level7,
+		8: Level8,
+		9: Level9,
+	}
+
+	levelNumbers = map[string]Level{
+		`0`: Level0,
+		`1`: Level1,
+		`2`: Level2,
+		`3`: Level3,
+		`4`: Level4,
+		`5`: Level5,
+		`6`: Level6,
+		`7`: Level7,
+		`8`: Level8,
+		`9`: Level9,
+	}
 }

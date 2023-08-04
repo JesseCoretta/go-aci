@@ -40,6 +40,83 @@ Slices are as follows:
 type atbtv [2]any
 
 /*
+SearchFilter is a struct type that embeds an LDAP search filter. Instances of this type
+may be used in a variety of areas, from LDAPURI composition to targetfilter rules.
+*/
+type SearchFilter struct {
+	*searchFilter
+}
+
+/*
+searchFilter is a private (pointer!) type embedded within instances of SearchFilter.
+*/
+type searchFilter struct {
+	string // to be replaced by stack-based filter (Rule)
+	//Rule 	// TODO: LDAP search filter stack
+	//Keyword?
+}
+
+/*
+IsZero returns a boolean value indicative of whether the receiver is nil, or unset.
+*/
+func (r SearchFilter) IsZero() bool {
+	return r.searchFilter == nil
+}
+
+/*
+Filter initializes (and optionally sets) a new instance of SearchFilter.
+Instances of this kind are used in LDAPURIs, as well as certain target
+rules.
+*/
+func Filter(x ...any) (r SearchFilter) {
+	r = SearchFilter{new(searchFilter)}
+	r.searchFilter.set(x...)
+	return
+}
+
+/*
+String is a stringer method that returns the string representation of
+an LDAP Search Filter.
+*/
+func (r SearchFilter) String() string {
+	if r.searchFilter == nil {
+		return ``
+	}
+
+	return r.searchFilter.string
+}
+
+/*
+Set assigns the provided value as the LDAP Search Filter instance within the
+receiver. Note that this should only be done once, as filters cannot easily
+built "incrementally" by the user.
+*/
+func (r SearchFilter) Set(x ...any) SearchFilter {
+	r.searchFilter.set(x...)
+	return r
+}
+
+/*
+set is a private method executed by SearchFilter.Set.
+*/
+func (r *searchFilter) set(x ...any) {
+	if len(x) == 0 {
+		return
+	}
+
+	if r == nil {
+		r = new(searchFilter)
+	}
+
+	switch tv := x[0].(type) {
+	case string:
+		if len(tv) > 0 {
+			r.string = tv
+		}
+	}
+}
+
+/*
 AttributeFilter is a struct type that embeds an AttributeTyp and filter-style Rule.
 Instances of this type are a component in the creation of Target Rule definitions
 based upon the targattrfilters keyword.
@@ -53,7 +130,7 @@ atf is the embedded type (as a pointer!) within instances of AttributeFilter.
 */
 type atf struct {
 	AttributeType // single attributeType
-	string        // single filter (TODO: replace with Rule)
+	string        // single filter (TODO: replace with SearchFilter)
 }
 
 /*
@@ -646,10 +723,11 @@ SearchScope constants define four (4) known LDAP Search Scopes permitted for use
 per the ACI syntax specification honored by this package.
 */
 const (
-	BaseObject  SearchScope = iota // 0x0, `base`
+	noScope     SearchScope = iota // 0x0 <unspecified_scope>
+	BaseObject                     // 0x0, `base`
 	SingleLevel                    // 0x1, `one` or `onelevel`
 	Subtree                        // 0x2, `sub` or `subtree`
-	Subordinate                    // 0x3, `subordinate` or `children`
+	Subordinate                    // 0x3, `subordinate`
 )
 
 /*
@@ -667,6 +745,10 @@ only one (1) successful Push of an LDAP filter can take place within any single
 instance. This will change in the future to leverage a more sophisticated means
 of parsing/decompiling LDAP Search Filters.
 */
+/*
+
+//// DEPRECATED, RETIRED ////
+
 func Filter() Rule {
 	ppol := func(x any) (err error) {
 		switch tv := x.(type) {
@@ -688,6 +770,7 @@ func Filter() Rule {
 		NoPadding(!RulePadding).
 		setCategory(`filter`)
 }
+*/
 
 /*
 TFilter returns an instance of Rule set to contain the string representation of
@@ -746,8 +829,9 @@ are used in ACIs that support the `targetscope` Target Rule
 Condition value.
 */
 func (r SearchScope) targetScope() (s string) {
-	s = `base` // default
 	switch r {
+	case BaseObject:
+		s = `base`
 	case SingleLevel:
 		s = `onelevel`
 	case Subtree:
@@ -765,14 +849,13 @@ for a given search scope. Generally, these are used
 in fully-qualified LDAP Search URL statements.
 */
 func (r SearchScope) standard() (s string) {
-	s = `base` // default
 	switch r {
+	case BaseObject:
+		s = `base`
 	case SingleLevel:
 		s = `one`
 	case Subtree:
 		s = `sub`
-	case Subordinate:
-		s = `children` // almost never used.
 	}
 
 	return
@@ -801,9 +884,11 @@ func (r SearchScope) Ne() Condition { return Condition{} }
 String is a stringer method that returns the string
 representation of the receiver.  In this particular
 case, the more succinct and standard string variant
-is returned, e.g.: `one` for SingleLevel.
+is returned, e.g.: `one` for SingleLevel. This will
+normally be used within LDAPURI instances.
 
-See also the Formal method for the receiver type.
+See the SearchScope.Target method for Target Rule
+related scope names.
 */
 func (r SearchScope) String() string {
 	return r.standard()
@@ -811,11 +896,7 @@ func (r SearchScope) String() string {
 
 /*
 Target is a stringer method that returns the string
-representation of the receiver. Unlike the standard
-String method for instances of this type, this will
-return the more distinguished string name that goes
-with the receiver (e.g.: `onelevel` for SingleLevel
-etc).
+representation of the receiver.
 
 This method is primarily intended for creation of a
 new `targetscope`-style Target Rule Condition, and
@@ -873,8 +954,8 @@ type ldapURI struct {
 	dn     DistinguishedName
 	scope  SearchScope
 	avbt   AttributeBindTypeOrValue
-	attrs  Rule // list with JoinDelim(`,`)
-	filter Rule
+	attrs  Rule         // list with JoinDelim(`,`)
+	filter SearchFilter // TODO: LDAP filter stack
 }
 
 /*
@@ -887,9 +968,11 @@ As a practical example:
 
 	ldap:///ou=People,dc=example,dc=com?sn,cn,givenName?one?(objectClass=*)
 
-Additionally, the ACI syntax specification honored by this package allows
-the use of an AttributeBindTypeOrValue instance instead of a scope and
-filter:
+URIs of this format are used within UDN (userdn) and GDN (groupdn) Bind Rules.
+
+Additionally, the ACI syntax specification honored by this package allows the
+use of an AttributeBindTypeOrValue instance INSTEAD of a comma-delimited list
+of attributeTypes, a search scope and a search filter:
 
 	scheme:///<dn>?<atbtv>
 
@@ -897,8 +980,10 @@ As a practical example:
 
 	ldap:///ou=People,dc=example,dc=com?owner#GROUPDN
 
-Generally, the latter case applies to `userattr` and/or `groupattr` Bind
-Rules involving static groups, but may have applications elsewhere.
+Be advised that only UAT (userattr) Bind Rules will make use of this particular
+URI format. An instance of AttributeBindTypeOrValue submitted as a URI component
+bearing the GAT (groupattr) bind keyword will have this keyword IGNORED in favor
+of UAT automatically.
 */
 func URI(x ...any) LDAPURI {
 	return LDAPURI{newLDAPURI(x...)}
@@ -909,7 +994,243 @@ newLDAPURI is a private function called by URI.
 */
 func newLDAPURI(x ...any) (l *ldapURI) {
 	l = new(ldapURI)
+	l.attrs = Attrs()
 	l.set(x...)
+	return
+}
+
+/*
+parseLDAPURI reads input string x and produces an instance of LDAPURI
+(L), which is returned alongside an error instance (err).
+
+An optional Bind Keyword may be provided to supplant BindUAT in the
+event of an AttributeBindTypeOrValue instance being present. Note
+that only BindGAT is supported as an alternative.
+*/
+func parseLDAPURI(x string, bkw ...BindKeyword) (L LDAPURI, err error) {
+	// URI absolutely MUST begin with the local
+	// LDAP scheme (e.g.: ldap:///). If it does
+	// not, fail immediately.
+	if len(x) < 7 {
+		err = errorf("Invalid LDAPURI string '%s'; aborting", x)
+		return
+	}
+
+	// Chop the scheme off the string,
+	// since it is no longer needed.
+	uri := x[len(LocalScheme):]
+
+	// initialize our embedded uri type
+	l := newLDAPURI()
+
+	var A Rule // (comma-delimited) attributeType list
+
+	// grab all fields, whether zero
+	// or not, delimited by question
+	// mark characters ...
+	fs := split(uri, `?`)
+
+	// iterate fields, and assert the
+	// possible types along the way.
+	for i := 0; i < len(fs); i++ {
+
+		// switch on index number i, as
+		// we take special action based
+		// on which index is processed.
+		switch i {
+		case 0:
+			// field #0 is ALWAYS a DN and
+			// is never zero length ...
+			if len(fs[i]) == 0 {
+				err = errorf("Invalid %T for %T (zero length); aborting", DistinguishedName{}, L)
+				return
+			}
+
+			// Submit new value to LDAPURI instance. Note that DN
+			// keyword does not matter here; any DN func would do
+			// so we'll just use UDN.
+			l.set(UDN(fs[i]))
+
+		case 1:
+			// Technically, a zero length
+			// string value is fine ...
+			if len(fs[i]) == 0 {
+				continue
+			}
+
+			// field #1 is either:
+			// 	1. A list of one (1) or more comma-delimited AttributeType instances
+			//	... OR ...
+			// 	2. A single AttributeBindTypeOrValue instance
+
+			if contains(fs[i], `#`) {
+				// Set the groupattr keyword if requested, else
+				// use the default of userattr.
+				kw := BindUAT
+				if len(bkw) > 0 {
+					if bkw[0] == BindGAT {
+						kw = BindGAT
+					}
+				}
+
+				var abv AttributeBindTypeOrValue
+				if abv, err = parseATBTV(fs[i], kw); err != nil {
+					return
+				}
+
+				// Submit new value to LDAPURI instance
+				l.set(abv)
+			} else {
+				A = Attrs() // initialize stack for attributeType list
+
+				// Obliterate spaces and split comma-delimited list
+				// into discrete attributeType names. Finally, we'll
+				// begin iteration ...
+				for _, attr := range split(repAll(fs[i], ` `, ``), `,`) {
+					A.Push(ATName(attr))
+				}
+
+				// Submit new value to LDAPURI instance
+				l.set(A)
+			}
+		case 2:
+			// field #2 is the LDAP Search Scope, if defined. Note that
+			// while the directory server shall default to a particular
+			// scope if not specified, it is not required in the value
+			// and, thus, this package shall not impose the default on
+			// its own.
+
+			// targetscope value is not appropriate for LDAP URI
+			// scope, and because there is no obvious alternative,
+			// we won't set anything. Allow anything else.
+			if sc := strToScope(fs[i]); len(fs[i]) > 0 && sc != Subordinate {
+				// Submit new value to LDAPURI instance
+				l.set(sc)
+			}
+
+		case 3:
+			// field #3 is the LDAP Search Filter, if defined.
+			filt := Filter(fs[i])
+			if filt.IsZero() {
+				continue
+			}
+			l.set(filt)
+		}
+	}
+
+	// Envelope ldapURI instance and send it off
+	L = LDAPURI{l}
+
+	return
+}
+
+/*
+Eq initializes and returns a new Condition instance configured to express the
+evaluation of the receiver value as Equal-To one (1) of the following keywords:
+
+• `userdn` (Bind Rule)
+
+• `userattr` (Bind Rule)
+
+• `groupdn` (Bind Rule)
+
+The appropriate keyword is automatically imposed based on the following
+scenarios:
+
+• If an AttributeBindTypeOrValue (as created by UAT() package-level function)
+is set within the receiver, the keyword shall be BindUAT; this is regardless
+to the keyword assigned to the DistinguishedName instance.
+
+• If an AttributeBindTypeOrValue is NOT set within the receiver, the keyword
+shall fallback to that which is found within the DistinguishedName assigned to
+the receiver; this keyword was set by the UDN() or GDN() package-level functions
+respectively during DistinguishedName creation.
+*/
+func (r LDAPURI) Eq() Condition {
+	return r.makeCondition()
+}
+
+/*
+Ne initializes and returns a new Condition instance configured to express the
+evaluation of the receiver value as Not-Equal-To one (1) of the following
+keywords:
+
+• `userdn` (Bind Rule)
+
+• `userattr` (Bind Rule)
+
+• `groupdn` (Bind Rule)
+
+The appropriate keyword is automatically imposed based on the following
+scenarios:
+
+• If an AttributeBindTypeOrValue (as created by UAT() package-level function)
+is set within the receiver, the keyword shall be BindUAT; this is regardless
+to the keyword assigned to the DistinguishedName instance.
+
+• If an AttributeBindTypeOrValue is NOT set within the receiver, the keyword
+shall fallback to that which is found within the DistinguishedName assigned to
+the receiver; this keyword was set by the UDN() or GDN() package-level functions
+respectively during DistinguishedName creation.
+
+Negated equality Condition instances should be used with caution.
+*/
+func (r LDAPURI) Ne() Condition {
+	return r.makeCondition(true)
+}
+
+/*
+makeCondition is a private method extended by LDAPURI solely to be executed
+by the Eq and Ne methods during Condition assembly.
+*/
+func (r LDAPURI) makeCondition(negate ...bool) (c Condition) {
+	// don't process a bogus receiver instance.
+	if err := r.Valid(); err != nil {
+		return
+	}
+
+	// Use the desired comparison operator,
+	// which can be one of Eq (Equal-To), or
+	// Ne (Not-Equal-To).
+	var negated bool
+
+	// Equal-To is the default for security reasons
+	oper := Eq
+	if len(negate) > 0 {
+		negated = negate[0]
+	}
+
+	if negated {
+		oper = Ne
+	}
+
+	// default is UDN (userdn) Bind Keyword.
+	var kw BindKeyword = BindUDN
+
+	// Try to fallback to GDN, if present.
+	if r.dn.distinguishedName.Keyword == BindGDN {
+		// only accept GDN as alt.
+		kw = BindGDN
+	}
+
+	// Now examine the AttributeBindTypeOrValue
+	// instance. If defined, examine its Bind
+	// Keyword. Only UAT will be allowed, else
+	// the above will be imposed.
+	if !r.avbt.IsZero() {
+		if r.avbt.BindKeyword == BindUAT {
+			kw = BindUAT
+		}
+	}
+
+	// Assemble our condition
+	c = Cond(kw, r, oper).
+		Encap(`"`).
+		setID(`bind`).
+		NoPadding(!ConditionPadding).
+		setCategory(kw.String())
+
+	// Done!
 	return
 }
 
@@ -966,6 +1287,9 @@ Valid returns an error instance in the event the receiver is in
 an aberrant state.
 */
 func (r LDAPURI) Valid() error {
+	if r.ldapURI == nil {
+		return errorf("%T instance is nil", r)
+	}
 	return r.ldapURI.valid()
 }
 
@@ -974,44 +1298,55 @@ valid is a private method called by LDAPURI.Valid.
 
 TODO: add more in-depth checks?
 */
-func (r ldapURI) valid() (err error) {
-	if r.isZero() {
-		err = errorf("%T instance is nil", r)
-		return
-	}
-
-	// Make sure the DN is sane.
-	err = r.dn.Valid()
-	return
-
+func (r ldapURI) valid() error {
+	return r.dn.Valid()
 }
 
 /*
-Set assigns the provided type instances to the receiver. The semantics
-of type instance assignment are as follows:
+Set assigns the provided instances to the receiver. The order in which
+instances are assigned to the receiver is immaterial. The semantics of
+type instance assignment are as follows:
 
-• An instance of DistinguishedName shall be set as the URI DN; this is
-always required
+• An instance of DistinguishedName will be set as the URI DN; this is
+ALWAYS required. Valid DN creator functions are UDN (userdn), and GDN
+(groupdn) for instances of this type.
 
 • An instance of SearchScope shall be set as the URI Search Scope
 
-• An instance of AttributeBindTypeOrValue will be set where a Search
-Filter would normally appear in an LDAP Search URI
+• An instance of AttributeBindTypeOrValue shall be set as a component
+within the receiver. Please see a special remark below related to the
+use of instances of this type within LDAP URIs.
 
-• An instance of Rule, if it bears the categorical label string value
-of `attributes`, shall be set as the URI attribute(s) list
+• An instance of Rule, IF it bears the categorical label string value
+of `attributes`  (as branded using the Attrs package-level function),
+shall be set as the URI attribute(s) list.  Note that a complete list
+will be appended to the receiver through iteration and is NOT used to
+clobber (or overwrite) any preexisting attribute list.
 
-• An instance of Rule, if it bears the categorical label string value
-of `filter`, shall be set as the URI Search Filter
+• An instance of []string is regarded the same as an instance of Rule
+bearing the categorical label string value of `attributes`. Instances
+of this type are allowed for convenience and because they can be read
+and preserved unambiguously.  A []string instance should be used even
+if only one AttributeType (e.g.: `cn`) is requested.
 
-In the case of both AttributeBindTypeOrValue and (filter) Rule instances
-being set, the filter will take precedence. Only one or the other should
-be provided for any single instance of LDAPURI.
+• An instance of SearchFilter shall be set as the URI Search Filter.
+Please see a special remark below related to the use of instances of
+this type within LDAP URIs.
 
-If neither a filter-based Rule nor an AttributeBindTypeOrValue are set, the
-string representation process will not automatically supply the default LDAP
-Search Filter of `objectClass=*`; a filter must be set explicitly in order to
-appear during said stringification process.
+At no point will a string primitive be tolerated as an input value
+for any reason.
+
+When an AttributeBindTypeOrValue is specified, an LDAP Search Filter
+MUST NOT BE SET, as it will supercede the AttributeBindTypeOrValue
+instance during string representation.
+
+In short, choose:
+
+• DN and AttributeType(s), Scope, Filter
+
+... OR ...
+
+• DN and AttributeBindTypeOrValue
 */
 func (r *LDAPURI) Set(x ...any) *LDAPURI {
 	r.ldapURI.set(x...)
@@ -1022,37 +1357,100 @@ func (r *LDAPURI) Set(x ...any) *LDAPURI {
 set is a private method called by LDAPURI.Set.
 */
 func (r *ldapURI) set(x ...any) {
-	if r.isZero() {
-		r = new(ldapURI)
-		r.attrs = Attrs()
-	}
-
+	// Iterate each of the user-specified
+	// input values ...
 	for i := 0; i < len(x); i++ {
 		switch tv := x[i].(type) {
+
+		// Value is an LDAP Distinguished Name
 		case DistinguishedName:
 			r.dn = tv
+
+		// Value is an LDAP Search Scope
 		case SearchScope:
 			r.scope = tv
+
+		// Value is an AttributeBindTypeOr Value
 		case AttributeBindTypeOrValue:
 			r.avbt = tv
-		case AttributeType:
-			if r.attrs.Category() != `attributes` {
-				r.attrs = Attrs()
-			}
-			r.attrs.Push(tv)
-		case Rule:
-			switch c := tv.Category(); c {
-			case `attributes`:
-				if r.attrs.Category() != `attributes` {
-					r.attrs = Attrs()
-				}
-				for j := 0; j < tv.Len(); j++ {
-					a, _ := tv.Index(j)
-					r.attrs.Push(a)
-				}
-			case `filter`:
-				r.filter = tv
-			}
+
+		// Value is an LDAP Search Filter
+		case SearchFilter:
+			r.filter = tv
+
+		// Value must be an LDAP AttributeType,
+		// or stack/slice of same.
+		default:
+			// append using separate function
+			r.attrs.assertAppendURIAttributeTypes(tv)
+		}
+	}
+
+	return
+}
+
+/*
+assertAppendURIAttributeTypes appends one (1) or more attribute type
+instances (src) into a destination Rule (dest). This method was made
+solely to keep the ldapURI.set method's cyclomatic factor low.
+*/
+func (r Rule) assertAppendURIAttributeTypes(src any) {
+
+	// AttributeType and Rule cases both
+	// accomplish the same desired result;
+	// in the latter case (Rule), we avoid
+	// clobbering a list that was already]
+	// defined in some way.
+	switch tv := src.(type) {
+
+	// source is a single AttributeType
+	case AttributeType:
+		// Push attributeType instance into
+		// our stack.
+		r.Push(tv)
+
+	// source is a stack
+	case Rule:
+		// Inappropriate list category will
+		// fail this process.
+		if tv.Category() != `attributes` {
+			break
+		}
+
+		// AttributeType instances were
+		// already defined. Iterate each
+		// of the slice members within
+		// the stack instance provided
+		// and (try to) append to the
+		// receiver.
+		for j := 0; j < tv.Len(); j++ {
+			// call stack index as 'a'.
+			// We won't need to manually
+			// type-assert 'a', as Push
+			// will handle that for us
+			// because we're using an
+			// AttributeType PushPolicy.
+			a, _ := tv.Index(j)
+
+			// Push value a (an attributeType)
+			// into stack. Uniqueness will be
+			// enforced automatically per our
+			// AttributeType PushPolicy :)
+			r.Push(a)
+		}
+
+	// source is a string slice type instance
+	case []string:
+		// Iterate each of the slice members
+		// within the slice instance provided
+		// and (try to) append to receiver.
+		for j := 0; j < len(tv); j++ {
+
+			// Push value a (an attributeType)
+			// into stack. Uniqueness will be
+			// enforced automatically per our
+			// AttributeType PushPolicy :)
+			r.Push(ATName(tv[j]))
 		}
 	}
 }

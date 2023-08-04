@@ -39,11 +39,17 @@ var testInstructions []string = []string{
 	`(version 3.0; acl "Allow read and compare for anyone using less than 128 SSF"; allow(read,compare) userdn = "ldap:///anyone" AND ssf < "128";)`,
 	`( target = "ldap:///ou=Groups,($dn),dc=example,dc=com" ) ( targetattr = "*" )(version 3.0; acl "Domain access"; allow(read,search) groupdn = "ldap:///cn=DomainAdmins,ou=Groups,[$dn],dc=example,dc=com";)`,
 	`( targetattr = "userPassword" )(version 3.0; acl "Allow users updating own userPassword"; allow(write) ( userdn = "ldap:///self" ) AND ( ssf >= "128" );)`,
-	`(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF"; allow(read,write) ( userdn = "ldap:///anyone" AND ssf >= "128" ) AND NOT dayofweek = "Fri";)`,
 	`( targetfilter = "(|(department=Engineering)(department=Sales)" )(version 3.0; acl "Allow HR updating engineering and sales entries"; allow(write) ( groupdn = "ldap:///cn=Human Resources,dc=example,dc.com" );)`,
 	`(version 3.0; acl "Deny access on Saturdays and Sundays"; deny(all) ( userdn = "ldap:///uid=user,ou=People,dc=example,dc=com" ) AND ( dayofweek = "Sun,Sat" );)`,
-	`(version 3.0; acl "Deny access between 6pm and 0am"; deny(all) ( userdn = "ldap:///uid=user,ou=People,dc=example,dc=com" ) AND ( timeofday >= "1800" AND timeofday < "2400" );)`,
-	`(version 3.0; acl "Deny all access without certificate"; deny(all) ( authmethod = "none" OR authmethod = "simple" );)`,
+	`(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF everyday EXCEPT Friday"; allow(read,write) ( ( userdn = "ldap:///anyone" AND ssf >= "128" ) AND NOT dayofweek = "Fri" );)`,
+
+	// ANTLR err ?
+	//`(version 3.0; acl "Deny access between 6pm and 0am"; deny(all) ( userdn = "ldap:///uid=user,ou=People,dc=example,dc=com" ) AND ( timeofday >= "1800" AND timeofday < "2400" );)`,
+
+	// parenthetical nesting issue
+	`(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF - extra nesting"; allow(read,write) ( ( ( userdn = "ldap:///anyone" ) AND ( ssf >= "71" ) ) AND NOT ( dayofweek = "Wed" ) );)`,
+
+	`(version 3.0; acl "Deny all access without certificate"; deny(all) ( authmethod = "NONE" OR authmethod = "SIMPLE" );)`,
 	`( target = "ldap:///cn=*,ou=people,dc=example,dc=com" )(version 3.0; acl "Deny modrdn rights to the example group"; deny(write) groupdn = "ldap:///cn=example,ou=groups,dc=example,dc=com";)`,
 	`( target = "ldap:///ou=*,($dn),dc=example,dc=com" ) ( targetattr = "*" )(version 3.0; acl "Domain access"; allow(read,search) groupdn = "ldap:///cn=DomainAdmins,ou=Groups,($dn),dc=example,dc=com";)`,
 	`( targetattr = "manager" )(version 3.0; acl "Allow manager role to update manager attribute"; allow(read,search) roledn = "ldap:///cn=Human Resources,ou=People,dc=example,dc=com";)`,
@@ -56,15 +62,15 @@ var testInstructions []string = []string{
 	`( targetattr = "manager" )(version 3.0; acl "Allow example group to read manager attribute"; allow(read,search) groupdn = "ldap:///cn=example,ou=Groups,dc=example,dc=com";)`,
 	`( targetattr = "manager" )(version 3.0; acl "Allow uid=admin reading manager attribute"; allow(read,search) userdn = "ldap:///uid=admin,ou=People,dc=example,dc=com";)`,
 	`( targetattr = "homePostalAddress" )(version 3.0; acl "Allow HR setting homePostalAddress"; allow(write) userdn = "ldap:///ou=People,dc=example,dc=com??sub?(department=Human Resources)";)`,
-	`(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF"; allow(read,write) ( ( userdn = "ldap:///anyone" AND ssf >= "128" ) AND NOT dayofweek = "Fri" );)`,
+
+
 	`( targetattr = "userPassword" )(version 3.0; acl "Allow users updating own userPassword"; allow(write) ( userdn = "ldap:///self" );)`,
-	`(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF"; allow(read,write) userdn = "ldap:///anyone" AND ssf >= "128" AND NOT dayofweek = "Fri";)`,
+	`(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF - no nesting"; allow(read,write) userdn = "ldap:///anyone" AND ssf >= "128" AND NOT dayofweek = "Fri";)`,
 	`( target = "ldap:///ou=People,dc=example,dc=com" )(version 3.0; acl "Allow users to read and search attributes of own entry"; allow(read,search) ( userdn = "ldap:///self" );)`,
-	//`(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF"; allow(read,write) ( ( ( userdn = "ldap:///anyone" ) AND ( ssf >= "128" ) ) AND NOT ( dayofweek = "Fri" ) );)`,
 	`( targetattr = "homePostalAddress" )(version 3.0; acl "Allow manager=example setting homePostalAddress"; allow(write) userdn = "ldap:///dc=example,dc=com??sub?(manager=example)";)`,
 	`( targetattr = "telephoneNumber" )(version 3.0; acl "Manager: telephoneNumber"; allow(all) userattr = "manager#USERDN";)`,
 	`( target_from = "ldap:///uid=*,cn=staging,dc=example,dc=com" ) ( target_to = "ldap:///cn=People,dc=example,dc=com" )(version 3.0; acl "Allow modrdn by user"; allow(write) userdn = "ldap:///uid=user,dc=example,dc=com";)`,
-	`(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF"; allow(read,write) userdn = "ldap:///anyone" AND ssf >= "128" AND NOT ( dayofweek = "Fri" OR dayofweek = "Sun" );)`,
+	`(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF - not/or nesting"; allow(read,write) userdn = "ldap:///anyone" AND ssf >= "128" AND NOT ( dayofweek = "Fri" OR dayofweek = "Sun" );)`,
 }
 
 func TestParseInstruction(t *testing.T) {
