@@ -63,7 +63,6 @@ var testInstructions []string = []string{
 	`( targetattr = "manager" )(version 3.0; acl "Allow uid=admin reading manager attribute"; allow(read,search) userdn = "ldap:///uid=admin,ou=People,dc=example,dc=com";)`,
 	`( targetattr = "homePostalAddress" )(version 3.0; acl "Allow HR setting homePostalAddress"; allow(write) userdn = "ldap:///ou=People,dc=example,dc=com??sub?(department=Human Resources)";)`,
 
-
 	`( targetattr = "userPassword" )(version 3.0; acl "Allow users updating own userPassword"; allow(write) ( userdn = "ldap:///self" );)`,
 	`(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF - no nesting"; allow(read,write) userdn = "ldap:///anyone" AND ssf >= "128" AND NOT dayofweek = "Fri";)`,
 	`( target = "ldap:///ou=People,dc=example,dc=com" )(version 3.0; acl "Allow users to read and search attributes of own entry"; allow(read,search) ( userdn = "ldap:///self" );)`,

@@ -5,8 +5,8 @@ cond.go contains rule condition types and methods.
 */
 
 import (
-	"reflect"
 	"github.com/JesseCoretta/go-stackage"
+	"reflect"
 )
 
 /*
@@ -53,7 +53,7 @@ var comparisonOperatorMethMap map[stackage.ComparisonOperator]string
 
 func matchOp(op string) (stackage.Operator, bool) {
 	for k, v := range comparisonOperatorMethMap {
-		if eq(v,op) || eq(k.String(), op) {
+		if eq(v, op) || eq(k.String(), op) {
 			return k, true
 		}
 	}
@@ -225,10 +225,10 @@ func conditionByOperator(op, x any) (c Condition, err error) {
 	var m, rv reflect.Value
 
 	// See if x is nil
-        if rv = reflect.ValueOf(x); rv.IsZero() {
-		err = errorf("%T instance is nil, cannot initialize %T",x,c)
+	if rv = reflect.ValueOf(x); rv.IsZero() {
+		err = errorf("%T instance is nil, cannot initialize %T", x, c)
 		return
-        }
+	}
 
 	// Perform operator switch under the assumption
 	// the operator is a stackage.ComparisonOperator.
@@ -264,11 +264,11 @@ func conditionByOperator(op, x any) (c Condition, err error) {
 	}
 
 	// Call the desired method, or fail with an error.
-        meth, ok := m.Interface().(func() Condition)
+	meth, ok := m.Interface().(func() Condition)
 	if !ok {
-		err = errorf("Unable to locate suitable %T creator method from %T using operator '%s'",c,x,op)
+		err = errorf("Unable to locate suitable %T creator method from %T using operator '%s'", c, x, op)
 		return
-        }
+	}
 
 	// Execute method and execute its
 	// validity checker, returning the
@@ -276,7 +276,7 @@ func conditionByOperator(op, x any) (c Condition, err error) {
 	c = meth()
 	err = c.Valid()
 
-        return
+	return
 }
 
 func init() {

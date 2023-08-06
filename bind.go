@@ -227,62 +227,62 @@ func bindRuleCaseWordOperator(tokens []string, ocat string, chop, depth, pspan i
 
 	var token string = tokens[0]
 	var next string = tokens[1]
-        var ttoken string
+	var ttoken string
 	var offset int = 1
 
-        // go-stackage's negation stacks use the
-        // category of 'NOT', as opposed to ACIv3's
-        // 'AND NOT' operator equivalent. Take the
-        // 'NOT' portion of the value, using its
-        // original case-folding scheme, and save
-        // it for stack tagging later.
-        if eq(token, `and not`) {
-                ttoken = token[4:]
-		printf("TOCK: %s [OFF:%d]\n",ttoken)
-        } else if eq(next, `and not`) {
-                ttoken = next[4:]
+	// go-stackage's negation stacks use the
+	// category of 'NOT', as opposed to ACIv3's
+	// 'AND NOT' operator equivalent. Take the
+	// 'NOT' portion of the value, using its
+	// original case-folding scheme, and save
+	// it for stack tagging later.
+	if eq(token, `and not`) {
+		ttoken = token[4:]
+		printf("TOCK: %s [OFF:%d]\n", ttoken)
+	} else if eq(next, `and not`) {
+		ttoken = next[4:]
 		offset++
-		printf("TICK: %s [OFF:%d]\n",ttoken)
+		printf("TICK: %s [OFF:%d]\n", ttoken)
 	}
 	offset = 5
 
-        // If the category (word operator) is not
-        // the same as the token, this means a new
-        // distinct (inner) stack is beginning (and
-        // not a continuation of outer).
-        if !eq(ttoken, ocat) {
+	// If the category (word operator) is not
+	// the same as the token, this means a new
+	// distinct (inner) stack is beginning (and
+	// not a continuation of outer).
+	if !eq(ttoken, ocat) {
 
-                // We need to offset the truncation factor
-                // of our token slices when the 'AND NOT'
-                // logical Boolean WORD operator is used,
-                // as it will erroneously be interpreted
-                // as two (2) distinct tokens.
-                if eq(ttoken, `not`) {
-                        offset++
-                }
+		// We need to offset the truncation factor
+		// of our token slices when the 'AND NOT'
+		// logical Boolean WORD operator is used,
+		// as it will erroneously be interpreted
+		// as two (2) distinct tokens.
+		if eq(ttoken, `not`) {
+			offset++
+		}
 
 		// look ahead for an opening parenthetical ...
-                iparen := tokens[2] == `(`
+		iparen := tokens[2] == `(`
 
-                // Launch a new inner recursion of this
-                // same function.
-                _, _, oip, _ := parenState(join(tokens[offset:], ``))
-                if skipTo, inner, err = parseBR(tokens[offset:], depth, pspan); err != nil {
-                        return
-                }
+		// Launch a new inner recursion of this
+		// same function.
+		_, _, oip, _ := parenState(join(tokens[offset:], ``))
+		if skipTo, inner, err = parseBR(tokens[offset:], depth, pspan); err != nil {
+			return
+		}
 
 		printf("B SKIPTO:%d\n", skipTo)
-		skipTo += chop - offset+1
+		skipTo += chop - offset + 1
 		printf("A SKIPTO:%d\n", skipTo)
 
-                // If the inner stack has at least one
-                // (1) element, preserve it for the end
-                // stack element, else take no action.
-                if inner.Len() > 0 {
-                        inner.Paren(oip||iparen)
-                        inner.setCategory(ttoken)   // mark the inner stack's logical Boolean WORD operator
-                }
-        }
+		// If the inner stack has at least one
+		// (1) element, preserve it for the end
+		// stack element, else take no action.
+		if inner.Len() > 0 {
+			inner.Paren(oip || iparen)
+			inner.setCategory(ttoken) // mark the inner stack's logical Boolean WORD operator
+		}
+	}
 
 	return
 }

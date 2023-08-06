@@ -66,7 +66,7 @@ func parseTR(tokens []string) (chop int, targetRules Rule, err error) {
 		// token is a target rule comparison operator
 		case istok:
 			cop = token
-                        cready = len(kw) > 0
+			cready = len(kw) > 0
 
 		// token is anchor, meaning there are no more
 		// target rules to process.
@@ -425,21 +425,21 @@ func parseBR(tokens []string, depth, pspan int) (chop int, outer Rule, err error
 	// the Condition components that will need
 	// to be preserved across loops.
 	var (
-		kw,	                          // Bind Rule Condition keyword
-		cop,				  // Bind Rule Condition comparison operator
-		last,				  // previous token
-		next string			  // upcoming token
+		kw, // Bind Rule Condition keyword
+		cop, // Bind Rule Condition comparison operator
+		last, // previous token
+		next string // upcoming token
 
 		vals []string = make([]string, 0) // Bind Rule Condition expression(s)
-		seen []string			  // tokens already processed
+		seen []string                     // tokens already processed
 
-		cready,				  // marker for condition assembly readiness
-		cparen bool			  // parenthetical marker for condition instances
+		cready, // marker for condition assembly readiness
+		cparen bool // parenthetical marker for condition instances
 
-		ct int = -1			  // running total
-		skipTo int			  // skip-ahead per recursion return
+		ct     int = -1 // running total
+		skipTo int      // skip-ahead per recursion return
 
-		slices map[int]any = make(map[int]any,0)
+		slices map[int]any = make(map[int]any, 0)
 
 		// convenient true/false bind rule keyword
 		// recognizer func.
@@ -513,7 +513,7 @@ func parseBR(tokens []string, depth, pspan int) (chop int, outer Rule, err error
 
 					if inner.Len() > 0 {
 						_, _, oip, _ = parenState(join(tokens, ``))
-						inner.Paren(isb||oip)	// this influences rule #20
+						inner.Paren(isb || oip) // this influences rule #20
 						//printf("QQQQ Recursion returned [L:%d;D:%d;T:%d;P:%d;O:%t;B:%t] %s\n", inner.Len(), depth, tat, pai, oip, bal, inner)
 						slices[len(slices)] = inner // save stack
 					}
@@ -609,7 +609,7 @@ func parseBR(tokens []string, depth, pspan int) (chop int, outer Rule, err error
 					// stack element, else take no action.
 					if inner.Len() > 0 {
 						//inner.Paren(oip)	    // not needed?
-						inner.Paren(iparen)	    // not needed?
+						inner.Paren(iparen)         // not needed?
 						inner.setCategory(ttoken)   // mark the inner stack's logical Boolean WORD operator
 						slices[len(slices)] = inner // save stack
 						printf("INNER IS: %s\n", inner)
@@ -668,8 +668,8 @@ func parseBR(tokens []string, depth, pspan int) (chop int, outer Rule, err error
 					return
 				}
 
-				tokens = tokens[skipTo:]    // truncate tokens already processed through recursion
-				chop += skipTo              // sum our "skip to" index with our return chop index
+				tokens = tokens[skipTo:] // truncate tokens already processed through recursion
+				chop += skipTo           // sum our "skip to" index with our return chop index
 
 				// If the inner stack has at least one
 				// (1) element, preserve it for the end
@@ -724,8 +724,8 @@ func parseBR(tokens []string, depth, pspan int) (chop int, outer Rule, err error
 				}
 
 				// Save the condition for handling later ...
-                                slices[len(slices)] = c.Paren(cparen).
-                                        NoPadding(!ConditionPadding).
+				slices[len(slices)] = c.Paren(cparen).
+					NoPadding(!ConditionPadding).
 					setID(bindRuleID)
 
 				// ###################################################################
@@ -846,7 +846,7 @@ func parseBR(tokens []string, depth, pspan int) (chop int, outer Rule, err error
 				// and add to our transfer map.
 
 				R[len(R)] = ruleByLoP(tv.Category()).
-					Paren(tv.isParen() && pspan==0)
+					Paren(tv.isParen() && pspan == 0)
 				R[len(R)-1].Push(tv)
 				printf("RECEIVED: %s\n", tv)
 
@@ -873,7 +873,7 @@ func parseBR(tokens []string, depth, pspan int) (chop int, outer Rule, err error
 					outer = assert
 
 				} else if assert2, bok := Z.(Condition); bok && !assert2.IsZero() {
-					printf("Assigning (%T) %s to outer\n", assert2,assert2)
+					printf("Assigning (%T) %s to outer\n", assert2, assert2)
 					outer.Push(assert2)
 				}
 
@@ -887,10 +887,10 @@ func parseBR(tokens []string, depth, pspan int) (chop int, outer Rule, err error
 			return
 		}
 
-		if ( ( isBPC(tokens) && opai==0 ) || ( isb && opai>0 ) ) {
+		if (isBPC(tokens) && opai == 0) || (isb && opai > 0) {
 			//outer.Paren(depth==0 && pspan==0)	// influences #41
 			printf("tokens: %#v\n", R)
-			outer.Paren(depth==0 && pspan==0)
+			outer.Paren(depth == 0 && pspan == 0)
 		}
 
 		// With multiple bind rule expression elements
@@ -911,7 +911,7 @@ func parseBR(tokens []string, depth, pspan int) (chop int, outer Rule, err error
 				bal,
 				R[i])
 
-			outer.Push(R[i].Paren(depth>0&&isb))
+			outer.Push(R[i].Paren(depth > 0 && isb))
 			//setCategory(outer.Category()))
 		}
 	}
@@ -1048,20 +1048,20 @@ abstraction found within privs, and will initialize said return value based on
 the disposition (allow or deny) selected by the user.
 */
 func assemblePermissionByDisposition(disp string, privs []any) (perm Permission) {
-        if disp == `allow` {
-                if len(privs) == 0 {
-                        perm = Allow(`none`)
-                } else {
-                        perm = Allow(privs...)
-                }
+	if disp == `allow` {
+		if len(privs) == 0 {
+			perm = Allow(`none`)
+		} else {
+			perm = Allow(privs...)
+		}
 		return
-        }
+	}
 
-        if len(privs) == 0 {
-                perm = Deny(`all`, `proxy`)
-        } else {
-                perm = Deny(privs...)
-        }
+	if len(privs) == 0 {
+		perm = Deny(`all`, `proxy`)
+	} else {
+		perm = Deny(privs...)
+	}
 
 	return
 }

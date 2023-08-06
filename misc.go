@@ -607,7 +607,7 @@ func parenState(x string) (total, pairs int, outer, balanced bool) {
 		// of parentheticals, check to see if the entirety
 		// of input string x is parenthetical itself.
 		outer = (x[0] == '(' && x[len(x)-1] == ')')
-		balanced = ( L == R )
+		balanced = (L == R)
 	}
 
 	return
@@ -638,15 +638,15 @@ func isPowerOfTwo(x int) bool {
 }
 
 func getLastNextToken(tokens []string, index int) (last, next string) {
-        if index != 0 && index-1 < len(tokens){
-                last = tokens[index-1]
+	if index != 0 && index-1 < len(tokens) {
+		last = tokens[index-1]
 	}
 
-        if index+1 < len(tokens) {
-                next = tokens[index+1]
-        } else {
+	if index+1 < len(tokens) {
+		next = tokens[index+1]
+	} else {
 		printf("Can't get token for next index %d [%d]\n", index, len(tokens))
-        }
+	}
 
 	return
 }
@@ -665,23 +665,23 @@ and have a sequence of one (1) or more condition statements delimited
 by a boolean word operator. The length of the stack does not matter,
 so long as it follows said format:
 
- ( cond word cond word ... )
+	( cond word cond word ... )
 */
 func isBS(t []string) (ct int, ok bool) {
 	if len(t) < 5 {
 		return
 	}
 
-        isKW := func(o string) bool {
-                return matchBKW(lc(o)) != BindKeyword(0x0)
-        }
+	isKW := func(o string) bool {
+		return matchBKW(lc(o)) != BindKeyword(0x0)
+	}
 
-        // convenient comparison operator token
-        // recognizer func.
-        isTokOp := func(o string) (ok bool) {
-                _, ok = matchOp(o)
-                return
-        }
+	// convenient comparison operator token
+	// recognizer func.
+	isTokOp := func(o string) (ok bool) {
+		_, ok = matchOp(o)
+		return
+	}
 
 	var last string
 	var is bool
@@ -693,16 +693,16 @@ func isBS(t []string) (ct int, ok bool) {
 
 		switch {
 		case tok == `)`:
-			if is = ct>0; !is {
+			if is = ct > 0; !is {
 				return
 			}
 			if isQuoted(last) {
 				ct++
 			}
-                case tok == `(`:
+		case tok == `(`:
 			// ok
 		case isKW(tok):
-			if !(last == `(` || isWordOp(last) || i==0) {
+			if !(last == `(` || isWordOp(last) || i == 0) {
 				return
 			}
 		case isTokOp(tok):
@@ -717,9 +717,9 @@ func isBS(t []string) (ct int, ok bool) {
 			if !isQuoted(last) {
 				return
 			}
-			ct++	// complete condition +1
+			ct++ // complete condition +1
 		case isQuoted(tok):
-			if !( isTokOp(last) || isExprDelim(last) ) {
+			if !(isTokOp(last) || isExprDelim(last)) {
 				return
 			}
 		default:
@@ -755,13 +755,13 @@ the closing parenthetical check is run again.
 
 In short:
 
-  "value || value || value"     // this is definitely a single value, and poses no trouble
-  "value" || "value" || "value" // this SHOULD be single, but requires extra handling
+	"value || value || value"     // this is definitely a single value, and poses no trouble
+	"value" || "value" || "value" // this SHOULD be single, but requires extra handling
 */
 func isBPC(t []string) bool {
-        if len(t) < 5 {
-                return false
-        }
+	if len(t) < 5 {
+		return false
+	}
 
 	isCloser := func(t []string) bool {
 		skip, _ := scanMultival(t)
@@ -769,12 +769,12 @@ func isBPC(t []string) bool {
 	}
 
 	// collect the evaluation results
-	opener := t[0] == `(`				// is opening parenthesis
-	bindkw := matchBKW(t[1]) != BindKeyword(0x0)	// is (legit) bind keyword
-	_, oper := matchOp(t[2])			// is comparison operator
-	closer := isCloser(t)				// is closing parenthesis
+	opener := t[0] == `(`                        // is opening parenthesis
+	bindkw := matchBKW(t[1]) != BindKeyword(0x0) // is (legit) bind keyword
+	_, oper := matchOp(t[2])                     // is comparison operator
+	closer := isCloser(t)                        // is closing parenthesis
 
-        return ( opener && bindkw && oper && closer )	// return the combined result
+	return (opener && bindkw && oper && closer) // return the combined result
 }
 
 /*
@@ -795,11 +795,11 @@ func isBC(t []string) bool {
 	}
 
 	// collect the evaluation results
-        bindkw := matchBKW(t[0]) != BindKeyword(0x0)    // is (legit) bind keyword
-	_, oper := matchOp(t[1])			// is comparison operator
-	quotedv := isQuoted(t[2])			// at least one (1) quoted value
+	bindkw := matchBKW(t[0]) != BindKeyword(0x0) // is (legit) bind keyword
+	_, oper := matchOp(t[1])                     // is comparison operator
+	quotedv := isQuoted(t[2])                    // at least one (1) quoted value
 
-	return bindkw && oper && quotedv		// return the combiend result
+	return bindkw && oper && quotedv // return the combiend result
 }
 
 /*
@@ -814,33 +814,33 @@ func scanMultival(t []string) (skip int, ok bool) {
 	// resides.
 	for i := 3; i < len(t); i++ {
 		// Perform token switch
-	        switch tok := t[i]; tok {
+		switch tok := t[i]; tok {
 
 		// found it!
-	        case `)`:
-	                ok = true
+		case `)`:
+			ok = true
 			return
 
-		// Increment for delimiter, but
-		// continue looping.
-	        case `||`:
-	                skip++
+			// Increment for delimiter, but
+			// continue looping.
+		case `||`:
+			skip++
 
-		// this HAS to be a value. If not
-		// something is screwy and we can
-		// go no further.
-	        default:
+			// this HAS to be a value. If not
+			// something is screwy and we can
+			// go no further.
+		default:
 			// Yeah, something screwy is
 			// going on.
-	                if !isQuoted(tok) || isWordOp(tok) {
+			if !isQuoted(tok) || isWordOp(tok) {
 				skip = 0
-	                        return
-	                }
+				return
+			}
 
 			// Value was quoted, increment
 			// counter and continue.
-	                skip++
-	        }
+			skip++
+		}
 	}
 
 	skip = 0
@@ -862,16 +862,15 @@ func tokensAreTerminators(t []string) bool {
 // encountered, just fallback to AND
 // for convenience.
 func hasOp(t []string) (op string, found bool) {
-        op = `AND`
-        for i := 0; i < len(t); i++ {
-                if found = isWordOp(t[i]); found {
-                        // a known Boolean WORD operator has
-                        // been found; create the outer stack
-                        // accordingly.
-                        op = t[i]
-                        break
-                }
-        }
-        return
+	op = `AND`
+	for i := 0; i < len(t); i++ {
+		if found = isWordOp(t[i]); found {
+			// a known Boolean WORD operator has
+			// been found; create the outer stack
+			// accordingly.
+			op = t[i]
+			break
+		}
+	}
+	return
 }
-

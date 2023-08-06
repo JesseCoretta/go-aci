@@ -756,15 +756,15 @@ which permit a list of DNs as a single logical value. It exists mainly
 to keep cyclomatics low.
 */
 func ruleByDNKeyword(key BindKeyword) Rule {
-        // prepare a stack for our DN value(s)
+	// prepare a stack for our DN value(s)
 	// based on the input keyword (key)
-        if key == BindRDN {
-                return RDNs()
-        }
+	if key == BindRDN {
+		return RDNs()
+	}
 
 	if key == BindGDN {
-                return GDNs()
-        }
+		return GDNs()
+	}
 
 	return UDNs()
 }
