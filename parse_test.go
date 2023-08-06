@@ -33,7 +33,7 @@ var testInstructions []string = []string{
 	`( targetattr = "*" )(version 3.0; acl "Deny 2001:db8::/64"; deny(all) ( userdn = "ldap:///anyone" ) AND ( ip != "2001:db8::" );)`,
 	`( targetattr = "*" )(version 3.0; acl "Deny client.example.com"; deny(all) ( userdn = "ldap:///anyone" ) AND ( dns != "client.example.com" );)`,
 	`( targetfilter = "(&(objectClass=employee)(objectClass=engineering))" ) ( targetcontrol = "1.3.6.1.4.1.56521.999.5 || 1.3.6.1.4.1.56521.999.6" ) ( targetscope = "onelevel" )(version 3.0; acl "Allow anonymous onelevel searches for engineering employees"; allow(read,search,compare) ( userdn = "ldap:///anyone" );)`,
-	`( targetfilter = "(&(objectClass=employee)(objectClass=engineering))" ) ( targetcontrol = "1.3.6.1.4.1.56521.999.5" || "1.3.6.1.4.1.56521.999.6" ) ( targetscope = "onelevel" )(version 3.0; acl "Allow anonymous onelevel searches for engineering employees"; allow(read,search,compare) ( userdn = "ldap:///anyone" );)`,
+	`( targetfilter = "(&(objectClass=employee)(objectClass=engineering))" ) ( targetcontrol = "1.3.6.1.4.1.56521.999.5" || "1.3.6.1.4.1.56521.999.6" ) ( targetscope = "onelevel" )(version 3.0; acl "Allow anonymous onelevel searches for engineering employees; alt. quotation"; allow(read,search,compare) ( userdn = "ldap:///anyone" );)`,
 	`( target = "ldap:///anyone" || "ldap:///uid=jesse,ou=People,dc=example.com" ) ( targetscope = "subordinate" )(version 3.0; acl "Allow subordinate searches of any account by authenticated users"; allow(read,search,compare) ( userdn = "ldap:///all" );)`,
 	`( targetattr = "*" )(version 3.0; acl "Deny example.com"; deny(all) ( userdn = "ldap:///anyone" ) AND ( dns != "*.example.com" );)`,
 	`(version 3.0; acl "Allow read and compare for anyone using less than 128 SSF"; allow(read,compare) userdn = "ldap:///anyone" AND ssf < "128";)`,
@@ -83,7 +83,7 @@ func TestParseInstruction(t *testing.T) {
 		}
 
 		if got := a.String(); want != got {
-			t.Errorf("%s failed [testInstructions:%d]: want '%s', got '%s'", t.Name(), i, want, got)
+			t.Errorf("%s failed [testInstructions:%d]:\nwant '%s'\ngot  '%s'", t.Name(), i, want, got)
 		}
 	}
 }

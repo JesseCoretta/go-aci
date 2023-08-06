@@ -498,6 +498,10 @@ func isBoolOp(c any) bool {
 	return false
 }
 
+func isExprDelim(s string) bool {
+	return s == `||` || s == `&&`
+}
+
 func isWordOp(w string) bool {
 	switch W := lc(w); W {
 	case `and`, `or`, `and not`:
@@ -603,11 +607,7 @@ func parenState(x string) (total, pairs int, outer, balanced bool) {
 		// of parentheticals, check to see if the entirety
 		// of input string x is parenthetical itself.
 		outer = (x[0] == '(' && x[len(x)-1] == ')')
-
-		// Determine whether the total is 'balanced', in that
-		// it is an even number; this indicates that every L
-		// parenthetical had an accompanying R parenthetical.
-		balanced = total%2 == 0
+		balanced = ( L == R )
 	}
 
 	return
@@ -636,3 +636,242 @@ func chopACITerm(def string) string {
 func isPowerOfTwo(x int) bool {
 	return x&(x-1) == 0
 }
+
+func getLastNextToken(tokens []string, index int) (last, next string) {
+        if index != 0 && index-1 < len(tokens){
+                last = tokens[index-1]
+	}
+
+        if index+1 < len(tokens) {
+                next = tokens[index+1]
+        } else {
+		printf("Can't get token for next index %d [%d]\n", index, len(tokens))
+        }
+
+	return
+}
+
+func tokenIsAnchor(token string, chop, index int) (anchor bool) {
+	anchor = token == `version 3.0; acl`
+	return
+}
+
+/*
+isBS is a simple function used to identify a parenthetical boolean stack
+(as opposed to a single condition) in a Bind Rule.
+
+A parenthetical boolean stack MUST begin with an opening parenthesis,
+and have a sequence of one (1) or more condition statements delimited
+by a boolean word operator. The length of the stack does not matter,
+so long as it follows said format:
+
+ ( cond word cond word ... )
+*/
+func isBS(t []string) (ct int, ok bool) {
+	if len(t) < 5 {
+		return
+	}
+
+        isKW := func(o string) bool {
+                return matchBKW(lc(o)) != BindKeyword(0x0)
+        }
+
+        // convenient comparison operator token
+        // recognizer func.
+        isTokOp := func(o string) (ok bool) {
+                _, ok = matchOp(o)
+                return
+        }
+
+	var last string
+	var is bool
+	for i := 0; i < len(t); i++ {
+		tok := t[i]
+		if i > 0 {
+			last = t[i-1]
+		}
+
+		switch {
+		case tok == `)`:
+			if is = ct>0; !is {
+				return
+			}
+			if isQuoted(last) {
+				ct++
+			}
+                case tok == `(`:
+			// ok
+		case isKW(tok):
+			if !(last == `(` || isWordOp(last) || i==0) {
+				return
+			}
+		case isTokOp(tok):
+			if !isKW(last) {
+				return
+			}
+		case isExprDelim(tok):
+			if !isQuoted(last) {
+				return
+			}
+		case isWordOp(tok):
+			if !isQuoted(last) {
+				return
+			}
+			ct++	// complete condition +1
+		case isQuoted(tok):
+			if !( isTokOp(last) || isExprDelim(last) ) {
+				return
+			}
+		default:
+			return
+		}
+
+		if is {
+			break
+		}
+	}
+
+	ok = is // closer is handled in 'is'
+	return
+}
+
+/*
+isBPC is a simple function used to identify a parenthetical condition
+(as opposed to a STACK) in a Bind Rule. This function need not be used
+for Target Rule parsing.
+
+isBPC looks at the provided token stream (t) and, assuming it contains
+five (5) or more slices, attempts to determine whether the first token
+is an opening parenthesis (ASCII #40), the second token is a known bind
+keyword, and the fifth token is the closing parenthesis (ASCII #41). A
+boolean value indicative of ALL of these conditions evaluating as true
+is returned.
+
+Assuming a closing parenthesis is NOT the fifth character as expected,
+this function will take extra measures to ensure that the expression
+value is not a sequence of quoted values. In this case, all of this
+values should be [re]interpreted as a single value. When this happens,
+the closing parenthetical check is run again.
+
+In short:
+
+  "value || value || value"     // this is definitely a single value, and poses no trouble
+  "value" || "value" || "value" // this SHOULD be single, but requires extra handling
+*/
+func isBPC(t []string) bool {
+        if len(t) < 5 {
+                return false
+        }
+
+	isCloser := func(t []string) bool {
+		skip, _ := scanMultival(t)
+		return t[4] == `)` || t[skip] == `)`
+	}
+
+	// collect the evaluation results
+	opener := t[0] == `(`				// is opening parenthesis
+	bindkw := matchBKW(t[1]) != BindKeyword(0x0)	// is (legit) bind keyword
+	_, oper := matchOp(t[2])			// is comparison operator
+	closer := isCloser(t)				// is closing parenthesis
+
+        return ( opener && bindkw && oper && closer )	// return the combined result
+}
+
+/*
+isBC returns a boolean value indicative of whether the provided
+token stream (t) initially contains a bind rule condition. This
+is opposed to a parenthetical bind rule condition.
+*/
+func isBC(t []string) bool {
+	// chop the terminator, as we won't need it
+	if t[len(t)-1] == `)` && t[len(t)-2] == `;` {
+		t = t[:len(t)-2]
+	}
+
+	if len(t) < 3 {
+		// nothing left over, or too
+		// small to begin with.
+		return false
+	}
+
+	// collect the evaluation results
+        bindkw := matchBKW(t[0]) != BindKeyword(0x0)    // is (legit) bind keyword
+	_, oper := matchOp(t[1])			// is comparison operator
+	quotedv := isQuoted(t[2])			// at least one (1) quoted value
+
+	return bindkw && oper && quotedv		// return the combiend result
+}
+
+/*
+scanMultival reads the provided token stream in an attempt to find
+the closing parenthetical character of the current expression. This
+function is solely used by isPC and exists only to keep cyclomatics
+low.
+*/
+func scanMultival(t []string) (skip int, ok bool) {
+	// Begin at three (3) since we're fairly
+	// certain that is where the first value
+	// resides.
+	for i := 3; i < len(t); i++ {
+		// Perform token switch
+	        switch tok := t[i]; tok {
+
+		// found it!
+	        case `)`:
+	                ok = true
+			return
+
+		// Increment for delimiter, but
+		// continue looping.
+	        case `||`:
+	                skip++
+
+		// this HAS to be a value. If not
+		// something is screwy and we can
+		// go no further.
+	        default:
+			// Yeah, something screwy is
+			// going on.
+	                if !isQuoted(tok) || isWordOp(tok) {
+				skip = 0
+	                        return
+	                }
+
+			// Value was quoted, increment
+			// counter and continue.
+	                skip++
+	        }
+	}
+
+	skip = 0
+	return
+}
+
+func tokensAreTerminators(t []string) bool {
+	if len(t) != 2 {
+		return false
+	}
+	return t[1] == `)` &&
+		t[0] == `;`
+}
+
+// Find (and remember) the first (1st)
+// Boolean WORD operator encountered.
+//
+// If no Boolean WORD operator was
+// encountered, just fallback to AND
+// for convenience.
+func hasOp(t []string) (op string, found bool) {
+        op = `AND`
+        for i := 0; i < len(t); i++ {
+                if found = isWordOp(t[i]); found {
+                        // a known Boolean WORD operator has
+                        // been found; create the outer stack
+                        // accordingly.
+                        op = t[i]
+                        break
+                }
+        }
+        return
+}
+
