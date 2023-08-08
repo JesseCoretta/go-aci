@@ -86,3 +86,26 @@ func TestParseInstruction(t *testing.T) {
 		}
 	}
 }
+
+var testBindRules [][]string = [][]string{
+	[]string{
+		`userdn`, `=`, `"ldap:///anyone"`, `AND`, `ssf`, `>=`, `"128"`, `AND NOT`, `(`, `dayofweek`, `=`, `"Fri"`, `OR`, `dayofweek`, `=`, `"Sun"`, `)`,
+	},
+	[]string{
+		`(`, `authmethod`, `=`, `"NONE"`, `OR`, `authmethod`, `=`, `"SIMPLE"`, `)`,
+	},
+	[]string{
+		`(`, `(`, `(`, `userdn`, `=`, `"ldap:///anyone"`, `)`, `AND`, `(`, `ssf`, `>=`, `"71"`, `)`, `)`, `AND NOT`, `(`, `dayofweek`, `=`, `"Wed"`, `)`, `)`,
+	},
+}
+
+func TestParseBindRule(t *testing.T) {
+		for i := 0; i < len(testBindRules); i++ {
+			printf("WANT: %s\n", join(testBindRules[i],` `))
+			a, _, err := parseBindRule(testBindRules[i], -1, 0)
+			if err != nil {
+			        t.Errorf("%s failed: %v", t.Name(), err)
+			}
+			t.Logf("GOT: %s [%d]\n", a, a.Len())
+		}
+}

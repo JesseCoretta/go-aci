@@ -347,6 +347,68 @@ func (r Permission) Valid() (err error) {
 	return
 }
 
+/*
+parsePerm reads and processes a token stream into an instance of Permission, which
+is the first (1st) component of a PermissionBindRule instance. It, alongside an
+error and chop index, are returned when processing stops or completes.
+*/
+func parsePerm(tokens []string) (chop int, perm Permission, err error) {
+        var disp string
+        var privs []any
+        var done bool
+
+        for _, token := range tokens {
+                // closing paren during perm
+                // mode means perm has ended
+                // and at least one (1) bind
+                // rule is beginning.
+                switch lc(token) {
+                case `allow`, `deny`:
+                        disp = lc(token)
+                case `;`, `(`, `,`:
+                        // do nothing
+                case `)`:
+                        done = true
+                default:
+                        privs = append(privs, lc(token))
+                }
+
+                chop++
+                if done {
+                        break
+                }
+        }
+
+        // assemble permission
+        perm = assemblePermissionByDisposition(disp, privs)
+
+        return
+}
+
+/*
+assemblePermissionByDisposition shifts the return value to include all privilege
+abstraction found within privs, and will initialize said return value based on
+the disposition (allow or deny) selected by the user.
+*/
+func assemblePermissionByDisposition(disp string, privs []any) (perm Permission) {
+        if disp == `allow` {
+                if len(privs) == 0 {
+                        perm = Allow(`none`)
+                } else {
+                        perm = Allow(privs...)
+                }
+                return
+        }
+
+        if len(privs) == 0 {
+                perm = Deny(`all`, `proxy`)
+        } else {
+                perm = Deny(privs...)
+        }
+
+        return
+}
+
 func init() {
 	rightsMap = map[Right]string{
 		ReadAccess:      `read`,

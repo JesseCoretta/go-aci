@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -125,40 +126,21 @@ func isQuoted(str string) bool {
 
 	var char rune
 
-	// iterate through the first (0) and final (len-1)
-	// indices, scanning the characters encountered as
-	// we advance ...
-	for i, idx := range []int{0, len(str) - 1} {
+	// Perform a rune (Unicode char) switch
+	switch q := rune(str[0]); q {
 
-		// Perform a rune (Unicode char) switch
-		switch q := rune(str[idx]); q {
-
-		// We've encountered a valid rune:
-		case '"', '\'', '`':
-
-			// These characters are all fine
-			// theoretically, BUT we *MUST*
-			// take special actions based on
-			// whether we're on the first or
-			// final index.
-			if i == 0 {
-				// Index #0 (current) defines
-				// the quotation character we
-				// expect to find later ...
-				char = q
-
-			} else {
-				// Determine that the final (current)
-				// quote char is consistent with the
-				// first char (index #0).
-				return q == char
-			}
-		}
-
+	// We've encountered a valid rune, make
+	// a note of it.
+	case '"', '\'', '`':
+		char = q
+	default:
+		return false
 	}
 
-	// Fallback for everything unsupported
-	return true
+	// return the evaluation of the first rune
+	// we found with the last one. They should
+	// match if properly quoted.
+	return char == rune(str[len(str)-1])
 }
 
 /*
@@ -872,5 +854,96 @@ func hasOp(t []string) (op string, found bool) {
 			break
 		}
 	}
+	return
+}
+
+func readQuotedValues(t []string) (stop int, values []string) {
+	for i := 0 ;i < len(t); i++ {
+		switch t[i]{
+		case `||`:
+			continue
+		default:
+			if !isQuoted(t[i]) {
+				stop = i-1
+				return
+			}
+			values = append(values, t[i])
+		}
+	}
+
+	return
+}
+
+/*
+objectString is a stringer caller, allowing the execution and
+return of a stringer method value without manual type assertion.
+*/
+func objectString(x any) (str string) {
+        var m, rv reflect.Value
+
+        // See if x is nil
+        if rv = reflect.ValueOf(x); rv.IsZero() {
+                return
+        }
+
+        // Call the desired method, or fail with an error.
+	m = rv.MethodByName(`String`)
+        meth, ok := m.Interface().(func() string)
+        if !ok {
+                return
+        }
+
+        str = meth()
+	return
+}
+
+/*
+objectString is a stringer caller, allowing the execution and
+return of a stringer method value without manual type assertion.
+*/
+func objectCategory(x any) (str string) {
+        var m, rv reflect.Value
+
+        // See if x is nil
+        if rv = reflect.ValueOf(x); rv.IsZero() {
+                return
+        }
+
+        // Call the desired method, or fail with an error.
+        m = rv.MethodByName(`Category`)
+        meth, ok := m.Interface().(func() string)
+        if !ok {
+                return
+        }
+
+        str = meth()
+        return
+}
+
+func unwrapRule(x Rule) (r Rule) {
+	if x.Len() != 1 {
+		r = x
+		return
+	}
+
+	sl, _ := x.Index(0)
+	switch tv := sl.(type) {
+	case Rule:
+		if tv.Len() == 1 {
+			sl2, _ := tv.Index(0)
+			switch uv := sl2.(type) {
+			case Rule:
+				r = unwrapRule(uv)
+				r.setCategory(x.Category())
+			}
+		} else if tv.Len() > 1 {
+			return tv
+		}
+	}
+
+	if r.Len() ==0 {
+		r = x
+	}
+
 	return
 }

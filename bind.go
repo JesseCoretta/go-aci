@@ -287,6 +287,91 @@ func bindRuleCaseWordOperator(tokens []string, ocat string, chop, depth, pspan i
 	return
 }
 
+func assertBindRuleUGRDN(vals []string, key BindKeyword, op string) (c Condition, err error) {
+        if len(vals) == 0 {
+                err = errorf("Empty bind rule value")
+                return
+        }
+
+        var vencap bool
+        var value string = vals[0]
+        if hasPfx(value, LocalScheme) && contains(vals[0], `?`) {
+                var uri LDAPURI
+
+                if uri, err = parseLDAPURI(value, key); err != nil {
+                        return
+                }
+
+                c, err = conditionByOperator(op, uri)
+                return
+        }
+
+        // prepare a stack for our DN value(s)
+        bdn := ruleByDNKeyword(key)
+
+        // bind rule is either or both of the following:
+        // A: one (1) double-quoted DN
+        // B: one (1) double-quoted LIST of unquoted DNs in symbolic OR context
+        for x := 0; x < len(vals); x++ {
+                value = vals[x]
+                if contains(value, `||`) {
+
+                        // Type-B confirmed
+                        for ix, O := range split(unquote(value), `||`) {
+                                if len(O) == 0 {
+                                        continue
+                                }
+
+                                if x == 0 && ix == 0 {
+                                        if !isQuoted(vals[x]) && isQuoted(O) {
+                                                vencap = true
+                                                bdn.Encap()
+                                        } else if !isQuoted(O) {
+                                                bdn.Encap(`"`)
+                                        }
+                                }
+
+                                D := trimS(unquote(O))
+                                if !hasPfx(D, LocalScheme) {
+                                        err = errorf("Illegal %s distinguishedName slice: [index:%d;value:%s] missing LDAP local scheme (%s)",
+                                                key, x, D, LocalScheme)
+                                        return
+                                }
+
+                                bdn.Push(DistinguishedName{newDistinguishedName(D[len(LocalScheme):], key)})
+                        }
+
+                } else {
+
+                        // Type-A confirmed
+                        if x == 0 {
+                                if isQuoted(value) {
+                                        vencap = true
+                                        bdn.Encap(`"`)
+                                }
+                        }
+
+                        D := unquote(value)
+                        if !hasPfx(D, LocalScheme) {
+                                err = errorf("Illegal %s distinguishedName: [index:%d;value:%s] missing LDAP local scheme (%s)",
+                                        key, x, D, LocalScheme)
+                                return
+                        }
+
+                        bdn.Push(DistinguishedName{newDistinguishedName(D[len(LocalScheme):], key)})
+                }
+        }
+
+        c, err = conditionByOperator(op, bdn)
+        if !vencap {
+                c.Encap(`"`)
+                return
+        }
+        c.Encap()
+
+        return
+}
+
 func badClockTimeErr(raw, thyme string) (err error) {
 	if thyme != raw {
 		err = errorf("Unexpected %s clock time parsing result; want '%s', got '%s' (hint: use military time; 0000 through 2400)",

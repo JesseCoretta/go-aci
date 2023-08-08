@@ -142,6 +142,14 @@ func (r Rule) IsZero() bool {
 }
 
 /*
+reset wraps go-stackage's Stack.Reset method. This is a private
+method in go-aci.
+*/
+func (r Rule) reset() {
+	stackage.Stack(r).Reset()
+}
+
+/*
 ID wraps go-stackage's Stack.ID method.
 */
 func (r Rule) ID() string {
@@ -224,10 +232,18 @@ func (r Rule) Paren(state ...bool) Rule {
 }
 
 /*
-IsParen wraps go-stackage's Stack.IsParen method.
+isParen wraps go-stackage's Stack.IsParen method.
 */
 func (r Rule) isParen() bool {
 	return stackage.Stack(r).IsParen()
+}
+
+/*
+insert wraps go-stackage's Stack.Insert method.
+*/
+func (r Rule) insert(x any, left int) (ok bool) {
+	ok = stackage.Stack(r).Insert(x,left)
+	return
 }
 
 /*
@@ -687,6 +703,7 @@ func stackageAnd() stackage.Stack                 { return stackage.And() }
 func stackageOr() stackage.Stack                  { return stackage.Or() }
 func stackageNot() stackage.Stack                 { return stackage.Not() }
 func stackageList(capacity ...int) stackage.Stack { return stackage.List(capacity...) }
+func stackageBasic() stackage.Stack		  { return stackage.Basic() }
 
 /*
 ruleByLoP returns the requested Rule type, or an "And()" Rule as a fallback. The input
