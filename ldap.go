@@ -673,23 +673,7 @@ func parseATBTV(x string, bkw ...any) (A AttributeBindTypeOrValue, err error) {
 
 	// Set the groupattr keyword if requested, else
 	// use the default of userattr.
-	kw := BindUAT
-	if len(bkw) > 0 {
-		switch tv := bkw[0].(type) {
-		case BindKeyword:
-			if tv == BindGAT {
-				kw = tv
-			}
-		case int:
-			if tv == 3 {
-				kw = BindGAT
-			}
-		case string:
-			if eq(tv, BindGAT.String()) {
-				kw = BindGAT
-			}
-		}
-	}
+	kw := assertATBTVBindKeyword(bkw...)
 
 	// If the remaining portion of the value is, in
 	// fact, a known BIND TYPE keyword, pack it up
@@ -703,6 +687,30 @@ func parseATBTV(x string, bkw ...any) (A AttributeBindTypeOrValue, err error) {
 	// to be an attribute value, so pack it up and
 	// send it off.
 	A = userOrGroupAttr(kw, ATName(x[:idx]), ATValue(x[idx+1:]))
+	return
+}
+
+func assertATBTVBindKeyword(bkw ...any) (kw BindKeyword) {
+        kw = BindUAT
+        if len(bkw) == 0 {
+		return
+	}
+
+        switch tv := bkw[0].(type) {
+        case BindKeyword:
+                if tv == BindGAT {
+                        kw = tv
+                }
+        case int:
+                if tv == 3 {
+                        kw = BindGAT
+                }
+        case string:
+                if eq(tv, BindGAT.String()) {
+                        kw = BindGAT
+                }
+        }
+
 	return
 }
 

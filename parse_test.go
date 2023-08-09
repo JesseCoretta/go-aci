@@ -65,7 +65,7 @@ var testInstructions []string = []string{
 	`( target = "ldap:///ou=People,dc=example,dc=com" )(version 3.0; acl "Allow users to read and search attributes of own entry"; allow(read,search) ( userdn = "ldap:///self" );)`,
 	`( targetattr = "homePostalAddress" )(version 3.0; acl "Allow manager=example setting homePostalAddress"; allow(write) userdn = "ldap:///dc=example,dc=com??sub?(manager=example)";)`,
 	`( targetattr = "telephoneNumber" )(version 3.0; acl "Manager: telephoneNumber"; allow(all) userattr = "manager#USERDN";)`,
-	`( target_from = "ldap:///uid=*,cn=staging,dc=example,dc=com" ) ( target_to = "ldap:///cn=People,dc=example,dc=com" )(version 3.0; acl "Allow modrdn by user"; allow(write) userdn = "ldap:///uid=user,dc=example,dc=com";)`,
+	`( target_from = "ldap:///uid=*,cn=staging,dc=example,dc=com" ) ( target_to = "ldap:///cn=People,dc=example,dc=com" )(version 3.0; acl "Allow modrdn by Courtney Tolana"; allow(write) userdn = "ldap:///cn=Courtney Tolana,dc=example,dc=com";)`,
 	`(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF - not/or nesting"; allow(read,write) userdn = "ldap:///anyone" AND ssf >= "128" AND NOT ( dayofweek = "Fri" OR dayofweek = "Sun" );)`,
 	`(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF everyday EXCEPT Friday"; allow(read,write) ( ( userdn = "ldap:///anyone" AND ssf >= "128" ) AND NOT dayofweek = "Fri" );)`,
 	`(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF - extra nesting"; allow(read,write) ( ( ( userdn = "ldap:///anyone" ) AND ( ssf >= "71" ) ) AND NOT ( dayofweek = "Wed" ) );)`,

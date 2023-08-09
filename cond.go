@@ -222,43 +222,17 @@ by expression x. An instance of Condition, alongside an error,
 are returned.
 */
 func conditionByOperator(op, x any) (c Condition, err error) {
-	var m, rv reflect.Value
 
-	// See if x is nil
-	if rv = reflect.ValueOf(x); rv.IsZero() {
-		err = errorf("%T instance is nil, cannot initialize %T", x, c)
-		return
-	}
+	var (
+		m     reflect.Value
+		found bool
+	)
 
 	// Perform operator switch under the assumption
 	// the operator is a stackage.ComparisonOperator.
-	var found bool
-	switch top := op.(type) {
-	case stackage.ComparisonOperator:
-
-		// See if the operator maps to a
-		// known method-named map value.
-		for k, v := range comparisonOperatorMethMap {
-			if found = k == top; found {
-				m = rv.MethodByName(v)
-				break
-			}
-		}
-
-	case string:
-
-		// string could be the literal operator (>),
-		// or simply the method name (Gt); try to
-		// resolve either.
-		for k, v := range comparisonOperatorMethMap {
-			if found = (k.String() == top); found {
-				m = rv.MethodByName(v)
-				break
-			}
-		}
-	}
-
-	if !found {
+	if m, found, err = assertComparisonOperator(op,x); err != nil {
+		return
+	} else if !found {
 		err = errorf("Invalid or unknown method '%#v' (%T)", op, op)
 		return
 	}
@@ -275,6 +249,42 @@ func conditionByOperator(op, x any) (c Condition, err error) {
 	// error produced, nil or no.
 	c = meth()
 	err = c.Valid()
+
+	return
+}
+
+func assertComparisonOperator(op,x any) (m reflect.Value, found bool, err error) {
+        // See if x is nil
+	var rv reflect.Value
+        if rv = reflect.ValueOf(x); rv.IsZero() {
+                err = errorf("%T instance is nil, cannot read comparison operator", x)
+                return
+        }
+
+        switch top := op.(type) {
+        case stackage.ComparisonOperator:
+
+                // See if the operator maps to a
+                // known method-named map value.
+                for k, v := range comparisonOperatorMethMap {
+                        if found = k == top; found {
+                                m = rv.MethodByName(v)
+                                break
+                        }
+                }
+
+        case string:
+
+                // string could be the literal operator (>),
+                // or simply the method name (Gt); try to
+                // resolve either.
+                for k, v := range comparisonOperatorMethMap {
+                        if found = (k.String() == top); found {
+                                m = rv.MethodByName(v)
+                                break
+                        }
+                }
+        }
 
 	return
 }
