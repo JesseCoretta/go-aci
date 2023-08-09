@@ -10,7 +10,24 @@ only inventoried here for the purpose of testing instructions that aren't too si
 These slices are processed by the TestParseInstruction unit test function.
 */
 var testInstructions []string = []string{
+	`( targetattr != "userPassword || authPassword" )(version 3.0; acl "Anonymous read access"; allow(read,search,compare) userdn = "ldap:///anyone";)`,
+	`( target = "ldap:///uid=bjensen,dc=example,dc=com" ) ( targetattr = "*" )(version 3.0; acl "example"; allow(write) userdn = "ldap:///self";)`,
+	`( targetattr = "departmentNumber || manager" ) ( targetfilter = "(businessCategory=Engineering)" )(version 3.0; acl "eng-admins-write"; allow(write) groupdn = "ldap:///cn=Engineering Admins, dc=example,dc=com";)`,
+	`( targetattr = "*" ) ( targetfilter = "(o=example)" )(version 3.0; acl "Default anonymous access"; allow(read,search) userdn = "ldap:///anyone";)`,
 	`( target = "ldap:///ipatokenuniqueid=*,cn=otp,dc=example,dc=com" ) ( targetfilter = "(objectClass=ipaToken)" )(version 3.0; acl "token-add-delete"; allow(add) userattr = "ipatokenOwner#SELFDN";)`,
+	`( targetattr = "mail || objectclass" )(version 3.0; acl "self access to mail"; allow(read,search) userdn = "ldap:///self";)`,
+	`(version 3.0; acl "all-read"; allow(read) userdn = "ldap:///all";)`,
+	`(version 3.0; acl "anonymous-read-search"; allow(read,search) userdn = "ldap:///anyone";)`,
+	`( targetattr = "userPassword" )(version 3.0; acl "modify own password"; allow(write) userdn = "ldap:///self";)`,
+	`(version 3.0; acl "parent access"; allow(write) userdn = "ldap:///parent";)`,
+	`(version 3.0; acl "Administrators-write"; allow(write) groupdn = "ldap:///cn=Administrators,dc=example,dc=com";)`,
+	`( target = "ldap:///dc=example,dc=com" ) ( targetattr = "*" )(version 3.0; acl "manager all access"; allow(all) userattr = "manager#USERDN";)`,
+	`( targetattr = "*" )(version 3.0; acl "profiles access"; allow(read,search) userattr = "parent[0,1].owner#USERDN";)`,
+	`( targetattr = "*" )(version 3.0; acl "profiles access alt."; allow(read,search) userattr = "owner#USERDN";)`,
+	`( target = "ldap:///dc=example,dc=com" ) ( targetattr = "*" )(version 3.0; acl "manager-write"; allow(all) userattr = "manager#USERDN";)`,
+	`( target = "ldap:///dc=example,dc=com" ) ( targetattr = "*" )(version 3.0; acl "parent-access"; allow(add) userattr = "parent[1].manager#USERDN";)`,
+	`( targetattr = "userPassword || authPassword" )(version 3.0; acl "User change pwd"; allow(write) userdn = "ldap:///self" AND ssf >= "128";)`,
+	`( target = "ldap:///dc=example,dc=com" ) ( targetattr != "userPassword || authPassword" )(version 3.0; acl "Anonymous read access only under dc=example,dc=com suffix"; allow(read,search,compare) userdn = "ldap:///anyone";)`,
 	`( targetfilter = "(&(objectClass=employee)(objectClass=engineering))" ) ( targetscope = "onelevel" )(version 3.0; acl "Allow anonymous onelevel searches for engineering employees"; allow(read,search,compare) userdn = "ldap:///anyone";)`,
 	`( targetattr = "*" )(version 3.0; acl "Allow read,search "; allow(read,search) ( userattr = "aciurl#LDAPURL" );)`,
 	`( targetattr = "*" )(version 3.0; acl "Allow anonymous onelevel searches for engineering employees"; allow(read,search,compare) ( userdn = "ldap:///anyone || ldap:///parent || ldap:///self" );)`,
@@ -30,8 +47,6 @@ var testInstructions []string = []string{
 	`( targetattr = "userPassword" )(version 3.0; acl "Allow users updating own userPassword"; allow(write) ( userdn = "ldap:///self" ) AND ( ssf >= "128" );)`,
 	`( targetfilter = "(|(department=Engineering)(department=Sales)" )(version 3.0; acl "Allow HR updating engineering and sales entries"; allow(write) ( groupdn = "ldap:///cn=Human Resources,dc=example,dc.com" );)`,
 	`(version 3.0; acl "Deny access on Saturdays and Sundays"; deny(all) ( userdn = "ldap:///uid=user,ou=People,dc=example,dc=com" ) AND ( dayofweek = "Sun,Sat" );)`,
-	`(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF everyday EXCEPT Friday"; allow(read,write) ( ( userdn = "ldap:///anyone" AND ssf >= "128" ) AND NOT dayofweek = "Fri" );)`,
-	`(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF - extra nesting"; allow(read,write) ( ( ( userdn = "ldap:///anyone" ) AND ( ssf >= "71" ) ) AND NOT ( dayofweek = "Wed" ) );)`,
 	`(version 3.0; acl "Deny all access without certificate"; deny(all) ( authmethod = "NONE" OR authmethod = "SIMPLE" );)`,
 	`( target = "ldap:///cn=*,ou=people,dc=example,dc=com" )(version 3.0; acl "Deny modrdn rights to the example group"; deny(write) groupdn = "ldap:///cn=example,ou=groups,dc=example,dc=com";)`,
 	`( target = "ldap:///ou=*,($dn),dc=example,dc=com" ) ( targetattr = "*" )(version 3.0; acl "Domain access"; allow(read,search) groupdn = "ldap:///cn=DomainAdmins,ou=Groups,($dn),dc=example,dc=com";)`,
@@ -45,7 +60,6 @@ var testInstructions []string = []string{
 	`( targetattr = "manager" )(version 3.0; acl "Allow example group to read manager attribute"; allow(read,search) groupdn = "ldap:///cn=example,ou=Groups,dc=example,dc=com";)`,
 	`( targetattr = "manager" )(version 3.0; acl "Allow uid=admin reading manager attribute"; allow(read,search) userdn = "ldap:///uid=admin,ou=People,dc=example,dc=com";)`,
 	`( targetattr = "homePostalAddress" )(version 3.0; acl "Allow HR setting homePostalAddress"; allow(write) userdn = "ldap:///ou=People,dc=example,dc=com??sub?(department=Human Resources)";)`,
-
 	`( targetattr = "userPassword" )(version 3.0; acl "Allow users updating own userPassword"; allow(write) ( userdn = "ldap:///self" );)`,
 	`(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF - no nesting"; allow(read,write) userdn = "ldap:///anyone" AND ssf >= "128" AND NOT dayofweek = "Fri";)`,
 	`( target = "ldap:///ou=People,dc=example,dc=com" )(version 3.0; acl "Allow users to read and search attributes of own entry"; allow(read,search) ( userdn = "ldap:///self" );)`,
@@ -53,8 +67,9 @@ var testInstructions []string = []string{
 	`( targetattr = "telephoneNumber" )(version 3.0; acl "Manager: telephoneNumber"; allow(all) userattr = "manager#USERDN";)`,
 	`( target_from = "ldap:///uid=*,cn=staging,dc=example,dc=com" ) ( target_to = "ldap:///cn=People,dc=example,dc=com" )(version 3.0; acl "Allow modrdn by user"; allow(write) userdn = "ldap:///uid=user,dc=example,dc=com";)`,
 	`(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF - not/or nesting"; allow(read,write) userdn = "ldap:///anyone" AND ssf >= "128" AND NOT ( dayofweek = "Fri" OR dayofweek = "Sun" );)`,
-	// ANTLR err ?
-	//`(version 3.0; acl "Deny access between 6pm and 0am"; deny(all) ( userdn = "ldap:///uid=user,ou=People,dc=example,dc=com" ) AND ( timeofday >= "1800" AND timeofday < "2400" );)`,
+	`(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF everyday EXCEPT Friday"; allow(read,write) ( ( userdn = "ldap:///anyone" AND ssf >= "128" ) AND NOT dayofweek = "Fri" );)`,
+	`(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF - extra nesting"; allow(read,write) ( ( ( userdn = "ldap:///anyone" ) AND ( ssf >= "71" ) ) AND NOT ( dayofweek = "Wed" ) );)`,
+	`(version 3.0; acl "Deny access between 6pm and 0am"; deny(all) ( userdn = "ldap:///uid=user,ou=People,dc=example,dc=com" ) AND ( timeofday >= "1800" AND timeofday < "2400" );)`,
 }
 
 func TestParseInstruction(t *testing.T) {

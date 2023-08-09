@@ -104,9 +104,9 @@ func parseBindRule(tokens []string, depth, pspan int, word ...string) (outer Rul
 
                 // inner is a loop-scoped stack used to
                 // act as a temporary container for one
-                // or more stacks parsed as a result of
-                // a recursive (self-executing) call of
-                // this same function.
+                // (1) or more stacks parsed as a result
+		// of a recursive (self-executing) call
+		// of this same function.
                 var inner Rule
 
                 // done is a marker for when a processing
@@ -148,6 +148,9 @@ func parseBindRule(tokens []string, depth, pspan int, word ...string) (outer Rul
                         // If the condition is parenthetical itself,
                         // tell go-stackage to reflect this trait.
                         c.Paren(cparen)
+			if iparen {
+				c.setCategory(`enveloped_bind`)
+			}
 
                         // Save the new condition in our temporary
                         // contiguous condition stack.
@@ -156,6 +159,7 @@ func parseBindRule(tokens []string, depth, pspan int, word ...string) (outer Rul
                         // If the sequence of contiguous condition
                         // instances is parenthetical as a whole,
                         // tell go-stackage to reflect this.
+			printf("o:%t / i:%t / c:%t\n", oparen, iparen, cparen)
                         cc.Paren(oparen)
 
                         // Reset all pertinent variables for any
@@ -238,10 +242,10 @@ func parseBindRule(tokens []string, depth, pspan int, word ...string) (outer Rul
                                         switch tv := innar.(type) {
                                         case Rule:
                                                 if tv.Len() == 1 {
-                                                        inner.Push(tv.setCategory(`or`)).setCategory(token[4:])
+                                                        inner.Push(tv.setCategory(`or`).Paren(iparen)).setCategory(token[4:])
                                                 }
                                         case Condition:
-                                                inner.Push(tv).setCategory(token[4:])
+                                                inner.Push(tv).setCategory(token[4:]).Paren(iparen && tv.Category() == `enveloped_bind`)
                                         }
                                 } else {
                                         inner = ruleByLoP(token[4:])
@@ -257,19 +261,20 @@ func parseBindRule(tokens []string, depth, pspan int, word ...string) (outer Rul
 
                 // Found a closing parenthetical
                 case token == `)`:
-
                         tokens = tokens[1:]
                         pspan--
+
                         if pspan < 0 {
-                                err = errorf("Unbalanced parenthetical; want 0, got %d (hint: missing an opener?)",pspan)
+                                err = errorf("Unbalanced parenthetical; want 0, got %d (hint: missing an opener?)", pspan)
                         } else if len(tokens) <= 2 {
                                 skip = -1
-                                iparen = false
-                                cparen = false
                         } else if pspan == 0 {
                                 iparen = false
                                 cparen = false
+				oparen = false
                         }
+
+			continue
 
                 // Found an opening parenthetical
                 case token == `(`:
@@ -297,20 +302,20 @@ func parseBindRule(tokens []string, depth, pspan int, word ...string) (outer Rul
                         grp := ruleByLoP(outer.Category())
                         for j := 0; j < cc.Len(); j++ {
                                 jidx, _ := cc.Index(j)
-                                /*
-                                printf("DEF:%s [%s;%s;oparen:%t;iparen:%t;ccparen:%t] [%T]\n",
+                                printf("DEF:%s [%s;%s;oparen:%t;iparen:%t;ccparen:%t;outerc:%s] [%T]\n",
                                         objectString(jidx),
                                         objectCategory(jidx),
                                         objectIdent(jidx),
                                         oparen,
                                         iparen,
                                         cc.isParen(),
+					outer.Category(),
                                         jidx)
-                                */
                                 grp.Push(jidx)
                         }
 
-                        outer.Push(grp).Paren(oparen || iparen)
+                        outer.Push(grp).Paren(iparen)
+			printf("CC: %s [%d]\n", outer, outer.Len())
                         cc.reset()
                 }
 
@@ -319,7 +324,7 @@ func parseBindRule(tokens []string, depth, pspan int, word ...string) (outer Rul
                 // a result of a recursive (self-executing) call
                 // of this same function. Migrate the inner stack's
                 // contents into outer prior to a return.
-                outer = transferToOuterBindRule(iparen, oparen, inner, outer)
+                outer = transferToOuterBindRule(iparen, outer.isParen(), inner, outer)
 
                 // Break out of the for-loop if we've been ordered
                 // to do so ...
@@ -371,9 +376,8 @@ func transferToOuterBindRule(iparen, oparen bool, inner, outer Rule) Rule {
         }
 
         r := ruleByLoP(outer.Category())
-        r.Push(outer.Paren(oparen)).Paren(oparen)
-
-        //printf("[len:%d]: %T[%s]: %s\n", r.Len(), r, r.Category(), r)
+        //r.Push(outer).Paren(oparen || iparen)
+	r.Push(outer.Paren(oparen)).Paren(!r.isParen() && ( oparen || iparen ))
 
         //var last string
         for i := 0; i < inner.Len(); i++ {
@@ -389,13 +393,11 @@ func transferToOuterBindRule(iparen, oparen bool, inner, outer Rule) Rule {
                         // Last-added outer slice was a Rule
                         switch uv := prev.(type) {
                         case Rule:
-                                //last = `R`
                                 uv.Push(tv)
 
                         // Last-added outer slice was a Condition
                         case Condition:
-                                //last = `C`
-                                r.Push(ruleByLoP(outer.Category()).Push(tv))
+                                r.Push(ruleByLoP(outer.Category()).Paren(iparen).Push(tv))
                         }
 
                 // Current inner slice is a Rule
@@ -406,9 +408,9 @@ func transferToOuterBindRule(iparen, oparen bool, inner, outer Rule) Rule {
                         // would indicate a new stack (Rule) is coming
                         // up ...
 
-                        tv.Paren(!oparen)
-                        //printf("RULE :: 1/2 [len:%d;isparen:%t;iparen:%t;oparen:%t]: %T[%s]: %s\n", inner.Len(), inner.isParen(), iparen, outer.isParen(), inner, inner.Category(), inner)
-                        //printf("RULE :: 2/2 [len:%d;isparen:%t;iparen:%t;oparen:%t]: %T[%s]: %s\n", tv.Len(), tv.isParen(), iparen, tv.isParen(), tv, tv.Category(), tv)
+			tv.Paren(tv.isParen() || iparen)
+                        printf("RULE :: 1/2 [len:%d;isparen:%t;iparen:%t;oparen:%t]: %T[%s]: %s\n",
+				inner.Len(), inner.isParen(), iparen, outer.isParen(), inner, inner.Category(), inner)
                         if inner.Category() != tv.Category() {
                                 r.Push(ruleByLoP(inner.Category()).Push(tv))
                                 break
@@ -416,6 +418,8 @@ func transferToOuterBindRule(iparen, oparen bool, inner, outer Rule) Rule {
 
                         // Push Inner slice [i] into Outer Rule.
                         r.Push(tv)
+                        printf("RULE :: 1/1 [len:%d;isparen:%t;iparen:%t;oparen:%t]: %T[%s]: %s\n",
+				tv.Len(), tv.isParen(), iparen, outer.isParen(), tv, tv.Category(), tv)
 
                 }
         }
