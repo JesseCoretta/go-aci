@@ -390,14 +390,13 @@ func parsePBR(tokens []string) (chop int, pbr []PermissionBindRule, err error) {
 
                                 tokens = tokens[skipTo:]
                                 chop = skipTo
-                                if skipTo, br, err = parseBR(tokens, -1, 0); err != nil {
+                                if br, skipTo, err = parseBindRule(tokens, -1, 0); err != nil {
                                         return
                                 }
                                 pbr = append(pbr, PB(perm, br))
-                                printf("Appended %s to PBR\n", br)
 
                                 // Done processing!
-                                if skipTo-1 == len(tokens) {
+                                if ( skipTo == -1 || ( skipTo-1 == len(tokens) ) ) {
                                         chop = -1
                                         return
                                 }

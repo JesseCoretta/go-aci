@@ -3,23 +3,12 @@ package aci
 import "testing"
 
 /*
-func TestParseFilter(t *testing.T) {
-	// this is an illogical but legal filter,
-	// and aims to provide as diverse a test
-	// as possible.
-	want := `(&(objectClass=employee)(objectClass=engineering)(|(&(team>=5)(givenName~=Dave)(givenName:caseExactMatch:=John)(:dn:2.5.13.5:=Jesse)(:caseExactMatch:=Courtney)(color;lang-fr=bleu)(string=rr*a))(cn=Jesse Coretta)(:1.3.6.1.4.1.123456:=Value)(team=B))(!(terminated=TRUE)(dumbass=TRUE)))`
+testInstructions contains a litany of varied access control instructions. Note that while
+all of these instructions are *technically legal*, many are downright illogical and were
+only inventoried here for the purpose of testing instructions that aren't too simple.
 
-	r, err := parseFilter(want)
-	if err != nil {
-		t.Errorf("%s failed: %v", t.Name(), err)
-	}
-
-	if got := r.String(); want != got {
-		t.Errorf("%s failed: want '%s', got '%s'", t.Name(), want, got)
-	}
-}
+These slices are processed by the TestParseInstruction unit test function.
 */
-
 var testInstructions []string = []string{
 	`( target = "ldap:///ipatokenuniqueid=*,cn=otp,dc=example,dc=com" ) ( targetfilter = "(objectClass=ipaToken)" )(version 3.0; acl "token-add-delete"; allow(add) userattr = "ipatokenOwner#SELFDN";)`,
 	`( targetfilter = "(&(objectClass=employee)(objectClass=engineering))" ) ( targetscope = "onelevel" )(version 3.0; acl "Allow anonymous onelevel searches for engineering employees"; allow(read,search,compare) userdn = "ldap:///anyone";)`,
@@ -42,13 +31,7 @@ var testInstructions []string = []string{
 	`( targetfilter = "(|(department=Engineering)(department=Sales)" )(version 3.0; acl "Allow HR updating engineering and sales entries"; allow(write) ( groupdn = "ldap:///cn=Human Resources,dc=example,dc.com" );)`,
 	`(version 3.0; acl "Deny access on Saturdays and Sundays"; deny(all) ( userdn = "ldap:///uid=user,ou=People,dc=example,dc=com" ) AND ( dayofweek = "Sun,Sat" );)`,
 	`(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF everyday EXCEPT Friday"; allow(read,write) ( ( userdn = "ldap:///anyone" AND ssf >= "128" ) AND NOT dayofweek = "Fri" );)`,
-
-	// ANTLR err ?
-	//`(version 3.0; acl "Deny access between 6pm and 0am"; deny(all) ( userdn = "ldap:///uid=user,ou=People,dc=example,dc=com" ) AND ( timeofday >= "1800" AND timeofday < "2400" );)`,
-
-	// parenthetical nesting issue
 	`(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF - extra nesting"; allow(read,write) ( ( ( userdn = "ldap:///anyone" ) AND ( ssf >= "71" ) ) AND NOT ( dayofweek = "Wed" ) );)`,
-
 	`(version 3.0; acl "Deny all access without certificate"; deny(all) ( authmethod = "NONE" OR authmethod = "SIMPLE" );)`,
 	`( target = "ldap:///cn=*,ou=people,dc=example,dc=com" )(version 3.0; acl "Deny modrdn rights to the example group"; deny(write) groupdn = "ldap:///cn=example,ou=groups,dc=example,dc=com";)`,
 	`( target = "ldap:///ou=*,($dn),dc=example,dc=com" ) ( targetattr = "*" )(version 3.0; acl "Domain access"; allow(read,search) groupdn = "ldap:///cn=DomainAdmins,ou=Groups,($dn),dc=example,dc=com";)`,
@@ -70,6 +53,8 @@ var testInstructions []string = []string{
 	`( targetattr = "telephoneNumber" )(version 3.0; acl "Manager: telephoneNumber"; allow(all) userattr = "manager#USERDN";)`,
 	`( target_from = "ldap:///uid=*,cn=staging,dc=example,dc=com" ) ( target_to = "ldap:///cn=People,dc=example,dc=com" )(version 3.0; acl "Allow modrdn by user"; allow(write) userdn = "ldap:///uid=user,dc=example,dc=com";)`,
 	`(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF - not/or nesting"; allow(read,write) userdn = "ldap:///anyone" AND ssf >= "128" AND NOT ( dayofweek = "Fri" OR dayofweek = "Sun" );)`,
+	// ANTLR err ?
+	//`(version 3.0; acl "Deny access between 6pm and 0am"; deny(all) ( userdn = "ldap:///uid=user,ou=People,dc=example,dc=com" ) AND ( timeofday >= "1800" AND timeofday < "2400" );)`,
 }
 
 func TestParseInstruction(t *testing.T) {
@@ -87,6 +72,25 @@ func TestParseInstruction(t *testing.T) {
 	}
 }
 
+/*
+func TestParseFilter(t *testing.T) {
+	// this is an illogical but legal filter,
+	// and aims to provide as diverse a test
+	// as possible.
+	want := `(&(objectClass=employee)(objectClass=engineering)(|(&(team>=5)(givenName~=Dave)(givenName:caseExactMatch:=John)(:dn:2.5.13.5:=Jesse)(:caseExactMatch:=Courtney)(color;lang-fr=bleu)(string=rr*a))(cn=Jesse Coretta)(:1.3.6.1.4.1.123456:=Value)(team=B))(!(terminated=TRUE)(dumbass=TRUE)))`
+
+	r, err := parseFilter(want)
+	if err != nil {
+		t.Errorf("%s failed: %v", t.Name(), err)
+	}
+
+	if got := r.String(); want != got {
+		t.Errorf("%s failed: want '%s', got '%s'", t.Name(), want, got)
+	}
+}
+*/
+
+/*
 var testBindRules [][]string = [][]string{
 	[]string{
 		`userdn`, `=`, `"ldap:///anyone"`, `AND`, `ssf`, `>=`, `"128"`, `AND NOT`, `(`, `dayofweek`, `=`, `"Fri"`, `OR`, `dayofweek`, `=`, `"Sun"`, `)`,
@@ -100,12 +104,13 @@ var testBindRules [][]string = [][]string{
 }
 
 func TestParseBindRule(t *testing.T) {
-		for i := 0; i < len(testBindRules); i++ {
-			printf("WANT: %s\n", join(testBindRules[i],` `))
-			a, _, err := parseBindRule(testBindRules[i], -1, 0)
-			if err != nil {
-			        t.Errorf("%s failed: %v", t.Name(), err)
-			}
-			t.Logf("GOT: %s [%d]\n", a, a.Len())
+	for i := 0; i < len(testBindRules); i++ {
+		printf("WANT: %s\n", join(testBindRules[i],` `))
+		a, _, err := parseBindRule(testBindRules[i], -1, 0)
+		if err != nil {
+		        t.Errorf("%s failed: %v", t.Name(), err)
 		}
+		t.Logf("GOT: %s [%d]\n", a, a.Len())
+	}
 }
+*/

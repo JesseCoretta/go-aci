@@ -899,7 +899,7 @@ func objectString(x any) (str string) {
 
 /*
 objectString is a stringer caller, allowing the execution and
-return of a stringer method value without manual type assertion.
+return of the Category method value without manual type assertion.
 */
 func objectCategory(x any) (str string) {
         var m, rv reflect.Value
@@ -911,6 +911,29 @@ func objectCategory(x any) (str string) {
 
         // Call the desired method, or fail with an error.
         m = rv.MethodByName(`Category`)
+        meth, ok := m.Interface().(func() string)
+        if !ok {
+                return
+        }
+
+        str = meth()
+        return
+}
+
+/*
+objectIdent is a stringer caller, allowing the execution and
+return of the ID method value without manual type assertion.
+*/
+func objectIdent(x any) (str string) {
+        var m, rv reflect.Value
+
+        // See if x is nil
+        if rv = reflect.ValueOf(x); rv.IsZero() {
+                return
+        }
+
+        // Call the desired method, or fail with an error.
+        m = rv.MethodByName(`ID`)
         meth, ok := m.Interface().(func() string)
         if !ok {
                 return

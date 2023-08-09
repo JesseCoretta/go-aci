@@ -1,11 +1,505 @@
 package aci
 
 /*
+bind.go contains bind rule parsing functions and methods.
+*/
+
+/*
+parseBindRule is the top-level parser for a sequence of bind rule expressions with,
+or without, nesting and/or Boolean WORD operators. A populated outer Rule instance,
+along with a token stream trimming integer and an error are returned.
+*/
+func parseBindRule(tokens []string, depth, pspan int, word ...string) (outer Rule, skip int, err error) {
+        // Don't bother processing tokens that could
+        // never possibly represent a valid Bind Rule
+        // expression (UNLESS we're recursing within
+        // a parenthetical bind rule expression).
+        if len(tokens) < 4 && depth==0 {
+                err = errorf("Empty bind rule input value, or value is below minimum possible length for validity: %v [%d<4]", tokens, len(tokens))
+                return
+        }
+
+        // keep track of how many times we recurse
+        // into this function.
+        depth++
+
+        // Create temporary storage vars for some of
+        // the Condition components that will need
+        // to be preserved across loops.
+        var (
+                kw,             // Bind Rule Condition keyword
+                cop string      // Bind Rule Condition comparison operator
+
+                // Bind Rule expression values are single
+                // quoted values, or a sequence of values
+                // (with varying quotation schemes) that
+                // are delimited with a double pipe (||).
+                vals []string
+
+                // temporary contiguous condition stack,
+                // mainly to preserve the parenthetical
+                // nature of more than one (1) contiguous
+                // condition within a single boolean WORD
+                // operator's purview.
+                cc Rule = Rule(stackageBasic())
+
+                cready,         // marker for condition assembly readiness
+                iparen,         // parenthetical marker for inner expressions
+                oparen,         // parenthetical marker for outer expressions
+                cparen bool     // parenthetical marker for condition instances
+
+                ct     int = -1 // running total of tokens processed
+
+                // convenient true/false bind rule keyword
+                // recognizer func.
+                isKW func(string) bool = func(o string) bool {
+                        return matchBKW(lc(o)) != BindKeyword(0x0)
+                }
+
+                // convenient comparison operator token
+                // recognizer func.
+                isTokOp func(string) bool = func(o string) (ok bool) {
+                        _, ok = matchOp(o)
+                        return
+                }
+        )
+
+        // During recursive calls of this function, a
+        // boolean word operator token may be passed
+        // as a (variadic) parameter. If and when this
+        // happens, use this "word" (e.g.: 'AND', OR'
+        // or 'AND NOT') as the initializer value for
+        // a new (nested) outer stack.
+        if len(word) > 0 {
+                outer = ruleByLoP(word[0])
+        } else {
+                // No "word" was found, so just scan
+                // ahead for the first (1st) word we
+                // encounter and use that. If no word
+                // was found at all, default to AND.
+                opw, _ := hasOp(tokens)
+                outer = ruleByLoP(opw)
+        }
+
+        // An outer parenthetical statement is qualified
+        // by an opening (left) parenthesis character
+        // (ASCII #40) as token zero (0), a closing (right)
+        // parenthesis character (ASCII #41) as the final
+        // character, and the second-to-last character NOT
+        // being a PBR-termination semicolon. Note this is
+        // not reliable by itself, and is sometimes used
+        // in (negated) conjunction with another Boolean
+        // parenthetical marker.
+        oparen = ( tokens[0] == `(` &&
+                ( tokens[len(tokens)-1] == `)` &&
+                tokens[len(tokens)-2] != `;` ) )
+
+        // iterate each of the tokens.
+        for _, token := range tokens {
+                // actual iteration counter. We're unable to
+                // rely on range index because the iterable
+                // var (tokens) is continuously truncated
+                // along the way.
+                ct++
+
+                // inner is a loop-scoped stack used to
+                // act as a temporary container for one
+                // or more stacks parsed as a result of
+                // a recursive (self-executing) call of
+                // this same function.
+                var inner Rule
+
+                // done is a marker for when a processing
+                // job should finish before all tokens are
+                // processed.
+                var done bool
+
+                switch {
+
+                // cready indicates that we're ready to
+                // parse a given condition's value(s) and
+                // assemble a condition. If this case is
+                // matched, it means we've already acquired
+                // the bind keyword and comparison operator.
+                case cready:
+
+                        var (
+                                stop int
+                                c Condition
+                        )
+
+                        // scan for quoted values, and stop at the
+                        // first thing that is neither a quoted
+                        // value nor a double pipe (||) delimiter.
+                        stop, vals = readQuotedValues(tokens)
+
+                        // assemble the condition with all needed
+                        // vars now in-hand.
+                        if c, err = parseBindRuleCondition(vals, kw, cop); err != nil {
+                                return
+                        }
+
+                        // wherever the quoted value scanner left
+                        // off, truncate our tokens to resume at
+                        // that point (and not to re-process any
+                        // tokens already seen).
+                        tokens = tokens[stop+1:]
+
+                        // If the condition is parenthetical itself,
+                        // tell go-stackage to reflect this trait.
+                        c.Paren(cparen)
+
+                        // Save the new condition in our temporary
+                        // contiguous condition stack.
+                        cc.Push(c)
+
+                        // If the sequence of contiguous condition
+                        // instances is parenthetical as a whole,
+                        // tell go-stackage to reflect this.
+                        cc.Paren(oparen)
+
+                        // Reset all pertinent variables for any
+                        // condition tokens not yet processed.
+                        vals = []string{}
+                        cparen = false
+                        cready = false
+                        kw = ``
+                        cop = ``
+
+                // token is a terminator of a single permission/bind rule
+                // "pair"; if we see this, we finish processing regardless
+                // of whether any tokens remain. This function is usually
+                // called by the parsePBR function, which keeps an eye on
+                // the tokens from an external PoV.
+                case token == `;`:
+                        if len(tokens) <= 2 {
+                                // nothing else to process
+                                skip = -1
+                        } else {
+                                // another perm/bind rule pair may be next
+                                skip++
+                        }
+                        done = true
+
+                // token is a known bind rule keyword (e.g.: 'userdn'). If
+                // this has matched, it is guaranteed that a condition has
+                // just begun to undergo processing.
+                case isKW(token):
+                        kw = token
+                        tokens = tokens[1:]
+                        continue
+
+                // token is a known comparison operator (e.g.: '>=', '=').
+                // This would only appear immediately after a known Bind
+                // Rule keyword was encountered and recorded.
+                case isTokOp(token):
+                        cop = token
+                        tokens = tokens[1:]
+                        cready = len(kw) >0 && len(cop) > 0
+                        continue
+
+                // token is a single quoted value. This would only appear
+                // as the third (3rd) and final component in a Condition.
+                case isQuoted(token):
+                        var stop int
+                        if cready, stop, vals, err = getQuotedValues(kw,cop,tokens); err != nil {
+                                return
+                        }
+
+                        tokens = tokens[stop:]
+                        continue
+
+                // token is a Boolean WORD operator ("AND", "OR", "AND NOT").
+                // This indicates multiple condition instances, which may or
+                // may not be nested within other stacks.
+                case isWordOp(token):
+
+                        // this boolean operator merely continues the
+                        // expression, and does not signify a switch
+                        // to another operator, e.g.: AND -> OR, which
+                        // would result in a new recursion.
+                        if eq(token, outer.Category()) {
+                                tokens = tokens[1:]
+                                continue
+                        }
+
+                        // boolean operator differs from the current
+                        // (outer) operator. Begin new recursion, and
+                        // pass the desired word to this same function
+                        // which will result in an alloc for a new stack.
+                        if eq(token, `and not`) {
+
+                                // negated condition/stack
+                                var innot Rule
+                                innot, skip, err = parseBindRule(tokens[1:], depth, pspan)
+                                inner = ruleByLoP(token[4:])
+                                if innot.Len() == 1 {
+                                        innar, _ := innot.Index(0)
+                                        switch tv := innar.(type) {
+                                        case Rule:
+                                                if tv.Len() == 1 {
+                                                        inner.Push(tv.setCategory(`or`)).setCategory(token[4:])
+                                                }
+                                        case Condition:
+                                                inner.Push(tv).setCategory(token[4:])
+                                        }
+                                } else {
+                                        inner = ruleByLoP(token[4:])
+                                        inner.Push(innot.setCategory(`or`))
+                                }
+
+                        } else {
+
+                                // AND or OR condition/stack
+                                inner, skip, err = parseBindRule(tokens[1:], depth, pspan, token)
+                                inner.setCategory(lc(token))
+                        }
+
+                // Found a closing parenthetical
+                case token == `)`:
+
+                        tokens = tokens[1:]
+                        pspan--
+                        if pspan < 0 {
+                                err = errorf("Unbalanced parenthetical; want 0, got %d (hint: missing an opener?)",pspan)
+                        } else if len(tokens) <= 2 {
+                                skip = -1
+                                iparen = false
+                                cparen = false
+                        } else if pspan == 0 {
+                                iparen = false
+                                cparen = false
+                        }
+
+                // Found an opening parenthetical
+                case token == `(`:
+
+                        tokens = tokens[1:]
+                        cparen = isBC(tokens[0:3]) && tokens[3] == `)`
+                        iparen = isBC(tokens[0:3]) && isWordOp(tokens[3])
+                        pspan++
+
+                // fallback == error condition
+                default:
+                        err = errorf("[%d] Unhandled token '%s'\n", ct, token)
+
+                }
+
+                // Go no further if any errors were encountered.
+                if err != nil {
+                        return
+                }
+
+                // Transfer our temporary contiguous condition
+                // stack's contents into a new stack, which
+                // is pushed singularly into the outer stack.
+                if cc.Len() > 0 {
+                        grp := ruleByLoP(outer.Category())
+                        for j := 0; j < cc.Len(); j++ {
+                                jidx, _ := cc.Index(j)
+                                /*
+                                printf("DEF:%s [%s;%s;oparen:%t;iparen:%t;ccparen:%t] [%T]\n",
+                                        objectString(jidx),
+                                        objectCategory(jidx),
+                                        objectIdent(jidx),
+                                        oparen,
+                                        iparen,
+                                        cc.isParen(),
+                                        jidx)
+                                */
+                                grp.Push(jidx)
+                        }
+
+                        outer.Push(grp).Paren(oparen || iparen)
+                        cc.reset()
+                }
+
+                // Traverse the inner stack, which contains nested
+                // stacks and/or conditions that were acquired as
+                // a result of a recursive (self-executing) call
+                // of this same function. Migrate the inner stack's
+                // contents into outer prior to a return.
+                outer = transferToOuterBindRule(iparen, oparen, inner, outer)
+
+                // Break out of the for-loop if we've been ordered
+                // to do so ...
+                if done {
+                        break
+                }
+
+                // If we've made it here, we still have tokens left
+                // to process. If any recursive calls have been made,
+                // it might be necessary to skip ahead, should the
+                // skip integer value be non-zero.
+                switch skip {
+                case 0:
+                        continue
+                default:
+                        // If skip falls outside of the expected boundaries
+                        // trash whatever tokens were remaining and return.
+                        if skip == -1 || !( 0 <= skip && skip <= len(tokens)-1 ) {
+                                tokens = []string{}
+                                return
+                        }
+
+                        // Truncate our token stream, and reset the skip
+                        // integer marker.
+                        tokens = tokens[skip:]
+                        skip = 0
+                }
+        }
+
+        return
+}
+
+func getQuotedValues(kw,op string, t []string) (cready bool, stop int, v []string, err error) {
+        if stop, v = readQuotedValues(t); len(v) == 0 {
+                err = errorf("No values parsed from token stream '%v'", t)
+                return
+        }
+
+        t = t[stop:]
+        cready = len(kw) > 0 && len(op) > 0
+
+        return
+}
+
+func transferToOuterBindRule(iparen, oparen bool, inner, outer Rule) Rule {
+
+        if inner.Len() == 0 {
+                return outer
+        }
+
+        r := ruleByLoP(outer.Category())
+        r.Push(outer.Paren(oparen)).Paren(oparen)
+
+        //printf("[len:%d]: %T[%s]: %s\n", r.Len(), r, r.Category(), r)
+
+        //var last string
+        for i := 0; i < inner.Len(); i++ {
+                slice, _ := inner.Index(i)
+                prev, _ := outer.Index(outer.Len()-1)
+
+                // Switch on inner slice type
+                switch tv := slice.(type) {
+
+                // Current inner slice is a Condition
+                case Condition:
+
+                        // Last-added outer slice was a Rule
+                        switch uv := prev.(type) {
+                        case Rule:
+                                //last = `R`
+                                uv.Push(tv)
+
+                        // Last-added outer slice was a Condition
+                        case Condition:
+                                //last = `C`
+                                r.Push(ruleByLoP(outer.Category()).Push(tv))
+                        }
+
+                // Current inner slice is a Rule
+                case Rule:
+
+                        // Inner Rule's Boolean WORD operator does not
+                        // match Inner slice [i] WORD operator. This
+                        // would indicate a new stack (Rule) is coming
+                        // up ...
+
+                        tv.Paren(!oparen)
+                        //printf("RULE :: 1/2 [len:%d;isparen:%t;iparen:%t;oparen:%t]: %T[%s]: %s\n", inner.Len(), inner.isParen(), iparen, outer.isParen(), inner, inner.Category(), inner)
+                        //printf("RULE :: 2/2 [len:%d;isparen:%t;iparen:%t;oparen:%t]: %T[%s]: %s\n", tv.Len(), tv.isParen(), iparen, tv.isParen(), tv, tv.Category(), tv)
+                        if inner.Category() != tv.Category() {
+                                r.Push(ruleByLoP(inner.Category()).Push(tv))
+                                break
+                        }
+
+                        // Push Inner slice [i] into Outer Rule.
+                        r.Push(tv)
+
+                }
+        }
+
+        return r
+}
+
+/*
+func printOuter(outer Rule, tabs ...string) {
+        var tab string
+        if len(tabs) > 0 {
+                for t := 0 ; t < len(tabs)-1; t++ {
+                        tab += string(rune(9))
+                }
+        }
+
+        if len(tab) > 0 {
+                tab += string(rune(9))
+        }
+
+        for i := 0; i < outer.Len(); i++ {
+                sl, _ := outer.Index(i)
+
+                switch tv := sl.(type) {
+                case Rule:
+                        printf("%s [%d; len:%d]: %T[%s]\n", tab, i, tv.Len(), tv, tv.Category())
+                        if tv.Len() > 0 {
+                                sub, _ := tv.Index(0)
+                                printf("%T: %s\n", sub, objectString(sub))
+                        }
+                        printOuter(tv, tab, string(rune(9)))
+                }
+        }
+}
+*/
+
+func bindRuleAssertWordOperator(t []string, token, icat string, depth, pspan int) (r Rule, skip int, ok bool, err error) {
+        // this boolean operator merely continues the
+        // expression, and does not signify a switch
+        // to another operator, e.g.: AND -> OR, which
+        // would result in a new recursion.
+        if eq(token, icat) {
+                return
+        }
+
+        // boolean operator differs from the current
+        // (outer) operator. Begin new recursion, and
+        // pass the desired word to this same function
+        // which will result in an alloc for a new stack.
+        //var innot Rule
+        if eq(token, `and not`) {
+                // negated condition/stack
+                var innot Rule
+                if innot, skip, err = parseBindRule(t[1:], depth, pspan); innot.Len() == 1 {
+                        innar, _ := innot.Index(0)
+                        r = ruleByLoP(token[4:])
+                        switch tv := innar.(type) {
+                        case Rule:
+                                if tv.Len() == 1 {
+                                        r.Push(tv.setCategory(`or`)).setCategory(token[4:])
+                                }
+                        case Condition:
+                                r.Push(tv).setCategory(token[4:])
+                        }
+                } else {
+                        r = ruleByLoP(token[4:])
+                        r.Push(innot.setCategory(`or`))
+                }
+
+        } else {
+                // AND or OR condition/stack
+                r, skip, err = parseBindRule(t[1:], depth, pspan, token)
+                r.setCategory(lc(token))
+        }
+
+        return
+}
+
+/*
 parseBindRuleCondition returns a new Condition and an error instance following an attempt
 to parse the stream of values (vals) along with the Bind Rule keyword (kw) and comparison
 operator (cop).
 
-This function is executed by parseBR during the Instruction parsing process.
+This function is executed by parseBindRule during the Instruction parsing process.
 */
 func parseBindRuleCondition(vals []string, kw, cop string) (c Condition, err error) {
 	if len(vals) == 0 {
@@ -218,75 +712,6 @@ func assertBindRuleNet(vals []string, key BindKeyword, op string) (c Condition, 
 	return
 }
 
-func bindRuleCaseWordOperator(tokens []string, ocat string, chop, depth, pspan int) (inner Rule, skipTo int, err error) {
-	if len(tokens) < 5 {
-		err = errorf("Cannot process token stream for word operator; too few tokens (%d): %v",
-			len(tokens), tokens)
-		return
-	}
-
-	var token string = tokens[0]
-	var next string = tokens[1]
-	var ttoken string
-	var offset int = 1
-
-	// go-stackage's negation stacks use the
-	// category of 'NOT', as opposed to ACIv3's
-	// 'AND NOT' operator equivalent. Take the
-	// 'NOT' portion of the value, using its
-	// original case-folding scheme, and save
-	// it for stack tagging later.
-	if eq(token, `and not`) {
-		ttoken = token[4:]
-		printf("TOCK: %s [OFF:%d]\n", ttoken)
-	} else if eq(next, `and not`) {
-		ttoken = next[4:]
-		offset++
-		printf("TICK: %s [OFF:%d]\n", ttoken)
-	}
-	offset = 5
-
-	// If the category (word operator) is not
-	// the same as the token, this means a new
-	// distinct (inner) stack is beginning (and
-	// not a continuation of outer).
-	if !eq(ttoken, ocat) {
-
-		// We need to offset the truncation factor
-		// of our token slices when the 'AND NOT'
-		// logical Boolean WORD operator is used,
-		// as it will erroneously be interpreted
-		// as two (2) distinct tokens.
-		if eq(ttoken, `not`) {
-			offset++
-		}
-
-		// look ahead for an opening parenthetical ...
-		iparen := tokens[2] == `(`
-
-		// Launch a new inner recursion of this
-		// same function.
-		_, _, oip, _ := parenState(join(tokens[offset:], ``))
-		if skipTo, inner, err = parseBR(tokens[offset:], depth, pspan); err != nil {
-			return
-		}
-
-		printf("B SKIPTO:%d\n", skipTo)
-		skipTo += chop - offset + 1
-		printf("A SKIPTO:%d\n", skipTo)
-
-		// If the inner stack has at least one
-		// (1) element, preserve it for the end
-		// stack element, else take no action.
-		if inner.Len() > 0 {
-			inner.Paren(oip || iparen)
-			inner.setCategory(ttoken) // mark the inner stack's logical Boolean WORD operator
-		}
-	}
-
-	return
-}
-
 func assertBindRuleUGRDN(vals []string, key BindKeyword, op string) (c Condition, err error) {
         if len(vals) == 0 {
                 err = errorf("Empty bind rule value")
@@ -326,8 +751,6 @@ func assertBindRuleUGRDN(vals []string, key BindKeyword, op string) (c Condition
                                         if !isQuoted(vals[x]) && isQuoted(O) {
                                                 vencap = true
                                                 bdn.Encap()
-                                        } else if !isQuoted(O) {
-                                                bdn.Encap(`"`)
                                         }
                                 }
 

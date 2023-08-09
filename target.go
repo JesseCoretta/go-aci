@@ -241,8 +241,6 @@ func assertTargetOID(vals []string, op string, key TargetKeyword) (c Condition, 
                                         if !isQuoted(vals[x]) && isQuoted(O) {
                                                 vencap = true
                                                 toid.Encap()
-                                        } else if !isQuoted(O) {
-                                                toid.Encap(`"`)
                                         }
                                 }
 
@@ -364,8 +362,6 @@ func assertTargetAttributes(vals []string, op string) (c Condition, err error) {
                                         if !isQuoted(vals[x]) && isQuoted(O) {
                                                 vencap = true
                                                 tat.Encap()
-                                        } else if !isQuoted(O) {
-                                                tat.Encap(`"`)
                                         }
                                 }
 

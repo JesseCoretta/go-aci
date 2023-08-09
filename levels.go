@@ -195,7 +195,6 @@ func parseInheritance(inh string) (I Inheritance, err error) {
 	// one (1) character after the identifier
 	// boundary (see above).
 	var abv AttributeBindTypeOrValue
-	printf("IDX+1: %v\n", raw[idx+2:])
 
 	if abv, err = parseATBTV(raw[idx+2:]); err != nil {
 		// non conformant ATBTV
@@ -289,7 +288,6 @@ func assertStrInheritance(x string) (lvl Level) {
 	lvl = noLvl
 	for k, v := range levelNumbers {
 		if x == k {
-			printf("STRINH: %s, %s==%s\n", v, k, x)
 			lvl = v
 			break
 		}
