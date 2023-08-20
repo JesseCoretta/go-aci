@@ -1,10 +1,14 @@
 # go-aci
 
-[![Go Report Card](https://goreportcard.com/badge/JesseCoretta/go-aci)](https://goreportcard.com/report/github.com/JesseCoretta/go-aci) [![GoDoc](https://godoc.org/github.com/JesseCoretta/go-aci?status.svg)](https://godoc.org/github.com/JesseCoretta/go-aci) ![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)
+<!--
+[![Go Report Card](https://goreportcard.com/badge/JesseCoretta/go-aci)](https://goreportcard.com/report/github.com/JesseCoretta/go-aci)
+-->
+
+[![GoDoc](https://godoc.org/github.com/JesseCoretta/go-aci?status.svg)](https://godoc.org/github.com/JesseCoretta/go-aci) ![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)
 
 ## Overview
 
-Package aci implements bidirectional marshaling and component abstractions pertaining to the third (3rd) version of the ACI syntax.
+Package aci implements the complete ACIv3 syntax in a vendor-agnostic manner with rich features.
 
 ## Status
 
