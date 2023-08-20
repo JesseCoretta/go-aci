@@ -16,7 +16,7 @@ func TestParseTargetRule(t *testing.T) {
 }
 
 func TestParseTargetRules(t *testing.T) {
-        want := `( targetfilter = "(&(objectClass=employee)(objectClass=engineering))" ) ( targetscope = "onelevel" ) ( targetattr = "cn || givenName" )`
+        want := `( targetfilter = "(&(objectClass=employee)(objectClass=engineering))" )( targetscope = "onelevel" )( targetattr = "cn || givenName" )`
 
         c, err := ParseTargetRules(want)
         if err != nil {
