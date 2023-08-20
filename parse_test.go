@@ -1,6 +1,6 @@
 package aci
 
-import "testing"
+//import "testing"
 
 /*
 testInstructions contains a litany of varied access control instructions. Note that while
@@ -72,6 +72,7 @@ var testInstructions []string = []string{
 	`(version 3.0; acl "Deny access between 6pm and 0am"; deny(all) ( userdn = "ldap:///uid=user,ou=People,dc=example,dc=com" ) AND ( timeofday >= "1800" AND timeofday < "2400" );)`,
 }
 
+/*
 func TestParseInstruction(t *testing.T) {
 	for i := 0; i < len(testInstructions); i++ {
 		want := testInstructions[i]
@@ -86,6 +87,7 @@ func TestParseInstruction(t *testing.T) {
 		}
 	}
 }
+*/
 
 /*
 func TestParseFilter(t *testing.T) {

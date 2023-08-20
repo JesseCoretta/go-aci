@@ -1,14 +1,98 @@
 package aci
 
+import (
+	parser "github.com/JesseCoretta/go-antlraci"
+)
+
 /*
 bind.go contains bind rule parsing functions and methods.
 */
+
+/*
+ParseBindRule returns an instance of Condition alongside an error instance.
+
+The returned Condition instance shall contain 
+*/
+func ParseBindRule(raw string) (Condition, error) {
+        return parseBindRule(raw)
+}
+
+func parseBindRule(raw string) (Condition, error) {
+        _c, err := parser.ParseBindRule(raw)
+	c := Condition(_c)
+        return c, err
+}
+
+/*
+ParseBindRules returns an instance of Rule alongside an error instance.
+
+The returned Rule instance shall contain a complete hierarchical stack
+structure that represents the abstract rule (raw) input by the user.
+*/
+func ParseBindRules(raw string) (Rule, error) {
+        return parseBindRules(raw)
+}
+
+func parseBindRules(raw string) (Rule, error) {
+        _b, err := parser.ParseBindRules(raw)
+	if err != nil {
+                return Rule{}, err
+        }
+	return Rule(_b), nil
+}
+
+/*
+assertBindRule returns the final Condition instance (c) alongside an error (err).
+
+This function takes the freshly parsed and released ANTLR4 value(s) (vals) as they
+were extracted from the token stream(s) originally submitted by the user for parsing.
+The value(s) are then asserted into their proper type, as requested based on the Bind
+keyword used, and stored within the returned Condition instance.
+
+Similarly, the parsed comparison operator present (cop) shall determine which of the
+comparison types are to be used for Condition assembly (e.g.: '=' would use Eq() to
+create an equality Condition).
+
+The style argument, an integer, defines which of the quotation styles should be used
+for multi-valued Condition instances (e.g.: style 1 describes "value" || "value" ...
+and style 2 describes "value || value ..."). This will only apply to DN-based Bind
+Rules ('userdn', 'roledn' and 'groupdn').
+*/
+func assertBindRule(vals []string, style int, kw, cop string) (c Condition, err error) {
+
+        switch key := matchBKW(kw); key {
+
+        case BindUDN, BindRDN, BindGDN:
+                c, err = assertBindRuleUGRDN(vals, style, key, cop)
+
+        case BindUAT, BindGAT:
+                c, err = assertBindRuleUGAttr(vals, key, cop)
+
+        case BindToD:
+                c, err = assertBindRuleTimeOfDay(vals, cop)
+
+        case BindDoW:
+                c, err = assertBindRuleDayOfWeek(vals, cop)
+
+        case BindAM:
+                c, err = assertBindRuleAuthMethod(vals, cop)
+
+        case BindSSF:
+                c, err = assertBindRuleSecurityStrengthFactor(vals, cop)
+
+        case BindIP, BindDNS:
+                c, err = assertBindRuleNet(vals, key, cop)
+        }
+
+	return
+}
 
 /*
 parseBindRule is the top-level parser for a sequence of bind rule expressions with,
 or without, nesting and/or Boolean WORD operators. A populated outer Rule instance,
 along with a token stream trimming integer and an error are returned.
 */
+/*
 func parseBindRule(tokens []string, depth, pspan int, word ...string) (outer Rule, skip int, err error) {
         // Don't bother processing tokens that could
         // never possibly represent a valid Bind Rule
@@ -356,7 +440,9 @@ func parseBindRule(tokens []string, depth, pspan int, word ...string) (outer Rul
 
         return
 }
+*/
 
+/*
 func getQuotedValues(kw,op string, t []string) (cready bool, stop int, v []string, err error) {
         if stop, v = readQuotedValues(t); len(v) == 0 {
                 err = errorf("No values parsed from token stream '%v'", t)
@@ -368,7 +454,9 @@ func getQuotedValues(kw,op string, t []string) (cready bool, stop int, v []strin
 
         return
 }
+*/
 
+/*
 func transferToOuterBindRule(iparen, oparen bool, inner, outer Rule) Rule {
 
         if inner.Len() == 0 {
@@ -426,6 +514,7 @@ func transferToOuterBindRule(iparen, oparen bool, inner, outer Rule) Rule {
 
         return r
 }
+*/
 
 /*
 func printOuter(outer Rule, tabs ...string) {
@@ -456,6 +545,7 @@ func printOuter(outer Rule, tabs ...string) {
 }
 */
 
+/*
 func bindRuleAssertWordOperator(t []string, token, icat string, depth, pspan int) (r Rule, skip int, ok bool, err error) {
         // this boolean operator merely continues the
         // expression, and does not signify a switch
@@ -497,6 +587,7 @@ func bindRuleAssertWordOperator(t []string, token, icat string, depth, pspan int
 
         return
 }
+*/
 
 /*
 parseBindRuleCondition returns a new Condition and an error instance following an attempt
@@ -505,6 +596,7 @@ operator (cop).
 
 This function is executed by parseBindRule during the Instruction parsing process.
 */
+/*
 func parseBindRuleCondition(vals []string, kw, cop string) (c Condition, err error) {
 	if len(vals) == 0 {
 		err = errorf("Empty bind rule condition values; aborting")
@@ -550,7 +642,9 @@ func parseBindRuleCondition(vals []string, kw, cop string) (c Condition, err err
 
 	return
 }
+*/
 
+/*
 func checkBindRuleConditionValueStream(last, token, next string, ct int) (skip bool, err error) {
 	// condition is ready for assembly AND a non-zero
 	// double-quoted value is the current token. We
@@ -571,6 +665,7 @@ func checkBindRuleConditionValueStream(last, token, next string, ct int) (skip b
 
 	return
 }
+*/
 
 func assertBindRuleUGAttr(vals []string, key BindKeyword, op string) (c Condition, err error) {
 	if err = unexpectedBindRuleConditionValueErr(key, 1, len(vals)); err != nil {
@@ -716,14 +811,15 @@ func assertBindRuleNet(vals []string, key BindKeyword, op string) (c Condition, 
 	return
 }
 
-func assertBindRuleUGRDN(vals []string, key BindKeyword, op string) (c Condition, err error) {
+func assertBindRuleUGRDN(vals []string, qt int, key BindKeyword, op string) (c Condition, err error) {
         if len(vals) == 0 {
                 err = errorf("Empty bind rule value")
                 return
         }
 
-        var vencap bool
         var value string = vals[0]
+	// if the value is an LDAP URI, handle that here instead
+	// of treating it like a DN alone.
         if hasPfx(value, LocalScheme) && contains(vals[0], `?`) {
                 var uri LDAPURI
 
@@ -735,68 +831,39 @@ func assertBindRuleUGRDN(vals []string, key BindKeyword, op string) (c Condition
                 return
         }
 
-        // prepare a stack for our DN value(s)
         bdn := ruleByDNKeyword(key)
 
-        // bind rule is either or both of the following:
-        // A: one (1) double-quoted DN
-        // B: one (1) double-quoted LIST of unquoted DNs in symbolic OR context
-        for x := 0; x < len(vals); x++ {
-                value = vals[x]
-                if contains(value, `||`) {
+        if qt == 1 {
+                bdn.Encap()
+        } else {
+                bdn.Encap(`"`)
+        }
 
-                        // Type-B confirmed
-                        for ix, O := range split(unquote(value), `||`) {
-                                if len(O) == 0 {
-                                        continue
-                                }
-
-                                if x == 0 && ix == 0 {
-                                        if !isQuoted(vals[x]) && isQuoted(O) {
-                                                vencap = true
-                                                bdn.Encap()
-                                        }
-                                }
-
-                                D := trimS(unquote(O))
-                                if !hasPfx(D, LocalScheme) {
-                                        err = errorf("Illegal %s distinguishedName slice: [index:%d;value:%s] missing LDAP local scheme (%s)",
-                                                key, x, D, LocalScheme)
-                                        return
-                                }
-
-                                bdn.Push(DistinguishedName{newDistinguishedName(D[len(LocalScheme):], key)})
-                        }
-
-                } else {
-
-                        // Type-A confirmed
-                        if x == 0 {
-                                if isQuoted(value) {
-                                        vencap = true
-                                        bdn.Encap(`"`)
-                                }
-                        }
-
-                        D := unquote(value)
-                        if !hasPfx(D, LocalScheme) {
-                                err = errorf("Illegal %s distinguishedName: [index:%d;value:%s] missing LDAP local scheme (%s)",
-                                        key, x, D, LocalScheme)
-                                return
-                        }
-
-                        bdn.Push(DistinguishedName{newDistinguishedName(D[len(LocalScheme):], key)})
+        for x := 0 ; x < len(vals); x++ {
+                D := vals[x]
+		if err = missingLocalSchemeDNErr(key,x,D); err != nil {
+                        return
                 }
+                bdn.Push(DistinguishedName{newDistinguishedName(D[len(LocalScheme):], key)})
         }
 
         c, err = conditionByOperator(op, bdn)
-        if !vencap {
+        if qt == 1 {
                 c.Encap(`"`)
-                return
+        } else {
+                c.Encap()
         }
-        c.Encap()
 
         return
+}
+
+func missingLocalSchemeDNErr(key BindKeyword, x int, D string) (err error) {
+	if !hasPfx(D, LocalScheme) {
+		err = errorf("Illegal %s distinguishedName slice: [index:%d;value:%s] missing LDAP local scheme (%s)",
+			key, x, D, LocalScheme)
+	}
+
+	return
 }
 
 func badClockTimeErr(raw, thyme string) (err error) {

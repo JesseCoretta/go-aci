@@ -1438,7 +1438,7 @@ func (r Rule) assertAppendURIAttributeTypes(src any) {
 			// will handle that for us
 			// because we're using an
 			// AttributeType PushPolicy.
-			a, _ := tv.Index(j)
+			a := tv.Index(j)
 
 			// Push value a (an attributeType)
 			// into stack. Uniqueness will be

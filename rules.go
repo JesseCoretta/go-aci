@@ -150,6 +150,14 @@ func (r Rule) reset() {
 }
 
 /*
+transfer wraps go-stackage's Stack.Transfer method. This is a
+private method in go-aci.
+*/
+func (r Rule) transfer(x Rule) bool {
+	return stackage.Stack(r).Transfer(stackage.Stack(x))
+}
+
+/*
 ID wraps go-stackage's Stack.ID method.
 */
 func (r Rule) ID() string {
@@ -212,8 +220,9 @@ func (r Rule) Remove(i int) (any, bool) {
 /*
 Index wraps go-stackage's Stack.Index method.
 */
-func (r Rule) Index(i int) (any, bool) {
-	return stackage.Stack(r).Index(i)
+func (r Rule) Index(i int) (slice any) {
+	slice, _ = stackage.Stack(r).Index(i)
+	return
 }
 
 /*
@@ -521,7 +530,7 @@ func attrRuleCanPush(r Rule, x any) (ok bool) {
 	for i := 0; i < r.Len(); i++ {
 
 		// Call index number
-		a, _ := r.Index(i)
+		a := r.Index(i)
 
 		// Assert slice index to AttributeType
 		// or continue at next iteration
@@ -570,7 +579,7 @@ func targetRuleCanPush(r Rule, x any) (ok bool) {
 		// Iterate all slice members of r.
 		for i := 0; i < r.Len(); i++ {
 			// call index i
-			sl, _ := r.Index(i)
+			sl := r.Index(i)
 
 			// If i is a Condition, perform
 			// keyword comparison.
@@ -589,7 +598,7 @@ func targetRuleCanPush(r Rule, x any) (ok bool) {
 		// Iterate all slice members of r.
 		for i := 0; i < r.Len(); i++ {
 			// call index i
-			sl, _ := r.Index(i)
+			sl := r.Index(i)
 
 			// If i is an OID or string, perform
 			// string literal comparison
@@ -612,7 +621,7 @@ func targetRuleCanPush(r Rule, x any) (ok bool) {
 		// Iterate all slice members of r.
 		for i := 0; i < r.Len(); i++ {
 			// call index i
-			sl, _ := r.Index(i)
+			sl := r.Index(i)
 
 			// If i is an OID or string, perform
 			// string literal comparison
@@ -635,7 +644,7 @@ func targetRuleCanPush(r Rule, x any) (ok bool) {
 		// Iterate all slice members of r.
 		for i := 0; i < r.Len(); i++ {
 			// call index i
-			sl, _ := r.Index(i)
+			sl := r.Index(i)
 
 			// If i is a DN or string, perform
 			// string literal comparison

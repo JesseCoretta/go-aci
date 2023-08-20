@@ -212,7 +212,7 @@ func (r Condition) Operator() stackage.Operator {
 Value wraps go-stackage's Condition.Value method.
 */
 func (r Condition) Value() any {
-	return stackage.Condition(r).Value()
+	return stackage.Condition(r).Expression()
 }
 
 /*

@@ -4,10 +4,6 @@ package aci
 aci.go contains the top-level access control instructor methods and types.
 */
 
-import (
-	"github.com/JesseCoretta/go-aci/internal/aciparser"
-)
-
 /*
 Instruction conforms to the ACI syntax specification associated with
 the Version constant value of this package.
@@ -350,8 +346,8 @@ meant for append within the receiver.
 func (r *instruction) assertPushRule(x Rule) {
 	if x.Len() > 0 && matchBKW(x.Category()) != BindKeyword(0x0) || matchTKW(x.Category()) != TargetKeyword(0x0) {
 		for t := 0; t < x.Len(); t++ {
-			tgt, ok := x.Index(t)
-			if !ok {
+			tgt := x.Index(t)
+			if tgt == nil {
 				continue
 			}
 			r.T.Push(tgt)
@@ -365,6 +361,7 @@ func (r *instruction) assertPushRule(x Rule) {
 parsePBR reads and processes a sequence of tokens into one (1) Permission and one (1)
 bind rule. An error and a chop index is returned alongside these components.
 */
+/*
 func parsePBR(tokens []string) (chop int, pbr []PermissionBindRule, err error) {
         var mode string = `permission` // starting mode is always permission
 
@@ -429,6 +426,7 @@ func parsePBR(tokens []string) (chop int, pbr []PermissionBindRule, err error) {
 
         return
 }
+*/
 
 /*
 parseInstruction returns a populated instance of Instruction, alongside
@@ -438,6 +436,7 @@ all lower-levels of value recognition.
 The input argument, expr, is the string-based ACIv3 expression in its
 complete form.
 */
+/*
 func parseInstruction(expr string) (a Instruction, err error) {
         // if expr is zero-length, absolutely nothing
         // can be done and is considered a user error.
@@ -610,6 +609,7 @@ func parseInstruction(expr string) (a Instruction, err error) {
         // (what is likely) a nil error.
         return
 }
+*/
 
 /*
 pbrule is a private function that returns a new Permission/Bind Rule stack,

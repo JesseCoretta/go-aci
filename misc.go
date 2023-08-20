@@ -949,11 +949,11 @@ func unwrapRule(x Rule) (r Rule) {
 		return
 	}
 
-	sl, _ := x.Index(0)
+	sl := x.Index(0)
 	switch tv := sl.(type) {
 	case Rule:
 		if tv.Len() == 1 {
-			sl2, _ := tv.Index(0)
+			sl2 := tv.Index(0)
 			switch uv := sl2.(type) {
 			case Rule:
 				r = unwrapRule(uv)
