@@ -35,7 +35,7 @@ const (
 badInhErr returns an error describing the appropriate syntax and displaying the offending value.
 */
 func badInhErr(bad string) error {
-	return errorf("Bad Inheritance value '%s'; must conform to 'parent[0-4+].<at>#<bt_or_av>'", bad)
+	return errorf("Bad Inheritance value '%s'; must conform to 'parent[0-9+].<at>#<bt_or_av>'", bad)
 }
 
 /*
@@ -97,36 +97,61 @@ func (r Inheritance) IsZero() bool {
 	return r.inheritance.isZero()
 }
 
-/*
-Eq initializes and returns a new Condition instance configured to express the
-evaluation of the receiver value as Equal-To a `userattr`.
-*/
-func (r Inheritance) Eq() Condition {
-	if r.IsZero() {
-		return Condition{}
+func (r Inheritance) Valid() (err error) {
+	if r.inheritance.AttributeBindTypeOrValue.IsZero() {
+		err = errorf("%T instance is nil", AttributeBindTypeOrValue{})
 	}
-	kw := r.inheritance.AttributeBindTypeOrValue.BindKeyword
-	return Cond(kw, r, Eq).
-		Encap(`"`).
-		setID(`bind`).
-		NoPadding(!ConditionPadding).
-		setCategory(kw.String())
+	return
 }
 
 /*
-Ne initializes and returns a new Condition instance configured to express the
-evaluation of the receiver value as Not-Equal-To a `userattr`.
+Eq initializes and returns a new BindRule instance configured to express the
+evaluation of the receiver value as Equal-To the `userattr` or `groupattr`
+Bind keyword context.
 */
-func (r Inheritance) Ne() Condition {
-	if r.IsZero() {
-		return Condition{}
+func (r Inheritance) Eq() BindRule {
+	if err := r.Valid(); err != nil {
+		return badBindRule
 	}
-	kw := r.inheritance.AttributeBindTypeOrValue.BindKeyword
-	return Cond(kw, r, Ne).
+
+	var b BindRule
+	b.SetKeyword(r.inheritance.AttributeBindTypeOrValue.BindKeyword)
+	b.SetOperator(Eq)
+	b.SetExpression(r)
+
+	_b := castAsCondition(b).
 		Encap(`"`).
-		setID(`bind`).
+		SetID(bindRuleID).
 		NoPadding(!ConditionPadding).
-		setCategory(kw.String())
+		SetCategory(r.inheritance.AttributeBindTypeOrValue.BindKeyword.String())
+
+	b = BindRule(*_b)
+	return b
+}
+
+/*
+Ne initializes and returns a new BindRule instance configured to express the
+evaluation of the receiver value as Not-Equal-To the `userattr` or `groupattr`
+Bind keyword context.
+*/
+func (r Inheritance) Ne() BindRule {
+	if err := r.Valid(); err != nil {
+		return badBindRule
+	}
+
+	var b BindRule
+	b.SetKeyword(r.inheritance.AttributeBindTypeOrValue.BindKeyword)
+	b.SetOperator(Ne)
+	b.SetExpression(r)
+
+	_b := castAsCondition(b).
+		Encap(`"`).
+		SetID(bindRuleID).
+		NoPadding(!ConditionPadding).
+		SetCategory(r.inheritance.AttributeBindTypeOrValue.BindKeyword.String())
+
+	b = BindRule(*_b)
+	return b
 }
 
 /*

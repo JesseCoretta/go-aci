@@ -46,27 +46,53 @@ const (
 )
 
 /*
-Eq initializes and returns a new *Condition instance configured
-to evaluate AuthMethod as Equal-To the the request address.
+Eq initializes and returns a new BindRule instance configured to express the
+evaluation of the receiver value as Equal-To the `authmethod` Bind keyword
+context.
 */
-func (r AuthMethod) Eq() Condition {
-	return Cond(BindAM, r, Eq).
+func (r AuthMethod) Eq() BindRule {
+	if r == noAuth {
+		return badBindRule
+	}
+
+	var b BindRule
+	b.SetKeyword(BindAM)
+	b.SetOperator(Eq)
+	b.SetExpression(r)
+
+	_b := castAsCondition(b).
 		Encap(`"`).
+		SetID(bindRuleID).
 		NoPadding(!ConditionPadding).
-		setCategory(`authmethod`)
+		SetCategory(BindAM.String())
+
+	b = BindRule(*_b)
+	return b
 }
 
 /*
-Ne initializes and returns a new *Condition instance configured
-to evaluate AuthMethod as Not-Equal-To the the request address.
-
-Negated equality Condition instances should be used with caution.
+Ne initializes and returns a new BindRule instance configured to express the
+evaluation of the receiver value as Not-Equal-To the `authmethod` Bind keyword
+context.
 */
-func (r AuthMethod) Ne() Condition {
-	return Cond(BindAM, r, Ne).
+func (r AuthMethod) Ne() BindRule {
+	if r == noAuth {
+		return badBindRule
+	}
+
+	var b BindRule
+	b.SetKeyword(BindAM)
+	b.SetOperator(Ne)
+	b.SetExpression(r)
+
+	_b := castAsCondition(b).
 		Encap(`"`).
+		SetID(bindRuleID).
 		NoPadding(!ConditionPadding).
-		setCategory(`authmethod`)
+		SetCategory(BindAM.String())
+
+	b = BindRule(*_b)
+	return b
 }
 
 /*
@@ -139,73 +165,136 @@ func (r *ssf) isZero() bool {
 }
 
 /*
-Eq initializes and returns a new *Condition instance configured
-to evaluate SSF as Equal-To the the request confidentility factor.
-
-Value encapsulation in double-quotes (") is imposed.
+Eq initializes and returns a new BindRule instance configured to express the
+evaluation of the receiver value as Equal-To the `ssf` Bind keyword context.
 */
-func (r SecurityStrengthFactor) Eq() Condition {
-	return Cond(BindSSF, r, Eq).
+func (r SecurityStrengthFactor) Eq() BindRule {
+
+	var b BindRule
+	b.SetKeyword(BindSSF)
+	b.SetOperator(Eq)
+	b.SetExpression(r)
+
+	_b := castAsCondition(b).
 		Encap(`"`).
-		setCategory(`ssf`)
+		SetID(bindRuleID).
+		NoPadding(!ConditionPadding).
+		SetCategory(BindSSF.String())
+
+	b = BindRule(*_b)
+	return b
 }
 
 /*
-Ne initializes and returns a new *Condition instance configured
-to evaluate SSF as Not-Equal-To the the request confidentility factor.
+Ne initializes and returns a new BindRule instance configured to express the
+evaluation of the receiver value as Not-Equal-To the `ssf` Bind keyword
+context.
 
-Value encapsulation in double-quotes (") is imposed.
+Negated equality BindRule instances should be used with caution.
 */
-func (r SecurityStrengthFactor) Ne() Condition {
-	return Cond(BindSSF, r, Ne).
+func (r SecurityStrengthFactor) Ne() BindRule {
+
+	var b BindRule
+	b.SetKeyword(BindSSF)
+	b.SetOperator(Ne)
+	b.SetExpression(r)
+
+	_b := castAsCondition(b).
 		Encap(`"`).
+		SetID(bindRuleID).
 		NoPadding(!ConditionPadding).
-		setCategory(`ssf`)
+		SetCategory(BindSSF.String())
+
+	b = BindRule(*_b)
+	return b
 }
 
 /*
-Lt initializes and returns a new *Condition instance configured
-to evaluate SSF as Less-Than the request confidentility factor.
+Lt initializes and returns a new BindRule instance configured to express the
+evaluation of the receiver value as Less-Than the `ssf` Bind keyword context.
 */
-func (r SecurityStrengthFactor) Lt() Condition {
-	return Cond(BindSSF, r, Lt).
+func (r SecurityStrengthFactor) Lt() BindRule {
+
+	var b BindRule
+	b.SetKeyword(BindSSF)
+	b.SetOperator(Lt)
+	b.SetExpression(r)
+
+	_b := castAsCondition(b).
 		Encap(`"`).
+		SetID(bindRuleID).
 		NoPadding(!ConditionPadding).
-		setCategory(`ssf`)
+		SetCategory(BindSSF.String())
+
+	b = BindRule(*_b)
+	return b
 }
 
 /*
-Gt initializes and returns a new *Condition instance configured
-to evaluate SSF as Greather-Than the request confidentility factor.
+Le initializes and returns a new BindRule instance configured to express the
+evaluation of the receiver value as Less-Than-Or-Equal to the `ssf` Bind
+keyword context.
 */
-func (r SecurityStrengthFactor) Gt() Condition {
-	return Cond(BindSSF, r, Gt).
+func (r SecurityStrengthFactor) Le() BindRule {
+
+	var b BindRule
+	b.SetKeyword(BindSSF)
+	b.SetOperator(Le)
+	b.SetExpression(r)
+
+	_b := castAsCondition(b).
 		Encap(`"`).
+		SetID(bindRuleID).
 		NoPadding(!ConditionPadding).
-		setCategory(`ssf`)
+		SetCategory(BindSSF.String())
+
+	b = BindRule(*_b)
+	return b
 }
 
 /*
-Le initializes and returns a new *Condition instance configured to
-evaluate SSF as Less-Than-Or-Equal to the request confidentility factor.
+Gt initializes and returns a new BindRule instance configured to express the
+evaluation of the receiver value as Greater-Than the `ssf` Bind keyword
+context.
 */
-func (r SecurityStrengthFactor) Le() Condition {
-	return Cond(BindSSF, r, Le).
+func (r SecurityStrengthFactor) Gt() BindRule {
+
+	var b BindRule
+	b.SetKeyword(BindSSF)
+	b.SetOperator(Gt)
+	b.SetExpression(r)
+
+	_b := castAsCondition(b).
 		Encap(`"`).
+		SetID(bindRuleID).
 		NoPadding(!ConditionPadding).
-		setCategory(`ssf`)
+		SetCategory(BindSSF.String())
+
+	b = BindRule(*_b)
+	return b
 }
 
 /*
-Ge initializes and returns a new *Condition instance configured to
-evaluate SSF as Greater-Than-Or-Equal to the request confidentility
-factor.
+Ge initializes and returns a new BindRule instance configured to express the
+evaluation of the receiver value as Greater-Than-Or-Equal to the `ssf` Bind
+keyword context.
 */
-func (r SecurityStrengthFactor) Ge() Condition {
-	return Cond(BindSSF, r, Ge).
+func (r SecurityStrengthFactor) Ge() BindRule {
+
+	var b BindRule
+
+	b.SetKeyword(BindSSF)
+	b.SetOperator(Ge)
+	b.SetExpression(r)
+
+	_b := castAsCondition(b).
 		Encap(`"`).
+		SetID(bindRuleID).
 		NoPadding(!ConditionPadding).
-		setCategory(`ssf`)
+		SetCategory(BindSSF.String())
+
+	b = BindRule(*_b)
+	return b
 }
 
 func (r SecurityStrengthFactor) String() string {

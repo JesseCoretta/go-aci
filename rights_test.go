@@ -54,14 +54,11 @@ func TestDeny(t *testing.T) {
 }
 
 /*
-This example demonstrates the withholding (denial) of all privileges.
+This example demonstrates the withholding (denial) of all privileges except proxy.
 */
 func ExampleDeny() {
-	// allow read, compare and search privileges ...
+	// deny everything (this does not include proxy privilege)
 	D := Deny(AllAccess)
-
-	// order is always fixed for string representation
-	// regardless of order-of-input ...
 	fmt.Printf("%s", D)
 	// Output: deny(all)
 }

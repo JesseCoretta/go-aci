@@ -13,8 +13,6 @@ See the Keyword constants defined in this package for a complete list.
 type Keyword interface {
 	String() string
 	Kind() string
-
-	//keyword() string
 }
 
 /*
@@ -150,39 +148,6 @@ func (r BindKeyword) String() (k string) {
 }
 
 /*
-And wraps go-stackage's And function for the purpose of creating ANDed
-Bind Rule statements.
-*/
-func (r BindKeyword) And() Rule {
-	return Rule(stackageAnd()).
-		NoPadding(!RulePadding).
-		setCategory(`bind`).
-		setPushPolicy()
-}
-
-/*
-Or wraps go-stackage's Or function for the purpose of creating Ored
-Bind Rule statements.
-*/
-func (r BindKeyword) Or() Rule {
-	return Rule(stackageOr()).
-		NoPadding(!RulePadding).
-		setCategory(`bind`).
-		setPushPolicy()
-}
-
-/*
-Not wraps go-stackage's Not function for the purpose of creating NOTed
-Bind Rule statements.
-*/
-func (r BindKeyword) Not() Rule {
-	return Rule(stackageNot()).
-		NoPadding(!RulePadding).
-		setCategory(`bind`).
-		setPushPolicy()
-}
-
-/*
 String is a stringer method that returns the string representation
 of the receiver instance of TargetKeyword.
 */
@@ -191,6 +156,30 @@ func (r TargetKeyword) String() (k string) {
 	if kw, found := tkwMap[r]; found {
 		k = kw
 	}
+	return
+}
+
+func assertATBTVBindKeyword(bkw ...any) (kw BindKeyword) {
+	kw = BindUAT
+	if len(bkw) == 0 {
+		return
+	}
+
+	switch tv := bkw[0].(type) {
+	case BindKeyword:
+		if tv == BindGAT {
+			kw = tv
+		}
+	case int:
+		if tv == 3 {
+			kw = BindGAT
+		}
+	case string:
+		if eq(tv, BindGAT.String()) {
+			kw = BindGAT
+		}
+	}
+
 	return
 }
 

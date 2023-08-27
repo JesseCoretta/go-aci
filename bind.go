@@ -1,26 +1,786 @@
 package aci
 
+/*
+bind.go contains bind rule(s) types, functions and methods.
+*/
+
 import (
 	parser "github.com/JesseCoretta/go-antlraci"
+	"github.com/JesseCoretta/go-stackage"
+)
+
+var (
+	badBindRule  BindRule
+	badBindRules BindRules
 )
 
 /*
-bind.go contains bind rule parsing functions and methods.
+BindRule is a stackage.Condition type alias intended to represent
+a single Bind Rule; that is, one (1) Bind Rule keyword, one (1)
+comparison operator and one (1) or more string values (called an
+'expression').
+
+For example:
+
+	ssf >= "128"
+
+Instances of this type may be assembled manually by users, or may be
+created logically as a result of textual parsing. Users may also want
+to use convenient Eq, Ne, Gt, Ge, Lt, and Le methods extended through
+various types (as permitted) for simplicity.
+
+Instances of this type shall appear within BindRules instances and may
+or may not be parenthetical.
 */
+type BindRule stackage.Condition
+
+func (r BindRule) isBindContextQualifier() bool {
+	return true
+}
+
+/*
+Kind returns the string literal `condition` to identify the receiver
+as a stackage.Condition type alias.
+*/
+func (r BindRule) Kind() string {
+	return `condition`
+}
+
+/*
+Len does not perform any useful task, and exists only to satisfy Go's
+interface signature requirements and to convey this message.
+
+An integer value of one (1) is returned in any scenario.
+*/
+func (r BindRule) Len() int {
+	return 1
+}
+
+/*
+IsNesting does not perform any useful task, and exists only to satisfy
+Go's interface signature requirements and to convey this message.
+
+A Boolean value of false is returned in any scenario.
+*/
+func (r BindRule) IsNesting() bool {
+	return false
+}
+
+/*
+setID wraps go-stackage's Condition.SetID method.
+*/
+func (r BindRule) setID(id string) {
+	castAsCondition(r).SetID(id)
+}
+
+/*
+setCategory wraps go-stackage's Condition.SetCategory method.
+*/
+func (r BindRule) setCategory(cat string) {
+	castAsCondition(r).SetCategory(cat)
+}
+
+/*
+Paren wraps go-stackage's Condition.Paren method.
+*/
+func (r BindRule) Paren(state ...bool) BindRule {
+	castAsCondition(r).Paren(state...)
+	return r
+}
+
+/*
+Valid wraps go-stackage's Condition.Valid method.
+*/
+func (r BindRule) Valid() (err error) {
+	_t := castAsCondition(r)
+	err = _t.Valid()
+	return
+}
+
+/*
+ID wraps go-stackage's Stack.ID method.
+*/
+func (r BindRule) ID() string {
+	if r.IsZero() {
+		return ``
+	}
+	return castAsCondition(r).ID()
+}
+
+/*
+Category wraps go-stackage's Stack.Category method.
+*/
+func (r BindRule) Category() string {
+	if r.IsZero() {
+		return ``
+	}
+	return castAsCondition(r).Category()
+}
+
+/*
+String is a stringer method that returns the string
+representation of the receiver instance.
+
+This method wraps go-stackage's Condition.String method.
+*/
+func (r BindRule) String() string {
+	return castAsCondition(r).String()
+}
+
+/*
+Keyword wraps go-stackage's Condition.Keyword method and
+resolves the raw value into a BindKeyword. Failure to do
+so will return a bogus Keyword.
+*/
+func (r BindRule) Keyword() Keyword {
+	k := castAsCondition(r).Keyword()
+	var kw any = matchBKW(k)
+	return kw.(BindKeyword)
+}
+
+/*
+Operator wraps go-stackage's Condition.Operator method.
+*/
+func (r BindRule) Operator() stackage.Operator {
+	return castAsCondition(r).Operator()
+}
+
+/*
+Expression wraps go-stackage's Condition.Expression method.
+*/
+func (r BindRule) Expression() any {
+	return castAsCondition(r).Expression()
+}
+
+/*
+IsZero wraps go-stackage's Condition.IsZero method.
+*/
+func (r BindRule) IsZero() bool {
+	return castAsCondition(r).IsZero()
+}
+
+/*
+BindRules is a stackage.Stack type alias intended to store and express
+one (1) or more Bind Rule statements, with or without nesting and (at
+least usually) bound by Boolean logical WORD operators 'AND', 'OR' and
+'AND NOT'.
+
+For example:
+
+	ssf >= "128" AND ip = "192.168.*"
+
+Instances of this type may be assembled manually by users, or may be
+created logically as a result of textual parsing. There are also some
+convenient operator-specific methods available (And() for 'AND', Or()
+for 'OR' and Not() for 'AND NOT'.
+*/
+type BindRules stackage.Stack
+
+func (r BindRules) isBindContextQualifier() bool {
+	return true
+}
+
+/*
+Kind returns the string literal `stack` to identify the receiver as
+a stackage.Stack type alias.
+*/
+func (r BindRules) Kind() string {
+	return `stack`
+}
+
+/*
+And returns an instance of Rule configured to express Boolean AND logical
+operations. Instances of this design contain BindContext instances, which
+are qualified through instances of the following types:
+
+• BindRule
+
+• BindRules
+
+The embedded type within the return is stackage.Stack via the go-stackage
+package's And function.
+*/
+func And() (b BindRules) {
+	// create a native stackage.Stack
+	// and configure before typecast.
+	_b := stackAnd().
+		SetID(bindRuleID).
+		SetCategory(`and`).
+		NoPadding(!RulePadding).
+		SetCategory(TargetAttr.String())
+
+	// cast _a as a proper BindRules instance
+	// (b). We do it this way to gain access
+	// to the method for the *specific instance*
+	// being created (b), thus allowing things
+	// like uniqueness checks, etc., to occur
+	// during push attempts, providing helpful
+	// and non-generalized feedback.
+	b = BindRules(_b)
+	_b.SetPushPolicy(b.bindRulesPushPolicy)
+
+	return
+}
+
+/*
+Or returns an instance of Rule configured to express Boolean OR logical
+operations. Instances of this design contain BindContext instances, which
+are qualified through instances of the following types:
+
+• BindRule
+
+• BindRules
+
+The embedded type within the return is stackage.Stack via the go-stackage
+package's Or function.
+*/
+func Or() (b BindRules) {
+	// create a native stackage.Stack
+	// and configure before typecast.
+	_b := stackOr().
+		SetID(bindRuleID).
+		SetCategory(`or`).
+		NoPadding(!RulePadding).
+		SetCategory(TargetAttr.String())
+
+	// cast _a as a proper BindRules instance
+	// (b). We do it this way to gain access
+	// to the method for the *specific instance*
+	// being created (b), thus allowing things
+	// like uniqueness checks, etc., to occur
+	// during push attempts, providing helpful
+	// and non-generalized feedback.
+	b = BindRules(_b)
+	_b.SetPushPolicy(b.bindRulesPushPolicy)
+
+	return
+}
+
+/*
+Not returns an instance of Rule configured to express Boolean NOT logical
+operations. Instances of this design contain BindContext instances, which
+are qualified through instances of the following types:
+
+• BindRule
+
+• BindRules
+
+The embedded type within the return is stackage.Stack via the go-stackage
+package's Not function.
+*/
+func Not() (b BindRules) {
+	// create a native stackage.Stack
+	// and configure before typecast.
+	_b := stackNot().
+		SetID(bindRuleID).
+		SetCategory(`not`).
+		NoPadding(!RulePadding).
+		SetCategory(TargetAttr.String())
+
+	// cast _a as a proper BindRules instance
+	// (b). We do it this way to gain access
+	// to the method for the *specific instance*
+	// being created (b), thus allowing things
+	// like uniqueness checks, etc., to occur
+	// during push attempts, providing helpful
+	// and non-generalized feedback.
+	b = BindRules(_b)
+	_b.SetPushPolicy(b.bindRulesPushPolicy)
+
+	return
+}
+
+/*
+convertBindRulesHierarchy processes the orig input instance and casts
+its contents in the following manner:
+
+	stackage.Stack		-->	BindRules
+	       \			 	 \
+	        +- ...                           + ...
+	        |				  |
+	        +- stackage.Condition	 -->	  +- BindRule
+
+The hierarchy is traversed thoroughly and will handle nested contexts
+seamlessly.
+
+This function is called following an apparently successful BindRules
+parsing request through go-antlraci.
+*/
+func convertBindRulesHierarchy(orig stackage.Stack) (BindRules, bool) {
+	if orig.Len() == 0 {
+		return badBindRules, false
+	}
+
+	var clean BindRules
+
+	// Obtain the kind string from the
+	// original stack.
+	k := trimS(orig.Kind())
+
+	clean, ok := wordToStack(k)
+	if !ok {
+		return badBindRules, ok
+	}
+
+	// transfer (copy) references from
+	// orig into clean.
+	orig.Transfer(stackage.Stack(clean))
+
+	// Iterate the newly-populated clean
+	// instance, performing type-casting
+	// as needed, possibly in recursion.
+	for i := 0; i < clean.Len(); i++ {
+
+		// perform a type switch upon the
+		// slice member @ index i. There
+		// are two (2) valid types we may
+		// encounter ...
+		switch tv := clean.Index(i).(type) {
+
+		// slice is a stackage.Condition.
+		// We want to cast to a BindRule
+		// instance, and update the string
+		// value(s) to be housed within a
+		// value-appropriate type defined
+		// by go-aci.
+		case BindRule:
+			ntv := tv
+
+			// Extract individual expression value
+			// from BindRule (ntv), and recreate it
+			// using the proper type, replacing the
+			// original. For example, a User DN Bind
+			// Rule with a RuleExpression value of:
+			//
+			//   []string{<dn1>,<dn2>,<dn3>}
+			//
+			// ... shall be replaced with:
+			//
+			//   <stack alias type>-idx#------val-
+			//   DistinguishedNames[<N1>] -> <dn1>
+			//                     [<N2>] -> <dn2>
+			//                     [<N3>] -> <dn3>
+			if err := ntv.assertExpressionValue(); err != nil {
+				return badBindRules, false
+			}
+
+			// overwrite old (tv @ index i) with new (ntv)
+			clean.replace(ntv, i)
+
+		// slice is a stackage.Stack instance.
+		// We want to cast to a BindRules type
+		// instance, but in order to do that,
+		// we'll recurse into this same function
+		// using this slice as the subordinate
+		// 'orig' input value.
+		case BindRules:
+			stk, _ := castAsStack(tv)
+			sub, subok := convertBindRulesHierarchy(stk)
+			if !subok {
+				return badBindRules, false
+			}
+			clean.replace(sub, i) // overwrite
+		}
+	}
+
+	// A cheap and easy means of ensuring
+	// the content really did transfer and
+	// [re]cast properly, and that nothing
+	// was missed.
+	ok = orig.String() == clean.String()
+	return clean, ok
+}
+
+func wordToStack(k string) (BindRules, bool) {
+	// Perform an anonymous switch, allowing
+	// the evaluation of the Boolean logical
+	// "disposition" of the (outer) Bind Rules
+	// instance "kind".
+	switch {
+
+	// Negated (NOT, AND NOT) operator
+	case hasSfx(uc(k), `NOT`):
+		return Not(), true
+
+	// ANDed operator
+	case eq(k, `AND`):
+		return And(), true
+
+	// ORed operator
+	case eq(k, `OR`):
+		return Or(), true
+	}
+
+	// unsupported operator
+	return badBindRules, false
+}
+
+/*
+SetKeyword wraps go-stackage's Condition.SetKeyword method.
+*/
+func (r *BindRule) SetKeyword(kw any) {
+	x := castAsCondition(*r)
+	x.SetKeyword(kw)
+	*r = BindRule(*x)
+}
+
+/*
+SetOperator wraps go-stackage's Condition.SetOperator method.
+*/
+func (r *BindRule) SetOperator(op stackage.ComparisonOperator) {
+	x := castAsCondition(*r)
+	x.SetOperator(op)
+	*r = BindRule(*x)
+}
+
+/*
+SetExpression wraps go-stackage's Condition.SetExpression method.
+*/
+func (r *BindRule) SetExpression(expr any) {
+	x := castAsCondition(*r)
+	x.SetExpression(expr)
+	*r = BindRule(*x)
+}
+
+/*
+setQuoteStyle shall set the receiver instance to the quotation
+scheme defined by integer i.
+*/
+func (r BindRule) setQuoteStyle(i int) {
+	if r.IsZero() {
+		return
+	}
+
+	_t := castAsCondition(r).Encap()
+	if i == 1 {
+		_t.Encap(`"`)
+	} else {
+		_t.Encap()
+	}
+}
+
+/*
+String is a stringer method that returns the string
+representation of the receiver instance.
+
+This method wraps go-stackage's Stack.String method.
+*/
+func (r BindRules) String() string {
+	_b, _ := castAsStack(r)
+	return _b.String()
+}
+
+/*
+setCategory wraps go-stackage's Stack.SetCategory method.
+*/
+func (r BindRules) setCategory(cat string) {
+	_b, _ := castAsStack(r)
+	_b.SetCategory(cat)
+	//r = BindRules(_b)
+}
+
+/*
+IsZero wraps go-stackage's Stack.IsZero method.
+*/
+func (r BindRules) IsZero() bool {
+	_b, _ := castAsStack(r)
+	return _b.IsZero()
+}
+
+/*
+reset wraps go-stackage's Stack.Reset method. This is a private
+method in go-aci.
+*/
+func (r BindRules) reset() {
+	_b, _ := castAsStack(r)
+	_b.Reset()
+}
+
+/*
+ID wraps go-stackage's Stack.ID method.
+*/
+func (r BindRules) ID() string {
+	if r.IsZero() {
+		return ``
+	}
+	_b, _ := castAsStack(r)
+	return _b.ID()
+}
+
+/*
+Category wraps go-stackage's Stack.Category method.
+*/
+func (r BindRules) Category() string {
+	if r.IsZero() {
+		return ``
+	}
+	_b, _ := castAsStack(r)
+	return _b.Category()
+}
+
+/*
+setID wraps go-stackage's Stack.SetID method.
+*/
+func (r BindRules) setID(id string) {
+	_b, _ := castAsStack(r)
+	_b.SetID(id)
+	//r = BindRules(_b)
+}
+
+/*
+Len wraps go-stackage's Stack.Len method.
+*/
+func (r BindRules) Len() int {
+	if r.IsZero() {
+		return 0
+	}
+	_b, _ := castAsStack(r)
+	return _b.Len()
+}
+
+/*
+IsNesting wraps go-stackage's Stack.IsNesting method.
+*/
+func (r BindRules) IsNesting() bool {
+	if r.IsZero() {
+		return false
+	}
+	_b, _ := castAsStack(r)
+	return _b.IsNesting()
+}
+
+/*
+Keyword wraps go-stackage's Stack.Category method and
+resolves the raw value into a BindKeyword. Failure to
+do so will return a bogus Keyword.
+*/
+func (r BindRules) Keyword() Keyword {
+	if meth := getCategoryFunc(r); meth != nil {
+		var kw any = matchBKW(meth())
+		return kw.(BindKeyword)
+	}
+
+	return nil
+}
+
+/*
+Push wraps go-stackage's Stack.Push method.
+*/
+func (r BindRules) Push(x ...BindContext) BindRules {
+	_r, _ := castAsStack(r)
+	// iterate variadic input arguments
+	for i := 0; i < len(x); i++ {
+		_r.Push(x[i])
+	}
+
+	r = BindRules(_r)
+	return r
+
+	/*
+		_r, _ := castAsStack(r)
+		_r.Push(x...)
+		r = BindRules(_r)
+		return r
+	*/
+}
+
+/*
+Pop wraps go-stackage's Stack.Pop method. An instance of
+BindContext, which may or may not be nil, is returned
+following a call of this method.
+
+Within the context of the receiver type, a BindContext, if
+non-nil, can represent any of the following instance types:
+
+• BindRule
+
+• BindRules
+*/
+func (r BindRules) Pop() BindContext {
+	_r, _ := castAsStack(r)
+	x, _ := _r.Pop()
+
+	var z any
+	switch tv := x.(type) {
+	case BindRule:
+		z = tv
+		return z.(*BindRule)
+	case BindRules:
+		z = tv
+		return z.(BindRules)
+	}
+
+	return nil
+}
+
+/*
+remove wraps go-stackage's Stack.Remove method.
+*/
+func (r BindRules) remove(idx int) bool {
+	_b, _ := castAsStack(r)
+	_, ok := _b.Remove(idx)
+	return ok
+}
+
+/*
+Index wraps go-stackage's Stack.Index method.
+*/
+func (r BindRules) Index(idx int) BindContext {
+	_r, _ := castAsStack(r)
+	y, _ := _r.Index(idx)
+
+	var z any
+	switch tv := y.(type) {
+	case BindRule:
+		z = tv
+		return z.(*BindRule)
+	case BindRules:
+		z = tv
+		return z.(BindRules)
+	}
+
+	return nil
+}
+
+/*
+ReadOnly wraps go-stackage's Stack.ReadOnly method.
+*/
+func (r BindRules) ReadOnly(state ...bool) BindRules {
+	_r, _ := castAsStack(r)
+	_r.ReadOnly(state...)
+	return r
+}
+
+/*
+Paren wraps go-stackage's Stack.Paren method.
+*/
+func (r BindRules) Paren(state ...bool) BindRules {
+	_r, _ := castAsStack(r)
+	_r.Paren(state...)
+	return r
+}
+
+/*
+Fold wraps go-stackage's Stack.Fold method to allow the case
+folding of logical Boolean 'AND', 'OR' and 'AND NOT' WORD
+operators to 'and', 'or' and 'and not' respectively, or vice
+versa.
+*/
+func (r BindRules) Fold(state ...bool) BindRules {
+	_r, _ := castAsStack(r)
+	_r.Fold(state...)
+	return r
+}
+
+/*
+insert wraps go-stackage's Stack.Insert method.
+*/
+func (r BindRules) insert(x any, left int) (ok bool) {
+	_t, _ := castAsStack(r)
+
+	switch tv := x.(type) {
+	case BindRule, BindRules:
+		ok = _t.Insert(tv, left)
+	default:
+		return
+	}
+
+	return
+}
+
+/*
+replace wraps go-stackage's Stack.Replace method.
+*/
+func (r BindRules) replace(x any, idx int) (ok bool) {
+	_b, _ := castAsStack(r)
+
+	switch tv := x.(type) {
+	case BindRule, BindRules:
+		ok = _b.Replace(tv, idx)
+	default:
+		return
+	}
+
+	return
+}
+
+/*
+NoPadding wraps go-stackage's Stack.NoPadding method.
+*/
+func (r BindRules) NoPadding(state ...bool) BindRules {
+	_b, _ := castAsStack(r)
+	_b.NoPadding(state...)
+	return r
+}
+
+/*
+Traverse wraps go-stackage's Stack.Traverse method.
+*/
+func (r BindRules) Traverse(indices ...int) (any, bool) {
+	_b, _ := castAsStack(r)
+	if br, ok := _b.Traverse(indices...); ok {
+		var x any
+		if x, ok = br.(BindContext); ok {
+			return x, ok
+		}
+	}
+
+	return nil, false
+}
+
+/*
+Valid wraps go-stackage's Stack.Valid method.
+*/
+func (r BindRules) Valid() (err error) {
+	_b, _ := castAsStack(r)
+	err = _b.Valid()
+	return
+}
+
+/*
+bindRulesPushPolicy conforms to the PushPolicy signature
+defined within go-stackage. This function will be called
+privately whenever an instance is pushed into a particular
+stackage.Stack (or alias) type instance.
+
+Only BindRule and BindRules instances are to be cleared
+for push executions.
+*/
+func (r BindRules) bindRulesPushPolicy(x any) (err error) {
+	// perform type switch upon input value
+	// x to determine suitability for push.
+	switch tv := x.(type) {
+
+	case BindContext:
+		// BindContext match is qualified
+		// through instances of either
+		// BindRule or BindRules types.
+		if tv.IsZero() {
+			err = errorf("Cannot push nil %T into %T [%s]",
+				tv, r, r.Category())
+		}
+
+	default:
+		// unsuitable candidate per type
+		err = errorf("%T type violates %T [%s] PushPolicy",
+			tv, r, r.Category())
+	}
+
+	return
+}
 
 /*
 ParseBindRule returns an instance of Condition alongside an error instance.
 
-The returned Condition instance shall contain 
+The returned Condition instance shall contain
 */
-func ParseBindRule(raw string) (Condition, error) {
-        return parseBindRule(raw)
+func ParseBindRule(raw string) (BindRule, error) {
+	return parseBindRule(raw)
 }
 
-func parseBindRule(raw string) (Condition, error) {
-        _c, err := parser.ParseBindRule(raw)
-	c := Condition(_c)
-        return c, err
+func parseBindRule(raw string) (BindRule, error) {
+	_c, err := parser.ParseBindRule(raw)
+	return BindRule(_c), err
 }
 
 /*
@@ -29,755 +789,201 @@ ParseBindRules returns an instance of Rule alongside an error instance.
 The returned Rule instance shall contain a complete hierarchical stack
 structure that represents the abstract rule (raw) input by the user.
 */
-func ParseBindRules(raw string) (Rule, error) {
-        return parseBindRules(raw)
+func ParseBindRules(raw string) (BindRules, error) {
+	return parseBindRules(raw)
 }
 
-func parseBindRules(raw string) (Rule, error) {
-        _b, err := parser.ParseBindRules(raw)
+func parseBindRules(raw string) (BindRules, error) {
+	// send the raw textual bind rules
+	// statement(s) to our sister package
+	// go-antlraci, call ParseBindRules.
+	_b, err := parser.ParseBindRules(raw)
 	if err != nil {
-                return Rule{}, err
-        }
-	return Rule(_b), nil
+		return badBindRules, err
+	}
+
+	// Process the hierarchy, converting
+	// Stack to BindRules and Condition
+	// to BindRule. In addition, we'll
+	// replace the parser.ExpressionValue
+	// type with more appropriate types
+	// defined in this package.
+	n, ok := convertBindRulesHierarchy(_b)
+	if !ok {
+		return badBindRules, errorf("Unable to cast %T hierarchy into %T; aborting", _b, n)
+	}
+
+	return n, nil
 }
 
 /*
-assertBindRule returns the final Condition instance (c) alongside an error (err).
-
-This function takes the freshly parsed and released ANTLR4 value(s) (vals) as they
-were extracted from the token stream(s) originally submitted by the user for parsing.
-The value(s) are then asserted into their proper type, as requested based on the Bind
-keyword used, and stored within the returned Condition instance.
-
-Similarly, the parsed comparison operator present (cop) shall determine which of the
-comparison types are to be used for Condition assembly (e.g.: '=' would use Eq() to
-create an equality Condition).
-
-The style argument, an integer, defines which of the quotation styles should be used
-for multi-valued Condition instances (e.g.: style 1 describes "value" || "value" ...
-and style 2 describes "value || value ..."). This will only apply to DN-based Bind
-Rules ('userdn', 'roledn' and 'groupdn').
+assertExpressionValue will update the underlying go-antlraci temporary type with a
+proper value-appropriate type defined within the go-aci package. An error is returned
+upon processing completion.
 */
-func assertBindRule(vals []string, style int, kw, cop string) (c Condition, err error) {
-
-        switch key := matchBKW(kw); key {
-
-        case BindUDN, BindRDN, BindGDN:
-                c, err = assertBindRuleUGRDN(vals, style, key, cop)
-
-        case BindUAT, BindGAT:
-                c, err = assertBindRuleUGAttr(vals, key, cop)
-
-        case BindToD:
-                c, err = assertBindRuleTimeOfDay(vals, cop)
-
-        case BindDoW:
-                c, err = assertBindRuleDayOfWeek(vals, cop)
-
-        case BindAM:
-                c, err = assertBindRuleAuthMethod(vals, cop)
-
-        case BindSSF:
-                c, err = assertBindRuleSecurityStrengthFactor(vals, cop)
-
-        case BindIP, BindDNS:
-                c, err = assertBindRuleNet(vals, key, cop)
-        }
-
-	return
-}
-
-/*
-parseBindRule is the top-level parser for a sequence of bind rule expressions with,
-or without, nesting and/or Boolean WORD operators. A populated outer Rule instance,
-along with a token stream trimming integer and an error are returned.
-*/
-/*
-func parseBindRule(tokens []string, depth, pspan int, word ...string) (outer Rule, skip int, err error) {
-        // Don't bother processing tokens that could
-        // never possibly represent a valid Bind Rule
-        // expression (UNLESS we're recursing within
-        // a parenthetical bind rule expression).
-        if len(tokens) < 4 && depth==0 {
-                err = errorf("Empty bind rule input value, or value is below minimum possible length for validity: %v [%d<4]", tokens, len(tokens))
-                return
-        }
-
-        // keep track of how many times we recurse
-        // into this function.
-        depth++
-
-        // Create temporary storage vars for some of
-        // the Condition components that will need
-        // to be preserved across loops.
-        var (
-                kw,             // Bind Rule Condition keyword
-                cop string      // Bind Rule Condition comparison operator
-
-                // Bind Rule expression values are single
-                // quoted values, or a sequence of values
-                // (with varying quotation schemes) that
-                // are delimited with a double pipe (||).
-                vals []string
-
-                // temporary contiguous condition stack,
-                // mainly to preserve the parenthetical
-                // nature of more than one (1) contiguous
-                // condition within a single boolean WORD
-                // operator's purview.
-                cc Rule = Rule(stackageBasic())
-
-                cready,         // marker for condition assembly readiness
-                iparen,         // parenthetical marker for inner expressions
-                oparen,         // parenthetical marker for outer expressions
-                cparen bool     // parenthetical marker for condition instances
-
-                ct     int = -1 // running total of tokens processed
-
-                // convenient true/false bind rule keyword
-                // recognizer func.
-                isKW func(string) bool = func(o string) bool {
-                        return matchBKW(lc(o)) != BindKeyword(0x0)
-                }
-
-                // convenient comparison operator token
-                // recognizer func.
-                isTokOp func(string) bool = func(o string) (ok bool) {
-                        _, ok = matchOp(o)
-                        return
-                }
-        )
-
-        // During recursive calls of this function, a
-        // boolean word operator token may be passed
-        // as a (variadic) parameter. If and when this
-        // happens, use this "word" (e.g.: 'AND', OR'
-        // or 'AND NOT') as the initializer value for
-        // a new (nested) outer stack.
-        if len(word) > 0 {
-                outer = ruleByLoP(word[0])
-        } else {
-                // No "word" was found, so just scan
-                // ahead for the first (1st) word we
-                // encounter and use that. If no word
-                // was found at all, default to AND.
-                opw, _ := hasOp(tokens)
-                outer = ruleByLoP(opw)
-        }
-
-        // An outer parenthetical statement is qualified
-        // by an opening (left) parenthesis character
-        // (ASCII #40) as token zero (0), a closing (right)
-        // parenthesis character (ASCII #41) as the final
-        // character, and the second-to-last character NOT
-        // being a PBR-termination semicolon. Note this is
-        // not reliable by itself, and is sometimes used
-        // in (negated) conjunction with another Boolean
-        // parenthetical marker.
-        oparen = ( tokens[0] == `(` &&
-                ( tokens[len(tokens)-1] == `)` &&
-                tokens[len(tokens)-2] != `;` ) )
-
-        // iterate each of the tokens.
-        for _, token := range tokens {
-                // actual iteration counter. We're unable to
-                // rely on range index because the iterable
-                // var (tokens) is continuously truncated
-                // along the way.
-                ct++
-
-                // inner is a loop-scoped stack used to
-                // act as a temporary container for one
-                // (1) or more stacks parsed as a result
-		// of a recursive (self-executing) call
-		// of this same function.
-                var inner Rule
-
-                // done is a marker for when a processing
-                // job should finish before all tokens are
-                // processed.
-                var done bool
-
-                switch {
-
-                // cready indicates that we're ready to
-                // parse a given condition's value(s) and
-                // assemble a condition. If this case is
-                // matched, it means we've already acquired
-                // the bind keyword and comparison operator.
-                case cready:
-
-                        var (
-                                stop int
-                                c Condition
-                        )
-
-                        // scan for quoted values, and stop at the
-                        // first thing that is neither a quoted
-                        // value nor a double pipe (||) delimiter.
-                        stop, vals = readQuotedValues(tokens)
-
-                        // assemble the condition with all needed
-                        // vars now in-hand.
-                        if c, err = parseBindRuleCondition(vals, kw, cop); err != nil {
-                                return
-                        }
-
-                        // wherever the quoted value scanner left
-                        // off, truncate our tokens to resume at
-                        // that point (and not to re-process any
-                        // tokens already seen).
-                        tokens = tokens[stop+1:]
-
-                        // If the condition is parenthetical itself,
-                        // tell go-stackage to reflect this trait.
-                        c.Paren(cparen)
-			if iparen {
-				c.setCategory(`enveloped_bind`)
-			}
-
-                        // Save the new condition in our temporary
-                        // contiguous condition stack.
-                        cc.Push(c)
-
-                        // If the sequence of contiguous condition
-                        // instances is parenthetical as a whole,
-                        // tell go-stackage to reflect this.
-			printf("o:%t / i:%t / c:%t\n", oparen, iparen, cparen)
-                        cc.Paren(oparen)
-
-                        // Reset all pertinent variables for any
-                        // condition tokens not yet processed.
-                        vals = []string{}
-                        cparen = false
-                        cready = false
-                        kw = ``
-                        cop = ``
-
-                // token is a terminator of a single permission/bind rule
-                // "pair"; if we see this, we finish processing regardless
-                // of whether any tokens remain. This function is usually
-                // called by the parsePBR function, which keeps an eye on
-                // the tokens from an external PoV.
-                case token == `;`:
-                        if len(tokens) <= 2 {
-                                // nothing else to process
-                                skip = -1
-                        } else {
-                                // another perm/bind rule pair may be next
-                                skip++
-                        }
-                        done = true
-
-                // token is a known bind rule keyword (e.g.: 'userdn'). If
-                // this has matched, it is guaranteed that a condition has
-                // just begun to undergo processing.
-                case isKW(token):
-                        kw = token
-                        tokens = tokens[1:]
-                        continue
-
-                // token is a known comparison operator (e.g.: '>=', '=').
-                // This would only appear immediately after a known Bind
-                // Rule keyword was encountered and recorded.
-                case isTokOp(token):
-                        cop = token
-                        tokens = tokens[1:]
-                        cready = len(kw) >0 && len(cop) > 0
-                        continue
-
-                // token is a single quoted value. This would only appear
-                // as the third (3rd) and final component in a Condition.
-                case isQuoted(token):
-                        var stop int
-                        if cready, stop, vals, err = getQuotedValues(kw,cop,tokens); err != nil {
-                                return
-                        }
-
-                        tokens = tokens[stop:]
-                        continue
-
-                // token is a Boolean WORD operator ("AND", "OR", "AND NOT").
-                // This indicates multiple condition instances, which may or
-                // may not be nested within other stacks.
-                case isWordOp(token):
-
-                        // this boolean operator merely continues the
-                        // expression, and does not signify a switch
-                        // to another operator, e.g.: AND -> OR, which
-                        // would result in a new recursion.
-                        if eq(token, outer.Category()) {
-                                tokens = tokens[1:]
-                                continue
-                        }
-
-                        // boolean operator differs from the current
-                        // (outer) operator. Begin new recursion, and
-                        // pass the desired word to this same function
-                        // which will result in an alloc for a new stack.
-                        if eq(token, `and not`) {
-
-                                // negated condition/stack
-                                var innot Rule
-                                innot, skip, err = parseBindRule(tokens[1:], depth, pspan)
-                                inner = ruleByLoP(token[4:])
-                                if innot.Len() == 1 {
-                                        innar, _ := innot.Index(0)
-                                        switch tv := innar.(type) {
-                                        case Rule:
-                                                if tv.Len() == 1 {
-                                                        inner.Push(tv.setCategory(`or`).Paren(iparen)).setCategory(token[4:])
-                                                }
-                                        case Condition:
-                                                inner.Push(tv).setCategory(token[4:]).Paren(iparen && tv.Category() == `enveloped_bind`)
-                                        }
-                                } else {
-                                        inner = ruleByLoP(token[4:])
-                                        inner.Push(innot.setCategory(`or`))
-                                }
-
-                        } else {
-
-                                // AND or OR condition/stack
-                                inner, skip, err = parseBindRule(tokens[1:], depth, pspan, token)
-                                inner.setCategory(lc(token))
-                        }
-
-                // Found a closing parenthetical
-                case token == `)`:
-                        tokens = tokens[1:]
-                        pspan--
-
-                        if pspan < 0 {
-                                err = errorf("Unbalanced parenthetical; want 0, got %d (hint: missing an opener?)", pspan)
-                        } else if len(tokens) <= 2 {
-                                skip = -1
-                        } else if pspan == 0 {
-                                iparen = false
-                                cparen = false
-				oparen = false
-                        }
-
-			continue
-
-                // Found an opening parenthetical
-                case token == `(`:
-
-                        tokens = tokens[1:]
-                        cparen = isBC(tokens[0:3]) && tokens[3] == `)`
-                        iparen = isBC(tokens[0:3]) && isWordOp(tokens[3])
-                        pspan++
-
-                // fallback == error condition
-                default:
-                        err = errorf("[%d] Unhandled token '%s'\n", ct, token)
-
-                }
-
-                // Go no further if any errors were encountered.
-                if err != nil {
-                        return
-                }
-
-                // Transfer our temporary contiguous condition
-                // stack's contents into a new stack, which
-                // is pushed singularly into the outer stack.
-                if cc.Len() > 0 {
-                        grp := ruleByLoP(outer.Category())
-                        for j := 0; j < cc.Len(); j++ {
-                                jidx, _ := cc.Index(j)
-                                printf("DEF:%s [%s;%s;oparen:%t;iparen:%t;ccparen:%t;outerc:%s] [%T]\n",
-                                        objectString(jidx),
-                                        objectCategory(jidx),
-                                        objectIdent(jidx),
-                                        oparen,
-                                        iparen,
-                                        cc.isParen(),
-					outer.Category(),
-                                        jidx)
-                                grp.Push(jidx)
-                        }
-
-                        outer.Push(grp).Paren(iparen)
-			printf("CC: %s [%d]\n", outer, outer.Len())
-                        cc.reset()
-                }
-
-                // Traverse the inner stack, which contains nested
-                // stacks and/or conditions that were acquired as
-                // a result of a recursive (self-executing) call
-                // of this same function. Migrate the inner stack's
-                // contents into outer prior to a return.
-                outer = transferToOuterBindRule(iparen, outer.isParen(), inner, outer)
-
-                // Break out of the for-loop if we've been ordered
-                // to do so ...
-                if done {
-                        break
-                }
-
-                // If we've made it here, we still have tokens left
-                // to process. If any recursive calls have been made,
-                // it might be necessary to skip ahead, should the
-                // skip integer value be non-zero.
-                switch skip {
-                case 0:
-                        continue
-                default:
-                        // If skip falls outside of the expected boundaries
-                        // trash whatever tokens were remaining and return.
-                        if skip == -1 || !( 0 <= skip && skip <= len(tokens)-1 ) {
-                                tokens = []string{}
-                                return
-                        }
-
-                        // Truncate our token stream, and reset the skip
-                        // integer marker.
-                        tokens = tokens[skip:]
-                        skip = 0
-                }
-        }
-
-        return
-}
-*/
-
-/*
-func getQuotedValues(kw,op string, t []string) (cready bool, stop int, v []string, err error) {
-        if stop, v = readQuotedValues(t); len(v) == 0 {
-                err = errorf("No values parsed from token stream '%v'", t)
-                return
-        }
-
-        t = t[stop:]
-        cready = len(kw) > 0 && len(op) > 0
-
-        return
-}
-*/
-
-/*
-func transferToOuterBindRule(iparen, oparen bool, inner, outer Rule) Rule {
-
-        if inner.Len() == 0 {
-                return outer
-        }
-
-        r := ruleByLoP(outer.Category())
-        //r.Push(outer).Paren(oparen || iparen)
-	r.Push(outer.Paren(oparen)).Paren(!r.isParen() && ( oparen || iparen ))
-
-        //var last string
-        for i := 0; i < inner.Len(); i++ {
-                slice, _ := inner.Index(i)
-                prev, _ := outer.Index(outer.Len()-1)
-
-                // Switch on inner slice type
-                switch tv := slice.(type) {
-
-                // Current inner slice is a Condition
-                case Condition:
-
-                        // Last-added outer slice was a Rule
-                        switch uv := prev.(type) {
-                        case Rule:
-                                uv.Push(tv)
-
-                        // Last-added outer slice was a Condition
-                        case Condition:
-                                r.Push(ruleByLoP(outer.Category()).Paren(iparen).Push(tv))
-                        }
-
-                // Current inner slice is a Rule
-                case Rule:
-
-                        // Inner Rule's Boolean WORD operator does not
-                        // match Inner slice [i] WORD operator. This
-                        // would indicate a new stack (Rule) is coming
-                        // up ...
-
-			tv.Paren(tv.isParen() || iparen)
-                        printf("RULE :: 1/2 [len:%d;isparen:%t;iparen:%t;oparen:%t]: %T[%s]: %s\n",
-				inner.Len(), inner.isParen(), iparen, outer.isParen(), inner, inner.Category(), inner)
-                        if inner.Category() != tv.Category() {
-                                r.Push(ruleByLoP(inner.Category()).Push(tv))
-                                break
-                        }
-
-                        // Push Inner slice [i] into Outer Rule.
-                        r.Push(tv)
-                        printf("RULE :: 1/1 [len:%d;isparen:%t;iparen:%t;oparen:%t]: %T[%s]: %s\n",
-				tv.Len(), tv.isParen(), iparen, outer.isParen(), tv, tv.Category(), tv)
-
-                }
-        }
-
-        return r
-}
-*/
-
-/*
-func printOuter(outer Rule, tabs ...string) {
-        var tab string
-        if len(tabs) > 0 {
-                for t := 0 ; t < len(tabs)-1; t++ {
-                        tab += string(rune(9))
-                }
-        }
-
-        if len(tab) > 0 {
-                tab += string(rune(9))
-        }
-
-        for i := 0; i < outer.Len(); i++ {
-                sl, _ := outer.Index(i)
-
-                switch tv := sl.(type) {
-                case Rule:
-                        printf("%s [%d; len:%d]: %T[%s]\n", tab, i, tv.Len(), tv, tv.Category())
-                        if tv.Len() > 0 {
-                                sub, _ := tv.Index(0)
-                                printf("%T: %s\n", sub, objectString(sub))
-                        }
-                        printOuter(tv, tab, string(rune(9)))
-                }
-        }
-}
-*/
-
-/*
-func bindRuleAssertWordOperator(t []string, token, icat string, depth, pspan int) (r Rule, skip int, ok bool, err error) {
-        // this boolean operator merely continues the
-        // expression, and does not signify a switch
-        // to another operator, e.g.: AND -> OR, which
-        // would result in a new recursion.
-        if eq(token, icat) {
-                return
-        }
-
-        // boolean operator differs from the current
-        // (outer) operator. Begin new recursion, and
-        // pass the desired word to this same function
-        // which will result in an alloc for a new stack.
-        //var innot Rule
-        if eq(token, `and not`) {
-                // negated condition/stack
-                var innot Rule
-                if innot, skip, err = parseBindRule(t[1:], depth, pspan); innot.Len() == 1 {
-                        innar, _ := innot.Index(0)
-                        r = ruleByLoP(token[4:])
-                        switch tv := innar.(type) {
-                        case Rule:
-                                if tv.Len() == 1 {
-                                        r.Push(tv.setCategory(`or`)).setCategory(token[4:])
-                                }
-                        case Condition:
-                                r.Push(tv).setCategory(token[4:])
-                        }
-                } else {
-                        r = ruleByLoP(token[4:])
-                        r.Push(innot.setCategory(`or`))
-                }
-
-        } else {
-                // AND or OR condition/stack
-                r, skip, err = parseBindRule(t[1:], depth, pspan, token)
-                r.setCategory(lc(token))
-        }
-
-        return
-}
-*/
-
-/*
-parseBindRuleCondition returns a new Condition and an error instance following an attempt
-to parse the stream of values (vals) along with the Bind Rule keyword (kw) and comparison
-operator (cop).
-
-This function is executed by parseBindRule during the Instruction parsing process.
-*/
-/*
-func parseBindRuleCondition(vals []string, kw, cop string) (c Condition, err error) {
-	if len(vals) == 0 {
-		err = errorf("Empty bind rule condition values; aborting")
+func (r BindRule) assertExpressionValue() (err error) {
+
+	// grab the raw value from the receiver. If it is
+	// NOT an instance of parser.RuleExpression, then
+	// bail out.
+	expr, ok := r.Expression().(parser.RuleExpression)
+	if !ok {
+		err = errorf("Unexpected %T within %T; wanted %T", expr, r, parser.RuleExpression{})
 		return
 	}
 
-	// assert the comparison operator
-	if _, mo := matchOp(cop); !mo {
-		err = badComparisonOperatorErr(cop)
-		return
-	}
+	// our proper type-converted expression
+	// value(s) shall reside as an any, as
+	// stackage.Condition allows this and
+	// will make things simpler.
+	var ex any
 
-	// This is the last (or only!) value component. We can
-	// now analyze the keyword and the value(s) to ascertain
-	// the appropriate instance type for condition storage
-	// (and to perform other context-specific sanity checks).
-	//
-	// Begin with an assertion switch upon the target keyword
-	// (which we already vetted as sane) ...
-	switch key := matchBKW(kw); key {
+	// perform a bind keyword switch upon
+	// a resolution attempt of the value.
+	switch key := matchBKW(r.Keyword().String()); key {
 
 	case BindUDN, BindRDN, BindGDN:
-		c, err = assertBindRuleUGRDN(vals, key, cop)
-
-	case BindUAT, BindGAT:
-		c, err = assertBindRuleUGAttr(vals, key, cop)
-
-	case BindToD:
-		c, err = assertBindRuleTimeOfDay(vals, cop)
-
-	case BindDoW:
-		c, err = assertBindRuleDayOfWeek(vals, cop)
-
-	case BindAM:
-		c, err = assertBindRuleAuthMethod(vals, cop)
-
-	case BindSSF:
-		c, err = assertBindRuleSecurityStrengthFactor(vals, cop)
+		// value is a userdn, groupdn or roledn
+		// expressive statement. Possible multi
+		// valued expression.
+		ex, err = assertBindUGRDN(expr, key)
 
 	case BindIP, BindDNS:
-		c, err = assertBindRuleNet(vals, key, cop)
+		// value is an IP or FQDN.
+		ex, err = assertBindNet(expr, key)
+
+	case BindUAT, BindGAT:
+		// value is a userattr or groupattr
+		// expressive statement.
+		ex, err = assertBindUGAttr(expr, key)
+
+	case BindDoW, BindToD:
+		// value is a dayofweek or timeofday
+		// expressive statement.
+		ex, err = assertBindTimeDay(expr, key)
+
+	case BindAM, BindSSF:
+		// value is an authentication method
+		// or a security factor expressive
+		// statement.
+		ex, err = assertBindSec(expr, key)
+
+	default:
+		err = errorf("Unknown keyword '%s' for %T during value assertion", r.Keyword(), r)
+	}
+
+	if err != nil {
+		return
+	}
+
+	// If we got something, set it and go.
+	r.SetExpression(ex)
+
+	return
+}
+
+func assertBindTimeDay(expr parser.RuleExpression, key BindKeyword) (ex any, err error) {
+	switch key {
+	case BindDoW:
+		// value is a dayOfWeek expressive
+		// statement.
+		ex, err = assertBindDayOfWeek(expr)
+
+	case BindToD:
+		// value is a timeOfDay expressive
+		// statement.
+		ex, err = assertBindTimeOfDay(expr)
 	}
 
 	return
 }
-*/
 
-/*
-func checkBindRuleConditionValueStream(last, token, next string, ct int) (skip bool, err error) {
-	// condition is ready for assembly AND a non-zero
-	// double-quoted value is the current token. We
-	// will also accept symbolic operators if we're
-	// dealing with a multi-valued expression.
-	if !isQuoted(token) && (token != `||` && token != `&&`) {
-		err = errorf("Bogus Bind Rule condition expression between '%s' [%d] and '%s' [%d]; value must be a non-zero string enclosed within double quotes, or a symbolic list (||,&&) of same",
-			last, ct-1, next, ct+1)
-		return
-	}
+func assertBindSec(expr parser.RuleExpression, key BindKeyword) (ex any, err error) {
+	switch key {
+	case BindSSF:
+		// value is a security strength factor
+		// expressive statement.
+		ex, err = assertBindSecurityStrengthFactor(expr)
 
-	switch {
-	case next == `||` || next == `&&`:
-		skip = true
-	case !isQuoted(next) && next != `;` && next != `)`:
-		err = errorf("Misaligned bind rule value expression ['%s' -> '%s']", token, next)
+	case BindAM:
+		// value is an authentication method
+		// expressive statement.
+		ex, err = assertBindAuthMethod(expr)
 	}
 
 	return
 }
-*/
 
-func assertBindRuleUGAttr(vals []string, key BindKeyword, op string) (c Condition, err error) {
-	if err = unexpectedBindRuleConditionValueErr(key, 1, len(vals)); err != nil {
+func assertBindUGAttr(expr parser.RuleExpression, key BindKeyword) (ex any, err error) {
+	if err = unexpectedBindConditionValueErr(key, 1, expr.Len()); err != nil {
 		return
 	}
 
-	// Prepare the expression value for our
-	// Condition.
-	ugat := trimS(unquote(vals[0]))
-	if hasPfx(ugat, LocalScheme) {
+	if hasPfx(expr.Values[0], LocalScheme) {
 		// value is an LDAP URI
-		var uri LDAPURI
-		if uri, err = parseLDAPURI(ugat, key); err != nil {
-			return
-		}
+		ex, err = parseLDAPURI(expr.Values[0], key)
 
-		c, err = conditionByOperator(op, uri)
-		return
-	}
-
-	if hasPfx(ugat, `parent[`) {
-
+	} else if hasPfx(expr.Values[0], `parent[`) {
 		// value is an inheritance attributeBindTypeOrValue
-		var inh Inheritance
-		if inh, err = parseInheritance(ugat); err != nil {
-			return
-		}
+		ex, err = parseInheritance(expr.Values[0])
 
-		c, err = conditionByOperator(op, inh)
-		return
+	} else {
+		// value is a standard attributeBindTypeOrValue
+		ex, err = parseATBTV(expr.Values[0], key)
 	}
-
-	// value is a standard attributeBindTypeOrValue
-	var atb AttributeBindTypeOrValue
-	if atb, err = parseATBTV(ugat, key); err != nil {
-		return
-	}
-	c, err = conditionByOperator(op, atb)
 
 	return
 }
 
-func assertBindRuleTimeOfDay(vals []string, op string) (c Condition, err error) {
-	if err = unexpectedBindRuleConditionValueErr(BindToD, 1, len(vals)); err != nil {
+func assertBindTimeOfDay(expr parser.RuleExpression) (ex TimeOfDay, err error) {
+	if err = unexpectedBindConditionValueErr(BindToD, 1, expr.Len()); err != nil {
 		return
 	}
 
 	// extract clocktime from raw value, remove
 	// quotes and any L/T WHSP
-	raw := trimS(unquote(vals[0]))
-	thyme := ToD(raw)
-	if err = badClockTimeErr(raw, thyme.String()); err != nil {
-		return
-	}
-
-	c, err = conditionByOperator(op, thyme)
+	ex = ToD(expr.Values[0])
+	err = badClockTimeErr(expr.Values[0], ex.String())
 	return
 }
 
-func assertBindRuleDayOfWeek(vals []string, op string) (c Condition, err error) {
-	if err = unexpectedBindRuleConditionValueErr(BindDoW, 1, len(vals)); err != nil {
+func assertBindDayOfWeek(expr parser.RuleExpression) (ex DayOfWeek, err error) {
+	if err = unexpectedBindConditionValueErr(BindDoW, 1, expr.Len()); err != nil {
 		return
 	}
 
 	// extract auth method from raw value, remove
 	// quotes and any L/T WHSP and analyze
-	raw := trimS(unquote(vals[0]))
-	var dw DayOfWeek
-	if dw, err = parseDoW(raw); err != nil {
-		return
-	}
-
-	c, err = conditionByOperator(op, dw)
+	ex, err = parseDoW(expr.Values[0])
 	return
 }
 
-func assertBindRuleAuthMethod(vals []string, op string) (c Condition, err error) {
-	if err = unexpectedBindRuleConditionValueErr(BindAM, 1, len(vals)); err != nil {
+func assertBindAuthMethod(expr parser.RuleExpression) (ex AuthMethod, err error) {
+	if err = unexpectedBindConditionValueErr(BindAM, 1, expr.Len()); err != nil {
 		return
 	}
 
 	// extract auth method from raw value, remove
 	// quotes and any L/T WHSP and analyze
-	raw := trimS(unquote(vals[0]))
-	am := matchAuthMethod(raw)
-	if err = badAMErr(raw, am.String()); err != nil {
-		return
-	}
-
-	c, err = conditionByOperator(op, am)
+	ex = matchAuthMethod(expr.Values[0])
+	err = badAMErr(expr.Values[0], ex.String())
 	return
 }
 
-func assertBindRuleSecurityStrengthFactor(vals []string, op string) (c Condition, err error) {
-	if err = unexpectedBindRuleConditionValueErr(BindSSF, 1, len(vals)); err != nil {
+func assertBindSecurityStrengthFactor(expr parser.RuleExpression) (ex SecurityStrengthFactor, err error) {
+	if err = unexpectedBindConditionValueErr(BindSSF, 1, expr.Len()); err != nil {
 		return
 	}
 
 	// extract factor from raw value, remove
 	// quotes and any L/T WHSP
-	raw := trimS(unquote(vals[0]))
-	fac := SSF(raw)
-	if err = badSecurityStrengthFactorErr(raw, fac.String()); err != nil {
-		return
-	}
-
-	c, err = conditionByOperator(op, fac)
+	fac := SSF(expr.Values[0])
+	err = badSecurityStrengthFactorErr(expr.Values[0], fac.String())
 	return
 }
 
-func assertBindRuleNet(vals []string, key BindKeyword, op string) (c Condition, err error) {
-	if err = unexpectedBindRuleConditionValueErr(key, 1, len(vals)); err != nil {
+func assertBindNet(expr parser.RuleExpression, key BindKeyword) (ex any, err error) {
+	if err = unexpectedBindConditionValueErr(key, 1, expr.Len()); err != nil {
 		return
 	}
 
@@ -785,79 +991,81 @@ func assertBindRuleNet(vals []string, key BindKeyword, op string) (c Condition, 
 		// extract IP Address(es) from raw value,
 		// remove quotes and any L/T WHSP and then
 		// split for iteration.
-		raw := split(trimS(unquote(vals[0])), `,`)
+		raw := split(expr.Values[0], `,`)
 		var addr IPAddr
 		for ipa := 0; ipa < len(raw); ipa++ {
 			addr.Set(raw[ipa])
 		}
 
-		if err = badIPErr(len(raw), addr.Len()); err != nil {
-			return
-		}
-
-		c, err = conditionByOperator(op, addr)
+		ex = addr
+		err = badIPErr(len(raw), addr.Len())
 		return
 	}
 
 	// extract FQDN from raw value, remove
 	// quotes and any L/T WHSP.
-	raw := trimS(unquote(vals[0]))
-	fq := DNS(raw)
-	if err = badDNSErr(raw, fq.String()); err != nil {
-		return
-	}
+	fq := DNS(expr.Values[0])
+	err = badDNSErr(expr.Values[0], fq.String())
+	ex = fq
 
-	c, err = conditionByOperator(op, fq)
 	return
 }
 
-func assertBindRuleUGRDN(vals []string, qt int, key BindKeyword, op string) (c Condition, err error) {
-        if len(vals) == 0 {
-                err = errorf("Empty bind rule value")
-                return
-        }
+/*
+assertBindUGRDN is handler for all possible DN and URI values used within Bind Rule
+expressive statements. In particular, this handles `userdn`, `groupdn` and `roledn`
+keyword contexts.
 
-        var value string = vals[0]
-	// if the value is an LDAP URI, handle that here instead
-	// of treating it like a DN alone.
-        if hasPfx(value, LocalScheme) && contains(vals[0], `?`) {
-                var uri LDAPURI
+An any-enveloped DistinguishedNames instance is returned in the event that the raw value(s)
+represent one (1) or more legal LDAP Distinguished Name value.
 
-                if uri, err = parseLDAPURI(value, key); err != nil {
-                        return
-                }
+In the event that a legal LDAP URI is found, it is returned as an instance of (any-enveloped)
+LDAPURI.
 
-                c, err = conditionByOperator(op, uri)
-                return
-        }
+Quotation schemes are supported seamlessly and either scheme shall be honored per the ANTLR4
+parsed content.
+*/
+func assertBindUGRDN(expr parser.RuleExpression, key BindKeyword) (ex any, err error) {
+	// Don't waste time if expression values
+	// are nonexistent.
+	if expr.Len() == 0 {
+		err = errorf("Found no %s bind rule expression value(s) during DN assertion", key)
+		return
+	}
 
-        bdn := ruleByDNKeyword(key)
+	// if the value is an LDAP URI (which merely contains
+	// a DN, and is not one unto itself), handle the parse
+	// here instead of treating it as a DN.
+	var value string = expr.Values[0]
+	if hasPfx(value, LocalScheme) && contains(value, `?`) {
+		ex, err = parseLDAPURI(value, key)
+		return
+	}
 
-        if qt == 1 {
-                bdn.Encap()
-        } else {
-                bdn.Encap(`"`)
-        }
+	// create an appropriate container based on the
+	// Bind Rule keyword.
+	bdn := stackByBDNKeyword(key)
 
-        for x := 0 ; x < len(vals); x++ {
-                D := vals[x]
-		if err = missingLocalSchemeDNErr(key,x,D); err != nil {
-                        return
-                }
-                bdn.Push(DistinguishedName{newDistinguishedName(D[len(LocalScheme):], key)})
-        }
+	// Honor the established quotation scheme that
+	// was observed during ANTLR4 processing.
+	bdn.setQuoteStyle(expr.Style)
 
-        c, err = conditionByOperator(op, bdn)
-        if qt == 1 {
-                c.Encap(`"`)
-        } else {
-                c.Encap()
-        }
+	// Assign the raw (DN) values to the
+	// return value. If nothing was found,
+	// bail out now.
+	if bdn.setExpressionValues(key, expr.Values...); bdn.Len() == 0 {
+		err = errorf("Found none of userdn, groupdn or roledn %T instances", BindDistinguishedName{})
+		return
+	}
 
-        return
+	// Envelope our DN stack within an
+	// 'any' instance, which is returned.
+	ex = bdn
+
+	return
 }
 
-func missingLocalSchemeDNErr(key BindKeyword, x int, D string) (err error) {
+func missingLocalSchemeDNErr(key Keyword, x int, D string) (err error) {
 	if !hasPfx(D, LocalScheme) {
 		err = errorf("Illegal %s distinguishedName slice: [index:%d;value:%s] missing LDAP local scheme (%s)",
 			key, x, D, LocalScheme)
@@ -882,7 +1090,7 @@ func badSecurityStrengthFactorErr(raw, fac string) (err error) {
 	return
 }
 
-func unexpectedBindRuleConditionValueErr(key BindKeyword, want, got int) (err error) {
+func unexpectedBindConditionValueErr(key BindKeyword, want, got int) (err error) {
 	if want != got {
 		err = errorf("Unexpected number of %s values; want %d, got %d", key, want, got)
 	}

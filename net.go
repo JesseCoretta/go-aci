@@ -39,25 +39,45 @@ const (
 )
 
 /*
-Eq initializes and returns a new *Condition instance configured
-to evaluate IPAddr as Equal-To the the request address.
+Eq initializes and returns a new BindRule instance configured to express the
+evaluation of the receiver value as Equal-To the `ip` Bind keyword context.
 */
-func (r IPAddr) Eq() Condition {
-	return Cond(BindIP, r, Eq).
+func (r IPAddr) Eq() BindRule {
+
+	var b BindRule
+	b.SetKeyword(BindIP)
+	b.SetOperator(Eq)
+	b.SetExpression(r)
+
+	_b := castAsCondition(b).
 		Encap(`"`).
+		SetID(bindRuleID).
 		NoPadding(!ConditionPadding).
-		setCategory(`ip`)
+		SetCategory(BindIP.String())
+
+	b = BindRule(*_b)
+	return b
 }
 
 /*
-Ne initializes and returns a new *Condition instance configured
-to evaluate IPAddr as Not-Equal-To the the request address.
+Ne initializes and returns a new BindRule instance configured to express the
+evaluation of the receiver value as Not-Equal-To the `ip` Bind keyword context.
 */
-func (r IPAddr) Ne() Condition {
-	return Cond(BindIP, r, Ne).
+func (r IPAddr) Ne() BindRule {
+
+	var b BindRule
+	b.SetKeyword(BindIP)
+	b.SetOperator(Ne)
+	b.SetExpression(r)
+
+	_b := castAsCondition(b).
 		Encap(`"`).
+		SetID(bindRuleID).
 		NoPadding(!ConditionPadding).
-		setCategory(`ip`)
+		SetCategory(BindIP.String())
+
+	b = BindRule(*_b)
+	return b
 }
 
 /*
@@ -315,31 +335,51 @@ func (r FQDN) String() string {
 }
 
 /*
-Eq initializes and returns a new *Condition instance configured
-to evaluate FQDN as Equal-To the the request address.
+Eq initializes and returns a new BindRule instance configured to express the
+evaluation of the receiver value as Equal-To the `dns` Bind keyword context.
 */
-func (r FQDN) Eq() (C Condition) {
-	if !r.IsZero() {
-		C = Cond(BindDNS, r, Eq).
-			Encap(`"`).
-			NoPadding(!ConditionPadding).
-			setCategory(`dns`)
+func (r FQDN) Eq() BindRule {
+	if err := r.Valid(); err != nil {
+		return badBindRule
 	}
-	return
+
+	var b BindRule
+	b.SetKeyword(BindDNS)
+	b.SetOperator(Eq)
+	b.SetExpression(r)
+
+	_b := castAsCondition(b).
+		Encap(`"`).
+		SetID(bindRuleID).
+		NoPadding(!ConditionPadding).
+		SetCategory(BindDNS.String())
+
+	b = BindRule(*_b)
+	return b
 }
 
 /*
-Ne initializes and returns a new *Condition instance configured
-to evaluate FQDN as Not-Equal-To the the request address.
+Ne initializes and returns a new BindRule instance configured to express the
+evaluation of the receiver value as Not-Equal-To the `dns` Bind keyword context.
 */
-func (r FQDN) Ne() (C Condition) {
-	if !r.IsZero() {
-		C = Cond(BindDNS, r, Ne).
-			Encap(`"`).
-			NoPadding(!ConditionPadding).
-			setCategory(`dns`)
+func (r FQDN) Ne() BindRule {
+	if err := r.Valid(); err != nil {
+		return badBindRule
 	}
-	return
+
+	var b BindRule
+	b.SetKeyword(BindDNS)
+	b.SetOperator(Ne)
+	b.SetExpression(r)
+
+	_b := castAsCondition(b).
+		Encap(`"`).
+		SetID(bindRuleID).
+		NoPadding(!ConditionPadding).
+		SetCategory(BindDNS.String())
+
+	b = BindRule(*_b)
+	return b
 }
 
 /*

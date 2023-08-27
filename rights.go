@@ -90,7 +90,7 @@ func (r *permission) shift(x ...any) {
 			// not fall out of uint8 bounds AND is a
 			// power of two (2), we can interpolate
 			// as a Right.
-			if isPowerOfTwo(tv) && (0 <= tv && tv <= int(^uint16(0))) {
+			if rightsPowerOfTwo(tv) {
 				(*r.Right) |= Right(tv)
 			}
 		case string:
@@ -99,17 +99,8 @@ func (r *permission) shift(x ...any) {
 				(*r.Right) |= priv
 			}
 		case Right:
-			if tv == NoAccess {
-				// NoAccess should stop the party
-				// dead in its tracks, regardless
-				// of any other iterated value.
-				(*r.Right) = NoAccess
-				return
-			} else if tv == AllAccess {
-				// AllAccess should stop the party
-				// dead in its tracks, regardless
-				// of any other iterated value.
-				(*r.Right) = AllAccess
+			if R, matched := noneOrFullAccessRights(tv); matched {
+				(*r.Right) = R
 				return
 			}
 
@@ -133,41 +124,29 @@ func (r *permission) unshift(x ...any) {
 			// not fall out of uint8 bounds AND is a
 			// power of two (2), we can interpolate
 			// as a Right.
-			if isPowerOfTwo(tv) && (0 <= tv && tv <= int(^uint16(0))) {
+			if rightsPowerOfTwo(tv) {
 				(*r.Right) = (*r.Right) &^ Right(tv)
 			}
 		case string:
-			if lc(tv) == NoAccess.String() {
-				// Asking to remove NoAccess will
-				// not accomplish anything definitive.
-				return
-			} else if lc(tv) == AllAccess.String() {
-				// Asking to remove all access
-				// privileges is the same as
-				// setting NoAccess outright.
-				(*r.Right) = NoAccess
-				return
-			}
+			//if matched := noneOrFullAccessString(lc(tv), (*r.Right)); matched {
+			//        return
+			//}
 
 			// Resolve the name of a Right into a Right.
 			if priv, found := rightsNames[lc(tv)]; found {
 				(*r.Right) = (*r.Right) &^ priv
 			}
 		case Right:
-			if tv == NoAccess {
-				// Asking to remove NoAccess will
-				// not accomplish anything definitive.
-				return
-			} else if tv == AllAccess {
-				// Asking to remove all access
-				// privileges is the same as
-				// setting NoAccess outright.
-				(*r.Right) = NoAccess
+			if _, matched := noneOrFullAccessRights(tv); matched {
 				return
 			}
 			(*r.Right) = (*r.Right) &^ tv
 		}
 	}
+}
+
+func rightsPowerOfTwo(x int) bool {
+	return isPowerOfTwo(x) && (0 <= x && x <= int(^uint16(0)))
 }
 
 func (r permission) positive(x any) bool {
@@ -176,18 +155,12 @@ func (r permission) positive(x any) bool {
 	}
 	switch tv := x.(type) {
 	case int:
-		if isPowerOfTwo(tv) && (0 <= tv && tv <= int(^uint16(0))) {
+		if rightsPowerOfTwo(tv) {
 			return ((*r.Right) & Right(tv)) > 0
 		}
 	case string:
-		if lc(tv) == NoAccess.String() {
-			// NoAccess always equals zero (0)
-			return int(*r.Right) == 0
-		} else if lc(tv) == AllAccess.String() {
-			// See if the effective bit value
-			// is equalTo the known "all"
-			// compound value.
-			return int(*r.Right) == 895
+		if matched := noneOrFullAccessString(lc(tv), (*r.Right)); matched {
+			return matched
 		}
 
 		// Resolve the name of a Right into a Right.
@@ -200,6 +173,37 @@ func (r permission) positive(x any) bool {
 
 	// unsupported type?
 	return false
+}
+
+func noneOrFullAccessRights(x Right) (Right, bool) {
+	var matched bool
+	if x == NoAccess {
+		// NoAccess should stop the party
+		// dead in its tracks, regardless
+		// of any other iterated value.
+		x = NoAccess
+		matched = true
+
+	} else if x == AllAccess {
+		// AllAccess should stop the party
+		// dead in its tracks, regardless
+		// of any other iterated value.
+		x = AllAccess
+		matched = true
+	}
+
+	return x, matched
+}
+
+func noneOrFullAccessString(x string, r Right) (matched bool) {
+	switch {
+	case x == NoAccess.String():
+		matched = int(r) == 0 // 0
+	case x == AllAccess.String():
+		matched = int(r) == 895 // *895
+	}
+
+	return
 }
 
 /*
@@ -255,22 +259,23 @@ func (r Permission) String() string {
 			rights = append(rights, right.String())
 		}
 	}
-	//return sprintf("%s(%s)", r.Kind(), join(rights, `,`))
-	return r.sprintf(rights)
+	//return r.sprintf(rights)
+	return sprintf("%s(%s)", r.Disposition(), join(rights, `,`))
 }
 
 func (r Permission) sprintf(rights []string) string {
-	return sprintf("%s(%s)", r.Kind(), join(rights, `,`))
+	return sprintf("%s(%s)", r.Disposition(), join(rights, `,`))
 }
 
 /*
-Kind returns the string disposition `allow`.
+Disposition returns the string disposition `allow`
+or 'deny', depending on the state of the receiver.
 */
-func (r Permission) Kind() string {
-	return r.permission.kind()
+func (r Permission) Disposition() string {
+	return r.permission.disposition()
 }
 
-func (r permission) kind() string {
+func (r permission) disposition() string {
 	if r.isZero() {
 		return `<unknown_disposition>`
 	}
@@ -353,36 +358,36 @@ is the first (1st) component of a PermissionBindRule instance. It, alongside an
 error and chop index, are returned when processing stops or completes.
 */
 func parsePerm(tokens []string) (chop int, perm Permission, err error) {
-        var disp string
-        var privs []any
-        var done bool
+	var disp string
+	var privs []any
+	var done bool
 
-        for _, token := range tokens {
-                // closing paren during perm
-                // mode means perm has ended
-                // and at least one (1) bind
-                // rule is beginning.
-                switch lc(token) {
-                case `allow`, `deny`:
-                        disp = lc(token)
-                case `;`, `(`, `,`:
-                        // do nothing
-                case `)`:
-                        done = true
-                default:
-                        privs = append(privs, lc(token))
-                }
+	for _, token := range tokens {
+		// closing paren during perm
+		// mode means perm has ended
+		// and at least one (1) bind
+		// rule is beginning.
+		switch lc(token) {
+		case `allow`, `deny`:
+			disp = lc(token)
+		case `;`, `(`, `,`:
+			// do nothing
+		case `)`:
+			done = true
+		default:
+			privs = append(privs, lc(token))
+		}
 
-                chop++
-                if done {
-                        break
-                }
-        }
+		chop++
+		if done {
+			break
+		}
+	}
 
-        // assemble permission
-        perm = assemblePermissionByDisposition(disp, privs)
+	// assemble permission
+	perm = assemblePermissionByDisposition(disp, privs)
 
-        return
+	return
 }
 
 /*
@@ -391,22 +396,22 @@ abstraction found within privs, and will initialize said return value based on
 the disposition (allow or deny) selected by the user.
 */
 func assemblePermissionByDisposition(disp string, privs []any) (perm Permission) {
-        if disp == `allow` {
-                if len(privs) == 0 {
-                        perm = Allow(`none`)
-                } else {
-                        perm = Allow(privs...)
-                }
-                return
-        }
+	if disp == `allow` {
+		if len(privs) == 0 {
+			perm = Allow(`none`)
+		} else {
+			perm = Allow(privs...)
+		}
+		return
+	}
 
-        if len(privs) == 0 {
-                perm = Deny(`all`, `proxy`)
-        } else {
-                perm = Deny(privs...)
-        }
+	if len(privs) == 0 {
+		perm = Deny(`all`, `proxy`)
+	} else {
+		perm = Deny(privs...)
+	}
 
-        return
+	return
 }
 
 func init() {

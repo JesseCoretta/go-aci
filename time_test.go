@@ -53,14 +53,17 @@ func ExampleTimeOfDay_setLater() {
 	// Output: 2301
 }
 
-func ExampleTimeOfDay_timeFrameCondition() {
-	// Make an ANDed stack, enable
-	// parenthetical encapsulation,
-	// then push two (2) Conditions
-	timeframe := And().Paren().Push(
-		ToD(`1730`).Ge(), // greater than or equal, i.e.: not before
-		ToD(`2400`).Lt(), // less than, i.e.: not after
-	)
-	fmt.Printf("%s", timeframe)
+/*
+This example demonstrates the creation of a timeframe BindRules instance using
+the convenient Timeframe package-level function.
+
+The return value is a Boolean AND stack object containing the start (notBefore)
+and end (notAfter) TimeOfDay instances.
+*/
+func ExampleTimeframe() {
+	notBefore := ToD(`1730`)
+	notAfter := ToD(`2400`)
+	tfr := Timeframe(notBefore, notAfter).Paren(true)
+	fmt.Printf("%s", tfr)
 	// Output: ( timeofday >= "1730" AND timeofday < "2400" )
 }

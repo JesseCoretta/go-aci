@@ -60,8 +60,8 @@ func ExampleFQDN_Eq_oneShot() {
 func ExampleIPAddr_Ne() {
 	var i IPAddr
 	i.Set(`192.168.0`).Set(`12.3.45.*`).Set(`10.0.0.0/8`)
-	fmt.Printf("%s", i.Ne())
-	// Output: ip != "192.168.0,12.3.45.*,10.0.0.0/8"
+	fmt.Printf("%s", i.Ne().Paren())
+	// Output: ( ip != "192.168.0,12.3.45.*,10.0.0.0/8" )
 }
 
 func ExampleIPAddr_Eq_oneShot() {

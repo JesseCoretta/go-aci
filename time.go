@@ -226,33 +226,55 @@ func (r DayOfWeek) Valid() (err error) {
 }
 
 /*
-Eq initializes and returns a new *Condition instance configured to evaluate
-DayOfWeek as Equal-To the request day(s).
+Eq initializes and returns a new BindRule instance configured to express the
+evaluation of the receiver value as Equal-To the `dayofweek` Bind keyword
+context.
 */
-func (r DayOfWeek) Eq() Condition {
+func (r DayOfWeek) Eq() BindRule {
 	if err := r.Valid(); err != nil {
-		return Condition{}
+		return badBindRule
 	}
-	return Cond(BindDoW, r, Eq).
+
+	var b BindRule
+	b.SetKeyword(BindDoW)
+	b.SetOperator(Eq)
+	b.SetExpression(r)
+
+	_b := castAsCondition(b).
 		Encap(`"`).
-		setID(`bind`).
+		SetID(bindRuleID).
 		NoPadding(!ConditionPadding).
-		setCategory(`dayofweek`)
+		SetCategory(BindDoW.String())
+
+	b = BindRule(*_b)
+	return b
 }
 
 /*
-Ne initializes and returns a new *Condition instance configured to evaluate
-DayOfWeek as Not-Equal-To the request day(s).
+Ne initializes and returns a new BindRule instance configured to express the
+evaluation of the receiver value as Not-Equal-To the `dayofweek` Bind keyword
+context.
+
+Negated equality BindRule instances should be used with caution.
 */
-func (r DayOfWeek) Ne() Condition {
+func (r DayOfWeek) Ne() BindRule {
 	if err := r.Valid(); err != nil {
-		return Condition{}
+		return badBindRule
 	}
-	return Cond(BindDoW, r, Ne).
+
+	var b BindRule
+	b.SetKeyword(BindDoW)
+	b.SetOperator(Ne)
+	b.SetExpression(r)
+
+	_b := castAsCondition(b).
 		Encap(`"`).
-		setID(`bind`).
+		SetID(bindRuleID).
 		NoPadding(!ConditionPadding).
-		setCategory(`dayofweek`)
+		SetCategory(BindDoW.String())
+
+	b = BindRule(*_b)
+	return b
 }
 
 /*
@@ -312,75 +334,178 @@ type timeOfDay [2]byte
 const badToD = `<invalid_timeofday>`
 
 /*
-Eq initializes and returns a new *Condition instance configured
-to evaluate TimeOfDay as Equal-To the request time.
+Timeframe is a convenience function that returns a BindRules instance for the
+purpose of expressing a timeframe during which access may (or may not) be
+granted. This is achieved by combining the two (2) TimeOfDay input values in
+a Boolean "AND stack".
+
+The notBefore input value defines the so-called "start" of the timeframe. It
+should be chronologically earlier than notAfter. This value will be used to
+craft a Greater-Than-Or-Equal (Ge) BindRule expressive statement.
+
+The notAfter input value defines the so-called "end" of the timeframe. It
+should be chronologically later than notBefore. This value will be used to
+craft a Less-Than (Lt) BindRule expressive statement.
 */
-func (r TimeOfDay) Eq() Condition {
-	return Cond(BindToD, r, Eq).
-		Encap(`"`).
-		setID(`bind`).
-		NoPadding(!ConditionPadding).
-		setCategory(`timeofday`)
+func Timeframe(notBefore, notAfter TimeOfDay) (window BindRules) {
+	window = And()
+	window.Push(
+		notBefore.Ge(), // greater than or equal
+		notAfter.Lt(),  // less than
+	)
+	return
 }
 
 /*
-Ne initializes and returns a new *Condition instance configured
-to evaluate TimeOfDay as Not-Equal-To the request time.
+Eq initializes and returns a new BindRule instance configured to express the
+evaluation of the receiver value as Equal-To the `timeofday` Bind keyword
+context.
 */
-func (r TimeOfDay) Ne() Condition {
-	return Cond(BindToD, r, Ne).
+func (r TimeOfDay) Eq() BindRule {
+	if err := r.Valid(); err != nil {
+		return badBindRule
+	}
+
+	var b BindRule
+	b.SetKeyword(BindToD)
+	b.SetOperator(Eq)
+	b.SetExpression(r)
+
+	_b := castAsCondition(b).
 		Encap(`"`).
-		setID(`bind`).
+		SetID(bindRuleID).
 		NoPadding(!ConditionPadding).
-		setCategory(`timeofday`)
+		SetCategory(BindToD.String())
+
+	b = BindRule(*_b)
+	return b
 }
 
 /*
-Lt initializes and returns a new *Condition instance configured
-to evaluate TimeOfDay as Less-Than the request time.
+Ne initializes and returns a new BindRule instance configured to express the
+evaluation of the receiver value as Not-Equal-To the `timeofday` Bind keyword
+context.
+
+Negated equality BindRule instances should be used with caution.
 */
-func (r TimeOfDay) Lt() Condition {
-	return Cond(BindToD, r, Lt).
+func (r TimeOfDay) Ne() BindRule {
+	if err := r.Valid(); err != nil {
+		return badBindRule
+	}
+
+	var b BindRule
+	b.SetKeyword(BindToD)
+	b.SetOperator(Ne)
+	b.SetExpression(r)
+
+	_b := castAsCondition(b).
 		Encap(`"`).
-		setID(`bind`).
+		SetID(bindRuleID).
 		NoPadding(!ConditionPadding).
-		setCategory(`timeofday`)
+		SetCategory(BindToD.String())
+
+	b = BindRule(*_b)
+	return b
 }
 
 /*
-Le initializes and returns a new *Condition instance configured
-to evaluate TimeOfDay as Less-Than-Or-Equal-To the request time.
+Lt initializes and returns a new BindRule instance configured to express the
+evaluation of the receiver value as Less-Than the `timeofday` Bind keyword
+context.
 */
-func (r TimeOfDay) Le() Condition {
-	return Cond(BindToD, r, Le).
+func (r TimeOfDay) Lt() BindRule {
+	if err := r.Valid(); err != nil {
+		return badBindRule
+	}
+
+	var b BindRule
+	b.SetKeyword(BindToD)
+	b.SetOperator(Lt)
+	b.SetExpression(r)
+
+	_b := castAsCondition(b).
 		Encap(`"`).
-		setID(`bind`).
+		SetID(bindRuleID).
 		NoPadding(!ConditionPadding).
-		setCategory(`timeofday`)
+		SetCategory(BindToD.String())
+
+	b = BindRule(*_b)
+	return b
 }
 
 /*
-Gt initializes and returns a new *Condition instance configured
-to evaluate TimeOfDay as Greater-Than the request time.
+Le initializes and returns a new BindRule instance configured to express the
+evaluation of the receiver value as Less-Than-Or-Equal to the `timeofday` Bind
+keyword context.
 */
-func (r TimeOfDay) Gt() Condition {
-	return Cond(BindToD, r, Gt).
+func (r TimeOfDay) Le() BindRule {
+	if err := r.Valid(); err != nil {
+		return badBindRule
+	}
+
+	var b BindRule
+	b.SetKeyword(BindToD)
+	b.SetOperator(Le)
+	b.SetExpression(r)
+
+	_b := castAsCondition(b).
 		Encap(`"`).
-		setID(`bind`).
+		SetID(bindRuleID).
 		NoPadding(!ConditionPadding).
-		setCategory(`timeofday`)
+		SetCategory(BindToD.String())
+
+	b = BindRule(*_b)
+	return b
 }
 
 /*
-Ge initializes and returns a new *Condition instance configured
-to evaluate TimeOfDay as Greater-Than-Or-Equal-To the request time.
+Gt initializes and returns a new BindRule instance configured to express the
+evaluation of the receiver value as Greater-Than the `timeofday` Bind keyword
+context.
 */
-func (r TimeOfDay) Ge() Condition {
-	return Cond(BindToD, r, Ge).
+func (r TimeOfDay) Gt() BindRule {
+	if err := r.Valid(); err != nil {
+		return badBindRule
+	}
+
+	var b BindRule
+	b.SetKeyword(BindToD)
+	b.SetOperator(Gt)
+	b.SetExpression(r)
+
+	_b := castAsCondition(b).
 		Encap(`"`).
-		setID(`bind`).
+		SetID(bindRuleID).
 		NoPadding(!ConditionPadding).
-		setCategory(`timeofday`)
+		SetCategory(BindToD.String())
+
+	b = BindRule(*_b)
+	return b
+}
+
+/*
+Ge initializes and returns a new BindRule instance configured to express the
+evaluation of the receiver value as Greater-Than-Or-Equal to the `timeofday`
+Bind keyword context.
+*/
+func (r TimeOfDay) Ge() BindRule {
+	if err := r.Valid(); err != nil {
+		return badBindRule
+	}
+
+	var b BindRule
+	b.SetKeyword(BindToD)
+	b.SetOperator(Ge)
+	b.SetExpression(r)
+
+	_b := castAsCondition(b).
+		Encap(`"`).
+		SetID(bindRuleID).
+		NoPadding(!ConditionPadding).
+		SetCategory(BindToD.String())
+
+	b = BindRule(*_b)
+	return b
 }
 
 /*
