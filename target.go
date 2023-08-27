@@ -657,7 +657,7 @@ func (r TargetRule) assertExpressionValue() (err error) {
 			// value (seems to be) an LDAP Search Filter
 			// TODO - assertion func
 			//ex, err = assertTargetFilter(expr)
-			ex = Filter().Set(expr.Values[0])
+			ex = Filter(expr.Values[0])
 		}
 
 	case TargetAttr:

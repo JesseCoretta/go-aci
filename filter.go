@@ -36,10 +36,18 @@ Filter initializes (and optionally sets) a new instance of SearchFilter.
 Instances of this kind are used in LDAPURIs, as well as certain target
 rules.
 */
-func Filter(x ...any) (r SearchFilter) {
-	r = SearchFilter{new(searchFilter)}
-	r.searchFilter.set(x...)
+func Filter(x ...string) (r SearchFilter) {
+	r = SearchFilter{newSearchFilter()}
+	if len(x) > 0 {
+		r.searchFilter.set(x[0])
+	}
 	return
+}
+
+func newSearchFilter() (f *searchFilter) {
+	f = new(searchFilter)
+	return
+
 }
 
 /*
@@ -59,29 +67,23 @@ Set assigns the provided value as the LDAP Search Filter instance within the
 receiver. Note that this should only be done once, as filters cannot easily
 built "incrementally" by the user.
 */
-func (r SearchFilter) Set(x ...any) SearchFilter {
-	r.searchFilter.set(x...)
+func (r *SearchFilter) Set(x string) *SearchFilter {
+	if r.searchFilter == nil {
+		r.searchFilter = newSearchFilter()
+	}
+
+	r.searchFilter.set(x)
 	return r
 }
 
 /*
 set is a private method executed by SearchFilter.Set.
 */
-func (r *searchFilter) set(x ...any) {
+func (r *searchFilter) set(x string) {
 	if len(x) == 0 {
 		return
 	}
-
-	if r == nil {
-		r = new(searchFilter)
-	}
-
-	switch tv := x[0].(type) {
-	case string:
-		if len(tv) > 0 {
-			r.string = tv
-		}
-	}
+	r.string = x
 }
 
 /*
@@ -293,15 +295,31 @@ TargetRule instances which bear the `targattrfilters` keyword context.
 Instances of this design are not generally needed elsewhere.
 
 Values are automatically joined using stackage.List() with JoinDelim for comma
-delimitation.
+delimitation by default. See SetDelimMode method if semicolon delimitation is
+preferred.
 */
-func AFOs() AttributeFilterOperations {
-	return AttributeFilterOperations(stackList().
-		JoinDelim(`,`).
-		SetID(targetRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(TargetAttrFilters.String()).
-		SetPushPolicy(attrFilterOpsPushPolicy))
+func AFOs() (f AttributeFilterOperations) {
+        // create a native stackage.Stack
+        // and configure before typecast.
+        _f := stackList().
+                JoinDelim(`,`).
+                SetID(targetRuleID).
+                NoPadding(!RulePadding).
+                SetCategory(TargetAttrFilters.String())
+
+        // cast _f as a proper AttributeFilterOperations
+        // instance (f). We do it this way to gain
+        // access to the method for the *specific
+        // instance* being created (f), thus allowing
+	// a custom presentation policy to be set.
+        f = AttributeFilterOperations(_f)
+
+	// Set custom Presentation/Push policies
+	// per go-stackage signatures.
+	_f.SetPresentationPolicy(f.presentationPolicy).
+		SetPushPolicy(attrFilterOpsPushPolicy)
+
+	return
 }
 
 /*
@@ -326,17 +344,18 @@ func (r AttributeFilterOperations) SetDelimMode(i int) AttributeFilterOperations
 		nx.JoinDelim(`,`)
 	}
 
-	r = AttributeFilterOperations(nx)
-	return AttributeFilterOperations(r)
+	return r
 }
 
 /*
 Push wraps go-stackage's Stack.Push method.
 */
-func (r AttributeFilterOperations) Push(x any) AttributeFilterOperations {
+func (r AttributeFilterOperations) Push(x ...any) AttributeFilterOperations {
 	_r, _ := castAsStack(r)
-	_r.Push(x)
-	r = AttributeFilterOperations(_r)
+
+	for i := 0; i < len(x); i++ {
+		_r.Push(x[i])
+	}
 
 	return r
 }
@@ -387,8 +406,21 @@ String is a stringer method that returns the string representation of
 the receiver instance.
 */
 func (r AttributeFilterOperations) String() string {
-	_r, _ := castAsStack(r)
-	return _r.String()
+        if r.IsZero() {
+                return ``
+        }
+
+	var vals []string
+	for i := 0; i < r.Len(); i++ {
+		afo := r.Index(i)
+		vals = append(vals, afo.String())
+	}
+
+        return join(vals, `,`)
+}
+
+func (r AttributeFilterOperations) presentationPolicy(_ any) string {
+	return r.String()
 }
 
 /*
@@ -438,6 +470,10 @@ func attrFilterOpsPushPolicy(x any) (err error) {
 
 func attrFilterOpPushPolicy(x any) (err error) {
 	switch tv := x.(type) {
+	case string:
+		if len(tv) == 0 {
+			err = errorf("%T denied per PushPolicy method; zero length", tv)
+		}
 	case AttributeFilter:
 		if tv.IsZero() {
 			err = errorf("%T denied per PushPolicy method; nil %T", tv)
@@ -515,11 +551,16 @@ func (r AttributeFilterOperation) String() string {
 	if r.IsZero() {
 		return ``
 	}
+	_r, _ := castAsStack(r)
 
 	aop := r.Operation()
-	afs := r.String()
+	afs := _r.String()
 
 	return sprintf("%s=%s", aop, afs)
+}
+
+func (r AttributeFilterOperation) presentationPolicy(_ any) string {
+        return r.String()
 }
 
 /*
@@ -534,7 +575,7 @@ func (r AttributeFilterOperation) Eq() TargetRule {
 	var t TargetRule
 	t.SetKeyword(TargetAttrFilters)
 	t.SetOperator(Eq)
-	t.SetExpression(r)
+	t.SetExpression(r.String())	// TODO: investigate why 'r' stringer lacks operation name (add=)
 
 	_t := castAsCondition(t).
 		Encap(`"`).
@@ -581,7 +622,7 @@ instances.
 The instance of AttributeFilters contains an ANDed Rule instance using symbols (`&&`)
 and bears the categorical string label of `attrfilters`.
 */
-func (r AttributeOperation) AFO(x ...AttributeFilter) (afo AttributeFilterOperation) {
+func (r AttributeOperation) AFO(x ...any) (afo AttributeFilterOperation) {
 	afo = AFO()
 	cat := sprintf("%s_%s", TargetAttrFilters, r)
 	afo.setCategory(cat)
@@ -607,7 +648,6 @@ func (r AttributeFilterOperation) setCategory(cat string) {
 	}
 
 	nx.SetCategory(cat)
-	//r = AttributeFilterOperation(nx)
 }
 
 /*
