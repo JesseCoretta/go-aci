@@ -14,8 +14,26 @@ import (
 )
 
 const (
-	MultivalOuterQuotes = 0 // quote the entire sequence as one value
-	MultivalSliceQuotes = 1 // quote individual values
+	// MultivalOuterQuotes represents the default quotation style
+	// used by this package. In cases where a multi-valued BindRule
+	// or TargetRule expression involving LDAP distinguished names,
+	// ASN.1 Object Identifiers (in dot notation) and LDAP Attribute
+	// Type names is being created, this constant will enforce only
+	// outer-most double-quotation of the whole sequence of values.
+	//
+	// Example: keyword = "<val> || <val> || <val>"
+	MultivalOuterQuotes = 0
+
+	// MultivalSliceQuotes represents an alternative quotation scheme
+	// offered by this package. In cases where a multi-valued BindRule
+        // or TargetRule expression involving LDAP distinguished names,
+        // ASN.1 Object Identifiers (in dot notation) and LDAP Attribute
+        // Type names is being created, this constant shall disable outer
+	// most quotation and will, instead, quote individual values. This
+	// will NOT enclose symbolic OR (||) delimiters within quotations.
+	//
+	// Example: keyword = "<val>" || "<val>" || "<val>"
+	MultivalSliceQuotes = 1
 )
 
 /*
@@ -25,7 +43,7 @@ package import.
 */
 const (
 	Eq stackage.ComparisonOperator = stackage.Eq // 0x1, "Equal To"
-	Ne stackage.ComparisonOperator = stackage.Ne // 0x2, "Not Equal to"     // USE WITH CAUTION
+	Ne stackage.ComparisonOperator = stackage.Ne // 0x2, "Not Equal to"     !! USE WITH CAUTION !!
 	Lt stackage.ComparisonOperator = stackage.Lt // 0x3, "Less Than"
 	Le stackage.ComparisonOperator = stackage.Le // 0x4, "Less Than Or Equal"
 	Gt stackage.ComparisonOperator = stackage.Gt // 0x5, "Greater Than"
@@ -599,36 +617,6 @@ func castFilterRules(x any) (S stackage.Stack, converted bool) {
 }
 
 /*
-	// If it isn't a Stack alias, but is a
-	// genuine Stack, just pass it back
-	// with a thumbs-up ...
-	if st, isStack := u.(stackage.Stack); isStack {
-		S = st
-		converted = isStack
-		return
-	}
-
-	a := typOf(u)                // current (src) type
-	b := typOf(stackage.Stack{}) // target (dest) type
-
-	if a.ConvertibleTo(b) {
-		X := valOf(u).Convert(b).Interface()
-		if assert, ok := X.(stackage.Stack); ok {
-			if !assert.IsZero() {
-				if s := assert.String(); !hasPfx(s, `<invalid`) && len(s) > 0 {
-					S = assert
-					converted = true
-					return
-				}
-			}
-		}
-	}
-
-	return
-}
-*/
-
-/*
 getCategoryFunc uses reflect to obtain and return a given
 type instance's Category method, if present. If not, nil
 is returned.
@@ -663,7 +651,8 @@ The qualifying methods shown below are intended to make the
 handling of a structure of (likely nested) BindRules instances
 slightly easier without an absolute need for type assertion at
 every step. These methods are inherently read-only in nature
-and represent only a subset of the available methods.
+and represent only a subset of the available methods exported
+by the underlying qualifier types.
 
 To alter the underlying value, or to gain access to all of a
 given type's methods, type assertion shall be necessary.
