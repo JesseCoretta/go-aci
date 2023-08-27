@@ -13,4 +13,4 @@ This package is in its early stages, and is undergoing active development. It sh
 ## License
 
 The aci (go-aci) package, from http://github.com/JesseCoretta/go-aci, is available under the terms of the MIT license. For further
-details, see the LICENSE file within the aforementioned repository.
+details, see the LICENSE file within the aforementioned repository. 
