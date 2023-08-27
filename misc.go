@@ -22,17 +22,23 @@ const (
 	// outer-most double-quotation of the whole sequence of values.
 	//
 	// Example: keyword = "<val> || <val> || <val>"
+	//
+	// This constant may be fed to the SetQuoteStyle method that is
+	// extended through eligible types.
 	MultivalOuterQuotes = 0
 
 	// MultivalSliceQuotes represents an alternative quotation scheme
 	// offered by this package. In cases where a multi-valued BindRule
-        // or TargetRule expression involving LDAP distinguished names,
-        // ASN.1 Object Identifiers (in dot notation) and LDAP Attribute
-        // Type names is being created, this constant shall disable outer
+	// or TargetRule expression involving LDAP distinguished names,
+	// ASN.1 Object Identifiers (in dot notation) and LDAP Attribute
+	// Type names is being created, this constant shall disable outer
 	// most quotation and will, instead, quote individual values. This
 	// will NOT enclose symbolic OR (||) delimiters within quotations.
 	//
 	// Example: keyword = "<val>" || "<val>" || "<val>"
+	//
+	// This constant may be fed to the SetQuoteStyle method that is
+	// extended through eligible types.
 	MultivalSliceQuotes = 1
 )
 
