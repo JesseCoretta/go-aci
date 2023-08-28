@@ -251,10 +251,116 @@ func (r TargetDistinguishedName) IsZero() bool {
 }
 
 /*
+Set assigns value x to the receiver to represent an LDAP distinguished name in
+the context of a BindRule.
+
+This method presents an opportunity for setting a DN at a later point versus
+doing so during the initialization process alone and is totally optional.
+
+If no keyword is specified, the userdn keyword context is supplied automatically,
+which may or may not be what the caller wants.
+*/
+func (r *BindDistinguishedName) Set(x string, kw ...Keyword) BindDistinguishedName {
+
+	// default keyword, if unspecified by caller,
+	// is the main DN context `userdn`.
+	var key BindKeyword = BindUDN
+	if len(kw) > 0 {
+		// verify the provided keyword belongs
+		// in the bindrule "family" context
+		if kw[0].Kind() == bindRuleID {
+			k := kw[0].(BindKeyword)
+
+			// perform a keyword switch
+			switch k {
+			case BindUDN, BindGDN, BindRDN:
+				// keyword is verified to be
+				// related to bindrule DNs of
+				// some kind.
+				key = k
+			default:
+				return *r
+			}
+		} else {
+			return *r
+		}
+	}
+
+	// if the receiver was not initialized, do so now
+	if r.IsZero() {
+		*r = BindDistinguishedName{newDistinguishedName(x, key)}
+	}
+
+	// set it and go
+	r.distinguishedName.set(x, key)
+	return *r
+}
+
+/*
+Set assigns value x to the receiver to represent an LDAP distinguished name in
+the context of a TargetRule.
+
+This method presents an opportunity for setting a DN at a later point versus
+doing so during the initialization process alone and is totally optional.
+
+If no keyword is specified, the target keyword context is supplied automatically,
+which may or may not be what the caller wants.
+*/
+func (r *TargetDistinguishedName) Set(x string, kw ...Keyword) TargetDistinguishedName {
+
+	// default keyword, if unspecified by caller,
+	// is the main DN context `target`.
+	var key TargetKeyword = Target
+	if len(kw) > 0 {
+		// verify the provided keyword belongs in the
+		// targetrule "family" context
+		if kw[0].Kind() == targetRuleID {
+			k := kw[0].(TargetKeyword)
+
+			// perform a keyword switch
+			switch k {
+			case Target, TargetTo, TargetFrom:
+				// keyword is verified to be
+				// related to targetrule DNs
+				// of some kind.
+				key = k
+			default:
+				return *r
+			}
+		} else {
+			return *r
+		}
+	}
+
+	// if the receiver was not initialized, do so now
+	if r.IsZero() {
+		*r = TargetDistinguishedName{newDistinguishedName(x, key)}
+	}
+
+	// set it and go
+	r.distinguishedName.set(x, key)
+	return *r
+}
+
+/*
 isZero is a private method called by DistinguishedName.IsZero.
 */
 func (r *distinguishedName) isZero() bool {
 	return r == nil
+}
+
+/*
+set is a private method called during the assembly of an underlying
+Target or Bind (embedded) distinguishedName instance. This presents
+an opportunity for setting a DN at a later point versus doing so
+during the initialization process.
+*/
+func (r *distinguishedName) set(x string, kw Keyword) {
+	_r := newDistinguishedName(x, kw)
+	if len(*_r.string) == 0 {
+		return
+	}
+	*r = *_r
 }
 
 /*
