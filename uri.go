@@ -110,7 +110,7 @@ func parseLDAPURI(x string, bkw ...BindKeyword) (L LDAPURI, err error) {
 	// URI absolutely MUST begin with the local
 	// LDAP scheme (e.g.: ldap:///). If it does
 	// not, fail immediately.
-	if len(x) < 7 {
+	if !hasPfx(x, LocalScheme) {
 		err = errorf("Invalid LDAPURI string '%s'; aborting", x)
 		return
 	}
@@ -150,22 +150,21 @@ func (r *ldapURI) assertURIComponents(vals []string, kw ...BindKeyword) (err err
 		// on which index is processed.
 		switch i {
 
-		// case match is LDAP Distinguished Name
 		case 0:
+			// case match is LDAP Distinguished Name
 			// Submit new value to LDAPURI instance. Note that DN
 			// keyword does not matter here; any DN func would do
 			// so we'll just use UDN.
 			r.set(UDN(vals[i]))
 
-		// case match is ATBTV -OR- Search Attribute(s)
 		case 1:
+			// case match is ATBTV -OR- Search Attribute(s)
 			if err = r.uriAssertATB(vals[i], kw...); err != nil {
 				return
 			}
 
-		// case match is LDAP Search Scope
 		case 2:
-			// field #2 is the LDAP Search Scope, if defined. Note that
+			// case match is the LDAP Search Scope, if defined. Note that
 			// while the directory server shall default to a particular
 			// scope if not specified, it is not required in the value
 			// and, thus, this package shall not impose the default on
@@ -179,11 +178,11 @@ func (r *ldapURI) assertURIComponents(vals []string, kw ...BindKeyword) (err err
 				r.set(sc)
 			}
 
-		// case match is LDAP Search Filter
 		case 3:
+			// case match is LDAP Search Filter
 			filt := Filter(vals[i])
-			if filt.IsZero() {
-				continue
+			if err = filt.Valid(); err != nil {
+				return
 			}
 			r.set(filt)
 		}
