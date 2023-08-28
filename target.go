@@ -36,6 +36,33 @@ methods exist for instances of this type.
 */
 type TargetRule stackage.Condition
 
+/*
+TR returns a populated instance of TargetRule. Note there are more
+convenient ways of crafting this type instance and in general this
+package-level is not needed unless the user wishes to craft the
+TargetRule instance in one shot as opposed to incrementally.
+*/
+func TR(kw, op, ex any) TargetRule {
+	return newTargetRule(kw, op, ex)
+}
+
+/*
+newTargetRule is a private function called by the TR function.
+*/
+func newTargetRule(kw, op, ex any) (t TargetRule) {
+	t.SetKeyword(kw)
+	t.SetOperator(op)
+	t.SetExpression(ex)
+
+	castAsCondition(t).
+		Encap(`"`).
+		Paren(true).
+		SetID(targetRuleID).
+		NoPadding(!RulePadding)
+
+	return
+}
+
 func (r TargetRule) isConditionContextQualifier() bool {
 	return true
 }
@@ -49,6 +76,10 @@ Valid wraps go-stackage's Condition.Valid method.
 */
 func (r TargetRule) Valid() (err error) {
 	_t := castAsCondition(r)
+
+	if !keywordAllowsComparisonOperator(_t.Keyword(), _t.Operator()) {
+		return
+	}
 	err = _t.Valid()
 	return
 }
@@ -99,6 +130,14 @@ func (r TargetRule) String() string {
 	return castAsCondition(r).String()
 }
 
+/*
+SetQuoteStyle allows the election of a particular multivalued
+quotation style offered by the various adopters of the ACIv3
+syntax.
+
+See the const definitions for MultivalOuterQuotes (default)
+and MultivalSliceQuotes for details.
+*/
 func (r TargetRule) SetQuoteStyle(style int) TargetRule {
 	_r := castAsCondition(r)
 
@@ -125,39 +164,60 @@ func (r TargetRule) SetQuoteStyle(style int) TargetRule {
 			}
 		}
 	}
-	r = TargetRule(*_r)
+	//r = TargetRule(*_r)
 
 	return r
+
 }
 
 /*
 SetKeyword wraps go-stackage's Condition.SetKeyword method.
 */
-func (r *TargetRule) SetKeyword(kw any) TargetRule {
+func (r *TargetRule) SetKeyword(kw any) {
 	x := castAsCondition(*r)
 	x.SetKeyword(kw)
 	*r = TargetRule(*x)
-	return *r
 }
 
 /*
 SetOperator wraps go-stackage's Condition.SetOperator method.
+Valid input types are stackage.ComparisonOperator (using the
+local const aliases) or their string equivalents (e.g.: `>=`
+for Ge).
 */
-func (r *TargetRule) SetOperator(op stackage.ComparisonOperator) TargetRule {
+func (r *TargetRule) SetOperator(op any) {
+	if !keywordAllowsComparisonOperator(r.Keyword(), op) {
+		return
+	}
+
+	var cop stackage.ComparisonOperator
+	switch tv := op.(type) {
+	case string:
+		cop = matchCOP(tv)
+	case stackage.Operator:
+		cop = tv.(stackage.ComparisonOperator)
+	default:
+		// bogus operator type
+		return
+	}
+
+	// operator not known? bail out
+	if cop == stackage.ComparisonOperator(0) {
+		return
+	}
+
 	x := castAsCondition(*r)
-	x.SetOperator(op)
+	x.SetOperator(cop)
 	*r = TargetRule(*x)
-	return *r
 }
 
 /*
 SetExpression wraps go-stackage's Condition.SetExpression method.
 */
-func (r *TargetRule) SetExpression(expr any) TargetRule {
+func (r *TargetRule) SetExpression(expr any) {
 	x := castAsCondition(*r)
 	x.SetExpression(expr)
 	*r = TargetRule(*x)
-	return *r
 }
 
 /*
@@ -188,7 +248,10 @@ func (r TargetRule) Expression() any {
 /*
 setQuoteStyle shall set the receiver instance to the quotation
 scheme defined by integer i.
+
+DECOM
 */
+/*
 func (r TargetRule) setQuoteStyle(i int) {
 	if r.IsZero() {
 		return
@@ -200,7 +263,7 @@ func (r TargetRule) setQuoteStyle(i int) {
 	} else {
 		_t.Encap()
 	}
-}
+}*/
 
 /*
 IsZero wraps go-stackage's Condition.IsZero method.
@@ -271,6 +334,10 @@ one (1) of the following Target Rule keyword constants:
 
 • TargetExtOp
 
+Optionally, the caller may choose to submit one (1) or more (valid) instances of the
+TargetRule type (or its string equivalent) during initialization. This is merely a
+more convenient alternative to separate initialization and push procedures.
+
 Please note that instances of this design are set with a maximum capacity
 of nine (9) for both the following reasons:
 
@@ -285,14 +352,36 @@ Instances of this design generally are assigned to top-level instances of
 Instruction, and never allow nesting elements (e.g.: other stackage.Stack
 derived type aliases).
 */
-func TRs() TargetRules {
-	return TargetRules(stackList(9).
-		JoinDelim(``).
+func TRs(x ...any) (t TargetRules) {
+	// create a native stackage.Stack
+	// and configure before typecast.
+	_t := stackList(9).
 		NoNesting(true).
+		SetDelimiter(``).
 		SetID(targetRuleID).
-		SetCategory(targetRuleID).
-		NoPadding(!RulePadding).
-		SetPushPolicy(targetRulesPushPolicy))
+		NoPadding(!StackPadding).
+		SetCategory(targetRuleID)
+
+	// cast _t as a proper TargetRules instance
+	// (t). We do it this way to gain access to
+	// the method for the *specific instance*
+	// being created (t), thus allowing a custom
+	// push policy to be set.
+	t = TargetRules(_t)
+
+	// Set custom push policy per go-stackage
+	// signatures.
+	_t.SetPushPolicy(t.pushPolicy)
+
+	// Assuming one (1) or more items were
+	// submitted during the call, (try to)
+	// push them into our initialized stack.
+	// Note that any failed push(es) will
+	// have no impact on the validity of
+	// the return instance.
+	_t.Push(x...)
+
+	return
 }
 
 /*
@@ -393,7 +482,6 @@ func (r TargetRules) Push(x ...TargetRule) TargetRules {
 		_r.Push(x[i])
 	}
 
-	r = TargetRules(_r)
 	return r
 }
 
@@ -435,10 +523,9 @@ func (r TargetRules) Index(idx int) TargetRule {
 /*
 ReadOnly wraps go-stackage's Stack.ReadOnly method.
 */
-func (r TargetRules) ReadOnly(state ...bool) TargetRules {
+func (r TargetRules) ReadOnly(state ...bool) {
 	_t, _ := castAsStack(r)
 	_t.ReadOnly(state...)
-	return r
 }
 
 /*
@@ -474,10 +561,9 @@ func (r TargetRules) replace(x any, idx int) bool {
 /*
 NoPadding wraps go-stackage's Stack.NoPadding method.
 */
-func (r TargetRules) NoPadding(state ...bool) TargetRules {
+func (r TargetRules) NoPadding(state ...bool) {
 	_t, _ := castAsStack(r)
 	_t.NoPadding(state...)
-	return r
 }
 
 /*
@@ -516,17 +602,70 @@ stackage.Stack (or alias) type instance.
 
 Only TargetRule instances are to be cleared for push executions.
 */
-func targetRulesPushPolicy(x any) (err error) {
+func (r TargetRules) pushPolicy(x any) (err error) {
 	switch tv := x.(type) {
 	case TargetRule:
 		if tv.IsZero() {
-			err = errorf("Push request of %T failed: instance is nil", tv)
+			err = errorf("Push request of %T into %T [%s] failed: instance is nil",
+				tv, r, tv.Keyword())
+		}
+		if r.contains(tv.Keyword()) {
+			err = errorf("Cannot push non-unique or invalid %T into %T [%s]",
+				x, r, tv.Keyword())
 		}
 	default:
-		err = errorf("Push request of %T type violates %T PushPolicy",
-			x, TargetRules{})
+		err = errorf("Push request of %T type violates %T PushPolicy", x, r)
 	}
 	return
+}
+
+/*
+Contains returns a boolean value indicative of whether value x,
+if a string or TargetKeyword instance, already resides within
+the receiver instance.
+
+Case is not significant in the matching process.
+*/
+func (r TargetRules) Contains(x any) bool {
+	return r.contains(x)
+}
+
+/*
+contains is a private method called by AttributeTypes.Contains.
+*/
+func (r TargetRules) contains(x any) bool {
+	if r.Len() == 0 {
+		return false
+	}
+
+	var candidate string
+
+	switch tv := x.(type) {
+	case string:
+		candidate = tv
+
+	case Keyword:
+		if kw := matchTKW(tv.String()); kw == TargetKeyword(0x0) {
+			return false
+		}
+		candidate = tv.String()
+	default:
+		return false
+	}
+
+	if len(candidate) == 0 {
+		return false
+	}
+
+	for i := 0; i < r.Len(); i++ {
+		tr := r.Index(i).Keyword().String()
+		// case is not significant here.
+		if eq(tr, candidate) {
+			return true
+		}
+	}
+
+	return false
 }
 
 /*
@@ -822,33 +961,33 @@ func assertTargetAttrFilters(expr parser.RuleExpression) (ex AttributeFilterOper
 		return
 	}
 
-	// First, try to split on a comma rune (ASCII #44).
-	// This is the default, and is the most common char
-	// for use in delimiting values of this form.
 	if idx := idxr(expr.Values[0], ','); idx != -1 {
+		// First, try to split on a comma rune (ASCII #44).
+		// This is the default, and is the most common char
+		// for use in delimiting values of this form.
 		ex, err = parseAttributeFilterOperations(expr.Values[0], 0)
 
-		// If no comma was found, try semicolon (ASCII #59).
 	} else if idx = idxr(expr.Values[0], ';'); idx != -1 {
+		// If no comma was found, try semicolon (ASCII #59).
 		ex, err = parseAttributeFilterOperations(expr.Values[0], 1)
 
+	} else if hasAttributeFilterOperationPrefix(expr.Values[0]) {
 		// Still nothing? Try AttributeFilterOperation (whether
 		// multivalued or not).
-	} else if hasAttributeFilterOperationPrefix(expr.Values[0]) {
 		var afo AttributeFilterOperation
 		if afo, err = parseAttributeFilterOperation(expr.Values[0]); err != nil {
 			return
 		}
-		ex = AFOs().Push(afo)
+		ex = AFOs(afo)
 
-		// The only other thing it could be is a bare AttributeFilter.
 	} else {
+		// The only other thing it could be is a bare AttributeFilter.
 		var af AttributeFilter
 		if af, err = parseAttributeFilter(expr.Values[0]); err != nil {
 			return
 		}
-		ex = AFOs()
-		ex.Push(AddOp.AFO().Push(af)) // we have to choose one, 'add' seems safer than 'delete'
+
+		ex = AFOs(AddOp.AFO(af)) // we have to choose one, 'add' seems safer than 'delete'
 	}
 
 	return

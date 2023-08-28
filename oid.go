@@ -74,7 +74,7 @@ func (r ObjectIdentifier) Eq() TargetRule {
 		Encap(`"`).
 		Paren(true).
 		SetID(targetRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(r.objectIdentifier.TargetKeyword.String())
 
 	t = TargetRule(*_t)
@@ -102,7 +102,7 @@ func (r ObjectIdentifier) Ne() TargetRule {
 		Encap(`"`).
 		Paren(true).
 		SetID(targetRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(r.objectIdentifier.TargetKeyword.String())
 
 	t = TargetRule(*_t)
@@ -259,8 +259,7 @@ Push wraps go-stackage's Stack.Push method.
 func (r ObjectIdentifiers) Push(x ...any) ObjectIdentifiers {
 	_r, _ := castAsStack(r)
 	_r.Push(x...)
-	r = ObjectIdentifiers(_r)
-	return r
+	return ObjectIdentifiers(_r)
 }
 
 func (r ObjectIdentifiers) Keyword() Keyword {
@@ -334,15 +333,20 @@ func (r ObjectIdentifiers) Pop() (x ObjectIdentifier) {
 setQuoteStyle shall set the receiver instance to the quotation
 scheme defined by integer i.
 */
-func (r ObjectIdentifiers) setQuoteStyle(style int) ObjectIdentifiers {
+func (r ObjectIdentifiers) setQuoteStyle(style int) {
 	_r, _ := castAsStack(r)
+	if _r.Len() < 2 {
+		_r.Encap() // not multivalued, force default
+		return
+	}
+
 	if style == MultivalSliceQuotes {
 		_r.Encap(`"`)
 	} else {
 		_r.Encap()
 	}
-	r = ObjectIdentifiers(_r)
-	return r
+
+	return
 }
 
 /*
@@ -460,15 +464,19 @@ func badObjectIdentifierErr(x string) error {
 ExtOps returns a freshly initialized instance of ObjectIdentifiers, configured
 to store one (1) or more ObjectIdentifier instances for the purpose of Target
 Rule expression when using the extop keyword.
+
+Optionally, the caller may choose to submit one (1) or more (valid) instances of the
+ObjectIdentifier type. This is merely a more convenient alternative to separate init
+and push procedures.
 */
-func ExtOps() (o ObjectIdentifiers) {
+func ExtOps(x ...any) (o ObjectIdentifiers) {
 	// create a native stackage.Stack
 	// and configure before typecast.
 	_o := stackOr().
 		Symbol(`||`).
 		NoNesting(true).
 		SetID(targetRuleID).
-		NoPadding(!RulePadding).
+		NoPadding(!StackPadding).
 		SetCategory(TargetExtOp.String())
 
 	// cast _o as a proper ObjectIdentifiers
@@ -481,6 +489,14 @@ func ExtOps() (o ObjectIdentifiers) {
 	o = ObjectIdentifiers(_o)
 	_o.SetPushPolicy(o.extOpsPushPolicy)
 
+	// Assuming one (1) or more items were
+	// submitted during the call, (try to)
+	// push them into our initialized stack.
+	// Note that any failed push(es) will
+	// have no impact on the validity of
+	// the return instance.
+	_o.Push(x...)
+
 	return
 }
 
@@ -488,15 +504,19 @@ func ExtOps() (o ObjectIdentifiers) {
 Ctrls returns a freshly initialized instance of ObjectIdentifiers, configured
 to store one (1) or more ObjectIdentifier instances for the purpose of Target
 Rule expression when using the targetcontrol keyword.
+
+Optionally, the caller may choose to submit one (1) or more (valid) instances of the
+ObjectIdentifier type. This is merely a more convenient alternative to separate init
+and push procedures.
 */
-func Ctrls() (o ObjectIdentifiers) {
+func Ctrls(x ...any) (o ObjectIdentifiers) {
 	// create a native stackage.Stack
 	// and configure before typecast.
 	_o := stackOr().
 		Symbol(`||`).
 		NoNesting(true).
 		SetID(targetRuleID).
-		NoPadding(!RulePadding).
+		NoPadding(!StackPadding).
 		SetCategory(TargetCtrl.String())
 
 	// cast _o as a proper ObjectIdentifiers
@@ -508,6 +528,14 @@ func Ctrls() (o ObjectIdentifiers) {
 	// helpful and non-generalized feedback.
 	o = ObjectIdentifiers(_o)
 	_o.SetPushPolicy(o.ctrlsPushPolicy)
+
+	// Assuming one (1) or more items were
+	// submitted during the call, (try to)
+	// push them into our initialized stack.
+	// Note that any failed push(es) will
+	// have no impact on the validity of
+	// the return instance.
+	_o.Push(x...)
 
 	return
 }
@@ -531,7 +559,7 @@ func (r ObjectIdentifiers) Eq() TargetRule {
 		Encap(`"`).
 		Paren(true).
 		SetID(targetRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(t.Keyword().String())
 
 	t = TargetRule(*_t)
@@ -559,7 +587,7 @@ func (r ObjectIdentifiers) Ne() TargetRule {
 		Encap(`"`).
 		Paren(true).
 		SetID(targetRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(t.Keyword().String())
 
 	t = TargetRule(*_t)

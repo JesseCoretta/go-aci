@@ -20,6 +20,11 @@ const (
 	badPB = `<invalid_pbrule>`
 )
 
+var (
+	badPermissionBindRule  PermissionBindRule  // for failed calls that return a PermissionBindRule only
+	badPermissionBindRules PermissionBindRules // for failed calls that return a PermissionBindRules only
+)
+
 /*
 PB contains one (1) Permission instance and one (1) BindRules instance. Instances
 of this type are used to create top-level ACI Permission+Bind Rule pairs, of which
@@ -82,13 +87,14 @@ valid is a private method invoked by PermissionBindRule.Valid.
 func (r PermissionBindRule) valid() (err error) {
 	if err = r.P.Valid(); err != nil {
 		return
+
 	} else if err = r.B.Valid(); err != nil {
 		return
 	}
 
 	if r.B.Len() == 0 {
 		err = errorf("%T is zero length", r.B)
-	} else if r.P.IsZero() || r.B.ID() != `bind` {
+	} else if r.P.IsZero() || r.B.ID() != bindRuleID {
 		err = errorf("%T is not a permission+bind rule (%s)", r.B, r.B.ID())
 	}
 
@@ -216,7 +222,6 @@ func (r PermissionBindRules) Push(x ...any) PermissionBindRules {
 		}
 	}
 
-	r = PermissionBindRules(_r)
 	return r
 }
 
@@ -275,10 +280,10 @@ assembly.
 */
 func PBRs() PermissionBindRules {
 	return PermissionBindRules(stackList().
-		JoinDelim(`;`).
 		SetID(pbrsRuleID).
+		SetDelimiter(rune(59)).
 		SetCategory(pbrsRuleID).
-		NoPadding(!RulePadding).
+		NoPadding(!StackPadding).
 		SetPushPolicy(permissionBindRulesPushPolicy))
 }
 

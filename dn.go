@@ -407,30 +407,40 @@ func (r TargetDistinguishedNames) ID() string {
 setQuoteStyle shall set the receiver instance to the quotation
 scheme defined by integer i.
 */
-func (r BindDistinguishedNames) setQuoteStyle(style int) BindDistinguishedNames {
+func (r BindDistinguishedNames) setQuoteStyle(style int) {
 	_r, _ := castAsStack(r)
+	if _r.Len() < 2 {
+		_r.Encap() // not multivalued, force default
+		return
+	}
+
 	if style == MultivalSliceQuotes {
 		_r.Encap(`"`)
 	} else {
 		_r.Encap()
 	}
-	r = BindDistinguishedNames(_r)
-	return r
+
+	return
 }
 
 /*
 setQuoteStyle shall set the receiver instance to the quotation
 scheme defined by integer i.
 */
-func (r TargetDistinguishedNames) setQuoteStyle(style int) TargetDistinguishedNames {
+func (r TargetDistinguishedNames) setQuoteStyle(style int) {
 	_r, _ := castAsStack(r)
+	if _r.Len() < 2 {
+		_r.Encap() // not multivalued, force default
+		return
+	}
+
 	if style == MultivalSliceQuotes {
 		_r.Encap(`"`)
 	} else {
 		_r.Encap()
 	}
-	r = TargetDistinguishedNames(_r)
-	return r
+
+	return
 }
 
 /*
@@ -667,7 +677,7 @@ func bindDNToCondition(dest any, op stackage.ComparisonOperator) (BindRule, bool
 	_b := castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(b.Category())
 
 	return BindRule(*_b), true
@@ -720,7 +730,7 @@ func targetDNToCondition(dest any, op stackage.ComparisonOperator) (TargetRule, 
 		Encap(`"`).
 		Paren(true).
 		SetID(targetRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(t.Category())
 
 	return TargetRule(*_t), true
@@ -925,7 +935,6 @@ func (r BindDistinguishedNames) Push(x ...any) BindDistinguishedNames {
 		_r.Push(dn)
 	}
 
-	r = BindDistinguishedNames(_r)
 	return r
 }
 
@@ -1002,7 +1011,6 @@ func (r TargetDistinguishedNames) Push(x ...any) TargetDistinguishedNames {
 		_r.Push(dn)
 	}
 
-	r = TargetDistinguishedNames(_r)
 	return r
 }
 
@@ -1157,12 +1165,11 @@ func (r TargetDistinguishedNames) Pop() TargetDistinguishedName {
 }
 
 /*
-userDistinguishedNamesPushPolicy is a private function that conforms
-to go-stackage's PushPolicy interface signature. This is called during
-Push attempts to a stack containing Bind Rule userdn distinguishedName
-instances.
+uDNPushPolicy is a private function that conforms to go-stackage's
+PushPolicy interface signature. This is called during Push attempts
+to a stack containing BindRule userdn distinguished name instances.
 */
-func (r BindDistinguishedNames) userDistinguishedNamesPushPolicy(x any) error {
+func (r BindDistinguishedNames) uDNPushPolicy(x any) error {
 	if r.contains(x) {
 		err := errorf("Cannot push non-unique or invalid %T into %T [%s]",
 			x, r, r.Keyword())
@@ -1172,12 +1179,11 @@ func (r BindDistinguishedNames) userDistinguishedNamesPushPolicy(x any) error {
 }
 
 /*
-groupDistinguishedNamesPushPolicy is a private function that
-conforms to go-stackage's PushPolicy interface signature. This
-is called during Push attempts to a stack containing Bind Rule
-groupdn distinguishedName instances.
+gDNPushPolicy is a private function that conforms to go-stackage's
+PushPolicy interface signature. This is called during Push attempts
+to a stack containing BindRule groupdn distinguished name instances.
 */
-func (r BindDistinguishedNames) groupDistinguishedNamesPushPolicy(x any) error {
+func (r BindDistinguishedNames) gDNPushPolicy(x any) error {
 	if r.contains(x) {
 		err := errorf("Cannot push non-unique or invalid %T into %T [%s]",
 			x, r, r.Keyword())
@@ -1187,12 +1193,11 @@ func (r BindDistinguishedNames) groupDistinguishedNamesPushPolicy(x any) error {
 }
 
 /*
-roleDistinguishedNamesPushPolicy is a private function that conforms
-to go-stackage's PushPolicy interface signature. This is called during
-Push attempts to a stack containing Bind Rule roledn distinguishedName
-instances.
+rDNPushPolicy is a private function that conforms to go-stackage's
+PushPolicy interface signature. This is called during Push attempts
+to a stack containing BindRule roledn distinguished name instances.
 */
-func (r BindDistinguishedNames) roleDistinguishedNamesPushPolicy(x any) error {
+func (r BindDistinguishedNames) rDNPushPolicy(x any) error {
 	if r.contains(x) {
 		err := errorf("Cannot push non-unique or invalid %T into %T [%s]",
 			x, r, r.Keyword())
@@ -1202,12 +1207,11 @@ func (r BindDistinguishedNames) roleDistinguishedNamesPushPolicy(x any) error {
 }
 
 /*
-targetToDistinguishedNamesPushPolicy is a private function that
-conforms to go-stackage's PushPolicy interface signature. This is
-called during Push attempts to a stack containing Target Rule
-target_to distinguishedName instances.
+tToDNPushPolicy is a private function that conforms to go-stackage's
+PushPolicy interface signature. This is called during Push attempts
+to a stack containing TargetRule target_to distinguished name instances.
 */
-func (r TargetDistinguishedNames) targetToDistinguishedNamesPushPolicy(x any) error {
+func (r TargetDistinguishedNames) tToDNPushPolicy(x any) error {
 	if r.contains(x) {
 		err := errorf("Cannot push non-unique or invalid %T into %T [%s]",
 			x, r, r.Keyword())
@@ -1217,12 +1221,11 @@ func (r TargetDistinguishedNames) targetToDistinguishedNamesPushPolicy(x any) er
 }
 
 /*
-targetFromDistinguishedNamesPushPolicy is a private function that
-conforms to go-stackage's PushPolicy interface signature. This is
-called during Push attempts to a stack containing Target Rule
-target_from distinguishedName instances.
+tFromDNPushPolicy is a private function that conforms to go-stackage's
+PushPolicy interface signature. This is called during Push attempts to
+a stack containing TargetRule target_from distinguished name instances.
 */
-func (r TargetDistinguishedNames) targetFromDistinguishedNamesPushPolicy(x any) error {
+func (r TargetDistinguishedNames) tFromDNPushPolicy(x any) error {
 	if r.contains(x) {
 		err := errorf("Cannot push non-unique or invalid %T into %T [%s]",
 			x, r, r.Keyword())
@@ -1232,12 +1235,11 @@ func (r TargetDistinguishedNames) targetFromDistinguishedNamesPushPolicy(x any) 
 }
 
 /*
-targetDistinguishedNamesPushPolicy is a private function that conforms
-to go-stackage's PushPolicy interface signature. This is called during
-Push attempts to a stack containing Target Rule target distinguishedName
-instances.
+tDNPushPolicy is a private function that conforms to go-stackage's PushPolicy
+interface signature. This is called during Push attempts to a stack containing
+TargetRule target distinguished name instances.
 */
-func (r TargetDistinguishedNames) targetDistinguishedNamesPushPolicy(x any) error {
+func (r TargetDistinguishedNames) tDNPushPolicy(x any) error {
 	if r.contains(x) {
 		err := errorf("Cannot push non-unique or invalid %T into %T [%s]",
 			x, r, r.Keyword())
@@ -1298,17 +1300,21 @@ Only valid instances of BindDistinguishedName which bear the BindUDN keyword
 are to be considered eligible for push requests. If the input value is a
 string, it will be accepted and properly branded with the keyword.
 
+Optionally, the caller may choose to submit one (1) or more (valid) instances of the
+BindDistinguishedName type (or its string equivalent) for push during initialization.
+This is merely a more convenient alternative to separate init and push procedures.
+
 See also the RDNs and GDNs functions for BindRDN and BindGDN keywords
 respectively.
 */
-func UDNs() (d BindDistinguishedNames) {
+func UDNs(x ...any) (d BindDistinguishedNames) {
 	// create a native stackage.Stack
 	// and configure before typecast.
 	_d := stackOr().
 		Symbol(`||`).
 		NoNesting(true).
 		SetID(bindRuleID).
-		NoPadding(!RulePadding).
+		NoPadding(!StackPadding).
 		SetCategory(BindUDN.String())
 
 	// cast _d as a proper BindDistinguishedName
@@ -1319,7 +1325,15 @@ func UDNs() (d BindDistinguishedNames) {
 	// occur during push attempts, providing more
 	// helpful and non-generalized feedback.
 	d = BindDistinguishedNames(_d)
-	_d.SetPushPolicy(d.userDistinguishedNamesPushPolicy)
+	_d.SetPushPolicy(d.uDNPushPolicy)
+
+	// Assuming one (1) or more items were
+	// submitted during the call, (try to)
+	// push them into our initialized stack.
+	// Note that any failed push(es) will
+	// have no impact on the validity of
+	// the return instance.
+	_d.Push(x...)
 
 	return
 }
@@ -1334,17 +1348,21 @@ Only valid instances of BindDistinguishedName which bear the BindRDN keyword
 are to be considered eligible for push requests. If the input value is a
 string, it will be accepted and properly branded with the keyword.
 
+Optionally, the caller may choose to submit one (1) or more (valid) instances of the
+BindDistinguishedName type (or its string equivalent) for push during initialization.
+This is merely a more convenient alternative to separate init and push procedures.
+
 See also the UDNs and GDNs functions for BindUDN and BindGDN keywords
 respectively.
 */
-func RDNs() (d BindDistinguishedNames) {
+func RDNs(x ...any) (d BindDistinguishedNames) {
 	// create a native stackage.Stack
 	// and configure before typecast.
 	_d := stackOr().
 		Symbol(`||`).
 		NoNesting(true).
 		SetID(bindRuleID).
-		NoPadding(!RulePadding).
+		NoPadding(!StackPadding).
 		SetCategory(BindRDN.String())
 
 	// cast _d as a proper BindDistinguishedName
@@ -1355,7 +1373,15 @@ func RDNs() (d BindDistinguishedNames) {
 	// occur during push attempts, providing more
 	// helpful and non-generalized feedback.
 	d = BindDistinguishedNames(_d)
-	_d.SetPushPolicy(d.roleDistinguishedNamesPushPolicy)
+	_d.SetPushPolicy(d.rDNPushPolicy)
+
+	// Assuming one (1) or more items were
+	// submitted during the call, (try to)
+	// push them into our initialized stack.
+	// Note that any failed push(es) will
+	// have no impact on the validity of
+	// the return instance.
+	_d.Push(x...)
 
 	return
 }
@@ -1370,17 +1396,21 @@ Only valid instances of BindDistinguishedName which bear the BindGDN keyword
 are to be considered eligible for push requests. If the input value is a
 string, it will be accepted and properly branded with the keyword.
 
+Optionally, the caller may choose to submit one (1) or more (valid) instances of the
+BindDistinguishedName type (or its string equivalent) for push during initialization.
+This is merely a more convenient alternative to separate init and push procedures.
+
 See also the UDNs and RDNs functions for BindUDN and BindRDN keywords
 respectively.
 */
-func GDNs() (d BindDistinguishedNames) {
+func GDNs(x ...any) (d BindDistinguishedNames) {
 	// create a native stackage.Stack
 	// and configure before typecast.
 	_d := stackOr().
 		Symbol(`||`).
 		NoNesting(true).
 		SetID(bindRuleID).
-		NoPadding(!RulePadding).
+		NoPadding(!StackPadding).
 		SetCategory(BindGDN.String())
 
 	// cast _d as a proper BindDistinguishedName
@@ -1391,7 +1421,15 @@ func GDNs() (d BindDistinguishedNames) {
 	// occur during push attempts, providing more
 	// helpful and non-generalized feedback.
 	d = BindDistinguishedNames(_d)
-	_d.SetPushPolicy(d.groupDistinguishedNamesPushPolicy)
+	_d.SetPushPolicy(d.gDNPushPolicy)
+
+	// Assuming one (1) or more items were
+	// submitted during the call, (try to)
+	// push them into our initialized stack.
+	// Note that any failed push(es) will
+	// have no impact on the validity of
+	// the return instance.
+	_d.Push(x...)
 
 	return
 }
@@ -1406,17 +1444,21 @@ Only valid instances of TargetDistinguishedName which bear the Target keyword
 are to be considered eligible for push requests. If the input value is a
 string, it will be accepted and properly branded with the keyword.
 
+Optionally, the caller may choose to submit one (1) or more (valid) instances of the
+TargetDistinguishedName type (or its string equivalent) for push during initialization.
+This is merely a more convenient alternative to separate init and push procedures.
+
 See also the TTDNs and TFDNs functions for TargetTo and TargetFrom keywords
 respectively.
 */
-func TDNs() (d TargetDistinguishedNames) {
+func TDNs(x ...any) (d TargetDistinguishedNames) {
 	// create a native stackage.Stack
 	// and configure before typecast.
 	_d := stackOr().
 		Symbol(`||`).
 		NoNesting(true).
 		SetID(targetRuleID).
-		NoPadding(!RulePadding).
+		NoPadding(!StackPadding).
 		SetCategory(Target.String())
 
 	// cast _d as a proper TargetDistinguishedName
@@ -1427,7 +1469,15 @@ func TDNs() (d TargetDistinguishedNames) {
 	// occur during push attempts, providing more
 	// helpful and non-generalized feedback.
 	d = TargetDistinguishedNames(_d)
-	_d.SetPushPolicy(d.targetDistinguishedNamesPushPolicy)
+	_d.SetPushPolicy(d.tDNPushPolicy)
+
+	// Assuming one (1) or more items were
+	// submitted during the call, (try to)
+	// push them into our initialized stack.
+	// Note that any failed push(es) will
+	// have no impact on the validity of
+	// the return instance.
+	_d.Push(x...)
 
 	return
 }
@@ -1442,17 +1492,21 @@ Only valid instances of TargetDistinguishedName which bear the TargetTo keyword
 are to be considered eligible for push requests. If the input value is a
 string, it will be accepted and properly branded with the keyword.
 
+Optionally, the caller may choose to submit one (1) or more (valid) instances of the
+TargetDistinguishedName type (or its string equivalent) for push during initialization.
+This is merely a more convenient alternative to separate init and push procedures.
+
 See also the TDNs and TFDNs functions for Target and TargetFrom keywords
 respectively.
 */
-func TTDNs() (d TargetDistinguishedNames) {
+func TTDNs(x ...any) (d TargetDistinguishedNames) {
 	// create a native stackage.Stack
 	// and configure before typecast.
 	_d := stackOr().
 		Symbol(`||`).
 		NoNesting(true).
 		SetID(targetRuleID).
-		NoPadding(!RulePadding).
+		NoPadding(!StackPadding).
 		SetCategory(TargetTo.String())
 
 	// cast _d as a proper TargetDistinguishedName
@@ -1463,7 +1517,15 @@ func TTDNs() (d TargetDistinguishedNames) {
 	// occur during push attempts, providing more
 	// helpful and non-generalized feedback.
 	d = TargetDistinguishedNames(_d)
-	_d.SetPushPolicy(d.targetToDistinguishedNamesPushPolicy)
+	_d.SetPushPolicy(d.tToDNPushPolicy)
+
+	// Assuming one (1) or more items were
+	// submitted during the call, (try to)
+	// push them into our initialized stack.
+	// Note that any failed push(es) will
+	// have no impact on the validity of
+	// the return instance.
+	_d.Push(x...)
 
 	return
 }
@@ -1474,21 +1536,25 @@ embedded stack configured to function as a simple ORed list containing a single
 level of LDAP distinguished names. The TargetFrom (target_from) keyword will be
 automatically assigned to the return value.
 
-Only valid instances of TargetDistinguishedName which bear the TargetFrom keyword
-are to be considered eligible for push requests. If the input value is a
-string, it will be accepted and properly branded with the keyword.
+Optionally, the caller may choose to submit one (1) or more (valid) instances of the
+TargetDistinguishedName type (or its string equivalent) for push during initialization.
+This is merely a more convenient alternative to separate init and push procedures.
+
+Only valid instances of TargetDistinguishedName which bear the TargetFrom
+keyword are to be considered eligible for push requests. If the input value
+is a string, it will be accepted and properly branded with the keyword.
 
 See also the TDNs and TTDNs functions for Target and TargetTo keywords
 respectively.
 */
-func TFDNs() (d TargetDistinguishedNames) {
+func TFDNs(x ...any) (d TargetDistinguishedNames) {
 	// create a native stackage.Stack
 	// and configure before typecast.
 	_d := stackOr().
 		Symbol(`||`).
 		NoNesting(true).
 		SetID(targetRuleID).
-		NoPadding(!RulePadding).
+		NoPadding(!StackPadding).
 		SetCategory(TargetFrom.String())
 
 	// cast _d as a proper TargetDistinguishedName
@@ -1499,7 +1565,15 @@ func TFDNs() (d TargetDistinguishedNames) {
 	// occur during push attempts, providing more
 	// helpful and non-generalized feedback.
 	d = TargetDistinguishedNames(_d)
-	_d.SetPushPolicy(d.targetFromDistinguishedNamesPushPolicy)
+	_d.SetPushPolicy(d.tFromDNPushPolicy)
+
+	// Assuming one (1) or more items were
+	// submitted during the call, (try to)
+	// push them into our initialized stack.
+	// Note that any failed push(es) will
+	// have no impact on the validity of
+	// the return instance.
+	_d.Push(x...)
 
 	return
 }

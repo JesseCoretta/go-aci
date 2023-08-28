@@ -122,7 +122,7 @@ func (r Inheritance) Eq() BindRule {
 	_b := castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(r.inheritance.AttributeBindTypeOrValue.BindKeyword.String())
 
 	b = BindRule(*_b)
@@ -147,7 +147,7 @@ func (r Inheritance) Ne() BindRule {
 	_b := castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(r.inheritance.AttributeBindTypeOrValue.BindKeyword.String())
 
 	b = BindRule(*_b)

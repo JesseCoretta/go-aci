@@ -17,6 +17,11 @@ const (
 	badAV = `<invalid_attribute_value>`
 )
 
+var (
+	badAttributeType  AttributeType  // for failed calls that return an AttributeType only
+	badAttributeValue AttributeValue // for failed calls that return an AttributeValue only
+)
+
 /*
 AttributeBindTypeOrValue contains a statement of the following syntax:
 
@@ -114,7 +119,7 @@ func (r AttributeBindTypeOrValue) Eq() BindRule {
 	_b := castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(r.BindKeyword.String())
 
 	b = BindRule(*_b)
@@ -141,7 +146,7 @@ func (r AttributeBindTypeOrValue) Ne() BindRule {
 	_b := castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(r.BindKeyword.String())
 
 	b = BindRule(*_b)
@@ -309,7 +314,7 @@ func (r AttributeType) Eq() TargetRule {
 		Encap(`"`).
 		Paren(true).
 		SetID(targetRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(TargetAttr.String())
 
 	t = TargetRule(*_t)
@@ -336,7 +341,7 @@ func (r AttributeType) Ne() TargetRule {
 		Encap(`"`).
 		Paren(true).
 		SetID(targetRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(TargetAttr.String())
 
 	t = TargetRule(*_t)
@@ -439,7 +444,7 @@ func (r AttributeTypes) Eq() TargetRule {
 		Encap(`"`).
 		Paren(true).
 		SetID(targetRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(TargetAttr.String())
 
 	t = TargetRule(*_t)
@@ -466,7 +471,7 @@ func (r AttributeTypes) Ne() TargetRule {
 		Encap(`"`).
 		Paren(true).
 		SetID(targetRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(TargetAttr.String())
 
 	t = TargetRule(*_t)
@@ -477,15 +482,20 @@ func (r AttributeTypes) Ne() TargetRule {
 setQuoteStyle shall set the receiver instance to the quotation
 scheme defined by integer i.
 */
-func (r AttributeTypes) setQuoteStyle(style int) AttributeTypes {
+func (r AttributeTypes) setQuoteStyle(style int) {
 	_r, _ := castAsStack(r)
+	if _r.Len() < 2 {
+		_r.Encap() // not multivalued, force default
+		return
+	}
+
 	if style == MultivalSliceQuotes {
 		_r.Encap(`"`)
 	} else {
 		_r.Encap()
 	}
-	r = AttributeTypes(_r)
-	return r
+
+	return
 }
 
 /*
@@ -588,7 +598,6 @@ func (r AttributeTypes) Push(x ...any) AttributeTypes {
 		}
 	}
 
-	r = AttributeTypes(_r)
 	return r
 }
 
@@ -686,17 +695,21 @@ TAs returns a freshly initialized instance of AttributeTypes, configured to
 store one (1) or more AttributeType instances for the purpose of TargetRule
 expression when using the `targetattr` keyword context.
 
+Optionally, the caller may choose to submit one (1) or more (valid) instances of the
+AttributeType type (or its string equivalent) during initialization. This is merely
+a more convenient alternative to separate initialization and push procedures.
+
 Values are automatically delimited using stackage.Stack.Symbol(`||`) in an
 ORed Boolean stack.
 */
-func TAs() (a AttributeTypes) {
+func TAs(x ...any) (a AttributeTypes) {
 	// create a native stackage.Stack
 	// and configure before typecast.
 	_a := stackOr().
 		Symbol(`||`).
 		NoNesting(true).
 		SetID(targetRuleID).
-		NoPadding(!RulePadding).
+		NoPadding(!StackPadding).
 		SetCategory(TargetAttr.String())
 
 	// cast _a as a proper AttributeTypes
@@ -710,6 +723,14 @@ func TAs() (a AttributeTypes) {
 	a = AttributeTypes(_a)
 	_a.SetPushPolicy(a.pushPolicy)
 
+	// Assuming one (1) or more items were
+	// submitted during the call, (try to)
+	// push them into our initialized stack.
+	// Note that any failed push(es) will
+	// have no impact on the validity of
+	// the return instance.
+	_a.Push(x...)
+
 	return
 }
 
@@ -719,17 +740,21 @@ to store one (1) or more AttributeType instances for the purpose of LDAP
 Search URI specification of desired AttributeType names. Instances of
 this design are not generally needed elsewhere.
 
-Values are automatically comma-delimited using stackage.Stack.JoinDelim
+Optionally, the caller may choose to submit one (1) or more (valid) instances of the
+AttributeType type (or its string equivalent) during initialization. This is merely
+a more convenient alternative to separate initialization and push procedures.
+
+Values are automatically comma-delimited using stackage.Stack.SetDelimiter
 in List mode.
 */
-func UAs() (a AttributeTypes) {
+func UAs(x ...any) (a AttributeTypes) {
 	// create a native stackage.Stack
 	// and configure before typecast.
 	_a := stackList().
-		JoinDelim(`,`).
 		NoNesting(true).
 		SetID(bindRuleID).
-		NoPadding(!RulePadding).
+		SetDelimiter(rune(44)).
+		NoPadding(!StackPadding).
 		SetCategory(`uri_search_attributes`)
 
 	// cast _a as a proper AttributeTypes
@@ -742,6 +767,14 @@ func UAs() (a AttributeTypes) {
 	// and non-generalized feedback.
 	a = AttributeTypes(_a)
 	_a.SetPushPolicy(a.pushPolicy)
+
+	// Assuming one (1) or more items were
+	// submitted during the call, (try to)
+	// push them into our initialized stack.
+	// Note that any failed push(es) will
+	// have no impact on the validity of
+	// the return instance.
+	_a.Push(x...)
 
 	return
 }

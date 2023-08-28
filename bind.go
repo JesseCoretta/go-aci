@@ -189,24 +189,28 @@ func (r BindRules) Kind() string {
 }
 
 /*
-And returns an instance of Rule configured to express Boolean AND logical
-operations. Instances of this design contain BindContext instances, which
-are qualified through instances of the following types:
+And returns an instance of Rule configured to express Boolean AND logical operations.
+Instances of this design contain BindContext instances, which are qualified through
+instances of the following types:
 
 • BindRule
 
 • BindRules
 
+Optionally, the caller may choose to submit one (1) or more (valid) instances of these
+types during initialization. This is merely a more convenient alternative to separate
+initialization and push procedures.
+
 The embedded type within the return is stackage.Stack via the go-stackage
 package's And function.
 */
-func And() (b BindRules) {
+func And(x ...any) (b BindRules) {
 	// create a native stackage.Stack
 	// and configure before typecast.
 	_b := stackAnd().
 		SetID(bindRuleID).
 		SetCategory(`and`).
-		NoPadding(!RulePadding).
+		NoPadding(!StackPadding).
 		SetCategory(TargetAttr.String())
 
 	// cast _a as a proper BindRules instance
@@ -217,30 +221,42 @@ func And() (b BindRules) {
 	// during push attempts, providing helpful
 	// and non-generalized feedback.
 	b = BindRules(_b)
-	_b.SetPushPolicy(b.bindRulesPushPolicy)
+	_b.SetPushPolicy(b.pushPolicy)
+
+	// Assuming one (1) or more items were
+	// submitted during the call, (try to)
+	// push them into our initialized stack.
+	// Note that any failed push(es) will
+	// have no impact on the validity of
+	// the return instance.
+	_b.Push(x...)
 
 	return
 }
 
 /*
-Or returns an instance of Rule configured to express Boolean OR logical
-operations. Instances of this design contain BindContext instances, which
-are qualified through instances of the following types:
+Or returns an instance of Rule configured to express Boolean OR logical operations.
+Instances of this design contain BindContext instances, which are qualified through
+instances of the following types:
 
 • BindRule
 
 • BindRules
 
+Optionally, the caller may choose to submit one (1) or more (valid) instances of these
+types during initialization. This is merely a more convenient alternative to separate
+initialization and push procedures.
+
 The embedded type within the return is stackage.Stack via the go-stackage
 package's Or function.
 */
-func Or() (b BindRules) {
+func Or(x ...any) (b BindRules) {
 	// create a native stackage.Stack
 	// and configure before typecast.
 	_b := stackOr().
 		SetID(bindRuleID).
 		SetCategory(`or`).
-		NoPadding(!RulePadding).
+		NoPadding(!StackPadding).
 		SetCategory(TargetAttr.String())
 
 	// cast _a as a proper BindRules instance
@@ -251,30 +267,42 @@ func Or() (b BindRules) {
 	// during push attempts, providing helpful
 	// and non-generalized feedback.
 	b = BindRules(_b)
-	_b.SetPushPolicy(b.bindRulesPushPolicy)
+	_b.SetPushPolicy(b.pushPolicy)
+
+	// Assuming one (1) or more items were
+	// submitted during the call, (try to)
+	// push them into our initialized stack.
+	// Note that any failed push(es) will
+	// have no impact on the validity of
+	// the return instance.
+	_b.Push(x...)
 
 	return
 }
 
 /*
-Not returns an instance of Rule configured to express Boolean NOT logical
-operations. Instances of this design contain BindContext instances, which
-are qualified through instances of the following types:
+Not returns an instance of Rule configured to express Boolean NOT logical operations.
+Instances of this design contain BindContext instances, which are qualified through
+instances of the following types:
 
 • BindRule
 
 • BindRules
 
+Optionally, the caller may choose to submit one (1) or more (valid) instances of these
+types during initialization. This is merely a more convenient alternative to separate
+initialization and push procedures.
+
 The embedded type within the return is stackage.Stack via the go-stackage
 package's Not function.
 */
-func Not() (b BindRules) {
+func Not(x ...any) (b BindRules) {
 	// create a native stackage.Stack
 	// and configure before typecast.
 	_b := stackNot().
 		SetID(bindRuleID).
 		SetCategory(`not`).
-		NoPadding(!RulePadding).
+		NoPadding(!StackPadding).
 		SetCategory(TargetAttr.String())
 
 	// cast _a as a proper BindRules instance
@@ -285,7 +313,15 @@ func Not() (b BindRules) {
 	// during push attempts, providing helpful
 	// and non-generalized feedback.
 	b = BindRules(_b)
-	_b.SetPushPolicy(b.bindRulesPushPolicy)
+	_b.SetPushPolicy(b.pushPolicy)
+
+	// Assuming one (1) or more items were
+	// submitted during the call, (try to)
+	// push them into our initialized stack.
+	// Note that any failed push(es) will
+	// have no impact on the validity of
+	// the return instance.
+	_b.Push(x...)
 
 	return
 }
@@ -418,34 +454,83 @@ func wordToStack(k string) (BindRules, bool) {
 /*
 SetKeyword wraps go-stackage's Condition.SetKeyword method.
 */
-func (r *BindRule) SetKeyword(kw any) {
+func (r *BindRule) SetKeyword(kw any) *BindRule {
 	x := castAsCondition(*r)
 	x.SetKeyword(kw)
 	*r = BindRule(*x)
+
+	return r
 }
 
 /*
 SetOperator wraps go-stackage's Condition.SetOperator method.
 */
-func (r *BindRule) SetOperator(op stackage.ComparisonOperator) {
+func (r *BindRule) SetOperator(op stackage.ComparisonOperator) *BindRule {
+	if !keywordAllowsComparisonOperator(r.Keyword(), op) {
+		return r
+	}
+
 	x := castAsCondition(*r)
 	x.SetOperator(op)
 	*r = BindRule(*x)
+
+	return r
 }
 
 /*
 SetExpression wraps go-stackage's Condition.SetExpression method.
 */
-func (r *BindRule) SetExpression(expr any) {
+func (r *BindRule) SetExpression(expr any) *BindRule {
 	x := castAsCondition(*r)
 	x.SetExpression(expr)
 	*r = BindRule(*x)
+
+	return r
+}
+
+/*
+SetQuoteStyle allows the election of a particular multivalued
+quotation style offered by the various adopters of the ACIv3
+syntax.
+
+See the const definitions for MultivalOuterQuotes (default)
+and MultivalSliceQuotes for details.
+
+Note that this will only have an effect on BindRule instances
+that bear the userdn, roledn or groupdn keyword contexts AND
+contain a stack-based expression containing more than one (1)
+slice elements.
+*/
+func (r BindRule) SetQuoteStyle(style int) BindRule {
+	_r := castAsCondition(r)
+
+	switch key := r.Keyword(); key {
+	case BindUDN, BindGDN, BindRDN:
+		switch tv := _r.Expression().(type) {
+		case stackage.Stack:
+			BindDistinguishedNames(tv).setQuoteStyle(style)
+
+			// Toggle the individual value quotation scheme
+			// to the INVERSE of the Stack quotation scheme
+			// set above
+			if style == MultivalSliceQuotes {
+				_r.Encap()
+			} else {
+				_r.Encap(`"`)
+			}
+		}
+	}
+
+	return r
 }
 
 /*
 setQuoteStyle shall set the receiver instance to the quotation
 scheme defined by integer i.
+
+DECOM
 */
+/*
 func (r BindRule) setQuoteStyle(i int) {
 	if r.IsZero() {
 		return
@@ -458,6 +543,7 @@ func (r BindRule) setQuoteStyle(i int) {
 		_t.Encap()
 	}
 }
+*/
 
 /*
 String is a stringer method that returns the string
@@ -476,7 +562,6 @@ setCategory wraps go-stackage's Stack.SetCategory method.
 func (r BindRules) setCategory(cat string) {
 	_b, _ := castAsStack(r)
 	_b.SetCategory(cat)
-	//r = BindRules(_b)
 }
 
 /*
@@ -568,20 +653,13 @@ Push wraps go-stackage's Stack.Push method.
 */
 func (r BindRules) Push(x ...BindContext) BindRules {
 	_r, _ := castAsStack(r)
+
 	// iterate variadic input arguments
 	for i := 0; i < len(x); i++ {
 		_r.Push(x[i])
 	}
 
-	r = BindRules(_r)
 	return r
-
-	/*
-		_r, _ := castAsStack(r)
-		_r.Push(x...)
-		r = BindRules(_r)
-		return r
-	*/
 }
 
 /*
@@ -648,6 +726,7 @@ ReadOnly wraps go-stackage's Stack.ReadOnly method.
 func (r BindRules) ReadOnly(state ...bool) BindRules {
 	_r, _ := castAsStack(r)
 	_r.ReadOnly(state...)
+
 	return r
 }
 
@@ -657,6 +736,7 @@ Paren wraps go-stackage's Stack.Paren method.
 func (r BindRules) Paren(state ...bool) BindRules {
 	_r, _ := castAsStack(r)
 	_r.Paren(state...)
+
 	return r
 }
 
@@ -669,6 +749,7 @@ versa.
 func (r BindRules) Fold(state ...bool) BindRules {
 	_r, _ := castAsStack(r)
 	_r.Fold(state...)
+
 	return r
 }
 
@@ -710,6 +791,7 @@ NoPadding wraps go-stackage's Stack.NoPadding method.
 func (r BindRules) NoPadding(state ...bool) BindRules {
 	_b, _ := castAsStack(r)
 	_b.NoPadding(state...)
+
 	return r
 }
 
@@ -738,15 +820,14 @@ func (r BindRules) Valid() (err error) {
 }
 
 /*
-bindRulesPushPolicy conforms to the PushPolicy signature
-defined within go-stackage. This function will be called
-privately whenever an instance is pushed into a particular
-stackage.Stack (or alias) type instance.
+pushPolicy conforms to the PushPolicy signature defined
+within go-stackage. This function will be called privately
+whenever an instance is pushed into a particular Stack (or
+Stack alias) type instance.
 
-Only BindRule and BindRules instances are to be cleared
-for push executions.
+Only BindContext qualifiers are to be cleared for push.
 */
-func (r BindRules) bindRulesPushPolicy(x any) (err error) {
+func (r BindRules) pushPolicy(x any) (err error) {
 	// perform type switch upon input value
 	// x to determine suitability for push.
 	switch tv := x.(type) {

@@ -116,7 +116,7 @@ func (r SearchScope) Eq() TargetRule {
 		Encap(`"`).
 		Paren(true).
 		SetID(targetRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(TargetScope.String())
 
 	t = TargetRule(*_t)

@@ -52,7 +52,7 @@ func (r IPAddr) Eq() BindRule {
 	_b := castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(BindIP.String())
 
 	b = BindRule(*_b)
@@ -73,7 +73,7 @@ func (r IPAddr) Ne() BindRule {
 	_b := castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(BindIP.String())
 
 	b = BindRule(*_b)
@@ -351,7 +351,7 @@ func (r FQDN) Eq() BindRule {
 	_b := castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(BindDNS.String())
 
 	b = BindRule(*_b)
@@ -375,7 +375,7 @@ func (r FQDN) Ne() BindRule {
 	_b := castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(BindDNS.String())
 
 	b = BindRule(*_b)

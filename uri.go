@@ -353,7 +353,7 @@ func (r LDAPURI) makeBindRule(negate ...bool) BindRule {
 	_b := castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(kw.String())
 
 	b = BindRule(*_b)

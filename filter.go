@@ -9,6 +9,10 @@ import (
 	"github.com/JesseCoretta/go-stackage"
 )
 
+var (
+	badSearchFilter SearchFilter // for failed calls that return a SearchFilter only
+)
+
 /*
 SearchFilter is a struct type that embeds an LDAP search filter. Instances of this type
 may be used in a variety of areas, from LDAPURI composition to targetfilter rules.
@@ -101,14 +105,13 @@ func (r SearchFilter) Eq() TargetRule {
 	t.SetOperator(Eq)
 	t.SetExpression(r)
 
-	_t := castAsCondition(t).
+	castAsCondition(t).
 		Encap(`"`).
 		Paren(true).
 		SetID(targetRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(TargetFilter.String())
 
-	t = TargetRule(*_t)
 	return t
 }
 
@@ -127,14 +130,13 @@ func (r SearchFilter) Ne() TargetRule {
 	t.SetOperator(Ne)
 	t.SetExpression(r)
 
-	_t := castAsCondition(t).
+	castAsCondition(t).
 		Encap(`"`).
 		Paren(true).
 		SetID(targetRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(TargetFilter.String())
 
-	t = TargetRule(*_t)
 	return t
 }
 
@@ -184,9 +186,7 @@ func AF(x ...any) AttributeFilter {
 
 func newAttrFilter(x ...any) *atf {
 	a := new(atf)
-	if len(x) > 0 {
-		a.set(x...)
-	}
+	a.set(x...)
 	return a
 }
 
@@ -197,12 +197,36 @@ returns the receiver instance in fluent-form.
 Multiple values can be provided in variadic form, or piecemeal.
 */
 func (r *AttributeFilter) Set(x ...any) *AttributeFilter {
-	if r.atf == nil {
+	if r.IsZero() {
 		r.atf = new(atf)
 	}
 
 	r.atf.set(x...)
 	return r
+}
+
+/*
+AttributeType returns the underlying instance of AttributeType, or
+a bogus AttributeType if unset.
+*/
+func (r AttributeFilter) AttributeType() AttributeType {
+	if r.IsZero() {
+		return badAttributeType
+	}
+
+	return r.atf.AttributeType
+}
+
+/*
+SearchFilter returns the underlying instance of SearchFilter, or
+a bogus SearchFilter if unset.
+*/
+func (r AttributeFilter) SearchFilter() SearchFilter {
+	if r.IsZero() {
+		return badSearchFilter
+	}
+
+	return r.atf.SearchFilter
 }
 
 /*
@@ -261,20 +285,6 @@ func (r AttributeFilter) IsZero() bool {
 }
 
 /*
-Mode returns one (1) of the following string values, indicating the
-operational disposition of the receiver:
-
-• `add`
-
-• `delete`
-
-See the AttributeOperation constants for details.
-*/
-func (r AttributeOperation) Mode() string {
-	return r.String()
-}
-
-/*
 String is a stringer method that returns the string representation
 of the receiver instance.
 */
@@ -292,82 +302,209 @@ AFOs returns a freshly initialized instance of AttributeFilterOperations, config
 to store one (1) or more AttributeFilterOperation instances for the purpose of crafting
 TargetRule instances which bear the `targattrfilters` keyword context.
 
+Optionally, the caller may choose to submit one (1) or more (valid) instances of the
+AttributeFilterOperation type (or its string equivalent) during initialization. This
+is merely a more convenient alternative to separate initialization and push procedures.
+
 Instances of this design are not generally needed elsewhere.
 
-Values are automatically joined using stackage.List() with JoinDelim for comma
-delimitation by default. See SetDelimMode method if semicolon delimitation is
+Values are automatically joined using stackage.List() with SetDelimiter for comma
+delimitation by default. See SetDelimiter method if semicolon delimitation is
 preferred.
 */
-func AFOs() (f AttributeFilterOperations) {
-        // create a native stackage.Stack
-        // and configure before typecast.
-        _f := stackList().
-                JoinDelim(`,`).
-                SetID(targetRuleID).
-                NoPadding(!RulePadding).
-                SetCategory(TargetAttrFilters.String())
+func AFOs(x ...any) (f AttributeFilterOperations) {
+	// create a native stackage.Stack
+	// and configure before typecast.
+	_f := stackList().
+		SetDelimiter(rune(44)).
+		SetID(targetRuleID).
+		NoPadding(!StackPadding).
+		SetCategory(TargetAttrFilters.String())
 
-        // cast _f as a proper AttributeFilterOperations
-        // instance (f). We do it this way to gain
-        // access to the method for the *specific
-        // instance* being created (f), thus allowing
+	// cast _f as a proper AttributeFilterOperations
+	// instance (f). We do it this way to gain
+	// access to the method for the *specific
+	// instance* being created (f), thus allowing
 	// a custom presentation policy to be set.
-        f = AttributeFilterOperations(_f)
+	f = AttributeFilterOperations(_f)
 
 	// Set custom Presentation/Push policies
 	// per go-stackage signatures.
 	_f.SetPresentationPolicy(f.presentationPolicy).
-		SetPushPolicy(attrFilterOpsPushPolicy)
+		SetPushPolicy(f.pushPolicy)
+
+	// Assuming one (1) or more items were
+	// submitted during the call, (try to)
+	// push them into our initialized stack.
+	// Note that any failed push(es) will
+	// have no impact on the validity of
+	// the return instance.
+	_f.Push(x...)
 
 	return
 }
 
 /*
-SetDelimMode controls the delimitation scheme employed by the receiver.
+Contains returns a boolean value indicative of whether the type
+and its value were located within the receiver.
 
-Some vendors use semicolon (ASCII #59) for delimitation. This can be achieved
-using an integer value of one (1) to execute this method.
+Valid input types are AttributeFilterOperation or a valid string
+equivalent.
 
-Other vendors use a comma (ASCII #44) for delimitation. This is the default,
-but can be set using any integer other than one (1).
+Case is significant in the matching process.
 */
-func (r AttributeFilterOperations) SetDelimMode(i int) AttributeFilterOperations {
-	nx, conv := castAsStack(r) // cast to stackage.Stack to set category
-	if !conv {
-		return r
+func (r AttributeFilterOperations) Contains(x any) bool {
+	return r.contains(x)
+}
+
+/*
+contains is a private method called by the AttributeFilterOperations
+Contains method, et al.
+
+Case is significant in the matching process.
+*/
+func (r AttributeFilterOperations) contains(x any) bool {
+	if r.Len() == 0 {
+		return false
 	}
 
-	switch i {
-	case 1:
-		nx.JoinDelim(`;`)
+	var candidate string
+
+	switch tv := x.(type) {
+	case string:
+		candidate = tv
+	case AttributeFilterOperation:
+		candidate = tv.String()
 	default:
-		nx.JoinDelim(`,`)
+		return false
 	}
 
-	return r
+	if len(candidate) == 0 {
+		return false
+	}
+
+	for i := 0; i < r.Len(); i++ {
+		// case is significant here.
+		if r.Index(i).String() == candidate {
+			return true
+		}
+	}
+
+	return false
+}
+
+/*
+SetDelimiter controls the delimitation scheme employed by the receiver.
+
+Some vendors use semicolon (ASCII #59) for delimitation for expressions
+that include values of this kind. This alternative scheme can be set using
+the AttributeFilterOperationsSemiDelim integer constant (1).
+
+Other vendors use a comma (ASCII #44) for delimitation of the same form of
+expression. This delimitation scheme represents the default (most common)
+behavior, but can be set using the AttributeFilterOperationsCommaDelim
+integer constant (0), or when run in niladic fashion.
+*/
+func (r AttributeFilterOperations) SetDelimiter(i ...int) {
+	_r, conv := castAsStack(r)
+	if !conv {
+		return
+	}
+
+	var (
+		// default delimiter is a comma
+		def string = string(rune(44)) // `,`
+
+		// alternative delimiter is a semicolon
+		alt string = string(rune(59)) // `;`
+	)
+
+	if len(i) == 0 {
+		// caller requests the default
+		// delimitation scheme (niladic
+		// exec).
+		_r.SetDelimiter(def)
+		return
+	}
+
+	// perform integer switch, looking
+	// for a particular constant value
+	switch i[0] {
+	case AttributeFilterOperationsSemiDelim:
+		// Caller requests alternative
+		// delimitation scheme.
+		_r.SetDelimiter(alt)
+	default:
+		// caller requests the default
+		// delimitation scheme.
+		_r.SetDelimiter(def)
+	}
 }
 
 /*
 Push wraps go-stackage's Stack.Push method.
 */
 func (r AttributeFilterOperations) Push(x ...any) AttributeFilterOperations {
+	if len(x) == 0 {
+		return r
+	}
+
 	_r, _ := castAsStack(r)
 
 	for i := 0; i < len(x); i++ {
-		_r.Push(x[i])
+		switch tv := x[i].(type) {
+		case string:
+			if afo, err := parseAttributeFilterOperation(tv); err == nil {
+				_r.Push(afo)
+			}
+		case AttributeFilterOperation:
+			_r.Push(tv)
+		}
 	}
 
 	return r
 }
 
 /*
+Parse is a convenient alternative to building the receiver instance using individual
+instances of the needed types. This method does not use go-antlraci.
+
+An error is returned if the parsing attempt fails for some reason. If successful, the
+receiver pointer is updated (clobbered) with new information.
+
+Parse will process the input string (raw) and attempt to split the value using a
+delimiter integer identifier, if specified. See AttributeFilterOperationsCommaDelim
+(default) and AttributeFilterOperationsSemiDelim const definitions for details.
+*/
+func (r *AttributeFilterOperations) Parse(raw string, delim ...int) (err error) {
+	var d int = AttributeFilterOperationsCommaDelim
+	if len(delim) > 0 {
+		if delim[0] == AttributeFilterOperationsSemiDelim {
+			d = delim[0]
+		}
+	}
+
+	var R AttributeFilterOperations
+	if R, err = parseAttributeFilterOperations(raw, d); err != nil {
+		return
+	}
+	*r = R
+
+	return
+}
+
+/*
 Pop wraps go-stackage's Stack.Pop method.
 */
-func (r AttributeFilterOperations) Pop() (slice any) {
+func (r AttributeFilterOperations) Pop() (afo AttributeFilterOperation) {
 	_r, _ := castAsStack(r)
-	slice, _ = _r.Pop()
+	slice, _ := _r.Pop()
 
-	return slice
+	if assert, ok := slice.(AttributeFilterOperation); ok {
+		afo = assert
+	}
+
+	return
 }
 
 /*
@@ -383,11 +520,12 @@ Index wraps go-stackage's Stack.Index method. Note that the
 Boolean OK value returned by go-stackage by default will be
 shadowed and not obtainable by the caller.
 */
-func (r AttributeFilterOperations) Index(idx int) (x AttributeFilterOperation) {
+func (r AttributeFilterOperations) Index(idx int) (afo AttributeFilterOperation) {
 	_r, _ := castAsStack(r)
 	slice, _ := _r.Index(idx)
+
 	if assert, ok := slice.(AttributeFilterOperation); ok {
-		x = assert
+		afo = assert
 	}
 
 	return
@@ -406,9 +544,9 @@ String is a stringer method that returns the string representation of
 the receiver instance.
 */
 func (r AttributeFilterOperations) String() string {
-        if r.IsZero() {
-                return ``
-        }
+	if r.IsZero() {
+		return ``
+	}
 
 	var vals []string
 	for i := 0; i < r.Len(); i++ {
@@ -416,7 +554,7 @@ func (r AttributeFilterOperations) String() string {
 		vals = append(vals, afo.String())
 	}
 
-        return join(vals, `,`)
+	return join(vals, `,`)
 }
 
 func (r AttributeFilterOperations) presentationPolicy(_ any) string {
@@ -437,14 +575,13 @@ func (r AttributeFilterOperations) Eq() TargetRule {
 	t.SetOperator(Eq)
 	t.SetExpression(r)
 
-	_t := castAsCondition(t).
+	castAsCondition(t).
 		Encap(`"`).
 		Paren(true).
 		SetID(targetRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(TargetAttrFilters.String())
 
-	t = TargetRule(*_t)
 	return t
 }
 
@@ -457,27 +594,42 @@ qualifying signature. When executed, this method will return a bogus TargetRule.
 */
 func (r AttributeFilterOperations) Ne() TargetRule { return badTargetRule }
 
-func attrFilterOpsPushPolicy(x any) (err error) {
+func (r AttributeFilterOperations) pushPolicy(x any) (err error) {
 	switch tv := x.(type) {
+	case string:
+		if len(tv) == 0 {
+			err = errorf("Cannot push zero string %T into %T [%s]",
+				tv, r, TargetAttrFilters)
+		}
+
 	case AttributeFilterOperation:
 		if tv.IsZero() {
-			err = errorf("%T denied per PushPolicy method; nil %T", tv)
+			err = errorf("Cannot push nil %T into %T [%s]",
+				tv, r, TargetAttrFilters)
 		}
+	default:
+		err = errorf("Push request of %T type violates %T [%s] PushPolicy",
+			tv, r, TargetAttrFilters)
 	}
 
 	return
 }
 
-func attrFilterOpPushPolicy(x any) (err error) {
+func (r AttributeFilterOperation) pushPolicy(x any) (err error) {
 	switch tv := x.(type) {
 	case string:
 		if len(tv) == 0 {
-			err = errorf("%T denied per PushPolicy method; zero length", tv)
+			err = errorf("Cannot push zero string %T into %T [%s]",
+				tv, r, TargetAttrFilters)
 		}
 	case AttributeFilter:
-		if tv.IsZero() {
-			err = errorf("%T denied per PushPolicy method; nil %T", tv)
+		if err = tv.Valid(); err != nil {
+			err = errorf("Cannot push nil %T into %T [%s]: %v",
+				tv, r, TargetAttrFilters, err)
 		}
+	default:
+		err = errorf("Push request of %T type violates %T [%s] PushPolicy",
+			tv, r, TargetAttrFilters)
 	}
 
 	return
@@ -495,9 +647,23 @@ type AttributeFilterOperation stackage.Stack
 /*
 Push wraps go-stackage's Stack.Push method.
 */
-func (r AttributeFilterOperation) Push(x any) AttributeFilterOperation {
+func (r AttributeFilterOperation) Push(x ...any) AttributeFilterOperation {
+	if len(x) == 0 {
+		return r
+	}
+
 	_r, _ := castAsStack(r)
-	_r.Push(x)
+
+	for i := 0; i < len(x); i++ {
+		switch tv := x[i].(type) {
+		case AttributeFilter:
+			_r.Push(tv)
+		case string:
+			if af, err := parseAttributeFilter(tv); err == nil {
+				_r.Push(af)
+			}
+		}
+	}
 
 	return r
 }
@@ -529,10 +695,62 @@ Index wraps go-stackage's Stack.Index method. Note that the
 Boolean OK value returned by go-stackage by default will be
 shadowed and not obtainable by the caller.
 */
-func (r AttributeFilterOperation) Index(idx int) (slice any) {
+func (r AttributeFilterOperation) Index(idx int) (af AttributeFilter) {
 	_r, _ := castAsStack(r)
-	slice, _ = _r.Index(idx)
+	slice, _ := _r.Index(idx)
+
+	if assert, ok := slice.(AttributeFilter); ok {
+		af = assert
+	}
 	return
+}
+
+/*
+Contains returns a boolean value indicative of whether the type
+and its value were located within the receiver.
+
+Valid input types are AttributeFilter or a valid string equivalent.
+
+Case is significant in the matching process.
+*/
+func (r AttributeFilterOperation) Contains(x any) bool {
+	return r.contains(x)
+}
+
+/*
+contains is a private method called by the AttributeFilterOperation
+Contains method, et al.
+
+Case is significant in the matching process.
+*/
+func (r AttributeFilterOperation) contains(x any) bool {
+	if r.Len() == 0 {
+		return false
+	}
+
+	var candidate string
+
+	switch tv := x.(type) {
+	case string:
+		candidate = tv
+	case AttributeFilter:
+		candidate = tv.String()
+	default:
+		return false
+	}
+
+	if len(candidate) == 0 {
+		return false
+	}
+
+	for i := 0; i < r.Len(); i++ {
+		// case is significant here.
+		if r.Index(i).String() == candidate {
+			return true
+		}
+	}
+
+	return false
 }
 
 /*
@@ -553,15 +771,26 @@ func (r AttributeFilterOperation) String() string {
 	}
 	_r, _ := castAsStack(r)
 
-	aop := r.Operation()
-	afs := _r.String()
+	f := _r.String()
+	o := r.Operation()
 
-	return sprintf("%s=%s", aop, afs)
+	return sprintf("%s=%s", o, f)
 }
 
+/*
+presentationPolicy -- when set via go-stackage's Stack.SetPresentationPolicy
+method -- shall usurp the standard String method behavior exhibited by the
+receiver in favor of the provided closure's own Stringer implementation. It
+can be necessary to do this at times if go-stackage's basic String method
+generates output text in a way other than what is desired.
+
+See go-stackage's PresentationPolicy documentation for details.
+*/
+/*
 func (r AttributeFilterOperation) presentationPolicy(_ any) string {
         return r.String()
 }
+*/
 
 /*
 Eq initializes and returns a new TargetRule instance configured to express the
@@ -575,16 +804,15 @@ func (r AttributeFilterOperation) Eq() TargetRule {
 	var t TargetRule
 	t.SetKeyword(TargetAttrFilters)
 	t.SetOperator(Eq)
-	t.SetExpression(r.String())	// TODO: investigate why 'r' stringer lacks operation name (add=)
+	t.SetExpression(r.String()) // TODO: investigate why 'r' stringer lacks operation name (add=)
 
-	_t := castAsCondition(t).
+	castAsCondition(t).
 		Encap(`"`).
-		Paren().
+		Paren(true).
 		SetID(targetRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(TargetAttrFilters.String())
 
-	t = TargetRule(*_t)
 	return t
 }
 
@@ -602,39 +830,63 @@ AFO returns a freshly initialized instance of AttributeFilterOperation, configur
 to store one (1) or more AttributeFilter instances for the purpose of crafting
 TargetRule instances which bear the `targattrfilters` keyword context.
 
+Optionally, the caller may choose to submit one (1) or more (valid) instances of the
+AttributeFilter type (or its string equivalent) during initialization. This is merely
+a more convenient alternative to separate init and push procedures.
+
 Instances of this design are not generally needed elsewhere.
 
 Values are automatically ANDed using stackage.And() in symbol (&&) mode.
 */
-func AFO() AttributeFilterOperation {
-	return AttributeFilterOperation(stackAnd().
+func AFO(x ...any) (f AttributeFilterOperation) {
+	// create a native stackage.Stack
+	// and configure before typecast.
+	_f := stackAnd().
 		Symbol(`&&`).
 		SetID(targetRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(TargetAttrFilters.String()).
-		SetPushPolicy(attrFilterOpPushPolicy))
+		NoPadding(!StackPadding).
+		SetCategory(TargetAttrFilters.String())
+
+	// cast _f as a proper AttributeFilterOperation
+	// instance (f). We do it this way to gain
+	// access to the method for the *specific
+	// instance* being created (f), thus allowing
+	// a custom presentation policy to be set.
+	f = AttributeFilterOperation(_f)
+
+	// Set custom Presentation/Push policies
+	// per go-stackage signatures.
+	//_f.SetPresentationPolicy(f.presentationPolicy).
+	_f.SetPushPolicy(f.pushPolicy)
+
+	// Assuming one (1) or more items were
+	// submitted during the call, (try to)
+	// push them into our initialized stack.
+	// Note that any failed push(es) will
+	// have no impact on the validity of
+	// the return instance.
+	f.Push(x...)
+
+	return
 }
 
 /*
-AFs returns an instance of AttributeFilters based upon the input AttributeFilter
+AFO returns an instance of AttributeFilterOperation based upon the input AttributeFilter
 instances.
 
-The instance of AttributeFilters contains an ANDed Rule instance using symbols (`&&`)
-and bears the categorical string label of `attrfilters`.
+The instance of AttributeFilterOperation contains an ANDed Rule instance using symbols (`&&`).
 */
 func (r AttributeOperation) AFO(x ...any) (afo AttributeFilterOperation) {
 	afo = AFO()
-	cat := sprintf("%s_%s", TargetAttrFilters, r)
+	cat := sprintf("%s_%s", TargetAttrFilters, r) // TODO: Find an alternative. I really don't like this.
 	afo.setCategory(cat)
-	for i := 0; i < len(x); i++ {
-		afo.Push(x[i]) // append new slices
-	}
+	afo.Push(x...)
 
 	return
 }
 
 func (r AttributeFilterOperation) Category() string {
-	nx, conv := castAsStack(r) // cast to stackage.Stack to set category
+	nx, conv := castAsStack(r)
 	if !conv {
 		return ``
 	}
@@ -642,7 +894,7 @@ func (r AttributeFilterOperation) Category() string {
 }
 
 func (r AttributeFilterOperation) setCategory(cat string) {
-	nx, conv := castAsStack(r) // cast to stackage.Stack to set category
+	nx, conv := castAsStack(r)
 	if !conv {
 		return
 	}
@@ -665,6 +917,11 @@ func (r AttributeFilterOperation) Operation() AttributeOperation {
 	return noAOp
 }
 
+/*
+hasAttributeFilterOperationPrefix returns a Boolean value indicative of
+whether the input string value (raw) begins with a known AttributeOperation
+prefix.
+*/
 func hasAttributeFilterOperationPrefix(raw string) bool {
 	switch {
 	case hasPfx(raw, `add=`):
@@ -677,22 +934,77 @@ func hasAttributeFilterOperationPrefix(raw string) bool {
 	return false
 }
 
+/*
+parseAttributeFilterOperations processes the raw input value into an instance of
+AttributeFilterOperations, which is returned alongside an error instance.
+*/
 func parseAttributeFilterOperations(raw string, delim int) (afos AttributeFilterOperations, err error) {
-	var vals []string
-	switch delim {
-	case 1:
-		vals = split(raw, `;`)
-	default:
-		vals = split(raw, `,`)
+	var char string = string(rune(44)) // ASCII #44 [default]
+
+	// If delim is anything except one (1)
+	// use the default, else use semicolon.
+	if delim == 1 {
+		char = string(rune(59)) // ASCII #59
 	}
 
+	// Scan the raw input value and count the number of
+	// occurrences of an AttributeOperation prefix.
+	var opct int
+	for _, oper := range []string{
+		AddOp.String() + `=`, // add=
+		DelOp.String() + `=`, // delete=
+	} {
+		if ct := ctstr(raw, oper); ct != 0 {
+			// save the count in opct
+			// through an increment.
+			opct += ct
+		}
+	}
+
+	// Split the raw value using the specified
+	// char delimiter. Verify the resultant
+	// lengths to ensure a split actually did
+	// occur.
+	var vals []string
+	if vals = split(raw, char); opct != len(vals) {
+		err = errorf("Inappropriate delimiter id [%d]; non-idempotent result following '%c' split: len(vals)=%d, opct=%d",
+			delim, ',', len(vals), opct)
+		return
+	}
+
+	// initialize a new AttributeFilterOperations stack
+	// instance. Instances of AttributeFilterOperation
+	// shall be pushed into this.
 	afos = AFOs()
+
+	// iterate each of the above split string
+	// slices under the assumption that each
+	// is an AttributeFilterOperation instance
+	//
+	// e.g.: add=objectClass:(&(employeeStatus:active)(c=US))
 	for i := 0; i < len(vals); i++ {
 		var afo AttributeFilterOperation
+
+		// each of the slices created per the
+		// above char split should begin with
+		// an AttributeOperator prefix, which
+		// will be either `add=` or `delete=`.
+		// Bail out if we find otherwise.
+		if !hasAttributeFilterOperationPrefix(vals[i]) {
+			err = errorf("%T missing %T prefix", afo, AttributeOperation(0))
+			return
+		}
+
+		// send parseAttributeFilterOperation
+		// the current slice iteration, returning
+		// an error if one ensues.
 		if afo, err = parseAttributeFilterOperation(vals[i]); err != nil {
 			return
 		}
 
+		// Push the verified AttributeFilterOperation
+		// instance into our AttributeFilterOperations
+		// stack instance.
 		afos.Push(afo)
 	}
 
@@ -711,7 +1023,7 @@ func parseAttributeFilterOperation(raw string) (afo AttributeFilterOperation, er
 	}
 
 	afo = aop.AFO()
-	cat := sprintf("%s_%s", TargetAttrFilters, aop)
+	cat := sprintf("%s_%s", TargetAttrFilters, aop) // TODO: Find an alternative. I really don't like this.
 	afo.setCategory(cat)
 	seq = split(trimS(val), `&&`)
 

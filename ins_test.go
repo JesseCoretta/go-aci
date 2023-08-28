@@ -46,7 +46,7 @@ func ExampleInstruction_build() {
 
 	// push into a new instance of Rule automatically
 	// configured to store Target Rule Condition instances.
-	tgt := TRs().Push(C)
+	tgt := TRs(C).Push(C)
 
 	// define a timeframe for our PermissionBindRule
 	// using two Condition instances

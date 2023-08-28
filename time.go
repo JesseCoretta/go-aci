@@ -243,7 +243,7 @@ func (r DayOfWeek) Eq() BindRule {
 	_b := castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(BindDoW.String())
 
 	b = BindRule(*_b)
@@ -270,7 +270,7 @@ func (r DayOfWeek) Ne() BindRule {
 	_b := castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(BindDoW.String())
 
 	b = BindRule(*_b)
@@ -374,7 +374,7 @@ func (r TimeOfDay) Eq() BindRule {
 	_b := castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(BindToD.String())
 
 	b = BindRule(*_b)
@@ -401,7 +401,7 @@ func (r TimeOfDay) Ne() BindRule {
 	_b := castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(BindToD.String())
 
 	b = BindRule(*_b)
@@ -426,7 +426,7 @@ func (r TimeOfDay) Lt() BindRule {
 	_b := castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(BindToD.String())
 
 	b = BindRule(*_b)
@@ -451,7 +451,7 @@ func (r TimeOfDay) Le() BindRule {
 	_b := castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(BindToD.String())
 
 	b = BindRule(*_b)
@@ -476,7 +476,7 @@ func (r TimeOfDay) Gt() BindRule {
 	_b := castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(BindToD.String())
 
 	b = BindRule(*_b)
@@ -501,7 +501,7 @@ func (r TimeOfDay) Ge() BindRule {
 	_b := castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(BindToD.String())
 
 	b = BindRule(*_b)

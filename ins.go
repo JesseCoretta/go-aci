@@ -29,13 +29,15 @@ configured to store valid Instruction instances.
 Note that the concept of a list of Instruction instances does not come from the
 ACIv3 syntax per se, and is implemented here merely for convenience. Use of this
 type is not required in any scenario.
+
+Slice values are delimited using the newline rune (ASCII #10).
 */
 func ACIs() Instructions {
 	return Instructions(stackList().
-		JoinDelim("\n").
 		NoNesting(true).
 		SetID(`instructions`).
-		NoPadding(!RulePadding).
+		SetDelimiter(rune(10)).
+		NoPadding(!StackPadding).
 		SetCategory(`instructions`).
 		SetPushPolicy(instructionsPushPolicy))
 }

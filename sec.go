@@ -63,7 +63,7 @@ func (r AuthMethod) Eq() BindRule {
 	_b := castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(BindAM.String())
 
 	b = BindRule(*_b)
@@ -88,7 +88,7 @@ func (r AuthMethod) Ne() BindRule {
 	_b := castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(BindAM.String())
 
 	b = BindRule(*_b)
@@ -178,7 +178,7 @@ func (r SecurityStrengthFactor) Eq() BindRule {
 	_b := castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(BindSSF.String())
 
 	b = BindRule(*_b)
@@ -202,7 +202,7 @@ func (r SecurityStrengthFactor) Ne() BindRule {
 	_b := castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(BindSSF.String())
 
 	b = BindRule(*_b)
@@ -223,7 +223,7 @@ func (r SecurityStrengthFactor) Lt() BindRule {
 	_b := castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(BindSSF.String())
 
 	b = BindRule(*_b)
@@ -245,7 +245,7 @@ func (r SecurityStrengthFactor) Le() BindRule {
 	_b := castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(BindSSF.String())
 
 	b = BindRule(*_b)
@@ -267,7 +267,7 @@ func (r SecurityStrengthFactor) Gt() BindRule {
 	_b := castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(BindSSF.String())
 
 	b = BindRule(*_b)
@@ -290,7 +290,7 @@ func (r SecurityStrengthFactor) Ge() BindRule {
 	_b := castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
-		NoPadding(!ConditionPadding).
+		NoPadding(!RulePadding).
 		SetCategory(BindSSF.String())
 
 	b = BindRule(*_b)

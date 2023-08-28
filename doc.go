@@ -3,9 +3,13 @@ Package aci implements the complete ACIv3 syntax in a vendor-agnostic manner wit
 
 # Status
 
+# Current state is EXPERIMENTAL
+
 This package is in its early stages, and is undergoing active development. It should NOT be used in any mission-critical
 capacity at this time. At the moment, this package is primarily intended for R&D, PoCs and other scenarios in which risk
 is minimal or nonexistent.
+
+If and when the version reaches 1.0.0, it shall no longer be considered experimental.
 
 # About ACIs
 
@@ -20,9 +24,9 @@ The ACIv3 syntax, though largely the same across the multiple supporting directo
 a few variations in terms of available keywords and features. Though this is not a comprehensive list, a few of these cases
 are listed below:
 
-• Target Rule scoping, through the targetscope keyword
+• TargetRule scoping, through the targetscope keyword
 
-• Bind Rule roles, through the roledn keyword
+• BindRule roles, through the roledn keyword
 
 • Group attribute-based value matching, through the groupattr keyword
 
@@ -48,18 +52,13 @@ further details, see the LICENSE file within the aforementioned repository.
 • Intuitive: well-documented with numerous examples
 
 • Efficient: a package-wide cyclomatic complexity factor limit of nine (9) is imposed; the imported go-stackage and go-objectid
-packages both exercise similar criteria.
-
-• Convenient: a Fluent design is implemented where possible, allowing the chaining of certain command sequences
+packages both exercise similar criteria
 
 • Compatible: package design encompasses the facets of the ACIv3 specification as a whole, as opposed to catering to any
 specific directory product implementation
 
 • Flexible: ACI composition can be approached in a variety of ways, without enforcing any particular style; for example,
 parenthetical encapsulation can be enabled or disabled for select (and eligible) type instances when desired, or set globally
-
-• Bidirectional: parsers process text ACIs into proper type-based instances defined in this package; conversely, these same
-types can be used to "manually assemble" ACIs without the need for said text definitions
 
 # Marshaling and Unmarshaling
 
@@ -96,32 +95,24 @@ end user. If users wish to approach this concept, they are advised to leverage t
 implementing evaluatory capabilities, such as attribute value assertion checks and the like.  This would conceivably allow the use
 of matchingRule and ldapSyntax operations that precede attribute value disclosure/withholding.
 
-Another limitation is the lack of comprehensive LDAP Search Filter parsing and decompilation into Rule instances. For the moment,
-any user-provided LDAP Search Filter (i.e.: when crafting a `targetfilter` Target Rule) is taken at face-value and is NOT verified.
-This will be improved in the near future, at which point an LDAP Search Filter string value shall be interrogated, deconstructed
-verified and recomposed into (potentially nested) Rule instances correctly (or will return a meaningful error).
-
-Users who wish to verify filter values for any reason are advised to make use of the (most excellent!) LDAP Search Filter decompiling
-capabilities found within the go-ldap/ldap package. To learn more, see https://github.com/go-ldap/ldap.
-
 # Quotation Schemes
 
 Another trait of this package's flexibility is the ability to handle either of the following quotation schemes when parsing or
-building rule statements that reference a multi-valued expression:
+building statements that reference a multi-valued expression:
 
 	"value" || "value" || "value" ...
 
 	"value || value || value" ...
 
-In particular, these sorts of quotation schemes appear in the following Target/Bind rule scenarios:
+In particular, these sorts of quotation schemes appear in the following scenarios:
 
-• targetattr Target Rules for lists of LDAP attribute types
+• targetattr TargetRules for lists of LDAP attribute types
 
-• target, target_to and target_from Target Rule distinguished names
+• target, target_to and target_from TargetRule distinguished names
 
-• userdn and groupdn Bind Rule distinguished names
+• userdn and groupdn BindRule distinguished names
 
-• extop and targetcontrol Target Rule ASN.1 object identifiers
+• extop and targetcontrol TargetRule ASN.1 object identifiers
 
 Users are advised to honor the quotation scheme recommended by their vendor or product documentation. This package aims to
 support either of the above schemes with no variance in the end result, but has no official position as to which of these
