@@ -125,14 +125,14 @@ func (r BindType) String() (b string) {
 Kind returns the string name for the kind of underlying Keyword (`bind`).
 */
 func (r BindKeyword) Kind() string {
-	return `bind`
+	return bindRuleID
 }
 
 /*
 Kind returns the string name for the kind of underlying Keyword (`target`).
 */
 func (r TargetKeyword) Kind() string {
-	return `target`
+	return targetRuleID
 }
 
 /*
