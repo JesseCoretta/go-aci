@@ -82,6 +82,23 @@ func newLDAPURI(x ...any) (l *ldapURI) {
 }
 
 /*
+Parse is a convenient alternative to building the receiver instance using individual
+instances of the needed types. This method does not use go-antlraci.
+
+An error is returned if the parsing attempt fails for some reason. If successful, the
+receiver pointer is updated (clobbered) with new information.
+*/
+func (r *LDAPURI) Parse(raw string) (err error) {
+	var L LDAPURI
+	if L, err = parseLDAPURI(raw); err != nil {
+		return
+	}
+	*r = L
+
+	return
+}
+
+/*
 parseLDAPURI reads input string x and produces an instance of LDAPURI
 (L), which is returned alongside an error instance (err).
 
@@ -232,7 +249,7 @@ func (r *ldapURI) uriAssertATB(raw string, bkw ...BindKeyword) (err error) {
 			A.Push(AT(attr))
 		}
 
-		// Submit new value to LDAPURI instance
+		// Submit new value(s) to LDAPURI instance
 		r.set(A)
 	}
 
@@ -258,9 +275,9 @@ is set within the receiver, the keyword shall be BindUAT; this is regardless
 to the keyword assigned to the DistinguishedName instance.
 
 • If an AttributeBindTypeOrValue is NOT set within the receiver, the keyword
-shall fallback to that which is found within the DistinguishedName assigned to
+shall fallback to that which is found within the BindDistinguishedName assigned to
 the receiver; this keyword was set by the UDN() or GDN() package-level functions
-respectively during DistinguishedName creation.
+respectively during BindDistinguishedName creation.
 */
 func (r LDAPURI) Eq() BindRule {
 	return r.makeBindRule()
@@ -285,9 +302,9 @@ is set within the receiver, the keyword shall be BindUAT; this is regardless
 to the keyword assigned to the DistinguishedName instance.
 
 • If an AttributeBindTypeOrValue is NOT set within the receiver, the keyword
-shall fallback to that which is found within the DistinguishedName assigned to
-the receiver; this keyword was set by the UDN() or GDN() package-level functions
-respectively during DistinguishedName creation.
+shall fallback to that which is found within the BindDistinguishedName assigned
+to the receiver; this keyword was set by the UDN() or GDN() package-level functions
+respectively during BindDistinguishedName creation.
 
 Negated equality BindRule instances should be used with caution.
 */
@@ -380,6 +397,10 @@ String is a stringer method that returns the string representation
 of the receiver instance.
 */
 func (r LDAPURI) String() string {
+	if r.IsZero() {
+		return ``
+	}
+
 	return r.ldapURI.string()
 }
 
@@ -413,7 +434,7 @@ Valid returns an error instance in the event the receiver is in
 an aberrant state.
 */
 func (r LDAPURI) Valid() error {
-	if r.ldapURI == nil {
+	if r.IsZero() {
 		return errorf("%T instance is nil", r)
 	}
 	return r.ldapURI.valid()
@@ -433,8 +454,8 @@ Set assigns the provided instances to the receiver. The order in which
 instances are assigned to the receiver is immaterial. The semantics of
 type instance assignment are as follows:
 
-• An instance of DistinguishedName will be set as the URI DN; this is
-ALWAYS required. Valid DN creator functions are UDN (userdn), and GDN
+• An instance of BindDistinguishedName will be set as the URI DN; this
+is ALWAYS required. Valid DN creator functions are UDN (userdn), and GDN
 (groupdn) for instances of this type.
 
 • An instance of SearchScope shall be set as the URI Search Scope
@@ -443,24 +464,17 @@ ALWAYS required. Valid DN creator functions are UDN (userdn), and GDN
 within the receiver. Please see a special remark below related to the
 use of instances of this type within LDAP URIs.
 
-• An instance of Rule, IF it bears the categorical label string value
-of `attributes`  (as branded using the Attrs package-level function),
-shall be set as the URI attribute(s) list.  Note that a complete list
-will be appended to the receiver through iteration and is NOT used to
-clobber (or overwrite) any preexisting attribute list.
-
-• An instance of []string is regarded the same as an instance of Rule
-bearing the categorical label string value of `attributes`. Instances
-of this type are allowed for convenience and because they can be read
-and preserved unambiguously.  A []string instance should be used even
-if only one AttributeType (e.g.: `cn`) is requested.
+• An instance of AttributeTypes (created using the UAs package-level
+function) shall be set as the URI attribute(s) list.
 
 • An instance of SearchFilter shall be set as the URI Search Filter.
 Please see a special remark below related to the use of instances of
 this type within LDAP URIs.
 
-At no point will a string primitive be tolerated as an input value
-for any reason.
+• An instance of string (with no other arguments) shall result in an
+LDAP URI parse operation that, if successful, shall overwrite the
+receiver in its entirety. This should not be combined with other types
+of input values as the results will not be compounded.
 
 When an AttributeBindTypeOrValue is specified, an LDAP Search Filter
 MUST NOT BE SET, as it will supercede the AttributeBindTypeOrValue
@@ -475,6 +489,9 @@ In short, choose:
 • DN and AttributeBindTypeOrValue
 */
 func (r *LDAPURI) Set(x ...any) *LDAPURI {
+	if r == nil {
+		*r = URI()
+	}
 	r.ldapURI.set(x...)
 	return r
 }
@@ -483,28 +500,48 @@ func (r *LDAPURI) Set(x ...any) *LDAPURI {
 set is a private method called by LDAPURI.Set.
 */
 func (r *ldapURI) set(x ...any) {
+	/*
+		if r == nil {
+			R := newLDAPURI()
+			r = R
+		}
+	*/
+
 	// Iterate each of the user-specified
 	// input values ...
 	for i := 0; i < len(x); i++ {
 		switch tv := x[i].(type) {
-
-		// Value is an LDAP Distinguished Name
-		case BindDistinguishedName:
-			r.dn = tv
-
-		// Value is an LDAP Search Scope
-		case SearchScope:
-			if tv != Subordinate {
-				r.scope = tv
+		case string:
+			// Value is a complete LDAPURI in string
+			// representation. If we succeed in parsing
+			// the value, return (do not continue).
+			if L, err := parseLDAPURI(tv); err == nil {
+				*r = (*L.ldapURI)
+				return
 			}
 
-		// Value is an AttributeBindTypeOr Value
+		case BindDistinguishedName:
+			// Value is an LDAP Distinguished Name
+			r.dn = tv
+
+		case SearchScope:
+			// Value is an LDAP Search Scope
+			//if tv != Subordinate {
+			r.scope = tv // check elsewhere
+			//}
+
 		case AttributeBindTypeOrValue:
+			// Value is an AttributeBindTypeOr Value
 			r.avbt = tv
 
-		// Value is an LDAP Search Filter
 		case SearchFilter:
-			r.filter = tv
+			// Value is an LDAP Search Filter
+			r.filter = Filter(tv.String())
+
+		case AttributeTypes:
+			// Value(s) are one or more LDAP
+			// Search Attributes
+			tv.transfer(r.attrs)
 		}
 	}
 

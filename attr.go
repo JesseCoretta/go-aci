@@ -563,6 +563,16 @@ func (r AttributeTypes) Kind() string {
 }
 
 /*
+transfer will "copy" all slice references from the receiver
+instance into dest instance. PushPolicy controls may apply.
+*/
+func (r AttributeTypes) transfer(dest AttributeTypes) {
+	_r, _ := castAsStack(r)
+	_dest, _ := castAsStack(dest)
+	_r.Transfer(_dest)
+}
+
+/*
 Pop wraps go-stackage's Stack.Pop method.
 */
 func (r AttributeTypes) Pop() (x AttributeType) {
@@ -754,7 +764,7 @@ func UAs(x ...any) (a AttributeTypes) {
 		NoNesting(true).
 		SetID(bindRuleID).
 		SetDelimiter(rune(44)).
-		NoPadding(!StackPadding).
+		NoPadding(true).
 		SetCategory(`uri_search_attributes`)
 
 	// cast _a as a proper AttributeTypes
