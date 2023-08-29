@@ -248,9 +248,11 @@ func (r Inheritance) String() string {
 		return badInheritance
 	}
 
-	if r.IsZero() {
-		return `parent[0]`
-	}
+	/*
+		if r.IsZero() {
+			return `parent[0]`
+		}
+	*/
 
 	var levels []string
 	if r.inheritance.Level == noLvl {
@@ -286,7 +288,7 @@ func (r Level) String() (lvl string) {
 /*
 Shift shifts the receiver instance of Levels to include Level x, if not already present.
 */
-func (r *Inheritance) Shift(x ...any) *Inheritance {
+func (r Inheritance) Shift(x ...any) Inheritance {
 	r.inheritance.shift(x...)
 	return r
 }
@@ -388,7 +390,7 @@ func (r *inheritance) positive(x any) (posi bool) {
 /*
 Unshift right-shifts the receiver instance of Levels to remove Level x, if present.
 */
-func (r *Inheritance) Unshift(x ...any) *Inheritance {
+func (r Inheritance) Unshift(x ...any) Inheritance {
 	r.inheritance.unshift(x...)
 	return r
 }

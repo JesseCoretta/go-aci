@@ -67,3 +67,61 @@ func ExampleTimeframe() {
 	fmt.Printf("%s", tfr)
 	// Output: ( timeofday >= "1730" AND timeofday < "2400" )
 }
+
+func TestParseDoW(t *testing.T) {
+	for _, d := range []string{
+		`Sunday`,
+		`Monday,Saturday`,
+		`sUN,mon,tues,Wed,THURSDAY,friDAY,SATurDAy`,
+		`tuesday`,
+		`thursday,monday`,
+	} {
+		if dow, err := parseDoW(d); err != nil {
+			t.Errorf("%s failed to parse %T '%s': %v",
+				t.Name(), d, d, err)
+		} else if dow.String() == badDoW {
+			t.Errorf("%s failed: want '%T', got '%s'",
+				t.Name(), d, dow)
+		}
+	}
+}
+
+func TestMatchDoW(t *testing.T) {
+	failOK := func(x int) bool {
+		for _, val := range []int{
+			3,
+			8,
+			11,
+		} {
+			if x == val {
+				return true
+			}
+		}
+		return false
+	}
+
+	for idx, d := range []any{
+		1,
+		`sunDAY`,
+		`1`,
+		8,
+		Sat,
+		`thur`,
+		`thurs`,
+		`3`,
+		-1,
+		Tues,
+		6,
+		`SQUAtcOBbl3r`,
+		5,
+		`Monday`,
+		Mon,
+	} {
+		if dow := matchDoW(d); dow == noDay {
+			if !failOK(idx) {
+				t.Errorf("%s failed [test idx %d]: want '%T', got '%s'",
+					t.Name(), idx, Day(0), dow)
+			}
+		}
+	}
+}

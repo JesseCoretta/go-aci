@@ -65,6 +65,8 @@ func matchDoW(d any) Day {
 		return matchIntDoW(tv)
 	case string:
 		return matchStrDoW(tv)
+	case Day:
+		return tv
 	}
 
 	return noDay
@@ -72,19 +74,19 @@ func matchDoW(d any) Day {
 
 func matchStrDoW(d string) Day {
 	switch lc(d) {
-	case `sun`:
+	case `sun`, `sunday`, `1`:
 		return Sun
-	case `mon`:
+	case `mon`, `monday`, `2`:
 		return Mon
-	case `tues`:
+	case `tues`, `tuesday`, `3`:
 		return Tues
-	case `wed`:
+	case `wed`, `wednesday`, `4`:
 		return Wed
-	case `thur`:
+	case `thur`, `thurs`, `thursday`, `5`:
 		return Thur
-	case `fri`:
+	case `fri`, `friday`, `6`:
 		return Fri
-	case `sat`:
+	case `sat`, `saturday`, `7`:
 		return Sat
 	}
 
@@ -93,7 +95,7 @@ func matchStrDoW(d string) Day {
 
 func matchIntDoW(d int) Day {
 	switch d {
-	case 0, 1:
+	case 1:
 		return Sun
 	case 2:
 		return Mon
@@ -244,13 +246,12 @@ func (r DayOfWeek) Eq() BindRule {
 	b.SetOperator(Eq)
 	b.SetExpression(r)
 
-	_b := castAsCondition(b).
+	castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(BindDoW.String())
 
-	b = BindRule(*_b)
 	return b
 }
 
@@ -271,13 +272,12 @@ func (r DayOfWeek) Ne() BindRule {
 	b.SetOperator(Ne)
 	b.SetExpression(r)
 
-	_b := castAsCondition(b).
+	castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(BindDoW.String())
 
-	b = BindRule(*_b)
 	return b
 }
 
@@ -287,6 +287,8 @@ receiver instance of Day.
 */
 func (r Day) String() (day string) {
 	switch r {
+	case noDay:
+		day = badDoW
 	case Sun:
 		day = `Sun`
 	case Mon:
@@ -375,13 +377,12 @@ func (r TimeOfDay) Eq() BindRule {
 	b.SetOperator(Eq)
 	b.SetExpression(r)
 
-	_b := castAsCondition(b).
+	castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(BindToD.String())
 
-	b = BindRule(*_b)
 	return b
 }
 
@@ -402,13 +403,12 @@ func (r TimeOfDay) Ne() BindRule {
 	b.SetOperator(Ne)
 	b.SetExpression(r)
 
-	_b := castAsCondition(b).
+	castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(BindToD.String())
 
-	b = BindRule(*_b)
 	return b
 }
 
@@ -427,13 +427,12 @@ func (r TimeOfDay) Lt() BindRule {
 	b.SetOperator(Lt)
 	b.SetExpression(r)
 
-	_b := castAsCondition(b).
+	castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(BindToD.String())
 
-	b = BindRule(*_b)
 	return b
 }
 
@@ -452,13 +451,12 @@ func (r TimeOfDay) Le() BindRule {
 	b.SetOperator(Le)
 	b.SetExpression(r)
 
-	_b := castAsCondition(b).
+	castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(BindToD.String())
 
-	b = BindRule(*_b)
 	return b
 }
 
@@ -477,13 +475,12 @@ func (r TimeOfDay) Gt() BindRule {
 	b.SetOperator(Gt)
 	b.SetExpression(r)
 
-	_b := castAsCondition(b).
+	castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(BindToD.String())
 
-	b = BindRule(*_b)
 	return b
 }
 
@@ -502,13 +499,12 @@ func (r TimeOfDay) Ge() BindRule {
 	b.SetOperator(Ge)
 	b.SetExpression(r)
 
-	_b := castAsCondition(b).
+	castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(BindToD.String())
 
-	b = BindRule(*_b)
 	return b
 }
 

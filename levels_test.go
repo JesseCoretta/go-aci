@@ -71,6 +71,10 @@ func TestLevels_bogus(t *testing.T) {
 		`parent[4]#ROLEDN`,
 		`parent[-1,20,3,476,5,666,7,666,9]?manager#LDAPURI`,
 		`parent[0]].owner#GROUPDN`,
+		`Parent[1,3,5,7)owner]#LDAPURI`,
+		`parent[1,3,5,7)owner#LDAPURI`,
+		`parent[1,2,3,4].squatcobbler`,
+		``,
 	} {
 		i, err := parseInheritance(rawng)
 		if err == nil {
@@ -122,3 +126,56 @@ func TestInheritance_parse(t *testing.T) {
 		}
 	}
 }
+
+/*
+func TestInheritance_lrShift(t *testing.T) {
+        var p Inheritance
+
+        // three iterations, one per supported
+        // Level type
+        for i := 0; i < 3; i++ {
+
+                // iterate each of the levels in the
+                // levels/names map
+                for k, v := range levelMap {
+
+                        term, typ := testGetLevelsTermType(i, k, v.String())
+
+                        shifters := map[int]func(...any) Inheritance{
+                                0: p.Shift,
+                                1: p.Unshift,
+                        }
+
+                        for j := 0; j < len(shifters); j++ {
+                                mode, phase := testGetLevelsPhase(j)
+                                if shifters[j](term); p.Positive(term) != phase {
+                                        t.Errorf("%s failed: %T %s %s failed [key:%d; term:%v] (value:%v)",
+                                                t.Name(), p, typ, mode, k, term, p)
+                                }
+                        }
+                }
+        }
+}
+
+func testGetLevelsPhase(j int) (mode string, phase bool) {
+        mode = `shift`
+        if phase = (0 == j); !phase {
+                mode = `un` + mode
+        }
+
+        return
+}
+
+func testGetLevelsTermType(i,k int, v string) (term any, typ string) {
+        term = k // default
+        switch i {
+        case 1:
+                term = v // string name (e.g.: `0`)
+        case 2:
+                term = Level(k) // Level
+        }
+        typ = sprintf("%T", term) // label for err
+
+        return
+}
+*/
