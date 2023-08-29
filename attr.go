@@ -696,10 +696,6 @@ func (r AttributeTypes) contains(x any) bool {
 	return false
 }
 
-func badAttributeBindTypeOrValueErr(x string) error {
-	return errorf("Invalid AttributeBindTyoeOrValue instance: must conform to '<at>#<bt_or_av>', got '%s'", x)
-}
-
 /*
 TAs returns a freshly initialized instance of AttributeTypes, configured to
 store one (1) or more AttributeType instances for the purpose of TargetRule

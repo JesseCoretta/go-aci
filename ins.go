@@ -8,6 +8,19 @@ import (
 	"github.com/JesseCoretta/go-stackage"
 )
 
+/*
+Version defines the official ACI syntax version number implemented and honored by this package.
+*/
+const Version float32 = 3.0
+
+/*
+Instructions is a go-stackage Stack alias type intended to store slices of
+Instruction instances.
+
+Note that the concept of a "collection" of Instruction instances does not
+come from the ACIv3 syntax per se, and is implemented here merely for the
+user's convenience. Use of this type is not required in any scenario.
+*/
 type Instructions stackage.Stack
 
 /*
@@ -25,10 +38,6 @@ type Instruction struct {
 /*
 ACIs initializes, optionally sets and returns a new instance of Instructions
 configured to store valid Instruction instances.
-
-Note that the concept of a list of Instruction instances does not come from the
-ACIv3 syntax per se, and is implemented here merely for convenience. Use of this
-type is not required in any scenario.
 
 Slice values are delimited using the newline rune (ASCII #10).
 */
@@ -290,4 +299,11 @@ func (r *instruction) instructionTargetPush(x TargetRules) {
 			r.TRs.Push(tgt)
 		}
 	}
+}
+
+/*
+version returns the string version label for the ACI syntax.
+*/
+func version() string {
+	return sprintf("version %.1f", Version)
 }

@@ -298,7 +298,7 @@ state.
 */
 func (r AttributeFilter) Valid() (err error) {
 	if r.IsZero() {
-		err = errorf("%T instance is nil", r)
+		err = nilInstanceErr(r)
 	}
 	return
 }
@@ -581,6 +581,46 @@ func (r AttributeFilterOperations) IsZero() bool {
 }
 
 /*
+Valid returns an error if the receiver is in an aberrant state.
+*/
+func (r AttributeFilterOperations) Valid() error {
+	if r.IsZero() {
+		return nilInstanceErr(r)
+	}
+
+	if r.Kind() != TargetAttrFilters.String() {
+		return unexpectedKindErr(r, TargetAttrFilters.String(), r.Kind())
+	}
+
+	// assume the object has been fashioned
+	// to deceive the package - use the
+	// actual go-stackage index caller so
+	// it won't discriminate types.
+	_r, _ := castAsStack(r)
+	for i := 0; i < _r.Len(); i++ {
+		slice, _ := _r.Index(0)
+		assert, ok := slice.(AttributeFilterOperation)
+		if !ok {
+			return illegalSliceType(r, assert, slice)
+		}
+
+		if err := assert.Valid(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+/*
+Kind returns the categorical label assigned to the receiver.
+*/
+func (r AttributeFilterOperations) Kind() string {
+	_r, _ := castAsStack(r)
+	return _r.Category()
+}
+
+/*
 String is a stringer method that returns the string representation of
 the receiver instance.
 */
@@ -661,9 +701,9 @@ func (r AttributeFilterOperations) pushPolicy(x any) (err error) {
 		}
 
 	case AttributeFilterOperation:
-		if tv.IsZero() {
-			err = errorf("Cannot push nil %T into %T [%s]",
-				tv, r, TargetAttrFilters)
+		if err = tv.Valid(); err != nil {
+			err = errorf("Cannot push nil %T into %T [%s]: %v",
+				tv, r, TargetAttrFilters, err)
 		}
 	default:
 		err = errorf("Push request of %T type violates %T [%s] PushPolicy",
@@ -823,6 +863,48 @@ IsZero wraps go-stackage's Stack.IsZero method.
 func (r AttributeFilterOperation) IsZero() bool {
 	_r, _ := castAsStack(r)
 	return _r.IsZero()
+}
+
+/*
+Valid returns an error if the receiver (or any of its contents) is
+in an aberrant state.
+*/
+func (r AttributeFilterOperation) Valid() error {
+	if r.IsZero() {
+		return nilInstanceErr(r)
+	}
+
+	if !hasPfx(r.Kind(), TargetAttrFilters.String()) {
+		err := unexpectedKindErr(r, TargetAttrFilters.String(), r.Kind())
+		return err
+	}
+
+	// assume the object has been fashioned
+	// to deceive the package - use the
+	// actual go-stackage index caller so
+	// it won't discriminate types.
+	_r, _ := castAsStack(r)
+	for i := 0; i < _r.Len(); i++ {
+		slice, _ := _r.Index(0)
+		assert, ok := slice.(AttributeFilter)
+		if !ok {
+			return illegalSliceType(r, assert, slice)
+		}
+
+		if err := assert.Valid(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+/*
+Kind returns the categorical label assigned to the receiver.
+*/
+func (r AttributeFilterOperation) Kind() string {
+	_r, _ := castAsStack(r)
+	return _r.Category()
 }
 
 /*

@@ -2,7 +2,6 @@ package aci
 
 import (
 	"encoding/binary"
-	"errors"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -263,12 +262,6 @@ var (
 	stackList func(...int) stackage.Stack = stackage.List
 )
 
-/*
-Version defines the ACI syntax version number implemented by
-this package.
-*/
-const Version float32 = 3.0
-
 func isAlnum(r rune) bool {
 	return isLower(r) || isUpper(r) || isDigit(r)
 }
@@ -311,32 +304,6 @@ func isIdentifier(val string) bool {
 	}
 
 	return true
-}
-
-/*
-version returns the string version label for the ACI syntax.
-*/
-func version() string {
-	return sprintf("version %.1f", Version)
-}
-
-/*
-errorf wraps errors.New and returns a non-nil instance of error
-based upon a non-nil/non-zero msg input value with optional args.
-*/
-func errorf(msg any, x ...any) error {
-	switch tv := msg.(type) {
-	case string:
-		if len(tv) > 0 {
-			return errors.New(sprintf(tv, x...))
-		}
-	case error:
-		if tv != nil {
-			return errors.New(sprintf(tv.Error(), x...))
-		}
-	}
-
-	return nil
 }
 
 /*

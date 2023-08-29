@@ -456,10 +456,6 @@ func objectIdentifiersPushPolicy(r, x any, kw TargetKeyword) (err error) {
 	return
 }
 
-func badObjectIdentifierErr(x string) error {
-	return errorf("Invalid ObjectIdentifier instance: must conform to 'N[.N]+', got '%s'", x)
-}
-
 /*
 ExtOps returns a freshly initialized instance of ObjectIdentifiers, configured
 to store one (1) or more ObjectIdentifier instances for the purpose of Target

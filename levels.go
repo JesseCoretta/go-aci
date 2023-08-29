@@ -32,13 +32,6 @@ const (
 )
 
 /*
-badInhErr returns an error describing the appropriate syntax and displaying the offending value.
-*/
-func badInhErr(bad string) error {
-	return errorf("Bad Inheritance value '%s'; must conform to 'parent[0-9+].<at>#<bt_or_av>'", bad)
-}
-
-/*
 Inheritance describes an inherited Bind Rule syntax, allowing access
 control over child entry enumeration below the specified parent.
 */
