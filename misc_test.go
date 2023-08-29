@@ -86,6 +86,13 @@ func TestOperator_codecov(t *testing.T) {
 					t.Errorf("%s failed; illegal %s operator+keyword [%s + %s]: want '%t', got '%t'",
 						t.Name(), typ, k, oper, want, got[i])
 				}
+
+				// retry, using keyword STRING instead of actual instance value
+				want = keywordAllowsComparisonOperator(k.String(), oper)
+				if want != got[i] {
+					t.Errorf("%s failed; illegal %s operator+keyword [%s + %s]: want '%t', got '%t'",
+						t.Name(), typ, k, oper, want, got[i])
+				}
 			}
 		}
 	}
