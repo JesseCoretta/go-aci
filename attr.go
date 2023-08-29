@@ -4,10 +4,6 @@ package aci
 attr.go contains LDAP AttributeType types and methods.
 */
 
-import (
-	"github.com/JesseCoretta/go-stackage"
-)
-
 /*
 invalid value constants used as stringer method returns when
 something goes wrong :/
@@ -418,13 +414,6 @@ func (r AttributeValue) String() (s string) {
 
 	return
 }
-
-/*
-AttributeTypes is an alias type for stackage.Stack, and is intended
-to house one (1) or more AttributeType instances for the purpose of
-expression within a BindRule or TargetRule instance.
-*/
-type AttributeTypes stackage.Stack
 
 /*
 Eq initializes and returns a new TargetRule instance configured to express the

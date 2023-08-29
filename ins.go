@@ -4,24 +4,10 @@ package aci
 aci.go contains the top-level access control instructor methods and types.
 */
 
-import (
-	"github.com/JesseCoretta/go-stackage"
-)
-
 /*
 Version defines the official ACI syntax version number implemented and honored by this package.
 */
 const Version float32 = 3.0
-
-/*
-Instructions is a go-stackage Stack alias type intended to store slices of
-Instruction instances.
-
-Note that the concept of a "collection" of Instruction instances does not
-come from the ACIv3 syntax per se, and is implemented here merely for the
-user's convenience. Use of this type is not required in any scenario.
-*/
-type Instructions stackage.Stack
 
 /*
 Instruction conforms to the ACI syntax specification associated with

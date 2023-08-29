@@ -6,33 +6,12 @@ bind.go contains bind rule(s) types, functions and methods.
 
 import (
 	parser "github.com/JesseCoretta/go-antlraci"
-	"github.com/JesseCoretta/go-stackage"
 )
 
 var (
 	badBindRule  BindRule
 	badBindRules BindRules
 )
-
-/*
-BindRule is a stackage.Condition type alias intended to represent
-a single Bind Rule; that is, one (1) Bind Rule keyword, one (1)
-comparison operator and one (1) or more string values (called an
-'expression').
-
-For example:
-
-	ssf >= "128"
-
-Instances of this type may be assembled manually by users, or may be
-created logically as a result of textual parsing. Users may also want
-to use convenient Eq, Ne, Gt, Ge, Lt, and Le methods extended through
-various types (as permitted) for simplicity.
-
-Instances of this type shall appear within BindRules instances and may
-or may not be parenthetical.
-*/
-type BindRule stackage.Condition
 
 func (r BindRule) isBindContextQualifier() bool {
 	return true
@@ -141,8 +120,9 @@ func (r BindRule) Keyword() Keyword {
 /*
 Operator wraps go-stackage's Condition.Operator method.
 */
-func (r BindRule) Operator() stackage.Operator {
-	return castAsCondition(r).Operator()
+func (r BindRule) Operator() ComparisonOperator {
+	x := castAsCop(castAsCondition(r).Operator().(ComparisonOperator))
+	return ComparisonOperator(x)
 }
 
 /*
@@ -158,23 +138,6 @@ IsZero wraps go-stackage's Condition.IsZero method.
 func (r BindRule) IsZero() bool {
 	return castAsCondition(r).IsZero()
 }
-
-/*
-BindRules is a stackage.Stack type alias intended to store and express
-one (1) or more Bind Rule statements, with or without nesting and (at
-least usually) bound by Boolean logical WORD operators 'AND', 'OR' and
-'AND NOT'.
-
-For example:
-
-	ssf >= "128" AND ip = "192.168.*"
-
-Instances of this type may be assembled manually by users, or may be
-created logically as a result of textual parsing. There are also some
-convenient operator-specific methods available (And() for 'AND', Or()
-for 'OR' and Not() for 'AND NOT'.
-*/
-type BindRules stackage.Stack
 
 func (r BindRules) isBindContextQualifier() bool {
 	return true
@@ -342,7 +305,8 @@ seamlessly.
 This function is called following an apparently successful BindRules
 parsing request through go-antlraci.
 */
-func convertBindRulesHierarchy(orig stackage.Stack) (BindRules, bool) {
+func convertBindRulesHierarchy(stack any) (BindRules, bool) {
+	orig, _ := castAsStack(stack)
 	if orig.Len() == 0 {
 		return badBindRules, false
 	}
@@ -360,7 +324,9 @@ func convertBindRulesHierarchy(orig stackage.Stack) (BindRules, bool) {
 
 	// transfer (copy) references from
 	// orig into clean.
-	orig.Transfer(stackage.Stack(clean))
+	z, _ := castAsStack(clean)
+	orig.Transfer(z)
+	clean = BindRules(z)
 
 	// Iterate the newly-populated clean
 	// instance, performing type-casting
@@ -465,13 +431,13 @@ func (r *BindRule) SetKeyword(kw any) *BindRule {
 /*
 SetOperator wraps go-stackage's Condition.SetOperator method.
 */
-func (r *BindRule) SetOperator(op stackage.ComparisonOperator) *BindRule {
+func (r *BindRule) SetOperator(op ComparisonOperator) *BindRule {
 	if !keywordAllowsComparisonOperator(r.Keyword(), op) {
 		return r
 	}
 
 	x := castAsCondition(*r)
-	x.SetOperator(op)
+	x.SetOperator(castAsCop(op))
 	*r = BindRule(*x)
 
 	return r
@@ -506,8 +472,8 @@ func (r BindRule) SetQuoteStyle(style int) BindRule {
 
 	switch key := r.Keyword(); key {
 	case BindUDN, BindGDN, BindRDN:
-		switch tv := _r.Expression().(type) {
-		case stackage.Stack:
+		if isStackageStack(_r.Expression()) {
+			tv, _ := castAsStack(_r.Expression())
 			BindDistinguishedNames(tv).setQuoteStyle(style)
 
 			// Toggle the individual value quotation scheme

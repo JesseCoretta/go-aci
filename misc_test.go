@@ -1,7 +1,6 @@
 package aci
 
 import (
-	"github.com/JesseCoretta/go-stackage"
 	"testing"
 )
 
@@ -80,8 +79,8 @@ func TestStrInSlice(t *testing.T) {
 
 /*
 TestOperator_codecov shall test every possible permutation of B/T keywords and
-stackage.ComparisonOperator. Each permutation result shall be compared with the
-expected Boolean value.
+ComparisonOperator. Each permutation result will be compared with the expected
+Boolean value.
 
 Also perform various simple checks to satisfy codecov
 */
@@ -93,7 +92,7 @@ func TestOperator_codecov(t *testing.T) {
 	for i := 0; i < len(copMap); i++ {
 
 		// attempt to resolve the operator
-		oper := stackage.ComparisonOperator(i + 1)
+		oper := ComparisonOperator(i + 1)
 		if cop := matchCOP(copMap[i+1]); cop != oper {
 			t.Errorf("%s failed; resolution error: want '%s', got '%s'",
 				t.Name(), oper, cop)

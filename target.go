@@ -15,28 +15,6 @@ var (
 )
 
 /*
-TargetRule is a stackage.Condition type alias intended to represent
-a single Target Rule; that is, one (1) Target Rule keyword, one (1)
-comparison operator and one (1) or more string values (called an
-'expression').
-
-For example:
-
-	( targetscope = "subordinate" )
-
-Instances of this type may be assembled manually by users, or may be
-created logically as a result of textual parsing. Users may also want
-to use convenient Eq and Ne methods extended through various types
-(as permitted) for simplicity.
-
-Instances of this type shall appear within TargetRules instances.
-
-TargetRule instances are always parenthetical. No parenthetical control
-methods exist for instances of this type.
-*/
-type TargetRule stackage.Condition
-
-/*
 TR returns a populated instance of TargetRule. Note there are more
 convenient ways of crafting this type instance and in general this
 package-level is not needed unless the user wishes to craft the
@@ -181,33 +159,32 @@ func (r *TargetRule) SetKeyword(kw any) {
 
 /*
 SetOperator wraps go-stackage's Condition.SetOperator method.
-Valid input types are stackage.ComparisonOperator (using the
-local const aliases) or their string equivalents (e.g.: `>=`
-for Ge).
+Valid input types are ComparisonOperator or its string value
+equivalent (e.g.: `>=` for Ge).
 */
 func (r *TargetRule) SetOperator(op any) {
 	if !keywordAllowsComparisonOperator(r.Keyword(), op) {
 		return
 	}
 
-	var cop stackage.ComparisonOperator
+	var cop ComparisonOperator
 	switch tv := op.(type) {
 	case string:
 		cop = matchCOP(tv)
-	case stackage.Operator:
-		cop = tv.(stackage.ComparisonOperator)
+	case ComparisonOperator:
+		cop = tv
 	default:
 		// bogus operator type
 		return
 	}
 
 	// operator not known? bail out
-	if cop == stackage.ComparisonOperator(0) {
+	if cop == ComparisonOperator(0) {
 		return
 	}
 
 	x := castAsCondition(*r)
-	x.SetOperator(cop)
+	x.SetOperator(castAsCop(cop))
 	*r = TargetRule(*x)
 }
 
@@ -271,24 +248,6 @@ IsZero wraps go-stackage's Condition.IsZero method.
 func (r TargetRule) IsZero() bool {
 	return castAsCondition(r).IsZero()
 }
-
-/*
-TargetRules is a stackage.Stack type alias intended to store and express
-one (1) or more Target Rule statements.
-
-For example:
-
-	( targetscope = "subordinate" )( targetattr = "cn || sn || givenName || objectClass" )
-
-Instances of this type may be assembled manually by users, or may be
-created logically as a result of textual parsing. See the T function
-for easily initializing and returning instances of this type.
-
-Instances of this type will not allow nesting (i.e.: the addition of any
-stackage.Stack type alias instances). Only individual TargetRule instances
-may be pushed into instances of this type.
-*/
-type TargetRules stackage.Stack
 
 /*
 func (r TargetRules) isStackContextQualifier() bool {

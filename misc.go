@@ -7,8 +7,6 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
-
-	"github.com/JesseCoretta/go-stackage"
 )
 
 // AttributeFilterOperationsCommaDelim represents the default
@@ -69,135 +67,6 @@ const MultivalOuterQuotes = 0
 const MultivalSliceQuotes = 1
 
 /*
-ComparisonOperator constants defined within the stackage package are aliased
-within this package for convenience, without the need for user-invoked stackage
-package import.
-*/
-const (
-	badCop stackage.ComparisonOperator = stackage.ComparisonOperator(0x0)
-
-	Eq stackage.ComparisonOperator = stackage.Eq // 0x1, "Equal To"
-	Ne stackage.ComparisonOperator = stackage.Ne // 0x2, "Not Equal to"     !! USE WITH CAUTION !!
-	Lt stackage.ComparisonOperator = stackage.Lt // 0x3, "Less Than"
-	Le stackage.ComparisonOperator = stackage.Le // 0x4, "Less Than Or Equal"
-	Gt stackage.ComparisonOperator = stackage.Gt // 0x5, "Greater Than"
-	Ge stackage.ComparisonOperator = stackage.Ge // 0x6, "Greater Than Or Equal"
-)
-
-var (
-	comparisonOperatorMap              map[string]stackage.ComparisonOperator
-	permittedTargetComparisonOperators map[TargetKeyword][]stackage.ComparisonOperator
-	permittedBindComparisonOperators   map[BindKeyword][]stackage.ComparisonOperator
-)
-
-/*
-matchCOP reads the *string representation* of a
-stackage.ComparisonOperator instance and returns
-the appropriate stackage.ComparisonOperator const.
-
-A bogus stackage.ComparisonOperator (badCop, 0x0)
-shall be returned if a match was not made.
-*/
-func matchCOP(op string) stackage.ComparisonOperator {
-	for k, v := range comparisonOperatorMap {
-		if op == k {
-			return v
-		}
-	}
-
-	return badCop
-}
-
-/*
-keywordAllowsComparisonOperator returns a boolean value indicative of
-whether Keyword input value kw allows stackage.ComparisonOperator op
-for use in T/B rule instances.
-
-Certain keywords, such as TargetScope, allow only certain operators,
-while others, such as BindSSF, allow the use of ALL operators.
-*/
-func keywordAllowsComparisonOperator(kw, op any) bool {
-	// identify the comparison operator,
-	// save as cop var.
-	var cop stackage.ComparisonOperator
-	switch tv := op.(type) {
-	case string:
-		cop = matchCOP(tv)
-	case stackage.ComparisonOperator:
-		cop = tv
-	default:
-		return false
-	}
-
-	// identify the keyword, and
-	// pass it onto the appropriate
-	// map search function.
-	switch tv := kw.(type) {
-	case string:
-		if bkw := matchBKW(tv); bkw != BindKeyword(0x0) {
-			return bindKeywordAllowsComparisonOperator(bkw, cop)
-
-		} else if tkw := matchTKW(tv); tkw != TargetKeyword(0x0) {
-			return targetKeywordAllowsComparisonOperator(tkw, cop)
-		}
-	case BindKeyword:
-		return bindKeywordAllowsComparisonOperator(tv, cop)
-	case TargetKeyword:
-		return targetKeywordAllowsComparisonOperator(tv, cop)
-	}
-
-	return false
-}
-
-/*
-bindKeywordAllowsComparisonOperator is a private function called by keywordAllowsCompariso9nOperator.
-*/
-func bindKeywordAllowsComparisonOperator(key BindKeyword, cop stackage.ComparisonOperator) bool {
-	// look-up the keyword within the permitted cop
-	// map; if found, obtain slices of cops allowed
-	// by said keyword.
-	cops, found := permittedBindComparisonOperators[key]
-	if !found {
-		return false
-	}
-
-	// iterate the cops slice, attempting to perform
-	// a match of the input cop candidate value and
-	// the current cops slice [i].
-	for i := 0; i < len(cops); i++ {
-		if cop == cops[i] {
-			return true
-		}
-	}
-
-	return false
-}
-
-/*
-targetKeywordAllowsComparisonOperator is a private function called by keywordAllowsCompariso9nOperator.
-*/
-func targetKeywordAllowsComparisonOperator(key TargetKeyword, cop stackage.ComparisonOperator) bool {
-	// look-up the keyword within the permitted cop
-	// map; if found, obtain slices of cops allowed
-	// by said keyword.
-	cops, found := permittedTargetComparisonOperators[key]
-	if !found {
-		return false
-	}
-
-	// iterate the cops slice, attempting to perform
-	// a match of the input cop candidate value and
-	// the current cops slice [i].
-	for i := 0; i < len(cops); i++ {
-		if cop == cops[i] {
-			return true
-		}
-	}
-
-	return false
-}
-
-/*
 RulePadding is a global variable that will be applies to ALL
 TargetRule and Bindrule instances assembled during package operations.
 This is a convenient alternative to manually invoking the NoPadding
@@ -255,11 +124,6 @@ var (
 	uint16p  func([]byte, uint16)                = binary.BigEndian.PutUint16
 	valOf    func(x any) reflect.Value           = reflect.ValueOf
 	typOf    func(x any) reflect.Type            = reflect.TypeOf
-
-	stackOr   func(...int) stackage.Stack = stackage.Or
-	stackAnd  func(...int) stackage.Stack = stackage.And
-	stackNot  func(...int) stackage.Stack = stackage.Not
-	stackList func(...int) stackage.Stack = stackage.List
 )
 
 func isAlnum(r rune) bool {
@@ -438,125 +302,6 @@ func stackByOIDKeyword(key Keyword) ObjectIdentifiers {
 }
 
 /*
-castAsCondition merely wraps (casts, converts) and returns an
-instance of BindRule -OR- TargetRule as a stackage.Condition
-instance. This is useful for calling methods that have not been
-extended (wrapped) in this package via go-stackage, as it may not
-be needed in many cases ...
-
-An instance submitted as x that is neither a BindRule or TargetRule
-will result in an empty stackage.Condition return value.
-
-Note this won't alter an existing BindRule or TargetRule instance,
-rather a new reference is made through the stackage.Condition type
-defined within go-stackage. The BindRule or TargetRule, once it has
-been altered to one's satisfaction, can be sent off as intended and
-this "Condition Counterpart" can be discarded, or left for GC.
-*/
-func castAsCondition(x any) (c *stackage.Condition) {
-	switch tv := x.(type) {
-
-	// case match is a single BindRule instance
-	case BindRule:
-		C := stackage.Condition(tv)
-		return &C
-
-	// case match is a single TargetRule instance
-	case TargetRule:
-		C := stackage.Condition(tv)
-		return &C
-	}
-
-	return nil
-}
-
-/*
-castAsStack merely wraps (casts, converts) and returns any type
-alias of stackage.Stack as a native stackage.Stack.
-
-This is useful for calling methods that have not been extended
-(wrapped) in this package via go-stackage, as it might not be
-needed in most cases ...
-
-An instance submitted as x that is NOT a type alias of stackage.Stack
-will result in an empty stackage.Stack return value.
-
-Note this won't alter an existing values, rather a new reference is
-made through the stackage.Condition type defined within go-stackage.
-The alias type, once it has been altered to one's satisfaction, can be
-sent off as intended and this "Stack Counterpart" can be discarded, or
-left for GC.
-*/
-func castAsStack(u any) (S stackage.Stack, converted bool) {
-	switch tv := u.(type) {
-
-	case ObjectIdentifiers:
-		converted = true
-		S = stackage.Stack(tv)
-
-	case BindDistinguishedNames,
-		TargetDistinguishedNames:
-		S, converted = castDNRules(tv)
-
-	case BindRules, TargetRules,
-		PermissionBindRules:
-		S, converted = castBTRules(tv)
-
-	case AttributeTypes:
-		converted = true
-		S = stackage.Stack(tv)
-
-	case AttributeFilterOperation,
-		AttributeFilterOperations:
-		S, converted = castFilterRules(tv)
-	}
-
-	return
-}
-
-func castBTRules(x any) (S stackage.Stack, converted bool) {
-	switch tv := x.(type) {
-	case BindRules:
-		S = stackage.Stack(tv)
-		converted = true
-	case TargetRules:
-		S = stackage.Stack(tv)
-		converted = true
-	case PermissionBindRules:
-		S = stackage.Stack(tv)
-		converted = true
-	}
-
-	return
-}
-
-func castDNRules(x any) (S stackage.Stack, converted bool) {
-	switch tv := x.(type) {
-	case BindDistinguishedNames:
-		S = stackage.Stack(tv)
-		converted = true
-	case TargetDistinguishedNames:
-		S = stackage.Stack(tv)
-		converted = true
-	}
-
-	return
-}
-
-func castFilterRules(x any) (S stackage.Stack, converted bool) {
-	switch tv := x.(type) {
-	case AttributeFilterOperation:
-		S = stackage.Stack(tv)
-		converted = true
-	case AttributeFilterOperations:
-		S = stackage.Stack(tv)
-		converted = true
-	}
-
-	return
-}
-
-/*
 getCategoryFunc uses reflect to obtain and return a given
 type instance's Category method, if present. If not, nil
 is returned.
@@ -634,45 +379,4 @@ type BindContext interface {
 	// matching outside of the realm of bind rules. It need
 	// not be accessed by users, nor is it run at any time.
 	isBindContextQualifier() bool
-}
-
-func init() {
-	comparisonOperatorMap = map[string]stackage.ComparisonOperator{
-		Eq.String(): Eq,
-		Ne.String(): Ne,
-		Lt.String(): Lt,
-		Le.String(): Le,
-		Gt.String(): Gt,
-		Ge.String(): Ge,
-	}
-
-	// populate the allowed comparison operator map per each
-	// possible TargetRule keyword
-	permittedTargetComparisonOperators = map[TargetKeyword][]stackage.ComparisonOperator{
-		Target:            {Eq, Ne},
-		TargetTo:          {Eq, Ne},
-		TargetFrom:        {Eq, Ne},
-		TargetCtrl:        {Eq, Ne},
-		TargetAttr:        {Eq, Ne},
-		TargetExtOp:       {Eq, Ne},
-		TargetScope:       {Eq},
-		TargetFilter:      {Eq, Ne},
-		TargetAttrFilters: {Eq},
-	}
-
-	// populate the allowed comparison operator map per each
-	// possible BindRule keyword
-	permittedBindComparisonOperators = map[BindKeyword][]stackage.ComparisonOperator{
-		BindUDN: {Eq, Ne},
-		BindRDN: {Eq, Ne},
-		BindGDN: {Eq, Ne},
-		BindIP:  {Eq, Ne},
-		BindAM:  {Eq, Ne},
-		BindDNS: {Eq, Ne},
-		BindUAT: {Eq, Ne},
-		BindGAT: {Eq, Ne},
-		BindDoW: {Eq, Ne},
-		BindSSF: {Eq, Ne, Lt, Le, Gt, Ge},
-		BindToD: {Eq, Ne, Lt, Le, Gt, Ge},
-	}
 }

@@ -6,10 +6,6 @@ LDAP Search Filter concepts, as well as TargetRule filter-related abstracts that
 bear the targattrfilters or targetfilters keyword contexts.
 */
 
-import (
-	"github.com/JesseCoretta/go-stackage"
-)
-
 var (
 	badSearchFilter SearchFilter // for failed calls that return a SearchFilter only
 )
@@ -325,15 +321,6 @@ func (r AttributeOperation) String() string {
 	}
 	return `add`
 }
-
-/*
-AttributeFilterOperations is a go-stackage Stack alias type, used for the
-storage of individual AttributeFilterOperation instances.
-
-Instances of this design are used in TargetRule instances which bear the
-targattrfilters keyword context.
-*/
-type AttributeFilterOperations stackage.Stack
 
 /*
 AFOs returns a freshly initialized instance of AttributeFilterOperations, configured
@@ -732,15 +719,6 @@ func (r AttributeFilterOperation) pushPolicy(x any) (err error) {
 
 	return
 }
-
-/*
-AttributeFilterOperation is a stackage.Stack type alias used to store Target Attribute
-Filters expressions, specifically those used within TargetRule instances bearing the
-`targattrfilters` TargetRule keyword context.
-
-See also the AttributeFilterOperations type and its methods.
-*/
-type AttributeFilterOperation stackage.Stack
 
 /*
 Push wraps go-stackage's Stack.Push method.

@@ -6,10 +6,6 @@ Permissions with BindRules, and are a key component in the formation of a comple
 ACI.
 */
 
-import (
-	"github.com/JesseCoretta/go-stackage"
-)
-
 /*
 invalid value constants used as stringer method returns when
 something goes wrong :/
@@ -138,13 +134,6 @@ func (r PermissionBindRule) string() (s string) {
 }
 
 /*
-PermissionBindRules is a stackage.Stack type alias used to store one (1)
-or more instances of PermissionBindRule. Instances of this kind are used
-in top-level Instruction (ACI) assembly.
-*/
-type PermissionBindRules stackage.Stack
-
-/*
 Valid wraps go-stackage's Stack.Valid method.
 */
 func (r PermissionBindRules) Valid() (err error) {
@@ -248,8 +237,8 @@ func (r PermissionBindRules) Pop() (pbr PermissionBindRule) {
 
 /*
 permissionBindRulesPushPolicy conforms to the PushPolicy interface signature
-defined within go-stackage. This private function is called during Push
-attempts to a PermissionBindRules instance.
+defined within the go-stackage package. This private function is called during
+Push attempts to a PermissionBindRules instance.
 */
 func permissionBindRulesPushPolicy(x any) (err error) {
 	switch tv := x.(type) {

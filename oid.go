@@ -2,7 +2,6 @@ package aci
 
 import (
 	"github.com/JesseCoretta/go-objectid"
-	"github.com/JesseCoretta/go-stackage"
 )
 
 const badDotNot = `<invalid_object_identifier>`
@@ -201,13 +200,6 @@ func isDotNot(x string) bool {
 	o, err := objectid.NewDotNotation(x)
 	return err == nil && o.Valid()
 }
-
-/*
-ObjectIdentifiers is an alias type for stackage.Stack, and is intended
-to house one (1) or more ObjectIdentifier instances for the purpose of
-expression within a TargetRule instance.
-*/
-type ObjectIdentifiers stackage.Stack
 
 /*
 IsZero wraps go-stackage's Stack.IsZero method.

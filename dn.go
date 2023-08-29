@@ -4,10 +4,6 @@ package aci
 dn.go contains LDAP Distinguished Name types and methods.
 */
 
-import (
-	"github.com/JesseCoretta/go-stackage"
-)
-
 /*
 Commonly-used distinguished name expression preambles.
 */
@@ -452,20 +448,6 @@ func newDistinguishedName(x string, kw Keyword) (d *distinguishedName) {
 }
 
 /*
-BindDistinguishedNames is an alias type for stackage.Stack, and is intended
-to house one (1) or more DistinguishedName instances for the purpose of
-expression within a BindRule instance.
-*/
-type BindDistinguishedNames stackage.Stack
-
-/*
-TargetDistinguishedNames is an alias type for stackage.Stack, and is intended
-to house one (1) or more DistinguishedName instances for the purpose of
-expression within a TargetRule instance.
-*/
-type TargetDistinguishedNames stackage.Stack
-
-/*
 Category wraps go-stackage's Stack.Category method.
 */
 func (r BindDistinguishedNames) Category() string {
@@ -713,7 +695,7 @@ func (r TargetDistinguishedNames) Ne() TargetRule {
 	return x.(TargetRule)
 }
 
-func dnToCondition(dest any, op stackage.ComparisonOperator) (any, bool) {
+func dnToCondition(dest any, op ComparisonOperator) (any, bool) {
 	switch tv := dest.(type) {
 
 	// case matched bind rule DN(s)
@@ -737,7 +719,7 @@ func dnToCondition(dest any, op stackage.ComparisonOperator) (any, bool) {
 	return badBindRule, false
 }
 
-func bindDNToCondition(dest any, op stackage.ComparisonOperator) (BindRule, bool) {
+func bindDNToCondition(dest any, op ComparisonOperator) (BindRule, bool) {
 	var b BindRule
 	switch tv := dest.(type) {
 	case BindDistinguishedName:
@@ -789,7 +771,7 @@ func bindDNToCondition(dest any, op stackage.ComparisonOperator) (BindRule, bool
 	return BindRule(*_b), true
 }
 
-func targetDNToCondition(dest any, op stackage.ComparisonOperator) (TargetRule, bool) {
+func targetDNToCondition(dest any, op ComparisonOperator) (TargetRule, bool) {
 	var t TargetRule
 	switch tv := dest.(type) {
 	case TargetDistinguishedName:
