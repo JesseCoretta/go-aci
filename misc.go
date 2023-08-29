@@ -270,97 +270,6 @@ this package.
 */
 const Version float32 = 3.0
 
-/*
-unquote removes leading and trailing quotation characters from
-str.
-
-This function considers any of ASCII #34 ("), ASCII #39 (') and
-ASCII #96 (`) to be eligible candidates for truncation, though
-only matches of the first and final slices are considered.
-*/
-func unquote(str string) string {
-	if len(str) <= 2 {
-		return str
-	}
-
-	// remove leading candidate
-	switch c := rune(str[0]); c {
-	case '"', '\'', '`':
-		str = str[1:]
-	}
-
-	// remove trailing candidate
-	switch c := rune(str[len(str)-1]); c {
-	case '"', '\'', '`':
-		str = str[:len(str)-1]
-	}
-
-	return str
-}
-
-/*
-isQuoted looks at the first and final indices of the input
-string value to determine whether BOTH are quotation ASCII
-characters, and returns a Boolean value indicative of the
-result. Any values found within unbalanced (e.g.: "Jesse')
-OR incomplete (e.g.: "Jesse) quotation schemes will result
-in a false return value.
-
-This function considers any of ASCII #34 ("), ASCII #39 (')
-and ASCII #96 (`) to be eligible candidates for quotation.
-*/
-func isQuoted(str string) bool {
-	if len(str) < 2 {
-		return false
-	}
-
-	var char rune
-
-	// Perform a rune (Unicode char) switch
-	switch q := rune(str[0]); q {
-
-	// We've encountered a valid rune, make
-	// a note of it.
-	case '"', '\'', '`':
-		char = q
-	default:
-		return false
-	}
-
-	// return the evaluation of the first rune
-	// we found with the last one. They should
-	// match if properly quoted.
-	return char == rune(str[len(str)-1])
-}
-
-/*
-isNumber returns a boolean value indicative of whether the provided value (which can be string or []byte instances)
-represents a decimal number.
-*/
-func isNumber(val any) bool {
-	var v []byte
-	switch tv := val.(type) {
-	case []byte:
-		v = tv
-	case string:
-		v = []byte(tv)
-	default:
-		return false
-	}
-
-	if len(v) == 0 {
-		return false
-	}
-
-	for i := 0; i < len(v); i++ {
-		if !('0' <= rune(v[i]) && rune(v[i]) <= '9') {
-			return false
-		}
-	}
-
-	return true
-}
-
 func isAlnum(r rune) bool {
 	return isLower(r) || isUpper(r) || isDigit(r)
 }
@@ -515,25 +424,8 @@ func assertToD(r *timeOfDay, t any) {
 	}
 }
 
-func chopACITerm(def string) string {
-	if !hasSfx(def, `;)`) {
-		return def
-	}
-
-	return def[:len(def)-2]
-}
-
 func isPowerOfTwo(x int) bool {
 	return x&(x-1) == 0
-}
-
-// decom
-func isParenthetical(x string) bool {
-	if len(x) < 2 {
-		return false
-	}
-
-	return x[0] == '(' && ')' == x[len(x)-1]
 }
 
 /*
