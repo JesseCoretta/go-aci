@@ -90,10 +90,18 @@ func (r Inheritance) IsZero() bool {
 	return r.inheritance.isZero()
 }
 
+/*
+Valid returns an error indicative of whether the receiver is in an aberrant state.
+*/
 func (r Inheritance) Valid() (err error) {
+	if r.IsZero() {
+		return nilInstanceErr(r)
+	}
+
 	if r.inheritance.AttributeBindTypeOrValue.IsZero() {
 		err = nilInstanceErr(r.inheritance.AttributeBindTypeOrValue)
 	}
+
 	return
 }
 
