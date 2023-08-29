@@ -63,10 +63,40 @@ func ExampleDeny() {
 	// Output: deny(all)
 }
 
+func TestRights_bogus(t *testing.T) {
+	var p Permission
+	if err := p.Valid(); err == nil {
+		t.Errorf("%s failed: invalid %T returned no validity error",
+			t.Name(), p)
+	}
+
+	if p.String() != badPerm {
+		t.Errorf("%s failed: invalid %T returned no bogus string warning",
+			t.Name(), p)
+	}
+
+	p.Unshift(`all`)
+	p.Shift(-1985)       //underflow
+	p.Shift(45378297659) //overflow
+	if !p.IsZero() {
+		t.Errorf("%s failed: overflow or underflow shift value accepted for %T",
+			t.Name(), p)
+	}
+
+	p.Unshift(-5)     //underflow
+	p.Unshift(134559) //overflow
+	if !p.IsZero() {
+		t.Errorf("%s failed: overflow or underflow unshift value accepted for %T",
+			t.Name(), p)
+	}
+
+}
+
 func TestRights_lrShift(t *testing.T) {
 	var p Permission = Allow(NoAccess)
 	if !p.Positive(0) || !p.Positive(`none`) {
-		t.Errorf("%s failed: cannot identify 'none' permission", t.Name())
+		t.Errorf("%s failed: cannot identify 'none' permission",
+			t.Name())
 	}
 
 	// three iterations, one per supported
