@@ -111,7 +111,7 @@ func parseLDAPURI(x string, bkw ...BindKeyword) (L LDAPURI, err error) {
 	// LDAP scheme (e.g.: ldap:///). If it does
 	// not, fail immediately.
 	if !hasPfx(x, LocalScheme) {
-		err = errorf("Invalid LDAPURI string '%s'; aborting", x)
+		err = uriBadPrefixErr()
 		return
 	}
 
@@ -434,7 +434,7 @@ an aberrant state.
 */
 func (r LDAPURI) Valid() error {
 	if r.IsZero() {
-		return errorf("%T instance is nil", r)
+		return nilInstanceErr(r)
 	}
 	return r.ldapURI.valid()
 }

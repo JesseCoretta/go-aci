@@ -47,7 +47,7 @@ an instance of error instead of a Boolean.
 */
 func (r SearchFilter) Valid() (err error) {
 	if r.IsZero() {
-		err = errorf("%T instance is nil", r)
+		err = nilInstanceErr(r)
 		return
 	}
 
@@ -601,7 +601,7 @@ func (r AttributeFilterOperations) Valid() error {
 		slice, _ := _r.Index(0)
 		assert, ok := slice.(AttributeFilterOperation)
 		if !ok {
-			return illegalSliceType(r, assert, slice)
+			return illegalSliceTypeErr(r, assert, slice)
 		}
 
 		if err := assert.Valid(); err != nil {
@@ -696,18 +696,15 @@ func (r AttributeFilterOperations) pushPolicy(x any) (err error) {
 	switch tv := x.(type) {
 	case string:
 		if len(tv) == 0 {
-			err = errorf("Cannot push zero string %T into %T [%s]",
-				tv, r, TargetAttrFilters)
+			err = pushErrorNilOrZero(r, tv, TargetAttrFilters)
 		}
 
 	case AttributeFilterOperation:
 		if err = tv.Valid(); err != nil {
-			err = errorf("Cannot push nil %T into %T [%s]: %v",
-				tv, r, TargetAttrFilters, err)
+			err = pushErrorNilOrZero(r, tv, TargetAttrFilters, err)
 		}
 	default:
-		err = errorf("Push request of %T type violates %T [%s] PushPolicy",
-			tv, r, TargetAttrFilters)
+		err = pushErrorBadType(r, tv, TargetAttrFilters)
 	}
 
 	return
@@ -723,17 +720,14 @@ func (r AttributeFilterOperation) pushPolicy(x any) (err error) {
 	switch tv := x.(type) {
 	case string:
 		if len(tv) == 0 {
-			err = errorf("Cannot push zero string %T into %T [%s]",
-				tv, r, TargetAttrFilters)
+			err = pushErrorNilOrZero(r, tv, TargetAttrFilters)
 		}
 	case AttributeFilter:
 		if err = tv.Valid(); err != nil {
-			err = errorf("Cannot push nil %T into %T [%s]: %v",
-				tv, r, TargetAttrFilters, err)
+			err = pushErrorNilOrZero(r, tv, TargetAttrFilters, err)
 		}
 	default:
-		err = errorf("Push request of %T type violates %T [%s] PushPolicy",
-			tv, r, TargetAttrFilters)
+		err = pushErrorBadType(r, tv, TargetAttrFilters)
 	}
 
 	return
@@ -757,7 +751,6 @@ func (r AttributeFilterOperation) Push(x ...any) AttributeFilterOperation {
 	}
 
 	_r, _ := castAsStack(r)
-
 	for i := 0; i < len(x); i++ {
 		switch tv := x[i].(type) {
 		case AttributeFilter:
@@ -888,7 +881,7 @@ func (r AttributeFilterOperation) Valid() error {
 		slice, _ := _r.Index(0)
 		assert, ok := slice.(AttributeFilter)
 		if !ok {
-			return illegalSliceType(r, assert, slice)
+			return illegalSliceTypeErr(r, assert, slice)
 		}
 
 		if err := assert.Valid(); err != nil {
@@ -1093,12 +1086,12 @@ parseAttributeFilterOperations processes the raw input value into an instance of
 AttributeFilterOperations, which is returned alongside an error instance.
 */
 func parseAttributeFilterOperations(raw string, delim int) (afos AttributeFilterOperations, err error) {
-	var char string = string(rune(44)) // ASCII #44 [default]
+	var char rune = rune(44) // ASCII #44 [default]
 
 	// If delim is anything except one (1)
 	// use the default, else use semicolon.
 	if delim == 1 {
-		char = string(rune(59)) // ASCII #59
+		char = rune(59) // ASCII #59
 	}
 
 	// Scan the raw input value and count the number of
@@ -1120,9 +1113,8 @@ func parseAttributeFilterOperations(raw string, delim int) (afos AttributeFilter
 	// lengths to ensure a split actually did
 	// occur.
 	var vals []string
-	if vals = split(raw, char); opct != len(vals) {
-		err = errorf("Inappropriate delimiter id [%d]; non-idempotent result following '%c' split: len(vals)=%d, opct=%d",
-			delim, ',', len(vals), opct)
+	if vals = split(raw, string(char)); opct != len(vals) {
+		err = afosNonIdempSplitErr(delim, len(vals), opct, char)
 		return
 	}
 
@@ -1145,7 +1137,7 @@ func parseAttributeFilterOperations(raw string, delim int) (afos AttributeFilter
 		// will be either `add=` or `delete=`.
 		// Bail out if we find otherwise.
 		if !hasAttributeFilterOperationPrefix(vals[i]) {
-			err = errorf("%T missing %T prefix", afo, AttributeOperation(0))
+			err = afoMissingPrefixErr(afo, AttributeOperation(0))
 			return
 		}
 
@@ -1205,7 +1197,7 @@ alongside af upon completion of the attempt.
 func parseAttributeFilter(raw string) (af AttributeFilter, err error) {
 	idx := idxr(raw, ':')
 	if idx == -1 {
-		err = errorf("No AttributeFilter delim (:) found in %T", af)
+		err = afMissingDelimiterErr(af)
 		return
 	}
 
@@ -1235,7 +1227,7 @@ func parseAttrFilterOperPreamble(raw string) (aop AttributeOperation, value stri
 		value = raw[7:]
 
 	default:
-		err = errorf("Invalid %T value prefix; must be add= or delete=", aop)
+		err = aoBadPrefixErr()
 	}
 
 	return

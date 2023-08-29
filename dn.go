@@ -153,15 +153,15 @@ func validDistinguishedName(x any) (err error) {
 	switch tv := x.(type) {
 	case BindDistinguishedName:
 		if tv.IsZero() {
-			err = errorf("No distinguished name value found within %T", tv)
+			err = nilInstanceErr(tv)
 		} else if len(*tv.distinguishedName.string) < 3 {
-			err = errorf("Distinguished name value is invalid: %v", (*tv.distinguishedName.string))
+			err = illegalSyntaxPerTypeErr(*tv.distinguishedName, tv.Keyword())
 		}
 	case TargetDistinguishedName:
 		if tv.IsZero() {
-			err = errorf("No distinguished name value found within %T", tv)
+			err = nilInstanceErr(tv)
 		} else if len(*tv.distinguishedName.string) < 3 {
-			err = errorf("Distinguished name value is invalid: %v", (*tv.distinguishedName.string))
+			err = illegalSyntaxPerTypeErr(*tv.distinguishedName, tv.Keyword())
 		}
 	}
 
@@ -1277,9 +1277,7 @@ to a stack containing BindRule userdn distinguished name instances.
 */
 func (r BindDistinguishedNames) uDNPushPolicy(x any) error {
 	if r.contains(x) {
-		err := errorf("Cannot push non-unique or invalid %T into %T [%s]",
-			x, r, r.Keyword())
-		return err
+		return pushErrorNotUnique(r, x, r.Keyword())
 	}
 	return distinguishedNamesPushPolicy(r, x, BindUDN)
 }
@@ -1291,9 +1289,7 @@ to a stack containing BindRule groupdn distinguished name instances.
 */
 func (r BindDistinguishedNames) gDNPushPolicy(x any) error {
 	if r.contains(x) {
-		err := errorf("Cannot push non-unique or invalid %T into %T [%s]",
-			x, r, r.Keyword())
-		return err
+		return pushErrorNotUnique(r, x, r.Keyword())
 	}
 	return distinguishedNamesPushPolicy(r, x, BindGDN)
 }
@@ -1305,9 +1301,7 @@ to a stack containing BindRule roledn distinguished name instances.
 */
 func (r BindDistinguishedNames) rDNPushPolicy(x any) error {
 	if r.contains(x) {
-		err := errorf("Cannot push non-unique or invalid %T into %T [%s]",
-			x, r, r.Keyword())
-		return err
+		return pushErrorNotUnique(r, x, r.Keyword())
 	}
 	return distinguishedNamesPushPolicy(r, x, BindRDN)
 }
@@ -1319,9 +1313,7 @@ to a stack containing TargetRule target_to distinguished name instances.
 */
 func (r TargetDistinguishedNames) tToDNPushPolicy(x any) error {
 	if r.contains(x) {
-		err := errorf("Cannot push non-unique or invalid %T into %T [%s]",
-			x, r, r.Keyword())
-		return err
+		return pushErrorNotUnique(r, x, r.Keyword())
 	}
 	return distinguishedNamesPushPolicy(r, x, TargetTo)
 }
@@ -1333,9 +1325,7 @@ a stack containing TargetRule target_from distinguished name instances.
 */
 func (r TargetDistinguishedNames) tFromDNPushPolicy(x any) error {
 	if r.contains(x) {
-		err := errorf("Cannot push non-unique or invalid %T into %T [%s]",
-			x, r, r.Keyword())
-		return err
+		return pushErrorNotUnique(r, x, r.Keyword())
 	}
 	return distinguishedNamesPushPolicy(r, x, TargetFrom)
 }
@@ -1347,9 +1337,7 @@ TargetRule target distinguished name instances.
 */
 func (r TargetDistinguishedNames) tDNPushPolicy(x any) error {
 	if r.contains(x) {
-		err := errorf("Cannot push non-unique or invalid %T into %T [%s]",
-			x, r, r.Keyword())
-		return err
+		return pushErrorNotUnique(r, x, r.Keyword())
 	}
 	return distinguishedNamesPushPolicy(r, x, Target)
 }
@@ -1364,33 +1352,27 @@ func distinguishedNamesPushPolicy(r, x any, kw Keyword) (err error) {
 
 	case string:
 		if len(tv) == 0 {
-			err = errorf("Cannot push zero string %T into %T [%s]",
-				tv, r, kw)
+			err = pushErrorNilOrZero(r, tv, kw)
 		}
 
 	case BindDistinguishedName:
 		if tv.IsZero() {
-			err = errorf("Cannot push nil %T into %T [%s]",
-				tv, r, kw)
+			err = pushErrorNilOrZero(r, tv, kw)
 
 		} else if tv.distinguishedName.Keyword != kw {
-			err = errorf("%T push into %T failed during keyword verification (not a %s-based %T)",
-				tv, r, kw, tv)
+			err = badPTBRuleKeywordErr(tv, bindRuleID, kw, tv.distinguishedName.Keyword)
 		}
 
 	case TargetDistinguishedName:
 		if tv.IsZero() {
-			err = errorf("Cannot push nil %T into %T [%s]",
-				tv, r, kw)
+			err = pushErrorNilOrZero(r, tv, kw)
 
 		} else if tv.distinguishedName.Keyword != kw {
-			err = errorf("%T push into %T failed during keyword verification (not a %s-based %T)",
-				tv, r, kw, tv)
+			err = badPTBRuleKeywordErr(tv, targetRuleID, kw, tv.distinguishedName.Keyword)
 		}
 
 	default:
-		err = errorf("Push request of %T type violates %T [%s] PushPolicy",
-			tv, r, kw)
+		err = pushErrorBadType(r, tv, kw)
 	}
 
 	return

@@ -620,8 +620,7 @@ func (r AttributeTypes) pushPolicy(x any) (err error) {
 	// verify uniqueness; bail out if Boolean
 	// false is return value.
 	if r.contains(x) {
-		err = errorf("Cannot push non-unique or invalid %T into %T [%s]",
-			x, r, r.Kind())
+		err = pushErrorNotUnique(r, x, matchTKW(r.Kind()))
 		return
 	}
 
@@ -632,21 +631,18 @@ func (r AttributeTypes) pushPolicy(x any) (err error) {
 	case string:
 		// case matches a string-based LDAP AttributeType
 		if len(tv) == 0 {
-			err = errorf("Cannot push zero %T into %T [%s]",
-				tv, r, r.Kind())
+			err = pushErrorNilOrZero(r, tv, matchTKW(r.Kind()))
 		}
 
 	case AttributeType:
 		// case matches an AttributeType instance
 		if tv.IsZero() {
-			err = errorf("Cannot push nil %T into %T [%s]",
-				tv, r, r.Kind())
+			err = pushErrorNilOrZero(r, tv, matchTKW(r.Kind()))
 		}
 
 	default:
 		// unsuitable candidate per type
-		err = errorf("%T type violates %T [%s] PushPolicy",
-			tv, r, r.Kind())
+		err = pushErrorBadType(r, tv, matchTKW(r.Kind()))
 	}
 
 	return

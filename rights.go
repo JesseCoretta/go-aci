@@ -340,13 +340,12 @@ basic validity checks.
 */
 func (r Permission) Valid() (err error) {
 	if r.IsZero() {
-		err = errorf("%T instance is nil", r)
+		err = nilInstanceErr(r)
 		return
 	}
 
 	if r.permission.bool == nil {
-		err = errorf("%T has no disposition (allow/deny)", r)
-		return
+		err = noPermissionDispErr()
 	}
 
 	return

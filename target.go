@@ -606,15 +606,13 @@ func (r TargetRules) pushPolicy(x any) (err error) {
 	switch tv := x.(type) {
 	case TargetRule:
 		if tv.IsZero() {
-			err = errorf("Push request of %T into %T [%s] failed: instance is nil",
-				tv, r, tv.Keyword())
+			err = pushErrorNilOrZero(r, tv, tv.Keyword())
 		}
 		if r.contains(tv.Keyword()) {
-			err = errorf("Cannot push non-unique or invalid %T into %T [%s]",
-				x, r, tv.Keyword())
+			err = pushErrorNilOrZero(r, tv, tv.Keyword())
 		}
 	default:
-		err = errorf("Push request of %T type violates %T PushPolicy", x, r)
+		err = pushErrorBadType(r, x, nil)
 	}
 	return
 }
@@ -764,7 +762,7 @@ func (r TargetRule) assertExpressionValue() (err error) {
 	// bail out.
 	expr, ok := r.Expression().(parser.RuleExpression)
 	if !ok {
-		err = errorf("Unexpected %T within %T; wanted %T", expr, r, parser.RuleExpression{})
+		err = parseBindRuleInvalidExprTypeErr(expr, r, parser.RuleExpression{})
 		return
 	}
 
@@ -816,7 +814,7 @@ func (r TargetRule) assertExpressionValue() (err error) {
 
 	default:
 		// value is ... bogus
-		err = errorf("Unhandled target rule type '%s'", key)
+		err = badPTBRuleKeywordErr(expr, targetRuleID, `TargetKeyword`, key)
 	}
 
 	if err != nil {
@@ -835,8 +833,7 @@ error (err).
 */
 func assertTargetScope(expr parser.RuleExpression) (ex SearchScope, err error) {
 	if expr.Len() != 1 {
-		err = errorf("Unexpected number of %s values; want %d, got %d",
-			TargetScope, 1, expr.Len())
+		err = unexpectedValueCountErr(TargetScope.String(), 1, expr.Len())
 		return
 	}
 
@@ -845,7 +842,7 @@ func assertTargetScope(expr parser.RuleExpression) (ex SearchScope, err error) {
 	// base, we know they requested something
 	// totally unsupported.
 	if ex = strToScope(expr.Values[0]); ex == noScope {
-		err = errorf("Bogus %s value: '%s'", TargetScope, expr.Values[0])
+		err = bogusValueErr(TargetScope.String(), expr.Values[0])
 	}
 
 	return
@@ -865,7 +862,7 @@ func assertTargetOID(expr parser.RuleExpression, key TargetKeyword) (ex ObjectId
 	// Don't waste time if expression values
 	// are nonexistent.
 	if expr.Len() == 0 {
-		err = errorf("Found no %s target rule expression value(s) during DN assertion", key)
+		err = noValueErr(ex, key.String())
 		return
 	}
 
@@ -881,8 +878,7 @@ func assertTargetOID(expr parser.RuleExpression, key TargetKeyword) (ex ObjectId
 	// return value. If nothing was found,
 	// bail out now.
 	if ex.setExpressionValues(key, expr.Values...); ex.Len() == 0 {
-		err = errorf("Found none of targetcontrol or extop %T instances",
-			ObjectIdentifier{})
+		err = noValueErr(ex, `targetcontrol/extop`)
 		return
 	}
 
@@ -904,8 +900,7 @@ func assertTargetTFDN(expr parser.RuleExpression, key TargetKeyword) (ex TargetD
 	// Don't waste time if expression values
 	// are nonexistent.
 	if expr.Len() == 0 {
-		err = errorf("Found no %s target rule expression value(s) during DN assertion",
-			key)
+		err = noValueErr(ex, key.String())
 		return
 	}
 
@@ -921,7 +916,7 @@ func assertTargetTFDN(expr parser.RuleExpression, key TargetKeyword) (ex TargetD
 	// return value. If nothing was found,
 	// bail out now.
 	if tdn.setExpressionValues(key, expr.Values...); tdn.Len() == 0 {
-		err = errorf("Found none of userdn, groupdn or roledn %T instances", badTargetDN)
+		err = noTBRuleExpressionValues(badTargetDN, targetRuleID, key)
 		return
 	}
 
@@ -956,8 +951,7 @@ complete.
 */
 func assertTargetAttrFilters(expr parser.RuleExpression) (ex AttributeFilterOperations, err error) {
 	if expr.Len() != 1 {
-		err = errorf("Unexpected number of %s values; want %d, got %d",
-			TargetAttrFilters, 1, expr.Len())
+		err = unexpectedValueCountErr(TargetAttrFilters.String(), 1, expr.Len())
 		return
 	}
 

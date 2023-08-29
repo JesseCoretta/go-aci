@@ -92,7 +92,7 @@ func (r Inheritance) IsZero() bool {
 
 func (r Inheritance) Valid() (err error) {
 	if r.inheritance.AttributeBindTypeOrValue.IsZero() {
-		err = errorf("%T instance is nil", AttributeBindTypeOrValue{})
+		err = nilInstanceErr(r.inheritance.AttributeBindTypeOrValue)
 	}
 	return
 }
@@ -203,7 +203,7 @@ func parseInheritance(inh string) (I Inheritance, err error) {
 	// back to default when parsing).
 	if I.inheritance.Level == noLvl {
 		// bogus or unsupported identifiers?
-		err = errorf("No level identifiers parsed; aborting")
+		err = levelsNotFoundErr()
 		return
 	}
 

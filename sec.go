@@ -310,7 +310,7 @@ a security strength factor greater than zero (0).
 */
 func (r SecurityStrengthFactor) Valid() (err error) {
 	if r.value() == 0 {
-		err = errorf("%T instance SSF is zero")
+		err = nilInstanceErr(r)
 	}
 
 	return

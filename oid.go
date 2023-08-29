@@ -115,15 +115,13 @@ an aberrant state.
 */
 func (r ObjectIdentifier) Valid() (err error) {
 	if r.IsZero() {
-		err = errorf("%T instance is nil", r)
+		err = nilInstanceErr(r)
 		return
 	}
 
 	if !(r.objectIdentifier.DotNotation.Len() > 0 &&
 		r.objectIdentifier.TargetKeyword != TargetKeyword(0x0)) {
-		err = errorf("Invalid %T and/or %T value(s)",
-			r.objectIdentifier.DotNotation,
-			r.objectIdentifier.TargetKeyword)
+		err = badObjectIdentifierKeywordErr(r.objectIdentifier.TargetKeyword)
 	}
 
 	return
@@ -393,9 +391,7 @@ the destination stack.
 */
 func (r ObjectIdentifiers) extOpsPushPolicy(x any) error {
 	if r.contains(x) {
-		err := errorf("Cannot push non-unique or invalid %T into %T [%s]",
-			x, r, r.Keyword())
-		return err
+		return pushErrorNotUnique(r, x, r.Keyword())
 	}
 	return objectIdentifiersPushPolicy(r, x, TargetExtOp)
 }
@@ -413,9 +409,7 @@ the destination stack.
 */
 func (r ObjectIdentifiers) ctrlsPushPolicy(x any) error {
 	if r.contains(x) {
-		err := errorf("Cannot push non-unique or invalid %T into %T [%s]",
-			x, r, r.Keyword())
-		return err
+		return pushErrorNotUnique(r, x, r.Keyword())
 	}
 	return objectIdentifiersPushPolicy(r, x, TargetCtrl)
 }
@@ -434,23 +428,21 @@ func objectIdentifiersPushPolicy(r, x any, kw TargetKeyword) (err error) {
 
 		// case match is a string-based objectIdentifier
 		if len(tv) == 0 {
-			err = errorf("Cannot push zero string %T into %T [%s]", tv, r, kw)
+			err = pushErrorNilOrZero(r, x, kw)
 		}
 
 	case ObjectIdentifier:
 
 		// case match is a proper instance of ObjectIdentifier
 		if tv.IsZero() {
-			err = errorf("Cannot push nil %T into %T [%s]", tv, r, kw)
+			err = pushErrorNilOrZero(r, x, kw)
 
 		} else if tv.objectIdentifier.TargetKeyword != kw {
-			err = errorf("%T push into %T failed during keyword verification (not a %s-based %T)",
-				tv, r, kw, tv)
+			err = badObjectIdentifierKeywordErr(tv.objectIdentifier.TargetKeyword)
 		}
 
 	default:
-		err = errorf("Push request of %T type violates %T [%s] PushPolicy",
-			tv, r, kw)
+		err = pushErrorBadType(r, x, kw)
 	}
 
 	return

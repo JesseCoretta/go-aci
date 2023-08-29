@@ -402,13 +402,13 @@ func (r FQDN) Valid() (err error) {
 	L := r.len()
 
 	if !(0 < L && L <= fqdnMax) || len(*r.labels) < 2 {
-		err = errorf("%T size requirements not met (%d v. %d), or len < 2", r, fqdnMax)
+		err = fqdnInvalidLenErr(L)
 		return
 	}
 
 	for i := 0; i < len(*r.labels); i++ {
 		if !validLabel(string((*r.labels)[i])) {
-			err = errorf("Bad %T label: %v", r, (*r.labels)[i])
+			err = fqdnInvalidLabelErr((*r.labels)[i])
 			return
 		}
 	}

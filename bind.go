@@ -837,14 +837,12 @@ func (r BindRules) pushPolicy(x any) (err error) {
 		// through instances of either
 		// BindRule or BindRules types.
 		if tv.IsZero() {
-			err = errorf("Cannot push nil %T into %T [%s]",
-				tv, r, r.Category())
+			err = pushErrorNilOrZero(r, tv, matchBKW(r.Category()))
 		}
 
 	default:
 		// unsuitable candidate per type
-		err = errorf("%T type violates %T [%s] PushPolicy",
-			tv, r, r.Category())
+		err = pushErrorBadType(r, tv, matchBKW(r.Category()))
 	}
 
 	return
@@ -891,7 +889,7 @@ func parseBindRules(raw string) (BindRules, error) {
 	// defined in this package.
 	n, ok := convertBindRulesHierarchy(_b)
 	if !ok {
-		return badBindRules, errorf("Unable to cast %T hierarchy into %T; aborting", _b, n)
+		return badBindRules, parseBindRulesHierErr(_b, n)
 	}
 
 	return n, nil
@@ -909,7 +907,7 @@ func (r BindRule) assertExpressionValue() (err error) {
 	// bail out.
 	expr, ok := r.Expression().(parser.RuleExpression)
 	if !ok {
-		err = errorf("Unexpected %T within %T; wanted %T", expr, r, parser.RuleExpression{})
+		err = parseBindRuleInvalidExprTypeErr(r, expr, parser.RuleExpression{})
 		return
 	}
 
@@ -950,7 +948,7 @@ func (r BindRule) assertExpressionValue() (err error) {
 		ex, err = assertBindSec(expr, key)
 
 	default:
-		err = errorf("Unknown keyword '%s' for %T during value assertion", r.Keyword(), r)
+		err = badPTBRuleKeywordErr(r, bindRuleID, `BindKeyword`, key)
 	}
 
 	if err != nil {
@@ -1110,7 +1108,7 @@ func assertBindUGRDN(expr parser.RuleExpression, key BindKeyword) (ex any, err e
 	// Don't waste time if expression values
 	// are nonexistent.
 	if expr.Len() == 0 {
-		err = errorf("Found no %s bind rule expression value(s) during DN assertion", key)
+		err = noTBRuleExpressionValues(expr, bindRuleID, key)
 		return
 	}
 
@@ -1135,7 +1133,7 @@ func assertBindUGRDN(expr parser.RuleExpression, key BindKeyword) (ex any, err e
 	// return value. If nothing was found,
 	// bail out now.
 	if bdn.setExpressionValues(key, expr.Values...); bdn.Len() == 0 {
-		err = errorf("Found none of userdn, groupdn or roledn %T instances", BindDistinguishedName{})
+		err = noTBRuleExpressionValues(expr, bindRuleID, key)
 		return
 	}
 

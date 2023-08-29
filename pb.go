@@ -93,9 +93,11 @@ func (r PermissionBindRule) valid() (err error) {
 	}
 
 	if r.B.Len() == 0 {
-		err = errorf("%T is zero length", r.B)
-	} else if r.P.IsZero() || r.B.ID() != bindRuleID {
-		err = errorf("%T is not a permission+bind rule (%s)", r.B, r.B.ID())
+		err = nilInstanceErr(r.B)
+	} else if r.P.IsZero() {
+		err = nilInstanceErr(r.P)
+	} else if r.B.ID() != bindRuleID {
+		err = badPTBRuleKeywordErr(r.B, bindRuleID, bindRuleID, r.B.ID())
 	}
 
 	return
@@ -254,18 +256,15 @@ func permissionBindRulesPushPolicy(x any) (err error) {
 
 	case PermissionBindRule:
 		if tv.IsZero() {
-			err = errorf("Cannot push nil %T into %T",
-				tv, PermissionBindRules{})
+			err = pushErrorNilOrZero(PermissionBindRules{}, tv, nil)
 		} else {
 			if err = tv.Valid(); err != nil {
-				err = errorf("Cannot push aberrant %T into %T: %v",
-					tv, PermissionBindRules{}, err)
+				err = pushErrorInvalidCandidate(PermissionBindRules{}, tv, nil, err)
 			}
 		}
 
 	default:
-		err = errorf("Push request of %T type violates %T PushPolicy",
-			tv, PermissionBindRules{})
+		err = pushErrorBadType(PermissionBindRules{}, tv, nil)
 	}
 
 	return

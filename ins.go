@@ -82,10 +82,10 @@ func instructionsPushPolicy(x any) (err error) {
 	switch tv := x.(type) {
 	case Instruction:
 		if tv.IsZero() {
-			err = errorf("%T instance is nil", tv)
+			err = nilInstanceErr(tv)
 		}
 	default:
-		err = errorf("Push request of %T violates %T push policy", tv, Instruction{})
+		err = pushErrorBadType(Instructions{}, tv, nil)
 	}
 
 	return
@@ -153,12 +153,12 @@ valid is a private method called by instruction.Valid.
 */
 func (r instruction) valid() (err error) {
 	if r.isZero() {
-		err = errorf("%T instance is nil", r)
+		err = nilInstanceErr(r)
 		return
 	}
 
 	if len(r.ACL) == 0 {
-		err = errorf("%T has no name (ACL); set a string name value using %T.Set", r, r)
+		err = instructionNoLabelErr()
 		return
 	}
 

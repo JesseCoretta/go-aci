@@ -218,12 +218,12 @@ within the receiver.
 */
 func (r DayOfWeek) Valid() (err error) {
 	if r.IsZero() {
-		err = errorf("%T instance is nil", r)
+		err = nilInstanceErr(r)
 		return
 	}
 
 	if r.String() == badDoW {
-		err = errorf("%T instance produced a bad string result", r)
+		err = dowBadTimeErr()
 	}
 
 	return
@@ -536,7 +536,7 @@ the receiver is believed to be in a valid state.
 */
 func (r TimeOfDay) Valid() (err error) {
 	if r.IsZero() {
-		err = errorf("%T instance is nil", r)
+		err = nilInstanceErr(r)
 	}
 	return
 }
