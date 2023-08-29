@@ -323,11 +323,11 @@ func (r ObjectIdentifiers) Pop() (x ObjectIdentifier) {
 setQuoteStyle shall set the receiver instance to the quotation
 scheme defined by integer i.
 */
-func (r ObjectIdentifiers) setQuoteStyle(style int) {
+func (r ObjectIdentifiers) setQuoteStyle(style int) ObjectIdentifiers {
 	_r, _ := castAsStack(r)
 	if _r.Len() < 2 {
 		_r.Encap() // not multivalued, force default
-		return
+		return r
 	}
 
 	if style == MultivalSliceQuotes {
@@ -336,7 +336,7 @@ func (r ObjectIdentifiers) setQuoteStyle(style int) {
 		_r.Encap()
 	}
 
-	return
+	return r
 }
 
 /*

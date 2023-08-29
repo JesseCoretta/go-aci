@@ -122,8 +122,9 @@ func (r TargetRule) SetQuoteStyle(style int) TargetRule {
 	switch key := r.Keyword(); key {
 	case Target, TargetTo, TargetFrom,
 		TargetExtOp, TargetCtrl, TargetAttr:
-		switch tv := _r.Expression().(type) {
-		case stackage.Stack:
+		if isStackageStack(_r.Expression()) {
+			tv, _ := castAsStack(_r.Expression())
+
 			if key == TargetAttr {
 				AttributeTypes(tv).setQuoteStyle(style)
 			} else if key == TargetExtOp || key == TargetCtrl {
@@ -142,7 +143,6 @@ func (r TargetRule) SetQuoteStyle(style int) TargetRule {
 			}
 		}
 	}
-	//r = TargetRule(*_r)
 
 	return r
 
@@ -223,43 +223,11 @@ func (r TargetRule) Expression() any {
 }
 
 /*
-setQuoteStyle shall set the receiver instance to the quotation
-scheme defined by integer i.
-
-DECOM
-*/
-/*
-func (r TargetRule) setQuoteStyle(i int) {
-	if r.IsZero() {
-		return
-	}
-
-	_t := castAsCondition(r).Encap()
-	if i == 1 {
-		_t.Encap(`"`)
-	} else {
-		_t.Encap()
-	}
-}*/
-
-/*
 IsZero wraps go-stackage's Condition.IsZero method.
 */
 func (r TargetRule) IsZero() bool {
 	return castAsCondition(r).IsZero()
 }
-
-/*
-func (r TargetRules) isStackContextQualifier() bool {
-	return true
-}
-*/
-
-/*
-func (r TargetRules) isRuleContextQualifier() bool {
-	return true
-}
-*/
 
 /*
 Kind returns the string literal `stack` to identify the receiver as

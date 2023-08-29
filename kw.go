@@ -234,6 +234,8 @@ func idKW(raw string) (kw Keyword, ok bool) {
 		ok = kw.Kind() == `bind`
 	} else if kw = matchTKW(raw); kw != TargetKeyword(0x0) {
 		ok = kw.Kind() == `target`
+	} else {
+		kw = nil
 	}
 	return
 }

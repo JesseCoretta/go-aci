@@ -495,11 +495,11 @@ func (r TargetDistinguishedNames) ID() string {
 setQuoteStyle shall set the receiver instance to the quotation
 scheme defined by integer i.
 */
-func (r BindDistinguishedNames) setQuoteStyle(style int) {
+func (r BindDistinguishedNames) setQuoteStyle(style int) BindDistinguishedNames {
 	_r, _ := castAsStack(r)
 	if _r.Len() < 2 {
 		_r.Encap() // not multivalued, force default
-		return
+		return r
 	}
 
 	if style == MultivalSliceQuotes {
@@ -508,18 +508,18 @@ func (r BindDistinguishedNames) setQuoteStyle(style int) {
 		_r.Encap()
 	}
 
-	return
+	return r
 }
 
 /*
 setQuoteStyle shall set the receiver instance to the quotation
 scheme defined by integer i.
 */
-func (r TargetDistinguishedNames) setQuoteStyle(style int) {
+func (r TargetDistinguishedNames) setQuoteStyle(style int) TargetDistinguishedNames {
 	_r, _ := castAsStack(r)
 	if _r.Len() < 2 {
 		_r.Encap() // not multivalued, force default
-		return
+		return r
 	}
 
 	if style == MultivalSliceQuotes {
@@ -528,7 +528,7 @@ func (r TargetDistinguishedNames) setQuoteStyle(style int) {
 		_r.Encap()
 	}
 
-	return
+	return r
 }
 
 /*

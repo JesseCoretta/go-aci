@@ -252,6 +252,10 @@ left for GC.
 func castAsStack(u any) (S stackage.Stack, converted bool) {
 	switch tv := u.(type) {
 
+	case stackage.Stack:
+		converted = true
+		S = tv
+
 	case ObjectIdentifiers:
 		converted = true
 		S = stackage.Stack(tv)

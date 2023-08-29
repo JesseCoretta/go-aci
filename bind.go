@@ -491,27 +491,6 @@ func (r BindRule) SetQuoteStyle(style int) BindRule {
 }
 
 /*
-setQuoteStyle shall set the receiver instance to the quotation
-scheme defined by integer i.
-
-DECOM
-*/
-/*
-func (r BindRule) setQuoteStyle(i int) {
-	if r.IsZero() {
-		return
-	}
-
-	_t := castAsCondition(r).Encap()
-	if i == 1 {
-		_t.Encap(`"`)
-	} else {
-		_t.Encap()
-	}
-}
-*/
-
-/*
 String is a stringer method that returns the string
 representation of the receiver instance.
 

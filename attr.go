@@ -306,14 +306,13 @@ func (r AttributeType) Eq() TargetRule {
 	t.SetOperator(Eq)
 	t.SetExpression(r)
 
-	_t := castAsCondition(t).
+	castAsCondition(t).
 		Encap(`"`).
 		Paren(true).
 		SetID(targetRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(TargetAttr.String())
 
-	t = TargetRule(*_t)
 	return t
 }
 
@@ -333,14 +332,13 @@ func (r AttributeType) Ne() TargetRule {
 	t.SetOperator(Ne)
 	t.SetExpression(r)
 
-	_t := castAsCondition(t).
+	castAsCondition(t).
 		Encap(`"`).
 		Paren(true).
 		SetID(targetRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(TargetAttr.String())
 
-	t = TargetRule(*_t)
 	return t
 }
 
@@ -429,14 +427,13 @@ func (r AttributeTypes) Eq() TargetRule {
 	t.SetOperator(Eq)
 	t.SetExpression(r)
 
-	_t := castAsCondition(t).
+	castAsCondition(t).
 		Encap(`"`).
 		Paren(true).
 		SetID(targetRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(TargetAttr.String())
 
-	t = TargetRule(*_t)
 	return t
 }
 
@@ -456,14 +453,13 @@ func (r AttributeTypes) Ne() TargetRule {
 	t.SetOperator(Ne)
 	t.SetExpression(r)
 
-	_t := castAsCondition(t).
+	castAsCondition(t).
 		Encap(`"`).
 		Paren(true).
 		SetID(targetRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(TargetAttr.String())
 
-	t = TargetRule(*_t)
 	return t
 }
 
@@ -471,11 +467,11 @@ func (r AttributeTypes) Ne() TargetRule {
 setQuoteStyle shall set the receiver instance to the quotation
 scheme defined by integer i.
 */
-func (r AttributeTypes) setQuoteStyle(style int) {
+func (r AttributeTypes) setQuoteStyle(style int) AttributeTypes {
 	_r, _ := castAsStack(r)
 	if _r.Len() < 2 {
 		_r.Encap() // not multivalued, force default
-		return
+		return r
 	}
 
 	if style == MultivalSliceQuotes {
@@ -484,7 +480,7 @@ func (r AttributeTypes) setQuoteStyle(style int) {
 		_r.Encap()
 	}
 
-	return
+	return r
 }
 
 /*
