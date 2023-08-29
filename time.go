@@ -4,6 +4,10 @@ package aci
 time.go contains temporal methods involving days and clock values for use in ACI composition.
 */
 
+import (
+	"time"
+)
+
 /*
 Day constants can be shifted into an instance of DayOfWeek, allowing effective expressions such as "Sun,Tues". See the DayOfWeek.Set method.
 */
@@ -574,4 +578,41 @@ func (r *timeOfDay) set(t any) {
 		r = new(timeOfDay)
 	}
 	assertToD(r, t)
+}
+
+/*
+assertToD is called by timeOfDay.set for the purpose of
+handling a potential clock time value for use in a Bind
+Rule statement.
+
+TODO: handle pure int w/o interpolation as binary.
+*/
+func assertToD(r *timeOfDay, t any) {
+	switch tv := t.(type) {
+	case time.Time:
+		// time.Time input results in a recursive
+		// run of this method.
+		if tv.IsZero() {
+			break
+		}
+		r.set(sprintf("%02d%02d", tv.Hour(), tv.Minute()))
+	case string:
+		// Handle discrepancy between ACI time, which ends
+		// at 2400, and Golang Time, which ends at 2359.
+		var offset int
+		if tv == `2400` {
+			tv = `2359` // so time.Parse doesn't flip
+			offset = 41 // so we can use it as intended per ACI time syntax.
+		}
+
+		if _, err := time.Parse(`1504`, tv); err == nil {
+			if n, err := atoi(tv); err == nil {
+				x := make([]byte, 2)
+				uint16p(x, uint16(n+offset))
+				for i := 0; i < 2; i++ {
+					(*r)[i] = x[i]
+				}
+			}
+		}
+	}
 }

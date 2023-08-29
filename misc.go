@@ -7,7 +7,6 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-	"time"
 	"unicode"
 
 	"github.com/JesseCoretta/go-stackage"
@@ -354,76 +353,6 @@ func strInSlice(str string, slice []string) bool {
 	return false
 }
 
-/*
-condenseWHSP returns input string b with all contiguous
-WHSP characters condensed into single space characters.
-
-WHSP is qualified through space or TAB chars (ASCII #32
-and #9 respectively).
-*/
-func condenseWHSP(b string) (a string) {
-	// remove leading and trailing
-	// WHSP characters ...
-	b = trimS(b)
-
-	var last bool
-	for i := 0; i < len(b); i++ {
-		c := rune(b[i])
-		switch c {
-		// match space (32) or tab (9)
-		case rune(32), rune(9):
-			if !last {
-				last = true
-				a += string(c)
-			}
-		default:
-			if last {
-				last = false
-			}
-			a += string(c)
-		}
-	}
-
-	return
-}
-
-/*
-assertToD is called by timeOfDay.set for the purpose of
-handling a potential clock time value for use in a Bind
-Rule statement.
-
-TODO: handle pure int w/o interpolation as binary.
-*/
-func assertToD(r *timeOfDay, t any) {
-	switch tv := t.(type) {
-	case time.Time:
-		// time.Time input results in a recursive
-		// run of this method.
-		if tv.IsZero() {
-			break
-		}
-		r.set(sprintf("%02d%02d", tv.Hour(), tv.Minute()))
-	case string:
-		// Handle discrepancy between ACI time, which ends
-		// at 2400, and Golang Time, which ends at 2359.
-		var offset int
-		if tv == `2400` {
-			tv = `2359` // so time.Parse doesn't flip
-			offset = 41 // so we can use it as intended per ACI time syntax.
-		}
-
-		if _, err := time.Parse(`1504`, tv); err == nil {
-			if n, err := atoi(tv); err == nil {
-				x := make([]byte, 2)
-				uint16p(x, uint16(n+offset))
-				for i := 0; i < 2; i++ {
-					(*r)[i] = x[i]
-				}
-			}
-		}
-	}
-}
-
 func isPowerOfTwo(x int) bool {
 	return x&(x-1) == 0
 }
@@ -436,6 +365,8 @@ If a value is obtained, a resolution is attempted in
 order to identify it as a BindKeyword or TargetKeyword
 instance, which is then returned. Nil is returned in
 all other cases.
+
+DECOM me (someday)
 */
 func keywordFromCategory(r any) Keyword {
 	if r == nil {
