@@ -86,25 +86,11 @@ func (r *permission) shift(x ...any) {
 	for i := 0; i < len(x); i++ {
 		switch tv := x[i].(type) {
 		case int:
-			// so long as the integer magnitude does
-			// not fall out of uint8 bounds AND is a
-			// power of two (2), we can interpolate
-			// as a Right.
-			if rightsPowerOfTwo(tv) {
-				(*r.Right) |= Right(tv)
-			}
+			r.shiftIntRight(tv)
 		case string:
-			// Resolve the name of a Right into a Right.
-			if priv, found := rightsNames[lc(tv)]; found {
-				(*r.Right) |= priv
-			}
+			r.shiftStrRight(tv)
 		case Right:
-			if R, matched := noneOrFullAccessRights(tv); matched {
-				(*r.Right) = R
-				return
-			}
-
-			(*r.Right) |= tv
+			r.shiftIntRight(int(tv))
 		}
 	}
 }
@@ -120,28 +106,56 @@ func (r *permission) unshift(x ...any) {
 	for i := 0; i < len(x); i++ {
 		switch tv := x[i].(type) {
 		case int:
-			// so long as the integer magnitude does
-			// not fall out of uint8 bounds AND is a
-			// power of two (2), we can interpolate
-			// as a Right.
-			if rightsPowerOfTwo(tv) {
-				(*r.Right) = (*r.Right) &^ Right(tv)
-			}
+			r.unshiftIntRight(tv)
 		case string:
-			//if matched := noneOrFullAccessString(lc(tv), (*r.Right)); matched {
-			//        return
-			//}
-
-			// Resolve the name of a Right into a Right.
-			if priv, found := rightsNames[lc(tv)]; found {
-				(*r.Right) = (*r.Right) &^ priv
-			}
+			r.unshiftStrRight(tv)
 		case Right:
-			if _, matched := noneOrFullAccessRights(tv); matched {
-				return
-			}
-			(*r.Right) = (*r.Right) &^ tv
+			r.unshiftIntRight(int(tv))
 		}
+	}
+}
+
+func (r *permission) shiftIntRight(i int) {
+	// avoid over/under flow
+	if !(0 <= i && i <= int(^uint16(0))) {
+		return
+	}
+
+	if _, matched := noneOrFullAccessRights(Right(i)); matched {
+		(*r.Right) = Right(i)
+		return
+	}
+
+	if rightsPowerOfTwo(i) {
+		(*r.Right) |= Right(i)
+	}
+}
+
+func (r *permission) unshiftIntRight(i int) {
+	// avoid over/under flow
+	if !(0 <= i && i <= int(^uint16(0))) {
+		return
+	}
+
+	if R, matched := noneOrFullAccessRights(Right(i)); matched {
+		(*r.Right) = (*r.Right) &^ R
+		return
+	}
+
+	if rightsPowerOfTwo(i) {
+		(*r.Right) = (*r.Right) &^ Right(i)
+	}
+}
+
+func (r *permission) shiftStrRight(s string) {
+	if priv, found := rightsNames[lc(s)]; found {
+		(*r.Right) |= priv
+	}
+}
+
+func (r *permission) unshiftStrRight(s string) {
+	if priv, found := rightsNames[lc(s)]; found {
+		(*r.Right) = (*r.Right) &^ priv
 	}
 }
 
@@ -155,23 +169,52 @@ func (r permission) positive(x any) bool {
 	}
 	switch tv := x.(type) {
 	case int:
-		if rightsPowerOfTwo(tv) {
-			return ((*r.Right) & Right(tv)) > 0
-		}
-	case string:
-		if matched := noneOrFullAccessString(lc(tv), (*r.Right)); matched {
-			return matched
-		}
+		return r.positiveIntRight(tv)
 
-		// Resolve the name of a Right into a Right.
-		if priv, found := rightsNames[lc(tv)]; found {
-			return ((*r.Right) & priv) > 0
-		}
+	case string:
+		return r.positiveStrRight(tv)
+
 	case Right:
-		return ((*r.Right) & tv) > 0
+		return r.positiveIntRight(int(tv))
 	}
 
 	// unsupported type?
+	return false
+}
+
+func (r permission) positiveIntRight(i int) bool {
+	// avoid over/under flow
+	if !(0 <= i && i <= int(^uint16(0))) {
+		return false
+	}
+
+	if _, matched := noneOrFullAccessRights(Right(i)); matched {
+		if i == 0 {
+			return int(*r.Right) == i
+		}
+		return ((*r.Right) & AllAccess) > 0
+	}
+
+	if rightsPowerOfTwo(i) {
+		return ((*r.Right) & Right(i)) > 0
+	}
+
+	return false
+}
+
+func (r permission) positiveStrRight(s string) bool {
+	if R, matched := noneOrFullAccessString(lc(s), (*r.Right)); matched {
+		if R == NoAccess {
+			return int(*r.Right) == 0
+		}
+		return ((*r.Right) & AllAccess) > 0
+	}
+
+	// Resolve the name of a Right into a Right.
+	if priv, found := rightsNames[lc(s)]; found {
+		return ((*r.Right) & priv) > 0
+	}
+
 	return false
 }
 
@@ -181,25 +224,25 @@ func noneOrFullAccessRights(x Right) (Right, bool) {
 		// NoAccess should stop the party
 		// dead in its tracks, regardless
 		// of any other iterated value.
-		x = NoAccess
 		matched = true
 
 	} else if x == AllAccess {
 		// AllAccess should stop the party
 		// dead in its tracks, regardless
 		// of any other iterated value.
-		x = AllAccess
 		matched = true
 	}
 
 	return x, matched
 }
 
-func noneOrFullAccessString(x string, r Right) (matched bool) {
+func noneOrFullAccessString(x string, r Right) (R Right, matched bool) {
 	switch {
 	case x == NoAccess.String():
+		R = NoAccess
 		matched = int(r) == 0 // 0
 	case x == AllAccess.String():
+		R = AllAccess
 		matched = int(r) == 895 // *895
 	}
 
@@ -210,28 +253,16 @@ func noneOrFullAccessString(x string, r Right) (matched bool) {
 String is a stringer method that returns a single string name value for receiver instance of Right.
 */
 func (r Right) String() (p string) {
-	p = `none`
+	switch r {
+	case NoAccess:
+		return rightsMap[0]
+	case AllAccess:
+		return rightsMap[895]
+	}
+
 	if kw, found := rightsMap[r]; found {
 		p = kw
 	}
-	return
-}
-
-/*
-idRight will attempt to resolve a string value into a known privilege type (e.g.: `read` -> ReadAccess).
-If found, the proper Right instance is returned alongside a success-indicative boolean. If nothing was
-matched, NoAccess is returned alongside false bool.
-*/
-func idRight(def string) (r Right, ok bool) {
-	r = NoAccess
-	for k, v := range rightsMap {
-		if eq(def, v) {
-			r = k
-			ok = uint8(k) != 0x0
-			break
-		}
-	}
-
 	return
 }
 
@@ -415,6 +446,7 @@ func assemblePermissionByDisposition(disp string, privs []any) (perm Permission)
 
 func init() {
 	rightsMap = map[Right]string{
+		NoAccess:        `none`,
 		ReadAccess:      `read`,
 		WriteAccess:     `write`,
 		AddAccess:       `add`,
