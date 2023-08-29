@@ -196,6 +196,14 @@ func parseInheritance(inh string) (I Inheritance, err error) {
 		return
 	}
 
+	// make sure the dot delimiter
+	// comes immediately after the
+	// closing square bracket.
+	if raw[idx+1] != '.' {
+		err = badInhErr(inh)
+		return
+	}
+
 	// Initialize our return instance, as we're about
 	// to begin storing things in it.
 	I = Inheritance{new(inheritance)}
@@ -236,6 +244,10 @@ String is a stringer method that returns the string name value for receiver inst
 The return value(s) are enclosed within square-brackets, comma-delimited and prefixed with "parent".
 */
 func (r Inheritance) String() string {
+	if err := r.Valid(); err != nil {
+		return badInheritance
+	}
+
 	if r.IsZero() {
 		return `parent[0]`
 	}
@@ -407,6 +419,8 @@ func (r *inheritance) unshift(x ...any) {
 
 	return
 }
+
+const badInheritance = `<invalid_inheritance>`
 
 func init() {
 	levelMap = map[int]Level{

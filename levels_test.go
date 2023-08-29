@@ -45,8 +45,8 @@ func TestLevels_bogus(t *testing.T) {
 			t.Name(), inh)
 	}
 
-	if inh.String() != `parent[0]` {
-		t.Errorf("%s failed: invalid %T returned no default parent statement",
+	if inh.String() != badInheritance {
+		t.Errorf("%s failed: invalid %T returned no bogus inheritance warning",
 			t.Name(), inh)
 	}
 
@@ -63,6 +63,26 @@ func TestLevels_bogus(t *testing.T) {
 	if !inh.IsZero() {
 		t.Errorf("%s failed: bogus %T is non-zero",
 			t.Name(), inh)
+	}
+
+	for _, rawng := range []string{
+		`parent[100].manager#USERDN`,
+		`parent[].manager#SELFDN`,
+		`parent[4]#ROLEDN`,
+		`parent[-1,20,3,476,5,666,7,666,9]?manager#LDAPURI`,
+		`parent[0]].owner#GROUPDN`,
+	} {
+		i, err := parseInheritance(rawng)
+		if err == nil {
+			t.Errorf("%s failed: parsing of bogus %T definition returned no error",
+				t.Name(), i)
+
+		}
+
+		if i.String() != badInheritance {
+			t.Errorf("%s failed: %T parsing attempt failed; want '%s', got '%s'",
+				t.Name(), i, badInheritance, i)
+		}
 	}
 }
 
