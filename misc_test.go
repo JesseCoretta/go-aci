@@ -46,8 +46,14 @@ var copKeywordTable map[string]map[Keyword][]bool = map[string]map[Keyword][]boo
 TestOperator_codecov shall test every possible permutation of B/T keywords and
 stackage.ComparisonOperator. Each permutation result shall be compared with the
 expected Boolean value.
+
+Also perform various simple checks to satisfy codecov
 */
 func TestOperator_codecov(t *testing.T) {
+	if keywordAllowsComparisonOperator(Target, float64(3.14592)) {
+		t.Errorf("%s failed; resolution error: illegal type permitted", t.Name())
+	}
+
 	for i := 0; i < len(copMap); i++ {
 
 		// attempt to resolve the operator
@@ -72,6 +78,13 @@ func TestOperator_codecov(t *testing.T) {
 				if want != got[i] {
 					t.Errorf("%s failed; illegal %s operator+keyword [%s + %s @ cop[%d]]: want '%t', got '%t'",
 						t.Name(), typ, k, oper, i, want, got[i])
+				}
+
+				// retry, using cop STRING instead of actual instance value
+				want = keywordAllowsComparisonOperator(k, oper.String())
+				if want != got[i] {
+					t.Errorf("%s failed; illegal %s operator+keyword [%s + %s]: want '%t', got '%t'",
+						t.Name(), typ, k, oper, want, got[i])
 				}
 			}
 		}
