@@ -134,11 +134,34 @@ func DoW(x ...any) (D DayOfWeek) {
 			if tv.String() != badDoW {
 				d.Shift(tv)
 			}
+		default:
+			printf("UNHANDLED %T\n", tv)
 		}
 	}
 
 	D.days = d.days
 	return
+}
+
+func (r DayOfWeek) Keyword() Keyword {
+	return BindDoW
+}
+
+/*
+Len returns the abstract integer length of the receiver, quantifying
+the number of Day instances currently being expressed. For example,
+if the receiver instance has its Mon and Fri Day bits enabled, this
+would represent an abstract length of two (2).
+*/
+func (r DayOfWeek) Len() int {
+	var D int
+	for i := 0; i < bitSize(noDay); i++ {
+		if d := Day(1 << i); r.Positive(d) {
+			D++
+		}
+	}
+
+	return D
 }
 
 /*
@@ -199,7 +222,7 @@ func (r DayOfWeek) String() string {
 	}
 
 	var dows []string
-	for i := 0; i < 8; i++ {
+	for i := 0; i < bitSize(noDay); i++ {
 		day := Day(1 << i)
 		if r.Positive(day) {
 			dows = append(dows, day.String())
@@ -250,7 +273,7 @@ func (r DayOfWeek) Eq() BindRule {
 		Encap(`"`).
 		SetID(bindRuleID).
 		NoPadding(!RulePadding).
-		SetCategory(BindDoW.String())
+		SetCategory(r.Keyword().String())
 
 	return b
 }
@@ -276,7 +299,7 @@ func (r DayOfWeek) Ne() BindRule {
 		Encap(`"`).
 		SetID(bindRuleID).
 		NoPadding(!RulePadding).
-		SetCategory(BindDoW.String())
+		SetCategory(r.Keyword().String())
 
 	return b
 }
@@ -362,6 +385,10 @@ func Timeframe(notBefore, notAfter TimeOfDay) (window BindRules) {
 	return
 }
 
+func (r TimeOfDay) Keyword() Keyword {
+	return BindToD
+}
+
 /*
 Eq initializes and returns a new BindRule instance configured to express the
 evaluation of the receiver value as Equal-To the `timeofday` Bind keyword
@@ -381,7 +408,7 @@ func (r TimeOfDay) Eq() BindRule {
 		Encap(`"`).
 		SetID(bindRuleID).
 		NoPadding(!RulePadding).
-		SetCategory(BindToD.String())
+		SetCategory(r.Keyword().String())
 
 	return b
 }
@@ -407,7 +434,7 @@ func (r TimeOfDay) Ne() BindRule {
 		Encap(`"`).
 		SetID(bindRuleID).
 		NoPadding(!RulePadding).
-		SetCategory(BindToD.String())
+		SetCategory(r.Keyword().String())
 
 	return b
 }

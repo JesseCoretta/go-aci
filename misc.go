@@ -325,6 +325,89 @@ func getCategoryFunc(x any) func() string {
 }
 
 /*
+isPtr returns a boolean value indicative of whether kind
+reflection revealed the presence of a pointer type.
+*/
+func isPtr(x any) bool {
+	return typOf(x).Kind() == reflect.Ptr
+}
+
+/*
+isIUint returns a Boolean value of true if x represents a
+member of the integer / unsigned integer "family". Any size
+is allowed, so long as it is a built-in primitive.
+
+If a (valid) member is a pointer reference, it is dereferenced
+and examined just the same.
+
+Floats and complexes are ineligible and will return false as they
+are not used in this package. Additionally, non-numerical types
+shall return false. This would include structs, strings, maps, etc.
+*/
+func isIUint(x any) (is bool) {
+	// create a reflect.Type abstract
+	// instance using raw input x.
+	X := typOf(x)
+
+	// disenvelop the instance if
+	// it is a pointer reference.
+	if isPtr(x) {
+		X = X.Elem()
+	}
+
+	// perform a reflect.Kind switch upon
+	// reflect.Type instance X ...
+	switch k := X.Kind(); k {
+
+	// allow only the following "kinds":
+	case reflect.Int, reflect.Uint,
+		reflect.Int8, reflect.Uint8,
+		reflect.Int16, reflect.Uint16,
+		reflect.Int32, reflect.Uint32,
+		reflect.Int64, reflect.Uint64,
+		reflect.Uintptr:
+		is = true
+	}
+
+	return
+}
+
+/*
+getBitSize returns the max bit length capacity
+for a given type.
+
+Note this will only return a meaningful value if
+x represents a numerical type, such as Day, Right
+or Level (all of which are subject to bit shifts).
+Passing inappropriate type instances, such as a
+struct, string, etc., will return zero (0).
+
+This function uses the reflect.Size method (and
+thus unsafe.Sizeof) to obtain a uintptr, which
+will be cast as an int, multiplied by eight (8)
+and finally returned.
+*/
+func bitSize(x any) (bits int) {
+	// create a reflect.Type abstract
+	// instance using raw input x.
+	X := typOf(x)
+
+	// disenvelop the instance if
+	// it is a pointer reference.
+	if isPtr(x) {
+		X = X.Elem()
+	}
+
+	// see if the instance is an int
+	// or uint (or a variant of same)
+	if isIUint(x) {
+		bits = int(X.Size()) * 8
+	}
+
+	return
+}
+
+/*
 BindContext is a convenient interface type that is qualified by
 the following types:
 

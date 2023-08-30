@@ -223,6 +223,11 @@ func parseBindRulesHierErr(stk any, b BindRules) error {
 	return errorf(emsg, stk, b)
 }
 
+func unexpectedStringResult(typ, want, got string) error {
+	emsg := "Unexpected string %s result; want %s, got %s"
+	return errorf(emsg, typ, want, got)
+}
+
 func unexpectedValueCountErr(typ string, want, got int) error {
 	emsg := "Unexpected number of %s values; want %d, got %d"
 	return errorf(emsg, typ, want, got)
@@ -231,6 +236,11 @@ func unexpectedValueCountErr(typ string, want, got int) error {
 func bogusValueErr(typ, bogus string) error {
 	emsg := "Bogus %s value: '%s'"
 	return errorf(emsg, typ, bogus)
+}
+
+func generalErr(typ string, err error) error {
+	emsg := "General %s error: %v"
+	return errorf(emsg, typ, err)
 }
 
 func noValueErr(candidate any, typ string) error {
