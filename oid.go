@@ -43,10 +43,23 @@ func (r ObjectIdentifier) String() string {
 }
 
 /*
+Keyword returns the Keyword (interface) assigned to the
+receiver instance. This shall be the keyword that appears
+in a TargetRule containing the receiver instance as the
+expression value.
+*/
+func (r ObjectIdentifier) Keyword() Keyword {
+	if r.IsZero() {
+		return nil
+	}
+	return r.objectIdentifier.TargetKeyword
+}
+
+/*
 IsZero wraps go-objectid's DotNotation.IsZero method.
 */
 func (r ObjectIdentifier) IsZero() bool {
-	if r.DotNotation == nil {
+	if r.objectIdentifier == nil {
 		return true
 	}
 
