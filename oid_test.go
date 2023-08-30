@@ -49,6 +49,8 @@ func TestObjectIdentifier_codecov(t *testing.T) {
 				Ne: O.Ne,
 			}
 
+			_ = O.ObjectIdentifiers() // codecov
+
 			// try every comparison operator supported in
 			// this context ...
 			for c := 1; c < len(cops)+1; c++ {
