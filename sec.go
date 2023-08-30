@@ -135,6 +135,10 @@ func SSF(factor ...any) SecurityStrengthFactor {
 	return s
 }
 
+func (r SecurityStrengthFactor) Keyword() Keyword {
+	return BindSSF
+}
+
 /*
 value is a private method that returns uint8 + 1, or 0 if uint8 is nil.
 */

@@ -115,6 +115,7 @@ var (
 	join     func([]string, string) string       = strings.Join
 	printf   func(string, ...any) (int, error)   = fmt.Printf
 	sprintf  func(string, ...any) string         = fmt.Sprintf
+	itoa     func(int) string                    = strconv.Itoa
 	atoi     func(string) (int, error)           = strconv.Atoi
 	isDigit  func(rune) bool                     = unicode.IsDigit
 	isLetter func(rune) bool                     = unicode.IsLetter

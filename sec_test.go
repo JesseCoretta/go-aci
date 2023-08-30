@@ -5,50 +5,73 @@ import (
 	"testing"
 )
 
-func TestSecurityStrengthFactor_Set_stringTermMaximum(t *testing.T) {
-	var s SecurityStrengthFactor
-	s.Set(`full`)
-	want := `256`
-	got := s.String()
-	if want != got {
-		t.Errorf("%s failed; want '%s', got '%s'", t.Name(), want, got)
-	}
-}
+func TestSecurityStrengthFactor_codecov(t *testing.T) {
+	var (
+		factor SecurityStrengthFactor
+		typ    string = BindSSF.String()
+		err    error
+	)
 
-func TestSecurityStrengthFactor_Set_stringTermNone(t *testing.T) {
-	var s SecurityStrengthFactor
-	s.Set(`noNe`) // test case insignificance
-	want := `0`
-	if want != s.String() {
-		t.Errorf("%s failed; want '%s', got '%s'", t.Name(), want, s)
-	}
-}
+	for i := 0; i < 257; i++ {
+		want := itoa(i) // what we expect (string representation)
 
-func TestSecurityStrengthFactor_noSet(t *testing.T) {
-	// same test as stringTermNone, except don'
-	// actually set any value ...
-	var x SecurityStrengthFactor
-	want := `0`
-	if want != x.String() {
-		t.Errorf("%s failed; want '%s', got '%s'", t.Name(), want, x)
-	}
-}
+		got := factor.Set(i) // set by iterated integer
+		if want != got.String() {
+			err = unexpectedStringResult(typ, want, got.String())
+			t.Errorf("%s failed [int factor]: %v",
+				t.Name(), err)
+		}
 
-func TestSecurityStrengthFactor_Set_noInit(t *testing.T) {
-	var s SecurityStrengthFactor
-	s.Set(171)
-	want := `171`
-	if want != s.String() {
-		t.Errorf("%s failed; want '%s', got '%s'", t.Name(), want, s)
-	}
-}
+		// reset using string representation of iterated integer
+		if got = factor.Set(want); want != got.String() {
+			err = unexpectedStringResult(typ, want, got.String())
+			t.Errorf("%s failed [str factor]: %v",
+				t.Name(), err)
+		}
 
-func TestSecurityStrengthFactor_Set_fromInit(t *testing.T) {
-	var s SecurityStrengthFactor
-	s.Set(71)
-	want := `71`
-	if want != s.String() {
-		t.Errorf("%s failed; want '%s', got '%s'", t.Name(), want, s)
+		// tod qualifies for all comparison operators
+		// due to its numerical nature.
+		cops := map[ComparisonOperator]func() BindRule{
+			Eq: got.Eq,
+			Ne: got.Ne,
+			Lt: got.Lt,
+			Le: got.Le,
+			Gt: got.Gt,
+			Ge: got.Ge,
+		}
+
+		// try every comparison operator supported in
+		// this context ...
+		for c := 1; c < len(cops)+1; c++ {
+			cop := ComparisonOperator(c)
+			wcop := sprintf("%s %s %q", got.Keyword(), cop, got)
+
+			// create bindrule B using comparison
+			// operator (cop).
+			if B := cops[cop](); B.String() != wcop {
+				err = unexpectedStringResult(typ, wcop, B.String())
+			}
+
+			if err != nil {
+				t.Errorf("%s failed [factor rule]: %v", t.Name(), err)
+			}
+		}
+
+	}
+
+	// try to set our factor using special keywords
+	// this package understands ...
+	for word, value := range map[string]string{
+		`mAx`:  `256`,
+		`full`: `256`,
+		`nOnE`: `0`,
+		`OFF`:  `0`,
+		`fart`: `0`,
+	} {
+		if got := factor.Set(word); got.String() != value {
+			err = unexpectedStringResult(typ, value, got.String())
+			t.Errorf("%s failed [factor word '%s']: %v", t.Name(), word, err)
+		}
 	}
 }
 
