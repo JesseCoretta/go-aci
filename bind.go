@@ -1089,4 +1089,62 @@ func assertBindUGRDN(expr parser.RuleExpression, key BindKeyword) (ex any, err e
 	return
 }
 
+/*
+BindContext is a convenient interface type that is qualified by
+the following types:
+
+• BindRule
+
+• BindRules
+
+The qualifying methods shown below are intended to make the
+handling of a structure of (likely nested) BindRules instances
+slightly easier without an absolute need for type assertion at
+every step. These methods are inherently read-only in nature
+and represent only a subset of the available methods exported
+by the underlying qualifier types.
+
+To alter the underlying value, or to gain access to all of a
+given type's methods, type assertion of qualifying instances
+shall be necessary.
+*/
+type BindContext interface {
+	// String returns the string representation of the
+	// receiver instance.
+	String() string
+
+	// Keyword returns the BindKeyword, enveloped as a
+	// Keyword interface value. If the receiver is an
+	// instance of BindRule, the value is derived from
+	// the Keyword method. If the receiver is an instance
+	// of BindRules, the value is derived (and resolved)
+	// using the Category method.
+	Keyword() Keyword
+
+	// IsZero returns a Boolean value indicative of the
+	// receiver instance being nil, or unset.
+	IsZero() bool
+
+	// Len returns the integer length of the receiver.
+	// Only meaningful when run on BindRules instances.
+	Len() int
+
+	// IsNesting returns a Boolean value indicative of
+	// whether the receiver contains a stack as a value.
+	// Only meaningful when run on BindRules instances.
+	IsNesting() bool
+
+	// Category will report `bind` in all scenarios.
+	Category() string
+
+	// Kind will report `stack` for a BindRules instance, or
+	// `condition` for a BindRule instance
+	Kind() string
+
+	// isBindContextQualifier ensures no greedy interface
+	// matching outside of the realm of bind rules. It need
+	// not be accessed by users, nor is it run at any time.
+	isBindContextQualifier() bool
+}
+
 const bindRuleID = `bind`
