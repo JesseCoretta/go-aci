@@ -27,14 +27,19 @@ configured to store valid Instruction instances.
 
 Slice values are delimited using the newline rune (ASCII #10).
 */
-func ACIs() Instructions {
-	return Instructions(stackList().
+func ACIs(x ...any) (i Instructions) {
+	_i := stackList().
 		NoNesting(true).
 		SetID(`instructions`).
 		SetDelimiter(rune(10)).
 		NoPadding(!StackPadding).
 		SetCategory(`instructions`).
-		SetPushPolicy(instructionsPushPolicy))
+		SetPushPolicy(instructionsPushPolicy)
+
+	_i.Push(x...)
+	i = Instructions(_i)
+
+	return
 }
 
 /*
@@ -78,6 +83,33 @@ func instructionsPushPolicy(x any) (err error) {
 }
 
 /*
+Len wraps go-stackage's Stack.Len method.
+*/
+func (r Instructions) Len() int {
+	_r, _ := castAsStack(r)
+	return _r.Len()
+}
+
+/*
+IsZero wraps go-stackage's Stack.IsZero method.
+*/
+func (r Instructions) IsZero() bool {
+	_r, _ := castAsStack(r)
+	return _r.IsZero()
+}
+
+/*
+String is a stringer method that returns the string
+representation of the receiver instance.
+
+This method wraps go-stackage's Stack.String method.
+*/
+func (r Instructions) String() string {
+	_r, _ := castAsStack(r)
+	return _r.String()
+}
+
+/*
 String is a stringer method that returns the string representation of
 the receiver instance.
 */
@@ -91,6 +123,76 @@ func (r Instruction) String() string {
 		version(), // sprints Version const.
 		r.instruction.ACL,
 		r.instruction.PBRs)
+}
+
+/*
+Push wraps go-stackage's Stack.Push method. Only Instruction
+instances are permitted for push.
+
+In the case of a string value, it is automatically cast as an
+instance of BindDistinguishedName using the appropriate keyword,
+so long as the raw string is of a non-zero length.
+*/
+func (r Instructions) Push(x ...any) Instructions {
+	_r, _ := castAsStack(r)
+
+	// iterate variadic input arguments
+	for i := 0; i < len(x); i++ {
+		// Push it!
+		_r.Push(x[i])
+	}
+
+	return Instructions(_r)
+}
+
+/*
+Pop wraps go-stackage's Stack.Pop method.
+*/
+func (r Instructions) Pop() (x Instruction) {
+	_r, _ := castAsStack(r)
+	y, _ := _r.Pop()
+
+	if assert, asserted := y.(Instruction); asserted {
+		x = assert
+	}
+
+	return
+}
+
+/*
+F returns the appropriate instance creator function for crafting individual Instruction
+instances for submission to the receiver. This is merely a convenient alternative to
+maintaining knowledge as to which function applies to the current receiver instance.
+
+As there is only one possibility for instances of this design, the ACI function is returned.
+*/
+func (r Instructions) F() func(...any) Instruction {
+	return ACI
+}
+
+/*
+Valid wraps go-stackage's Stack.Valid method.
+*/
+func (r Instructions) Valid() (err error) {
+	_b, _ := castAsStack(r)
+	err = _b.Valid()
+	return
+}
+
+/*
+Index wraps go-stackage's Stack.Index method. Note that the
+Boolean OK value returned by go-stackage by default will be
+shadowed and not obtainable by the caller.
+*/
+func (r Instructions) Index(idx int) (x Instruction) {
+	_r, _ := castAsStack(r)
+	y, _ := _r.Index(idx)
+
+	if assert, ok := y.(Instruction); ok {
+		x = assert
+	}
+
+	return
 }
 
 /*

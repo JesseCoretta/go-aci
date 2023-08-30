@@ -134,6 +134,18 @@ a bogus TargetRule instance.
 func (r SearchScope) Ne() TargetRule { return badTargetRule }
 
 /*
+Keyword returns the Keyword associated with the receiver instance. In the
+context of this type instance, the Keyword returned is always TargetScope.
+*/
+func (r SearchScope) Keyword() Keyword {
+	return TargetScope
+}
+
+func (r SearchScope) Operators() []func() TargetRule {
+	return []func() TargetRule{r.Eq}
+}
+
+/*
 String is a stringer method that returns the string
 representation of the receiver.  In this particular
 case, the more succinct and standard string variant

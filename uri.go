@@ -404,6 +404,24 @@ func (r LDAPURI) String() string {
 }
 
 /*
+Keyword returns the Keyword associated with the receiver instance. In
+the context of this type instance, the Keyword returned will be either
+BindUAT or BindGAT.
+*/
+func (r LDAPURI) Keyword() Keyword {
+	if err := r.Valid(); err != nil {
+		return nil
+	}
+
+	switch kw := r.ldapURI.dn.Keyword(); kw {
+	case BindGDN, BindRDN, BindUDN:
+		return kw
+	}
+
+	return nil
+}
+
+/*
 string is a private method called by LDAPURI.String.
 */
 func (r ldapURI) string() string {

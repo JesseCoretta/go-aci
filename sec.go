@@ -306,6 +306,10 @@ func (r SecurityStrengthFactor) Ge() BindRule {
 	return b
 }
 
+func (r SecurityStrengthFactor) Operators() []func() BindRule {
+	return []func() BindRule{r.Eq, r.Ne, r.Lt, r.Le, r.Gt, r.Ge}
+}
+
 func (r SecurityStrengthFactor) String() string {
 	if r.isZero() {
 		return `0`

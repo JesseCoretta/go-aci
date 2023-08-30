@@ -120,13 +120,12 @@ func (r Inheritance) Eq() BindRule {
 	b.SetOperator(Eq)
 	b.SetExpression(r)
 
-	_b := castAsCondition(b).
+	castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(r.inheritance.AttributeBindTypeOrValue.BindKeyword.String())
 
-	b = BindRule(*_b)
 	return b
 }
 
@@ -145,13 +144,12 @@ func (r Inheritance) Ne() BindRule {
 	b.SetOperator(Ne)
 	b.SetExpression(r)
 
-	_b := castAsCondition(b).
+	castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(r.inheritance.AttributeBindTypeOrValue.BindKeyword.String())
 
-	b = BindRule(*_b)
 	return b
 }
 
@@ -236,6 +234,42 @@ func parseInheritance(inh string) (I Inheritance, err error) {
 	}
 	I.inheritance.AttributeBindTypeOrValue = abv
 	return
+}
+
+/*
+Len returns the abstract integer length of the receiver, quantifying
+the number of Level instances currently being expressed. For example,
+if the receiver instance has its Level1 and Level5 bits enabled, this
+would represent an abstract length of two (2).
+*/
+func (r Inheritance) Len() int {
+	var D int
+	for i := 0; i < bitSize(noLvl); i++ {
+		if d := Day(1 << i); r.Positive(d) {
+			D++
+		}
+	}
+
+	return D
+}
+
+/*
+Keyword returns the Keyword associated with the receiver instance. In
+the context of this type instance, the Keyword returned will be either
+BindUAT or BindGAT.
+*/
+func (r Inheritance) Keyword() Keyword {
+	if err := r.Valid(); err != nil {
+		return nil
+	}
+
+	kw := r.inheritance.AttributeBindTypeOrValue.BindKeyword
+	switch kw {
+	case BindGAT, BindUAT:
+		return kw
+	}
+
+	return nil
 }
 
 /*

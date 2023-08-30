@@ -112,13 +112,12 @@ func (r AttributeBindTypeOrValue) Eq() BindRule {
 	b.SetOperator(Eq)
 	b.SetExpression(r)
 
-	_b := castAsCondition(b).
+	castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(r.BindKeyword.String())
 
-	b = BindRule(*_b)
 	return b
 }
 
@@ -139,14 +138,28 @@ func (r AttributeBindTypeOrValue) Ne() BindRule {
 	b.SetOperator(Ne)
 	b.SetExpression(r)
 
-	_b := castAsCondition(b).
+	castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(r.BindKeyword.String())
 
-	b = BindRule(*_b)
 	return b
+}
+
+/*
+Keyword returns the Keyword associated with the receiver instance. In
+the context of this type instance, the Keyword returned will be either
+BindUAT or BindGAT.
+*/
+func (r AttributeBindTypeOrValue) Keyword() Keyword {
+	var kw Keyword = r.BindKeyword
+	switch kw {
+	case BindGAT:
+		return BindGAT
+	}
+
+	return BindUAT
 }
 
 /*
@@ -414,6 +427,17 @@ func (r AttributeValue) String() (s string) {
 }
 
 /*
+F returns the appropriate instance creator function for crafting individual AttributeType
+instances for submission to the receiver. This is merely a convenient alternative to
+maintaining knowledge as to which function applies to the current receiver instance.
+
+As there is only one possibility for instances of this design, the AT function is returned.
+*/
+func (r AttributeTypes) F() func(string) AttributeType {
+	return AT
+}
+
+/*
 Eq initializes and returns a new TargetRule instance configured to express the
 evaluation of the receiver value as Equal-To a `targetattr` keyword context.
 */
@@ -545,6 +569,21 @@ purpose of identifying the context of the receiver instance.
 func (r AttributeTypes) Kind() string {
 	_r, _ := castAsStack(r)
 	return _r.Category()
+}
+
+/*
+Keyword returns the Keyword associated with the receiver instance. In
+the context of this type instance, the Keyword returned shall be either
+TargetAttr or TargetFilter.
+*/
+func (r AttributeTypes) Keyword() Keyword {
+	kw, _ := idKW(r.Kind())
+	switch kw {
+	case TargetFilter:
+		return kw
+	}
+
+	return TargetAttr
 }
 
 /*

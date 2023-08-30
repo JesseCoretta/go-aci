@@ -76,6 +76,14 @@ func newSearchFilter() (f *searchFilter) {
 }
 
 /*
+Keyword returns the Keyword associated with the receiver instance. In
+the context of this type instance, the Keyword returned is always TargetFilter.
+*/
+func (r SearchFilter) Keyword() Keyword {
+	return TargetFilter
+}
+
+/*
 String is a stringer method that returns the string representation of
 an LDAP Search Filter.
 */
@@ -289,6 +297,14 @@ func (r AttributeFilter) String() string {
 }
 
 /*
+Keyword returns the Keyword associated with the receiver instance. In
+the context of this type instance, the Keyword returned is always TargetFilter.
+*/
+func (r AttributeFilter) Keyword() Keyword {
+	return TargetAttrFilters
+}
+
+/*
 Valid returns an error indicative of whether the receiver is in an aberrant
 state.
 */
@@ -367,6 +383,27 @@ func AFOs(x ...any) (f AttributeFilterOperations) {
 	_f.Push(x...)
 
 	return
+}
+
+/*
+F returns the appropriate instance creator function for crafting individual
+AttributeFilterOperation instances for submission to the receiver. This is merely
+a convenient alternative to maintaining knowledge as to which function applies
+to the current receiver instance.
+
+As there is only one possibility for instances of this design, the AFO function
+is returned.
+*/
+func (r AttributeFilterOperations) F() func(...any) AttributeFilterOperation {
+	return AFO
+}
+
+/*
+Keyword returns the Keyword associated with the receiver instance. In
+the context of this type instance, the Keyword returned is always TargetFilter.
+*/
+func (r AttributeFilterOperations) Keyword() Keyword {
+	return TargetAttrFilters
 }
 
 /*
@@ -755,6 +792,27 @@ func (r AttributeFilterOperation) Pop() (af AttributeFilter) {
 	}
 
 	return
+}
+
+/*
+F returns the appropriate instance creator function for crafting individual
+AttributeFilter instances for submission to the receiver. This is merely a
+convenient alternative to maintaining knowledge as to which function applies
+to the current receiver instance.
+
+As there is only one possibility for instances of this design, the AF function
+is returned.
+*/
+func (r AttributeFilterOperation) F() func(...any) AttributeFilter {
+	return AF
+}
+
+/*
+Keyword returns the Keyword associated with the receiver instance. In
+the context of this type instance, the Keyword returned is always TargetFilter.
+*/
+func (r AttributeFilterOperation) Keyword() Keyword {
+	return TargetAttrFilters
 }
 
 /*

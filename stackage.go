@@ -256,6 +256,10 @@ func castAsStack(u any) (S stackage.Stack, converted bool) {
 		converted = true
 		S = tv
 
+	case Instructions:
+		converted = true
+		S = stackage.Stack(tv)
+
 	case ObjectIdentifiers:
 		converted = true
 		S = stackage.Stack(tv)

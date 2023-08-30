@@ -267,6 +267,23 @@ func (r Right) String() (p string) {
 }
 
 /*
+Len returns the abstract integer length of the receiver, quantifying
+the number of Right instances currently being expressed. For example,
+if the receiver instance has its Read and Delete Right bits enabled,
+this would represent an abstract length of two (2).
+*/
+func (r Permission) Len() int {
+	var D int
+	for i := 0; i < bitSize(NoAccess); i++ {
+		if d := Day(1 << i); r.Positive(d) {
+			D++
+		}
+	}
+
+	return D
+}
+
+/*
 String is a stringer method that returns the string representation of
 the receiver instance.
 */
