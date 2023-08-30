@@ -99,6 +99,15 @@ func TestTargetDistinguishedName_codecov(t *testing.T) {
 
 			// process DN
 			O = fn(dn)
+			dnBefore := O.String()
+
+			O.Set(dn) // set to same DN using Set method
+			dnAfter := O.String()
+			if dnBefore != dnAfter {
+				err := unexpectedStringResult(kw.String(), dnBefore, dnAfter)
+				t.Errorf("%s failed: %v",
+					t.Name(), err)
+			}
 
 			// DNs qualify for equality and negated equality
 			// comparison operators.
@@ -167,6 +176,7 @@ func TestBindDistinguishedNames_codecov(t *testing.T) {
 			Os.Push(O)
 			Os.Push(Os.Pop())
 			Os.Push(O) // try to introduce duplicate
+			Id = Os.ID()
 
 			if Os.Len() != Ol+1 {
 				t.Errorf("%s [%s] multival failed: valid %T[%s] instance (%s) not pushed into %T[%s; len:%d]",
@@ -240,6 +250,7 @@ func TestTargetDistinguishedNames_codecov(t *testing.T) {
 			Os.Push(O)
 			Os.Push(Os.Pop())
 			Os.Push(O) // try to introduce duplicate
+			Id = Os.ID()
 
 			if Os.Len() != Ol+1 {
 				t.Errorf("%s [%s] multival failed: valid %T[%s] instance (%s) not pushed into %T[%s; len:%d]",
