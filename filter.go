@@ -1005,17 +1005,6 @@ func (r AttributeOperation) AFO(x ...any) (afo AttributeFilterOperation) {
 }
 
 /*
-Category returns the categorical string label assigned to the receiver.
-*/
-func (r AttributeFilterOperation) Category() string {
-	nx, conv := castAsStack(r)
-	if !conv {
-		return ``
-	}
-	return nx.Category()
-}
-
-/*
 setCategory assigns the categorical string label (cat) to the receiver.
 */
 func (r AttributeFilterOperation) setCategory(cat string) {
@@ -1032,7 +1021,7 @@ Operation returns AddOp or DelOp as extracted from the receiver's categorical
 label. If invalid, an invalid AttributeOperation value is returned.
 */
 func (r AttributeFilterOperation) Operation() AttributeOperation {
-	switch x := trimPfx(r.Category(), TargetAttrFilters.String()+`_`); lc(x) {
+	switch x := trimPfx(r.Kind(), TargetAttrFilters.String()+`_`); lc(x) {
 	case `add`:
 		return AddOp
 	case `delete`:

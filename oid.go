@@ -279,7 +279,7 @@ func (r ObjectIdentifiers) Keyword() Keyword {
 		return TargetKeyword(0x0)
 	}
 
-	kw := matchTKW(r.Category())
+	kw := matchTKW(r.Kind())
 	return kw
 }
 
@@ -610,7 +610,7 @@ func (r ObjectIdentifiers) Eq() TargetRule {
 	}
 
 	var t TargetRule
-	t.SetKeyword(r.Category())
+	t.SetKeyword(r.Kind())
 	t.SetOperator(Eq)
 	t.SetExpression(r)
 
@@ -637,7 +637,7 @@ func (r ObjectIdentifiers) Ne() TargetRule {
 	}
 
 	var t TargetRule
-	t.SetKeyword(r.Category())
+	t.SetKeyword(r.Kind())
 	t.SetOperator(Ne)
 	t.SetExpression(r)
 
@@ -666,13 +666,11 @@ func (r ObjectIdentifiers) ID() string {
 /*
 Category wraps go-stackage's Stack.Category method.
 */
-func (r ObjectIdentifiers) Category() string {
+func (r ObjectIdentifiers) Kind() string {
 	if r.IsZero() {
 		return ``
 	}
-
-	_t, _ := castAsStack(r)
-	return _t.Category()
+	return keywordFromCategory(r).String()
 }
 
 /*

@@ -34,10 +34,19 @@ func TestBindDistinguishedName_codecov(t *testing.T) {
 					t.Name(), msg, O)
 			}
 
-			// process OID
+			// process DN
 			O = fn(dn)
+			dnBefore := O.String()
 
-			// OIDs qualify for equality and negated equality
+			O.Set(dn) // set to same DN using Set method
+			dnAfter := O.String()
+			if dnBefore != dnAfter {
+				err := unexpectedStringResult(kw.String(), dnBefore, dnAfter)
+				t.Errorf("%s failed: %v",
+					t.Name(), err)
+			}
+
+			// DNs qualify for equality and negated equality
 			// comparison operators.
 			cops := map[ComparisonOperator]func() BindRule{
 				Eq: O.Eq,
@@ -88,10 +97,10 @@ func TestTargetDistinguishedName_codecov(t *testing.T) {
 					t.Name(), msg, O)
 			}
 
-			// process OID
+			// process DN
 			O = fn(dn)
 
-			// OIDs qualify for equality and negated equality
+			// DNs qualify for equality and negated equality
 			// comparison operators.
 			cops := map[ComparisonOperator]func() TargetRule{
 				Eq: O.Eq,
@@ -118,6 +127,8 @@ func TestTargetDistinguishedName_codecov(t *testing.T) {
 
 func TestBindDistinguishedNames_codecov(t *testing.T) {
 	var Os BindDistinguishedNames
+	var Id string = Os.ID()
+	Os.reset()
 
 	for kw, fn := range map[BindKeyword]func(...any) BindDistinguishedNames{
 		BindUDN: UDNs,
@@ -125,7 +136,7 @@ func TestBindDistinguishedNames_codecov(t *testing.T) {
 		BindGDN: GDNs,
 	} {
 		Os = fn()
-		Os.Push(kw)
+		Os.Push(kw) // reset the keyword for this iteration
 
 		for _, dn := range []string{
 			`uid=jesse,ou=People,dc=example,dc=com`,
@@ -135,31 +146,34 @@ func TestBindDistinguishedNames_codecov(t *testing.T) {
 			var Ol int = Os.Len()
 
 			if err := O.Valid(); err == nil {
-				t.Errorf("%s multival failed: invalid %T returned no validity error",
-					t.Name(), O)
+				t.Errorf("%s [%s] multival failed: invalid %T returned no validity error",
+					t.Name(), Id, O)
 			}
 
 			if msg, bad := matchBadDNString(O.String()); !bad {
-				t.Errorf("%s failed: unexpected string result; want '%s', got '%s'",
-					t.Name(), msg, O)
+				t.Errorf("%s [%s] failed: unexpected string result; want '%s', got '%s'",
+					t.Name(), Id, msg, O)
 			}
 
 			if Os.Push(O); Os.Len() > Ol {
-				t.Errorf("%s multival failed: invalid %T instance pushed into %T without error",
-					t.Name(), O, Os)
+				t.Errorf("%s [%s]multival failed: invalid %T instance pushed into %T without error",
+					t.Name(), Id, O, Os)
 			}
 
-			// process OID
+			// process DN
 			O = Os.F()(dn)
 
 			Ol = Os.Len()
 			Os.Push(O)
+			Os.Push(Os.Pop())
+			Os.Push(O) // try to introduce duplicate
+
 			if Os.Len() != Ol+1 {
-				t.Errorf("%s multival failed: valid %T[%s] instance (%s) not pushed into %T[%s; len:%d]",
-					t.Name(), O, O.Keyword(), O, Os, Os.Keyword(), Ol)
+				t.Errorf("%s [%s] multival failed: valid %T[%s] instance (%s) not pushed into %T[%s; len:%d]",
+					t.Name(), Id, O, O.Keyword(), O, Os, Os.Keyword(), Ol)
 			}
 
-			// OIDs qualify for equality and negated equality
+			// DNs qualify for equality and negated equality
 			// comparison operators.
 			cops := map[ComparisonOperator]func() BindRule{
 				Eq: Os.Eq,
@@ -176,7 +190,7 @@ func TestBindDistinguishedNames_codecov(t *testing.T) {
 				// operator (cop).
 				if B := cops[cop](); B.Paren().String() != wcop {
 					err := unexpectedStringResult(kw.String(), wcop, B.String())
-					t.Errorf("%s multival failed [%s rule]: %v", t.Name(), kw.String(), err)
+					t.Errorf("%s [%s] multival failed [%s rule]: %v", t.Name(), Id, kw.String(), err)
 				}
 
 			}
@@ -186,6 +200,8 @@ func TestBindDistinguishedNames_codecov(t *testing.T) {
 
 func TestTargetDistinguishedNames_codecov(t *testing.T) {
 	var Os TargetDistinguishedNames
+	var Id string = Os.ID()
+	Os.reset()
 
 	for kw, fn := range map[TargetKeyword]func(...any) TargetDistinguishedNames{
 		Target:     TDNs,
@@ -193,7 +209,7 @@ func TestTargetDistinguishedNames_codecov(t *testing.T) {
 		TargetFrom: TFDNs,
 	} {
 		Os = fn()
-		Os.Push(kw)
+		Os.Push(kw) // reset the keyword for this iteration
 
 		for _, dn := range []string{
 			`uid=jesse,ou=People,dc=example,dc=com`,
@@ -203,31 +219,34 @@ func TestTargetDistinguishedNames_codecov(t *testing.T) {
 			var Ol int = Os.Len()
 
 			if err := O.Valid(); err == nil {
-				t.Errorf("%s multival failed: invalid %T returned no validity error",
-					t.Name(), O)
+				t.Errorf("%s [%s] multival failed: invalid %T returned no validity error",
+					t.Name(), Id, O)
 			}
 
 			if msg, bad := matchBadDNString(O.String()); !bad {
-				t.Errorf("%s failed: unexpected string result; want '%s', got '%s'",
-					t.Name(), msg, O)
+				t.Errorf("%s [%s] failed: unexpected string result; want '%s', got '%s'",
+					t.Name(), Id, msg, O)
 			}
 
 			if Os.Push(O); Os.Len() > Ol {
-				t.Errorf("%s multival failed: invalid %T instance pushed into %T without error",
-					t.Name(), O, Os)
+				t.Errorf("%s [%s] multival failed: invalid %T instance pushed into %T without error",
+					t.Name(), Id, O, Os)
 			}
 
-			// process OID
+			// process DN
 			O = Os.F()(dn)
 
 			Ol = Os.Len()
 			Os.Push(O)
+			Os.Push(Os.Pop())
+			Os.Push(O) // try to introduce duplicate
+
 			if Os.Len() != Ol+1 {
-				t.Errorf("%s multival failed: valid %T[%s] instance (%s) not pushed into %T[%s; len:%d]",
-					t.Name(), O, O.Keyword(), O, Os, Os.Keyword(), Ol)
+				t.Errorf("%s [%s] multival failed: valid %T[%s] instance (%s) not pushed into %T[%s; len:%d]",
+					t.Name(), Id, O, O.Keyword(), O, Os, Os.Keyword(), Ol)
 			}
 
-			// OIDs qualify for equality and negated equality
+			// DNs qualify for equality and negated equality
 			// comparison operators.
 			cops := map[ComparisonOperator]func() TargetRule{
 				Eq: Os.Eq,
@@ -244,7 +263,7 @@ func TestTargetDistinguishedNames_codecov(t *testing.T) {
 				// operator (cop).
 				if B := cops[cop](); B.String() != wcop {
 					err := unexpectedStringResult(kw.String(), wcop, B.String())
-					t.Errorf("%s multival failed [%s rule]: %v", t.Name(), kw.String(), err)
+					t.Errorf("%s [%s] multival failed [%s rule]: %v", t.Name(), Id, kw.String(), err)
 				}
 
 			}

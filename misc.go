@@ -206,9 +206,11 @@ func keywordFromCategory(r any) Keyword {
 		return nil
 	}
 
+	_r, _ := castAsStack(r)
+
 	// if the instance has the Category
 	// func, use reflect to get it.
-	meth := getCategoryFunc(r)
+	meth := getCategoryFunc(_r)
 	if meth == nil {
 		return nil
 	}

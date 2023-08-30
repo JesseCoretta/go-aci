@@ -462,17 +462,6 @@ func newDistinguishedName(x string, kw Keyword) (d *distinguishedName) {
 	return d
 }
 
-/*
-Category wraps go-stackage's Stack.Category method.
-*/
-func (r BindDistinguishedNames) Category() string {
-	if r.IsZero() {
-		return ``
-	}
-	x, _ := castAsStack(r)
-	return x.Category()
-}
-
 func (r BindDistinguishedNames) reset() {
 	_r, _ := castAsStack(r)
 	_r.Reset()
@@ -503,17 +492,6 @@ func (r BindDistinguishedNames) resetKeyword(x any) {
 				SetPushPolicy(r.gDNPushPolicy)
 		}
 	}
-}
-
-/*
-Category wraps go-stackage's Stack.Category method.
-*/
-func (r TargetDistinguishedNames) Category() string {
-	if r.IsZero() {
-		return ``
-	}
-	x, _ := castAsStack(r)
-	return x.Category()
 }
 
 func (r TargetDistinguishedNames) reset() {
@@ -807,7 +785,7 @@ func bindDNToCondition(dest any, op ComparisonOperator) (BindRule, bool) {
 			return badBindRule, false
 		}
 
-		if matchBKW(tv.Keyword().String()) == BindKeyword(0x0) {
+		if tv.Keyword() == BindKeyword(0x0) {
 			return badBindRule, false
 		}
 
@@ -823,7 +801,7 @@ func bindDNToCondition(dest any, op ComparisonOperator) (BindRule, bool) {
 			return badBindRule, false
 		}
 
-		if matchBKW(tv.Keyword().String()) == BindKeyword(0x0) {
+		if tv.Keyword() == BindKeyword(0x0) {
 			return badBindRule, false
 		}
 
