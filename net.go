@@ -39,6 +39,15 @@ const (
 )
 
 /*
+Keyword returns the Keyword (interface) assigned to the receiver instance. This
+shall be the keyword that appears in a BindRule containing the receiver instance
+as the expression value.
+*/
+func (r FQDN) Keyword() Keyword {
+	return BindDNS
+}
+
+/*
 Eq initializes and returns a new BindRule instance configured to express the
 evaluation of the receiver value as Equal-To the `ip` Bind keyword context.
 */
@@ -88,6 +97,15 @@ func (r IPAddr) Len() int {
 		return 0
 	}
 	return len(*r.ipAddrs)
+}
+
+/*
+Keyword returns the Keyword (interface) assigned to the receiver instance. This
+shall be the keyword that appears in a BindRule containing the receiver instance
+as the expression value.
+*/
+func (r IPAddr) Keyword() Keyword {
+	return BindIP
 }
 
 /*
@@ -197,12 +215,6 @@ func DNS(label ...string) FQDN {
 	return x
 }
 
-func newLabels(label ...string) *labels {
-	x := new(labels)
-	x.set(label...)
-	return x
-}
-
 /*
 zeroDomain is used in as a return instance for failed FQDN-related Set
 operations.
@@ -214,6 +226,19 @@ const (
 	labelMax = 63
 	badFQDN  = `<invalid_fqdn_or_label>`
 )
+
+/*
+Len returns the abstract integer length of the receiver. The value
+returned represents the number of valid DNS labels within a given
+instance of FQDN. For example, `www.example.com` has three (3) such
+labels.
+*/
+func (r FQDN) Len() int {
+	if r.labels == nil {
+		return 0
+	}
+	return len(*r.labels)
+}
 
 /*
 Set appends one or more domain labels to the receiver. The total character
@@ -251,6 +276,10 @@ Please note that it is not necessary to include a NULL terminating
 full stop character (.) at the end (TLD?) of the intended FQDN
 */
 func (r *FQDN) Set(label ...string) *FQDN {
+	if r.IsZero() {
+		*r = FQDN{new(labels)}
+	}
+
 	r.labels.set(label...)
 	return r
 }

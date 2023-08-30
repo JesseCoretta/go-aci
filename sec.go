@@ -135,6 +135,11 @@ func SSF(factor ...any) SecurityStrengthFactor {
 	return s
 }
 
+/*
+Keyword returns the Keyword (interface) assigned to the receiver instance. This
+shall be the keyword that appears in a BindRule containing the receiver instance
+as the expression value.
+*/
 func (r SecurityStrengthFactor) Keyword() Keyword {
 	return BindSSF
 }

@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestSecurityStrengthFactor_codecov(t *testing.T) {
+func TestSecurityStrengthFactor(t *testing.T) {
 	var (
 		factor SecurityStrengthFactor
 		typ    string = BindSSF.String()
@@ -18,18 +18,18 @@ func TestSecurityStrengthFactor_codecov(t *testing.T) {
 		got := factor.Set(i) // set by iterated integer
 		if want != got.String() {
 			err = unexpectedStringResult(typ, want, got.String())
-			t.Errorf("%s failed [int factor]: %v",
-				t.Name(), err)
+			t.Errorf("%s failed [%s int]: %v",
+				t.Name(), typ, err)
 		}
 
 		// reset using string representation of iterated integer
 		if got = factor.Set(want); want != got.String() {
 			err = unexpectedStringResult(typ, want, got.String())
-			t.Errorf("%s failed [str factor]: %v",
-				t.Name(), err)
+			t.Errorf("%s failed [%s str]: %v",
+				t.Name(), typ, err)
 		}
 
-		// tod qualifies for all comparison operators
+		// ssf qualifies for all comparison operators
 		// due to its numerical nature.
 		cops := map[ComparisonOperator]func() BindRule{
 			Eq: got.Eq,
@@ -53,7 +53,7 @@ func TestSecurityStrengthFactor_codecov(t *testing.T) {
 			}
 
 			if err != nil {
-				t.Errorf("%s failed [factor rule]: %v", t.Name(), err)
+				t.Errorf("%s failed [%s rule]: %v", t.Name(), typ, err)
 			}
 		}
 
