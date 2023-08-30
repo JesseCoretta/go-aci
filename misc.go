@@ -1,6 +1,7 @@
 package aci
 
 import (
+	"crypto/sha1"
 	"encoding/binary"
 	"fmt"
 	"reflect"
@@ -303,6 +304,46 @@ func stackByOIDKeyword(key Keyword) ObjectIdentifiers {
 }
 
 /*
+Hash computes a SHA-1 hash value, derived from the String
+method output of input value x. The hash, if generated, is
+cast as a string prior to being returned alongside an error.
+
+If input value x lacks a String method, or if no string
+value was returned as a result of its execution, the error
+instance returned shall be non nil.
+*/
+func Hash(x any) (string, error) {
+	return hashInstance(x)
+}
+
+/*
+hashInstance is a private function called by the Hash
+package level function. It uses crypto/sha1 to compute
+a hash value derived from the string representation
+of input value x, assuming it possesses its own String
+method.
+
+A string representation of the hash value alongside an
+error instance are returned.
+*/
+func hashInstance(x any) (s string, err error) {
+	meth := getStringFunc(x)
+	if meth == nil {
+		err = errorf("%T instance has no String method; cannot compute hash", x)
+		return
+	}
+
+	_s := meth()
+	if len(_s) == 0 {
+		err = errorf("%T instance produced a zero length string, cannot compute hash", x)
+		return
+	}
+	s = uc(sprintf("%x", sha1.Sum([]byte(_s))))
+
+	return
+}
+
+/*
 getCategoryFunc uses reflect to obtain and return a given
 type instance's Category method, if present. If not, nil
 is returned.
@@ -314,6 +355,29 @@ func getCategoryFunc(x any) func() string {
 	}
 
 	method := v.MethodByName(`Category`)
+	if method.Kind() == reflect.Invalid {
+		return nil
+	}
+
+	if meth, ok := method.Interface().(func() string); ok {
+		return meth
+	}
+
+	return nil
+}
+
+/*
+getStringFunc uses reflect to obtain and return a given
+type instance's String method, if present. If not, nil
+is returned.
+*/
+func getStringFunc(x any) func() string {
+	v := valOf(x)
+	if v.IsZero() {
+		return nil
+	}
+
+	method := v.MethodByName(`String`)
 	if method.Kind() == reflect.Invalid {
 		return nil
 	}
