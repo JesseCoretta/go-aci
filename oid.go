@@ -55,6 +55,17 @@ func (r ObjectIdentifier) Keyword() Keyword {
 	return r.objectIdentifier.TargetKeyword
 }
 
+func (r ObjectIdentifier) ObjectIdentifiers() (o ObjectIdentifiers) {
+	switch kw := r.Keyword(); kw {
+	case TargetCtrl:
+		o = Ctrls(r)
+	case TargetExtOp:
+		o = ExtOps(r)
+	}
+
+	return
+}
+
 /*
 IsZero wraps go-objectid's DotNotation.IsZero method.
 */
@@ -82,14 +93,13 @@ func (r ObjectIdentifier) Eq() TargetRule {
 	t.SetOperator(Eq)
 	t.SetExpression(r)
 
-	_t := castAsCondition(t).
+	castAsCondition(t).
 		Encap(`"`).
 		Paren(true).
 		SetID(targetRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(r.objectIdentifier.TargetKeyword.String())
 
-	t = TargetRule(*_t)
 	return t
 }
 
@@ -110,14 +120,13 @@ func (r ObjectIdentifier) Ne() TargetRule {
 	t.SetOperator(Ne)
 	t.SetExpression(r)
 
-	_t := castAsCondition(t).
+	castAsCondition(t).
 		Encap(`"`).
 		Paren(true).
 		SetID(targetRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(r.objectIdentifier.TargetKeyword.String())
 
-	t = TargetRule(*_t)
 	return t
 }
 
@@ -419,6 +428,46 @@ func (r ObjectIdentifiers) ctrlsPushPolicy(x any) error {
 	return objectIdentifiersPushPolicy(r, x, TargetCtrl)
 }
 
+func (r ObjectIdentifiers) reset() {
+	_r, _ := castAsStack(r)
+	_r.Reset()
+}
+
+func (r ObjectIdentifiers) resetKeyword(x any) {
+	if r.Len() > 0 {
+		return
+	}
+
+	switch tv := x.(type) {
+	case TargetKeyword:
+		switch tv {
+		case TargetExtOp:
+			_r, _ := castAsStack(r)
+			_r.SetCategory(tv.String()).
+				SetPushPolicy(r.extOpsPushPolicy)
+
+		case TargetCtrl:
+			_r, _ := castAsStack(r)
+			_r.SetCategory(tv.String()).
+				SetPushPolicy(r.ctrlsPushPolicy)
+		}
+
+	case string:
+		_r, _ := castAsStack(r)
+
+		switch lc(tv) {
+		case TargetExtOp.String():
+			_r.SetCategory(TargetExtOp.String()).
+				SetPushPolicy(r.extOpsPushPolicy)
+
+		case TargetCtrl.String():
+			_r.SetCategory(TargetCtrl.String()).
+				SetPushPolicy(r.ctrlsPushPolicy)
+
+		}
+	}
+}
+
 /*
 objectIdentifiersPushPolicy is called by one of the PushPolicy
 conformant interface signature functions -- either extOpsPushPolicy
@@ -436,11 +485,19 @@ func objectIdentifiersPushPolicy(r, x any, kw TargetKeyword) (err error) {
 			err = pushErrorNilOrZero(r, x, kw)
 		}
 
+	case TargetKeyword:
+		switch tv {
+		case TargetExtOp, TargetCtrl:
+			if R := r.(ObjectIdentifiers); R.Len() == 0 {
+				R.resetKeyword(tv)
+			}
+		}
+
 	case ObjectIdentifier:
 
 		// case match is a proper instance of ObjectIdentifier
-		if tv.IsZero() {
-			err = pushErrorNilOrZero(r, x, kw)
+		if err = tv.Valid(); err != nil {
+			break
 
 		} else if tv.objectIdentifier.TargetKeyword != kw {
 			err = badObjectIdentifierKeywordErr(tv.objectIdentifier.TargetKeyword)
@@ -548,14 +605,13 @@ func (r ObjectIdentifiers) Eq() TargetRule {
 	t.SetOperator(Eq)
 	t.SetExpression(r)
 
-	_t := castAsCondition(t).
+	castAsCondition(t).
 		Encap(`"`).
 		Paren(true).
 		SetID(targetRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(t.Keyword().String())
 
-	t = TargetRule(*_t)
 	return t
 }
 
@@ -576,14 +632,13 @@ func (r ObjectIdentifiers) Ne() TargetRule {
 	t.SetOperator(Ne)
 	t.SetExpression(r)
 
-	_t := castAsCondition(t).
+	castAsCondition(t).
 		Encap(`"`).
 		Paren(true).
 		SetID(targetRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(t.Keyword().String())
 
-	t = TargetRule(*_t)
 	return t
 }
 
