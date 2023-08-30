@@ -132,8 +132,8 @@ func TestBindDistinguishedNames_codecov(t *testing.T) {
 
 	for kw, fn := range map[BindKeyword]func(...any) BindDistinguishedNames{
 		BindUDN: UDNs,
-		BindRDN: RDNs,
 		BindGDN: GDNs,
+		BindRDN: RDNs,
 	} {
 		Os = fn()
 		Os.Push(kw) // reset the keyword for this iteration
