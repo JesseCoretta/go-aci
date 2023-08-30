@@ -28,6 +28,12 @@ func TestObjectIdentifier_codecov(t *testing.T) {
 					t.Name(), O)
 			}
 
+			if !O.IsZero() {
+				t.Errorf("%s failed: non-zero %T", t.Name(), O)
+			}
+
+			_ = O.ObjectIdentifiers() // codecov
+
 			if O.String() != badDotNot {
 				t.Errorf("%s failed: unexpected string result; want '%s', got '%s'",
 					t.Name(), badDotNot, O)
