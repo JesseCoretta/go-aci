@@ -19,6 +19,9 @@ func TestBindDistinguishedName_codecov(t *testing.T) {
 			`cn=Courtney Tolana,ou=Contractors,ou=People,dc=example,dc=com`,
 		} {
 			var O BindDistinguishedName
+			_ = O.isDistinguishedNameContext()
+			_ = O.Eq()
+			_ = O.Ne()
 
 			if err := O.Valid(); err == nil {
 				t.Errorf("%s failed: invalid %T returned no validity error",
@@ -45,6 +48,8 @@ func TestBindDistinguishedName_codecov(t *testing.T) {
 				t.Errorf("%s failed: %v",
 					t.Name(), err)
 			}
+
+			O.Set(`#barf`, kw)
 
 			// DNs qualify for equality and negated equality
 			// comparison operators.
@@ -82,6 +87,9 @@ func TestTargetDistinguishedName_codecov(t *testing.T) {
 			`cn=Courtney Tolana,ou=Contractors,ou=People,dc=example,dc=com`,
 		} {
 			var O TargetDistinguishedName
+			_ = O.isDistinguishedNameContext()
+			_ = O.Eq()
+			_ = O.Ne()
 
 			if err := O.Valid(); err == nil {
 				t.Errorf("%s failed: invalid %T returned no validity error",
@@ -108,6 +116,8 @@ func TestTargetDistinguishedName_codecov(t *testing.T) {
 				t.Errorf("%s failed: %v",
 					t.Name(), err)
 			}
+
+			O.Set(`#barf`, kw)
 
 			// DNs qualify for equality and negated equality
 			// comparison operators.
@@ -137,7 +147,13 @@ func TestTargetDistinguishedName_codecov(t *testing.T) {
 func TestBindDistinguishedNames_codecov(t *testing.T) {
 	var Os BindDistinguishedNames
 	var Id string = Os.ID()
+	var Kw Keyword = Os.Keyword()
+	_ = sprintf("%v", Kw)
+	_ = Os.Eq()
+	_ = Os.Ne()
 	Os.reset()
+	_ = Os.setQuoteStyle(1)
+	_ = Os.setQuoteStyle(0)
 
 	for kw, fn := range map[BindKeyword]func(...any) BindDistinguishedNames{
 		BindUDN: UDNs,
@@ -177,11 +193,15 @@ func TestBindDistinguishedNames_codecov(t *testing.T) {
 			Os.Push(Os.Pop())
 			Os.Push(O) // try to introduce duplicate
 			Id = Os.ID()
+			Kw = Os.Keyword()
 
 			if Os.Len() != Ol+1 {
 				t.Errorf("%s [%s] multival failed: valid %T[%s] instance (%s) not pushed into %T[%s; len:%d]",
-					t.Name(), Id, O, O.Keyword(), O, Os, Os.Keyword(), Ol)
+					t.Name(), Id, O, O.Keyword(), O, Os, Kw, Ol)
 			}
+
+			_ = Os.setQuoteStyle(1)
+			_ = Os.setQuoteStyle(0)
 
 			// DNs qualify for equality and negated equality
 			// comparison operators.
@@ -211,7 +231,13 @@ func TestBindDistinguishedNames_codecov(t *testing.T) {
 func TestTargetDistinguishedNames_codecov(t *testing.T) {
 	var Os TargetDistinguishedNames
 	var Id string = Os.ID()
+	var Kw Keyword = Os.Keyword()
+	_ = sprintf("%v", Kw)
+	_ = Os.Eq()
+	_ = Os.Ne()
 	Os.reset()
+	_ = Os.setQuoteStyle(1)
+	_ = Os.setQuoteStyle(0)
 
 	for kw, fn := range map[TargetKeyword]func(...any) TargetDistinguishedNames{
 		Target:     TDNs,
@@ -251,11 +277,15 @@ func TestTargetDistinguishedNames_codecov(t *testing.T) {
 			Os.Push(Os.Pop())
 			Os.Push(O) // try to introduce duplicate
 			Id = Os.ID()
+			Kw = Os.Keyword()
 
 			if Os.Len() != Ol+1 {
 				t.Errorf("%s [%s] multival failed: valid %T[%s] instance (%s) not pushed into %T[%s; len:%d]",
-					t.Name(), Id, O, O.Keyword(), O, Os, Os.Keyword(), Ol)
+					t.Name(), Id, O, O.Keyword(), O, Os, Kw, Ol)
 			}
+
+			_ = Os.setQuoteStyle(1)
+			_ = Os.setQuoteStyle(0)
 
 			// DNs qualify for equality and negated equality
 			// comparison operators.
