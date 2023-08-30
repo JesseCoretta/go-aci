@@ -473,6 +473,38 @@ func (r BindDistinguishedNames) Category() string {
 	return x.Category()
 }
 
+func (r BindDistinguishedNames) reset() {
+	_r, _ := castAsStack(r)
+	_r.Reset()
+}
+
+/*
+ */
+func (r BindDistinguishedNames) resetKeyword(x any) {
+	if r.Len() > 0 {
+		return
+	}
+
+	_r, _ := castAsStack(r)
+	switch tv := x.(type) {
+	case BindKeyword:
+		r.resetKeyword(tv.String())
+
+	case string:
+		switch lc(tv) {
+		case BindUDN.String():
+			_r.SetCategory(BindUDN.String()).
+				SetPushPolicy(r.uDNPushPolicy)
+		case BindRDN.String():
+			_r.SetCategory(BindRDN.String()).
+				SetPushPolicy(r.rDNPushPolicy)
+		case BindGDN.String():
+			_r.SetCategory(BindGDN.String()).
+				SetPushPolicy(r.gDNPushPolicy)
+		}
+	}
+}
+
 /*
 Category wraps go-stackage's Stack.Category method.
 */
@@ -482,6 +514,39 @@ func (r TargetDistinguishedNames) Category() string {
 	}
 	x, _ := castAsStack(r)
 	return x.Category()
+}
+
+func (r TargetDistinguishedNames) reset() {
+	_r, _ := castAsStack(r)
+	_r.Reset()
+}
+
+/*
+ */
+func (r TargetDistinguishedNames) resetKeyword(x any) {
+	if r.Len() > 0 {
+		return
+	}
+
+	_r, _ := castAsStack(r)
+	switch tv := x.(type) {
+	case TargetKeyword:
+		r.resetKeyword(tv.String())
+
+	case string:
+
+		switch lc(tv) {
+		case Target.String():
+			_r.SetCategory(Target.String()).
+				SetPushPolicy(r.tDNPushPolicy)
+		case TargetTo.String():
+			_r.SetCategory(TargetTo.String()).
+				SetPushPolicy(r.tToDNPushPolicy)
+		case TargetFrom.String():
+			_r.SetCategory(TargetFrom.String()).
+				SetPushPolicy(r.tFromDNPushPolicy)
+		}
+	}
 }
 
 /*
@@ -1001,12 +1066,54 @@ func (r BindDistinguishedNames) Keyword() Keyword {
 }
 
 /*
+F returns the appropriate instance creator function for crafting individual
+BindDistinguishedName instances for submission to the receiver. This is merely
+a convenient alternative to maintaining knowledge as to which function applies
+to the current receiver instance.
+
+The default is UDN, and will be returned if the receiver is uninitialized,
+or if the Keyword associated with the receiver is invalid somehow. Otherwise,
+GDN is returned for BindGDN, and RDN for BindRDN.
+*/
+func (r BindDistinguishedNames) F() func(string) BindDistinguishedName {
+	switch r.Keyword() {
+	case BindGDN:
+		return GDN
+	case BindRDN:
+		return RDN
+	}
+
+	return UDN
+}
+
+/*
 Keyword returns the Keyword (interface) assigned to the receiver instance.
 This shall be the keyword that appears in a TargetRule bearing the receiver
 as a condition value.
 */
 func (r TargetDistinguishedNames) Keyword() Keyword {
 	return keywordFromCategory(r)
+}
+
+/*
+F returns the appropriate instance creator function for crafting individual
+TargetDistinguishedName instances for submission to the receiver. This is merely
+a convenient alternative to maintaining knowledge as to which function applies
+to the current receiver instance.
+
+The default is TDN, and will be returned if the receiver is uninitialized,
+or if the Keyword associated with the receiver is invalid somehow. Otherwise,
+TTDN is returned for TargetTo, and TFDN for TargetFrom.
+*/
+func (r TargetDistinguishedNames) F() func(string) TargetDistinguishedName {
+	switch r.Keyword() {
+	case TargetTo:
+		return TTDN
+	case TargetFrom:
+		return TFDN
+	}
+
+	return TDN
 }
 
 /*
@@ -1189,7 +1296,7 @@ func pushBindDistinguishedNames(kw Keyword, x any) (BindDistinguishedName, bool)
 		// attempting to push a DN that bears a
 		// different keyword than the receiver.
 		// will stop the show.
-		if dkw := keywordFromCategory(tv); dkw.String() != kw.String() {
+		if tv.Keyword() != kw {
 			return badBindDN, false
 		}
 
@@ -1352,20 +1459,15 @@ func distinguishedNamesPushPolicy(r, x any, kw Keyword) (err error) {
 			err = pushErrorNilOrZero(r, tv, kw)
 		}
 
-	case BindDistinguishedName:
+	case Keyword:
+		distinguishedNamesPushPolicyKeywordHandler(r, kw)
+
+	case DistinguishedNameContext:
 		if tv.IsZero() {
 			err = pushErrorNilOrZero(r, tv, kw)
 
-		} else if tv.distinguishedName.Keyword != kw {
-			err = badPTBRuleKeywordErr(tv, bindRuleID, kw, tv.distinguishedName.Keyword)
-		}
-
-	case TargetDistinguishedName:
-		if tv.IsZero() {
-			err = pushErrorNilOrZero(r, tv, kw)
-
-		} else if tv.distinguishedName.Keyword != kw {
-			err = badPTBRuleKeywordErr(tv, targetRuleID, kw, tv.distinguishedName.Keyword)
+		} else if tv.Keyword() != kw {
+			err = badPTBRuleKeywordErr(tv, targetRuleID, kw, tv.Keyword())
 		}
 
 	default:
@@ -1373,6 +1475,17 @@ func distinguishedNamesPushPolicy(r, x any, kw Keyword) (err error) {
 	}
 
 	return
+}
+
+func distinguishedNamesPushPolicyKeywordHandler(r any, kw Keyword) {
+	if kw.Kind() == `bind` {
+		R := r.(BindDistinguishedNames)
+		R.resetKeyword(kw)
+		return
+	}
+
+	R := r.(TargetDistinguishedNames)
+	R.resetKeyword(kw)
 }
 
 /*

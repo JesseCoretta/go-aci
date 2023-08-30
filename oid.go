@@ -428,6 +428,25 @@ func (r ObjectIdentifiers) ctrlsPushPolicy(x any) error {
 	return objectIdentifiersPushPolicy(r, x, TargetCtrl)
 }
 
+/*
+F returns the appropriate instance creator function for crafting individual
+ObjectIdentifier instances for submission to the receiver. This is merely a
+convenient alternative to maintaining knowledge as to which function applies
+to the current receiver instance.
+
+The default is Ctrl, and will be returned if the receiver is uninitialized,
+or if the Keyword associated with the receiver is invalid somehow. Otherwise,
+ExtOp is returned.
+*/
+func (r ObjectIdentifiers) F() func(...any) ObjectIdentifier {
+	switch r.Keyword() {
+	case TargetExtOp:
+		return ExtOp
+	}
+
+	return Ctrl
+}
+
 func (r ObjectIdentifiers) reset() {
 	_r, _ := castAsStack(r)
 	_r.Reset()
@@ -440,17 +459,7 @@ func (r ObjectIdentifiers) resetKeyword(x any) {
 
 	switch tv := x.(type) {
 	case TargetKeyword:
-		switch tv {
-		case TargetExtOp:
-			_r, _ := castAsStack(r)
-			_r.SetCategory(tv.String()).
-				SetPushPolicy(r.extOpsPushPolicy)
-
-		case TargetCtrl:
-			_r, _ := castAsStack(r)
-			_r.SetCategory(tv.String()).
-				SetPushPolicy(r.ctrlsPushPolicy)
-		}
+		r.resetKeyword(tv.String())
 
 	case string:
 		_r, _ := castAsStack(r)

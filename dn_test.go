@@ -116,81 +116,73 @@ func TestTargetDistinguishedName_codecov(t *testing.T) {
 	}
 }
 
-/*
-func TestObjectIdentifiers_codecov(t *testing.T) {
-        var Os ObjectIdentifiers = Ctrls()
+func TestBindDistinguishedNames_codecov(t *testing.T) {
+	var Os BindDistinguishedNames
 
-        for kw, fn := range map[TargetKeyword]func(...any) ObjectIdentifier{
-                TargetCtrl:  Ctrl,
-                TargetExtOp: ExtOp,
-        } {
-                Os.reset()
-                Os.Push(kw)
+	for kw, fn := range map[BindKeyword]func(...any) BindDistinguishedNames{
+		BindUDN: UDNs,
+		BindRDN: RDNs,
+		BindGDN: GDNs,
+	} {
+		Os = fn()
+		Os.Push(kw)
 
-                for _, oid := range []string{
-                        `1.3.6.1.4.1.56521.999.83`,
-                        `1.3.6.1.4.1.56521.999.84`,
-                        `1.3.6.1.4.1.56521.999.85`,
-                        `1.3.6.1.4.1.56521.999.86`,
-                        `1.3.6.1.4.1.56521.999.87`,
-                        `1.3.6.1.4.1.56521.999.88`,
-                        `1.3.6.1.4.1.56521.999.89`,
-                        `1.3.6.1.4.1.56521.999.90`,
-                        `1.3.6.1.4.1.56521.999.91`,
-                } {
-                        var O ObjectIdentifier
-                        var Ol int = Os.Len()
+		for _, dn := range []string{
+			`uid=jesse,ou=People,dc=example,dc=com`,
+			`cn=Courtney Tolana,ou=Contractors,ou=People,dc=example,dc=com`,
+		} {
+			var O BindDistinguishedName
+			var Ol int = Os.Len()
 
-                        if err := O.Valid(); err == nil {
-                                t.Errorf("%s multival failed: invalid %T returned no validity error",
-                                        t.Name(), O)
-                        }
+			if err := O.Valid(); err == nil {
+				t.Errorf("%s multival failed: invalid %T returned no validity error",
+					t.Name(), O)
+			}
 
-                        if O.String() != badDotNot {
-                                t.Errorf("%s multival failed: unexpected string result; want '%s', got '%s'",
-                                        t.Name(), badDotNot, O)
-                        }
+			if msg, bad := matchBadDNString(O.String()); !bad {
+				t.Errorf("%s failed: unexpected string result; want '%s', got '%s'",
+					t.Name(), msg, O)
+			}
 
-                        if Os.Push(O); Os.Len() > Ol {
-                                t.Errorf("%s multival failed: invalid %T instance pushed into %T without error",
-                                        t.Name(), O, Os)
-                        }
+			if Os.Push(O); Os.Len() > Ol {
+				t.Errorf("%s multival failed: invalid %T instance pushed into %T without error",
+					t.Name(), O, Os)
+			}
 
-                        // process OID
-                        O = fn(oid)
+			// process OID
+			O = Os.F()(dn)
 
-                        Ol = Os.Len()
-                        Os.Push(O)
-                        if Os.Len() != Ol+1 {
-                                t.Errorf("%s multival failed: valid %T[%s] instance (%s) not pushed into %T[%s; len:%d]",
-                                        t.Name(), O, O.Keyword(), O, Os, Os.Keyword(), Ol)
-                        }
+			Ol = Os.Len()
+			Os.Push(O)
+			if Os.Len() != Ol+1 {
+				t.Errorf("%s multival failed: valid %T[%s] instance (%s) not pushed into %T[%s; len:%d]",
+					t.Name(), O, O.Keyword(), O, Os, Os.Keyword(), Ol)
+			}
 
-                        // OIDs qualify for equality and negated equality
-                        // comparison operators.
-                        cops := map[ComparisonOperator]func() TargetRule{
-                                Eq: Os.Eq,
-                                Ne: Os.Ne,
-                        }
+			// OIDs qualify for equality and negated equality
+			// comparison operators.
+			cops := map[ComparisonOperator]func() BindRule{
+				Eq: Os.Eq,
+				Ne: Os.Ne,
+			}
 
-                        // try every comparison operator supported in
-                        // this context ...
-                        for c := 1; c < len(cops)+1; c++ {
-                                cop := ComparisonOperator(c)
-                                wcop := sprintf("( %s %s %q )", O.Keyword(), cop, Os.String())
+			// try every comparison operator supported in
+			// this context ...
+			for c := 1; c < len(cops)+1; c++ {
+				cop := ComparisonOperator(c)
+				wcop := sprintf("( %s %s %q )", O.Keyword(), cop, Os.String())
 
-                                // create targetrule T using comparison
-                                // operator (cop).
-                                if T := cops[cop](); T.String() != wcop {
-                                        err := unexpectedStringResult(kw.String(), wcop, T.String())
-                                        t.Errorf("%s multival failed [%s rule]: %v", t.Name(), kw.String(), err)
-                                }
+				// create targetrule T using comparison
+				// operator (cop).
+				if B := cops[cop](); B.Paren().String() != wcop {
+					err := unexpectedStringResult(kw.String(), wcop, B.String())
+					t.Errorf("%s multival failed [%s rule]: %v", t.Name(), kw.String(), err)
+				}
 
-                        }
-                }
-        }
+			}
+		}
+	}
 }
-*/
 
 /*
 func TestDistinguishedName_codecov(t *testing.T) {
