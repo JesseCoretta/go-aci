@@ -163,9 +163,9 @@ func afosNonIdempSplitErr(d, l, o int, c rune) error {
 	return errorf(emsg, d, c, l, o)
 }
 
-func afoMissingPrefixErr(afo AttributeFilterOperation, ao AttributeOperation) error {
+func afoMissingPrefixErr() error {
 	emsg := "%T instance is missing required %T prefix: needs either add= or delete="
-	return errorf(emsg, afo, ao)
+	return errorf(emsg, AttributeFilterOperation{}, AttributeOperation(0))
 }
 
 func aoBadPrefixErr() error {

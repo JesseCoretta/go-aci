@@ -269,6 +269,10 @@ set is a private method executed by Set.
 func (r *objectIdentifier) set(x ...any) (err error) {
 	for i := 0; i < len(x); i++ {
 		switch tv := x[i].(type) {
+		case ObjectIdentifier:
+			if err = tv.Valid(); err == nil {
+				r.DotNotation, err = objectid.NewDotNotation(tv.String())
+			}
 		case string:
 			r.DotNotation, err = objectid.NewDotNotation(tv)
 		}
@@ -282,7 +286,9 @@ level functions.
 */
 func newObjectID(kw TargetKeyword, x ...any) (o *objectIdentifier, err error) {
 	o = new(objectIdentifier)
-	o.set(x...)
+	if err = o.set(x...); err != nil {
+		return
+	}
 	o.TargetKeyword = kw
 	return
 }

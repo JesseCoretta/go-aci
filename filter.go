@@ -371,8 +371,8 @@ func AFOs(x ...any) (f AttributeFilterOperations) {
 
 	// Set custom Presentation/Push policies
 	// per go-stackage signatures.
-	_f.SetPresentationPolicy(f.presentationPolicy).
-		SetPushPolicy(f.pushPolicy)
+	//_f.SetPresentationPolicy(f.presentationPolicy).
+	_f.SetPushPolicy(f.pushPolicy)
 
 	// Assuming one (1) or more items were
 	// submitted during the call, (try to)
@@ -467,10 +467,10 @@ expression. This delimitation scheme represents the default (most common)
 behavior, but can be set using the AttributeFilterOperationsCommaDelim
 integer constant (0), or when run in niladic fashion.
 */
-func (r AttributeFilterOperations) SetDelimiter(i ...int) {
+func (r AttributeFilterOperations) SetDelimiter(i ...int) AttributeFilterOperations {
 	_r, conv := castAsStack(r)
 	if !conv {
-		return
+		return r
 	}
 
 	var (
@@ -486,7 +486,7 @@ func (r AttributeFilterOperations) SetDelimiter(i ...int) {
 		// delimitation scheme (niladic
 		// exec).
 		_r.SetDelimiter(def)
-		return
+		return r
 	}
 
 	// perform integer switch, looking
@@ -501,6 +501,8 @@ func (r AttributeFilterOperations) SetDelimiter(i ...int) {
 		// delimitation scheme.
 		_r.SetDelimiter(def)
 	}
+
+	return r
 }
 
 /*
@@ -649,17 +651,21 @@ String is a stringer method that returns the string representation of
 the receiver instance.
 */
 func (r AttributeFilterOperations) String() string {
-	if r.IsZero() {
-		return ``
-	}
+	_r, _ := castAsStack(r)
+	return _r.String()
+	/*
+		if r.IsZero() {
+			return ``
+		}
 
-	var vals []string
-	for i := 0; i < r.Len(); i++ {
-		afo := r.Index(i)
-		vals = append(vals, afo.String())
-	}
+		var vals []string
+		for i := 0; i < r.Len(); i++ {
+			afo := r.Index(i)
+			vals = append(vals, afo.String())
+		}
 
-	return join(vals, `,`)
+		return join(vals, `,`)
+	*/
 }
 
 /*
@@ -669,11 +675,11 @@ This method is used to allow a complete override of the default go-stackage Stac
 method for instances of this type is called, the custom function shall be used in
 place of the default.
 */
-func (r AttributeFilterOperations) presentationPolicy(_ any) string {
-	// We execute the custom String method above, as opposed to
-	// calling go-stackage's Stack.String method explicitly.
-	return r.String()
-}
+//func (r AttributeFilterOperations) presentationPolicy(_ any) string {
+// We execute the custom String method above, as opposed to
+// calling go-stackage's Stack.String method explicitly.
+//return r.String()
+//}
 
 /*
 Eq initializes and returns a new TargetRule instance configured to express the
@@ -746,6 +752,10 @@ func (r AttributeFilterOperation) pushPolicy(x any) (err error) {
 		if len(tv) == 0 {
 			err = pushErrorNilOrZero(r, tv, TargetAttrFilters)
 		}
+
+	case AttributeOperation:
+		r.setCategory(tv.makeLabel())
+
 	case AttributeFilter:
 		if err = tv.Valid(); err != nil {
 			err = pushErrorNilOrZero(r, tv, TargetAttrFilters, err)
@@ -903,8 +913,8 @@ func (r AttributeFilterOperation) Valid() error {
 		return nilInstanceErr(r)
 	}
 
-	if !hasPfx(r.Kind(), TargetAttrFilters.String()) {
-		err := unexpectedKindErr(r, TargetAttrFilters.String(), r.Kind())
+	if !hasPfx(r.getCategory(), TargetAttrFilters.String()) {
+		err := unexpectedKindErr(r, TargetAttrFilters.String(), r.getCategory())
 		return err
 	}
 
@@ -932,6 +942,14 @@ func (r AttributeFilterOperation) Valid() error {
 Kind returns the categorical label assigned to the receiver.
 */
 func (r AttributeFilterOperation) Kind() string {
+	// we'll just cheat and send the string form
+	// of the keyword, as we leverage the underlying
+	// category method for the operation. See the
+	// getCategory method below...
+	return TargetAttrFilters.String()
+}
+
+func (r AttributeFilterOperation) getCategory() string {
 	_r, _ := castAsStack(r)
 	return _r.Category()
 }
@@ -945,9 +963,12 @@ func (r AttributeFilterOperation) String() string {
 		return ``
 	}
 	_r, _ := castAsStack(r)
+	_r.SetPresentationPolicy(nil)
 
 	f := _r.String()
 	o := r.Operation()
+
+	_r.SetPresentationPolicy(r.presentationPolicy)
 
 	return sprintf("%s=%s", o, f)
 }
@@ -961,11 +982,9 @@ generates output text in a way other than what is desired.
 
 See go-stackage's PresentationPolicy documentation for details.
 */
-/*
 func (r AttributeFilterOperation) presentationPolicy(_ any) string {
-        return r.String()
+	return r.String()
 }
-*/
 
 /*
 Eq initializes and returns a new TargetRule instance configured to express the
@@ -1033,8 +1052,8 @@ func AFO(x ...any) (f AttributeFilterOperation) {
 
 	// Set custom Presentation/Push policies
 	// per go-stackage signatures.
-	//_f.SetPresentationPolicy(f.presentationPolicy).
-	_f.SetPushPolicy(f.pushPolicy)
+	_f.SetPresentationPolicy(f.presentationPolicy).
+		SetPushPolicy(f.pushPolicy)
 
 	// Assuming one (1) or more items were
 	// submitted during the call, (try to)
@@ -1055,11 +1074,18 @@ The instance of AttributeFilterOperation contains an ANDed Rule instance using s
 */
 func (r AttributeOperation) AFO(x ...any) (afo AttributeFilterOperation) {
 	afo = AFO()
-	cat := sprintf("%s_%s", TargetAttrFilters, r) // TODO: Find an alternative. I really don't like this.
-	afo.setCategory(cat)
+	afo.setCategory(r.makeLabel())
 	afo.Push(x...)
 
 	return
+}
+
+/*
+makeLabel is a temporary hack to brand a particular AttributeFilterOperation stack as either
+Add or Delete in its operational nature.
+*/
+func (r AttributeOperation) makeLabel() string {
+	return sprintf("%s_%s", TargetAttrFilters, r) // TODO: Find an alternative. I really don't like this.
 }
 
 /*
@@ -1079,7 +1105,7 @@ Operation returns AddOp or DelOp as extracted from the receiver's categorical
 label. If invalid, an invalid AttributeOperation value is returned.
 */
 func (r AttributeFilterOperation) Operation() AttributeOperation {
-	switch x := trimPfx(r.Kind(), TargetAttrFilters.String()+`_`); lc(x) {
+	switch x := trimPfx(r.getCategory(), TargetAttrFilters.String()+`_`); lc(x) {
 	case `add`:
 		return AddOp
 	case `delete`:
@@ -1111,12 +1137,12 @@ parseAttributeFilterOperations processes the raw input value into an instance of
 AttributeFilterOperations, which is returned alongside an error instance.
 */
 func parseAttributeFilterOperations(raw string, delim int) (afos AttributeFilterOperations, err error) {
-	var char rune = rune(44) // ASCII #44 [default]
+	var char rune = rune(44) // ASCII #44 [comma, default]
 
 	// If delim is anything except one (1)
 	// use the default, else use semicolon.
 	if delim == 1 {
-		char = rune(59) // ASCII #59
+		char = rune(59) // ASCII #59 [semicolon]
 	}
 
 	// Scan the raw input value and count the number of
@@ -1131,6 +1157,11 @@ func parseAttributeFilterOperations(raw string, delim int) (afos AttributeFilter
 			// through an increment.
 			opct += ct
 		}
+	}
+
+	if opct == 0 {
+		err = afoMissingPrefixErr()
+		return
 	}
 
 	// Split the raw value using the specified
@@ -1162,7 +1193,7 @@ func parseAttributeFilterOperations(raw string, delim int) (afos AttributeFilter
 		// will be either `add=` or `delete=`.
 		// Bail out if we find otherwise.
 		if !hasAttributeFilterOperationPrefix(vals[i]) {
-			err = afoMissingPrefixErr(afo, AttributeOperation(0))
+			err = afoMissingPrefixErr()
 			return
 		}
 
@@ -1209,6 +1240,19 @@ func parseAttributeFilterOperation(raw string) (afo AttributeFilterOperation, er
 			return
 		}
 		afo.Push(af)
+	}
+
+	return
+}
+
+/*
+Parse parses the string input value (raw) and attempts to marshal its contents into the
+receiver instance. An error is returned if the attempt should fail for some reason.
+*/
+func (r *AttributeFilter) Parse(raw string) (err error) {
+	var _r AttributeFilter
+	if _r, err = parseAttributeFilter(raw); err == nil {
+		*r = _r
 	}
 
 	return

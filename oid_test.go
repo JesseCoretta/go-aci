@@ -16,6 +16,9 @@ func TestObjectIdentifiers_codecov(t *testing.T) {
 		_ = Oids.Len()
 		Oids.reset()
 		Oids.Push(keyword)
+		_ = Oids.Keyword()
+		_ = Oids.Kind()
+		_ = Oids.Valid()
 
 		for _, oid := range []string{
 			`1.3.6.1.4.1.56521.999.83`,
@@ -43,7 +46,7 @@ func TestObjectIdentifiers_codecov(t *testing.T) {
 			Oid = ofn(oid)
 			Ol = Oids.Len()
 
-			if Oids.Push(Oid); Oids.Len() != Ol+1 {
+			if Oids.Push(Oid); !Oids.Contains(oid) {
 				t.Errorf("%s [%s] multival failed: valid %T[%s] instance (%s) not pushed into %T[%s; len:%d]",
 					t.Name(), keyword, Oid, Oid.Keyword(), Oid, Oids, Oids.Keyword(), Ol)
 			}
@@ -84,6 +87,13 @@ func testMakeOidContext(phase int, oid ObjectIdentifier, oids ObjectIdentifiers)
 }
 
 func testEmptyOidContext(t *testing.T, kw Keyword, oid ObjectIdentifier, oids ObjectIdentifiers, ol int) (err error) {
+	_ = oid.Keyword()
+	_ = oid.Kind()
+	_ = oid.Valid()
+	_ = oids.Keyword()
+	_ = oids.Kind()
+	_ = oids.Valid()
+
 	err = oid.Valid()
 	if err != nil {
 		if err.Error() != `aci.ObjectIdentifier instance is nil` {
@@ -155,7 +165,7 @@ func ExampleCtrls() {
 
 /*
 This example demonstrates the creation of a multi-valued extop (LDAP Extended
-Operation) Target Rule expression.
+Operation) TargetRule expression.
 */
 func ExampleExtOps() {
 	// note: these are phony OIDs
@@ -168,4 +178,19 @@ func ExampleExtOps() {
 
 	fmt.Printf("%s", exop.Eq())
 	// Output: ( extop = "1.3.6.1.4.1.56521.999.5 || 1.3.6.1.4.1.56521.999.7" )
+}
+
+/*
+This example demonstrates the manual creation of an ObjectIdentifier instance using the
+string representation of an ASN.1 Object Identifier in dot notation, and a valid keyword
+context for a TargetRule.
+*/
+func ExampleOID() {
+	o1 := `1.3.6.1.4.1.56521.999.5` // note: phony OID
+
+	o := OID(o1, TargetExtOp)
+	//o := OID(o1, TargetCtrl)	// alternative
+
+	fmt.Printf("OID:%s, Type:%s", o, o.Keyword())
+	// Output: OID:1.3.6.1.4.1.56521.999.5, Type:extop
 }
