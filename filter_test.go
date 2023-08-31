@@ -923,9 +923,9 @@ This example demonstrates the use of the AttributeFilterOperations type's Keywor
 method.
 */
 func ExampleAttributeFilterOperations_Keyword() {
-	var aFOs AttributeFilterOperation
+	var afos AttributeFilterOperations
 
-	fmt.Printf("%s", aFOs.Keyword())
+	fmt.Printf("%s", afos.Keyword())
 	// Output: targattrfilters
 }
 
@@ -979,6 +979,27 @@ func ExampleAttributeFilterOperations_Push() {
 
 	fmt.Printf("%d", afos.Len())
 	// Output: 1
+}
+
+/*
+This example demonstrates the use of the AttributeFilterOperations type's Push
+method to append a new (eligible) instance to the receiver.
+*/
+func ExampleAttributeFilterOperations_Push_byString() {
+	attr := AT(`homeDirectory`)
+	filter := Filter(`(&(objectClass=employee)(cn=Jesse Coretta))`)
+	aF1 := AF(attr, filter)
+
+	attr = AT(`gecos`)
+	filter = Filter(`(|(objectClass=contractor)(objectClass=intern))`)
+	aF2 := AF(attr, filter)
+
+	var afos AttributeFilterOperations = AFOs()
+	ad := AddOp.AFO(aF1, aF2)
+	afos.Push(ad.String())
+
+	fmt.Printf("%d", afos.Index(0).Len())
+	// Output: 2
 }
 
 /*
@@ -1179,4 +1200,3 @@ func ExampleSearchFilter_Valid() {
 	fmt.Printf("%v", filter.Valid())
 	// Output: aci.SearchFilter instance is nil
 }
-
