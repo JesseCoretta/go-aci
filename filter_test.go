@@ -1171,7 +1171,7 @@ func ExampleSearchFilter_Ne() {
 	var filter SearchFilter
 	filter.Set(`(&(objectClass=contractor)(objectClass=intern))`)
 	fmt.Printf("%s", filter.Ne())
-	// Output: ( targetfilter != "(|(objectClass=contractor)(objectClass=intern))" )
+	// Output: ( targetfilter != "(&(objectClass=contractor)(objectClass=intern))" )
 }
 
 func ExampleSearchFilter_Valid() {
