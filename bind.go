@@ -1104,7 +1104,7 @@ func assertBindSec(expr parser.RuleExpression, key BindKeyword) (ex any, err err
 	case BindAM:
 		// value is an authentication method
 		// expressive statement.
-		ex, err = assertBindAuthMethod(expr)
+		ex, err = assertBindAuthenticationMethod(expr)
 	}
 
 	return
@@ -1154,14 +1154,14 @@ func assertBindDayOfWeek(expr parser.RuleExpression) (ex DayOfWeek, err error) {
 	return
 }
 
-func assertBindAuthMethod(expr parser.RuleExpression) (ex AuthMethod, err error) {
+func assertBindAuthenticationMethod(expr parser.RuleExpression) (ex AuthenticationMethod, err error) {
 	if err = unexpectedBindConditionValueErr(BindAM, 1, expr.Len()); err != nil {
 		return
 	}
 
 	// extract auth method from raw value, remove
 	// quotes and any L/T WHSP and analyze
-	ex = matchAuthMethod(expr.Values[0])
+	ex = matchAuthenticationMethod(expr.Values[0])
 	err = badAMErr(expr.Values[0], ex.String())
 	return
 }

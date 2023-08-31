@@ -7,50 +7,76 @@ through the SSF type.
 */
 
 /*
-AuthMethod is a uint8 type that manifests through predefined
+AuthenticationMethod is a uint8 type that manifests through predefined
 package constants, each describing a supported means of LDAP
 authentication.
 */
-type AuthMethod uint8
+type AuthenticationMethod uint8
 
 var (
-	authMap   map[int]AuthMethod
-	authNames map[string]AuthMethod
+	authMap   map[int]AuthenticationMethod
+	authNames map[string]AuthenticationMethod
 )
 
 /*
-AuthMethodLowerCase allows control over the case folding of
-AuthMethod string representation.
+AuthenticationMethodLowerCase allows control over the case folding of
+AuthenticationMethod string representation.
 
 A value of true shall force lowercase normalization, while
 a value of false (default) forces uppercase normalization.
 */
-var AuthMethodLowerCase bool
+var AuthenticationMethodLowerCase bool
 
 /*
-AuthMethod contants define the available LDAP authentication
+AuthenticationMethod contants define the available LDAP authentication
 mechanisms that are recognized within the ACI syntax honored
 by this package.
 
 NOTE: Supported SASL mechanisms vary per impl.
 */
 const (
-	noAuth    AuthMethod = iota // invalid
-	Anonymous                   // 0
-	Simple                      // 1
-	SSL                         // 2
-	SASL                        // 3
-	EXTERNAL                    // 4
-	DIGESTMD5                   // 5
-	GSSAPI                      // 6
+	noAuth    AuthenticationMethod = iota // invalid
+	Anonymous                             // 0
+	Simple                                // 1
+	SSL                                   // 2
+	SASL                                  // 3
+	EXTERNAL                              // 4
+	DIGESTMD5                             // 5
+	GSSAPI                                // 6
 )
+
+/*
+BRF returns an instance of BindRuleFuncs.
+
+Each of the return instance's key values represent a single instance of the
+ComparisonOperator type that is allowed for use in the creation of BindRule
+instances which bear the receiver instance as an expression value. The value
+for each key is the actual BindRuleMethod instance for OPTIONAL use in the
+creation of a BindRule instance.
+
+This is merely a convenient alternative to maintaining knowledge of which
+ComparisonOperator instances apply to which types. Instances of this type
+are also used to streamline package unit tests.
+
+Please note that if the receiver is in an aberrant state, or if it has not
+yet been initialized, the execution of ANY of the return instance's value
+methods will return bogus BindRule instances. While this is useful in unit
+testing, the end user must only execute this method IF and WHEN the receiver
+has been properly populated and prepared for such activity.
+*/
+func (r AuthenticationMethod) BRF() BindRuleFuncs {
+	return newBindRuleFuncs(bindRuleFuncMap{
+		Eq: r.Eq,
+		Ne: r.Ne,
+	})
+}
 
 /*
 Eq initializes and returns a new BindRule instance configured to express the
 evaluation of the receiver value as Equal-To the `authmethod` Bind keyword
 context.
 */
-func (r AuthMethod) Eq() BindRule {
+func (r AuthenticationMethod) Eq() BindRule {
 	if r == noAuth {
 		return badBindRule
 	}
@@ -60,13 +86,12 @@ func (r AuthMethod) Eq() BindRule {
 	b.SetOperator(Eq)
 	b.SetExpression(r)
 
-	_b := castAsCondition(b).
+	castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(BindAM.String())
 
-	b = BindRule(*_b)
 	return b
 }
 
@@ -75,7 +100,7 @@ Ne initializes and returns a new BindRule instance configured to express the
 evaluation of the receiver value as Not-Equal-To the `authmethod` Bind keyword
 context.
 */
-func (r AuthMethod) Ne() BindRule {
+func (r AuthenticationMethod) Ne() BindRule {
 	if r == noAuth {
 		return badBindRule
 	}
@@ -85,13 +110,12 @@ func (r AuthMethod) Ne() BindRule {
 	b.SetOperator(Ne)
 	b.SetExpression(r)
 
-	_b := castAsCondition(b).
+	castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(BindAM.String())
 
-	b = BindRule(*_b)
 	return b
 }
 
@@ -99,10 +123,10 @@ func (r AuthMethod) Ne() BindRule {
 String is a stringer method that returns the string representation
 of the receiver instance.
 */
-func (r AuthMethod) String() (am string) {
+func (r AuthenticationMethod) String() (am string) {
 	for k, v := range authNames {
 		if v == r {
-			am = foldAuthMethod(k)
+			am = foldAuthenticationMethod(k)
 			break
 		}
 	}
@@ -434,11 +458,11 @@ func stringToIntSSF(x string) (i int) {
 }
 
 /*
-matchAuthMethod resolves a given authentication method
+matchAuthenticationMethod resolves a given authentication method
 based on an integer or string input (x). If no match,
 Anonymous is returned.
 */
-func matchAuthMethod(x any) (am AuthMethod) {
+func matchAuthenticationMethod(x any) (am AuthenticationMethod) {
 	am = Anonymous // anonymous is default
 
 	switch tv := x.(type) {
@@ -462,12 +486,12 @@ func matchAuthMethod(x any) (am AuthMethod) {
 }
 
 /*
-foldAuthMethod executes the string representation
+foldAuthenticationMethod executes the string representation
 case-folding, per whatever value is assigned to the
-global AuthMethodLowerCase variable.
+global AuthenticationMethodLowerCase variable.
 */
-func foldAuthMethod(x string) string {
-	if AuthMethodLowerCase {
+func foldAuthenticationMethod(x string) string {
+	if AuthenticationMethodLowerCase {
 		return lc(x)
 	}
 	return uc(x)
@@ -475,10 +499,10 @@ func foldAuthMethod(x string) string {
 
 func init() {
 
-	// authMap facilitates lookups of AuthMethod
-	// instances using their underlying numerical
-	// const value; this is mostly used internally.
-	authMap = map[int]AuthMethod{
+	// authMap facilitates lookups of AuthenticationMethod
+	// instances using their underlying numerical const
+	// value; this is mostly used internally.
+	authMap = map[int]AuthenticationMethod{
 		0: Anonymous,
 		1: Simple,
 		2: SSL,
@@ -488,14 +512,14 @@ func init() {
 		6: GSSAPI,
 	}
 
-	// authNames facilities lookups of AuthMethod
-	// instances using their string representation.
-	// as the lookup key.
+	// authNames facilities lookups of AuthenticationMethod
+	// instances using their string representation. as the
+	// lookup key.
 	//
 	// NOTE: case is not significant during string
 	// *matching* (resolution); this is regardless
-	// of the state of AuthMethodLowerCase.
-	authNames = map[string]AuthMethod{
+	// of the state of AuthenticationMethodLowerCase.
+	authNames = map[string]AuthenticationMethod{
 		`none`:   Anonymous, // anonymous is ALWAYS default
 		`simple`: Simple,    // simple auth (DN + Password); no confidentiality is implied
 		`ssl`:    SSL,       // authentication w/ confidentiality; SSL (LDAPS) and TLS (LDAP + STARTTLS)

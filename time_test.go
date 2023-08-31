@@ -6,6 +6,140 @@ import (
 	"time"
 )
 
+func ExampleDay_String() {
+	fmt.Printf("%s", Sat)
+	// Output: Sat
+}
+
+func ExampleDayOfWeek_Eq() {
+	var d DayOfWeek
+	d.Shift(Sat)
+	d.Shift(Thur)
+	fmt.Printf("%s", d.Eq())
+	// Output: dayofweek = "Thur,Sat"
+}
+
+func ExampleDayOfWeek_Ne() {
+	var d DayOfWeek
+	d.Shift(Mon)
+	d.Shift(Tues)
+	fmt.Printf("%s", d.Ne())
+	// Output: dayofweek != "Mon,Tues"
+}
+
+func ExampleDayOfWeek_String() {
+	var d DayOfWeek = DoW(Thur, `Sat`, 1)
+	fmt.Printf("%s", d)
+	// Output: Sun,Thur,Sat
+}
+
+func ExampleDayOfWeek_Len() {
+	var d DayOfWeek = DoW(Thur, `Sat`, 1)
+	fmt.Printf("%d", d.Len())
+	// Output: 3
+}
+
+func ExampleDayOfWeek_Positive() {
+	var d DayOfWeek = DoW(Thur, `Sat`, 1)
+	fmt.Printf("Saturday is set: %t", d.Positive(Sat))
+	// Output: Saturday is set: true
+}
+
+func ExampleDayOfWeek_Keyword() {
+	var d DayOfWeek
+	fmt.Printf("Keyword: %s", d.Keyword())
+	// Output: Keyword: dayofweek
+}
+
+func ExampleDayOfWeek_Shift() {
+	var d DayOfWeek
+	d.Shift(Mon)
+	d.Shift(Tues)
+	fmt.Printf("%s", d)
+	// Output: Mon,Tues
+}
+
+func ExampleDayOfWeek_Unshift() {
+	var d DayOfWeek
+	d.Shift(Mon)
+	d.Shift(Tues)
+	d.Unshift(Mon)
+	fmt.Printf("%s", d)
+	// Output: Tues
+}
+
+func ExampleDayOfWeek_IsZero() {
+	var d DayOfWeek
+	fmt.Printf("Zero: %t", d.IsZero())
+	// Output: Zero: true
+}
+
+func ExampleDayOfWeek_Valid() {
+	var d DayOfWeek
+	fmt.Printf("Valid: %t", d.Valid() == nil)
+	// Output: Valid: false
+}
+
+func ExampleTimeOfDay_Eq() {
+	var thyme TimeOfDay = ToD(`2106`)
+	fmt.Printf("%s", thyme.Eq())
+	// Output: timeofday = "2106"
+}
+
+func ExampleTimeOfDay_Ne() {
+	var thyme TimeOfDay = ToD(`1543`)
+	fmt.Printf("%s", thyme.Ne())
+	// Output: timeofday != "1543"
+}
+
+func ExampleTimeOfDay_Lt() {
+	var thyme TimeOfDay = ToD(`0100`)
+	fmt.Printf("%s", thyme.Lt())
+	// Output: timeofday < "0100"
+}
+
+func ExampleTimeOfDay_Le() {
+	var thyme TimeOfDay = ToD(`0001`)
+	fmt.Printf("%s", thyme.Le())
+	// Output: timeofday <= "0001"
+}
+
+func ExampleTimeOfDay_Gt() {
+	var thyme TimeOfDay = ToD(`0901`)
+	fmt.Printf("%s", thyme.Gt())
+	// Output: timeofday > "0901"
+}
+
+func ExampleTimeOfDay_Ge() {
+	var thyme TimeOfDay = ToD(`1003`)
+	fmt.Printf("%s", thyme.Ge())
+	// Output: timeofday >= "1003"
+}
+
+func ExampleTimeOfDay_String() {
+	var thyme TimeOfDay = ToD(`2359`)
+	fmt.Printf("%s", thyme)
+	// Output: 2359
+}
+
+func ExampleTimeOfDay_Keyword() {
+	var thyme TimeOfDay
+	fmt.Printf("%s", thyme.Keyword())
+	// Output: timeofday
+}
+
+func ExampleTimeOfDay_IsZero() {
+	var thyme TimeOfDay
+	fmt.Printf("%t", thyme.IsZero())
+	// Output: true
+}
+
+func ExampleTimeOfDay_Valid() {
+	var thyme TimeOfDay
+	fmt.Printf("Valid: %t", thyme.Valid() == nil)
+	// Output: Valid: false
+}
+
 func TestToD(t *testing.T) {
 	// results we expect
 	//	TIME	VALID
@@ -210,6 +344,11 @@ func ExampleDoW() {
 }
 
 func ExampleTime() {
+	fmt.Printf("%s", ToD(`2301`))
+	// Output: 2301
+}
+
+func ExampleToD() {
 	fmt.Printf("%s", ToD(`2301`))
 	// Output: 2301
 }

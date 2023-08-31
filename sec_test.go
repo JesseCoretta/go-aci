@@ -103,6 +103,60 @@ func ExampleSecurityStrengthFactor_Eq() {
 	// Output: ( ssf = "128" )
 }
 
+func ExampleSecurityStrengthFactor_Ne() {
+	var s SecurityStrengthFactor
+	fmt.Printf("%s", s.Set(128).Ne().Paren())
+	// Output: ( ssf != "128" )
+}
+
+func ExampleSecurityStrengthFactor_Lt() {
+	var s SecurityStrengthFactor
+	fmt.Printf("%s", s.Set(128).Lt())
+	// Output: ssf < "128"
+}
+
+func ExampleSecurityStrengthFactor_Le() {
+	var s SecurityStrengthFactor
+	fmt.Printf("%s", s.Set(128).Le().Paren())
+	// Output: ( ssf <= "128" )
+}
+
+func ExampleSecurityStrengthFactor_Gt() {
+	var s SecurityStrengthFactor
+	fmt.Printf("%s", s.Set(128).Gt().Paren())
+	// Output: ( ssf > "128" )
+}
+
+func ExampleSecurityStrengthFactor_Ge() {
+	var s SecurityStrengthFactor
+	fmt.Printf("%s", s.Set(128).Ge().Paren())
+	// Output: ( ssf >= "128" )
+}
+
+func ExampleSecurityStrengthFactor_String() {
+	var s SecurityStrengthFactor = SSF(128)
+	fmt.Printf("%s", s)
+	// Output: 128
+}
+
+func ExampleSecurityStrengthFactor_Valid() {
+	var s SecurityStrengthFactor
+	fmt.Printf("Valid: %t", s.Valid() == nil)
+	// Output: Valid: false
+}
+
+func ExampleSecurityStrengthFactor_IsZero() {
+	var s SecurityStrengthFactor
+	fmt.Printf("Zero: %t", s.IsZero())
+	// Output: Zero: true
+}
+
+func ExampleSecurityStrengthFactor_Keyword() {
+	var s SecurityStrengthFactor
+	fmt.Printf("Keyword: %s", s.Keyword())
+	// Output: Keyword: ssf
+}
+
 func ExampleSSF() {
 	// convenient alternative to "var X SecurityStrengthFactor, X.Set(...) ..."
 	fmt.Printf("%s", SSF(128))
@@ -119,27 +173,30 @@ func ExampleSSF_setLater() {
 	// Output: 127
 }
 
-func TestAnonymous_eqne(t *testing.T) {
-	want := `authmethod != "NONE"`
-	got := Anonymous.Ne()
-	if want != got.String() {
-		t.Errorf("%s failed: want '%s', got '%s'", t.Name(), want, got)
-	}
-
-	// reset
-	want = `authmethod = "NONE"`
-	got = Anonymous.Eq()
-	if want != got.String() {
-		t.Errorf("%s failed: want '%s', got '%s'", t.Name(), want, got)
-	}
+func ExampleAuthenticationMethod_BRF() {
+	meths := Anonymous.BRF()
+	fmt.Printf("%d available comparison operator methods", meths.Len())
+	// Output: 2 available comparison operator methods
 }
 
-func ExampleAuthMethod_Ne() {
+func ExampleAuthenticationMethod_Ne() {
 	fmt.Printf("%s", Anonymous.Ne())
 	// Output: authmethod != "NONE"
 }
 
-func ExampleAuthMethod_Eq() {
+func ExampleAuthenticationMethod_Eq() {
 	fmt.Printf("%s", SASL.Eq())
 	// Output: authmethod = "SASL"
+}
+
+func ExampleSecurityStrengthFactor_BRF() {
+	var factor SecurityStrengthFactor = SSF(128)
+	meths := factor.BRF()
+	fmt.Printf("%d available comparison operator methods", meths.Len())
+	// Output: 6 available comparison operator methods
+}
+
+func ExampleAuthenticationMethod_String() {
+	fmt.Printf("%s", EXTERNAL)
+	// Output: SASL EXTERNAL
 }
