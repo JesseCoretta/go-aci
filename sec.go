@@ -184,13 +184,12 @@ func (r SecurityStrengthFactor) Eq() BindRule {
 	b.SetOperator(Eq)
 	b.SetExpression(r)
 
-	_b := castAsCondition(b).
+	castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(BindSSF.String())
 
-	b = BindRule(*_b)
 	return b
 }
 
@@ -208,13 +207,12 @@ func (r SecurityStrengthFactor) Ne() BindRule {
 	b.SetOperator(Ne)
 	b.SetExpression(r)
 
-	_b := castAsCondition(b).
+	castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(BindSSF.String())
 
-	b = BindRule(*_b)
 	return b
 }
 
@@ -229,13 +227,12 @@ func (r SecurityStrengthFactor) Lt() BindRule {
 	b.SetOperator(Lt)
 	b.SetExpression(r)
 
-	_b := castAsCondition(b).
+	castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(BindSSF.String())
 
-	b = BindRule(*_b)
 	return b
 }
 
@@ -251,13 +248,12 @@ func (r SecurityStrengthFactor) Le() BindRule {
 	b.SetOperator(Le)
 	b.SetExpression(r)
 
-	_b := castAsCondition(b).
+	castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(BindSSF.String())
 
-	b = BindRule(*_b)
 	return b
 }
 
@@ -273,13 +269,12 @@ func (r SecurityStrengthFactor) Gt() BindRule {
 	b.SetOperator(Gt)
 	b.SetExpression(r)
 
-	_b := castAsCondition(b).
+	castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(BindSSF.String())
 
-	b = BindRule(*_b)
 	return b
 }
 
@@ -296,20 +291,49 @@ func (r SecurityStrengthFactor) Ge() BindRule {
 	b.SetOperator(Ge)
 	b.SetExpression(r)
 
-	_b := castAsCondition(b).
+	castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(BindSSF.String())
 
-	b = BindRule(*_b)
 	return b
 }
 
-func (r SecurityStrengthFactor) Operators() []func() BindRule {
-	return []func() BindRule{r.Eq, r.Ne, r.Lt, r.Le, r.Gt, r.Ge}
+/*
+BRF returns an instance of BindRuleFuncs.
+
+Each of the return instance's key values represent a single instance of the
+ComparisonOperator type that is allowed for use in the creation of BindRule
+instances which bear the receiver instance as an expression value. The value
+for each key is the actual BindRuleMethod instance for OPTIONAL use in the
+creation of a BindRule instance.
+
+This is merely a convenient alternative to maintaining knowledge of which
+ComparisonOperator instances apply to which types. Instances of this type
+are also used to streamline package unit tests.
+
+Please note that if the receiver is in an aberrant state, or if it has not
+yet been initialized, the execution of ANY of the return instance's value
+methods will return bogus BindRule instances. While this is useful in unit
+testing, the end user must only execute this method IF and WHEN the receiver
+has been properly populated and prepared for such activity.
+*/
+func (r SecurityStrengthFactor) BRF() BindRuleFuncs {
+	return newBindRuleFuncs(bindRuleFuncMap{
+		Eq: r.Eq,
+		Ne: r.Ne,
+		Lt: r.Lt,
+		Le: r.Le,
+		Gt: r.Gt,
+		Ge: r.Ge,
+	})
 }
 
+/*
+String is a stringer method that returns the string representation
+of the receiver instance.
+*/
 func (r SecurityStrengthFactor) String() string {
 	if r.isZero() {
 		return `0`

@@ -112,14 +112,13 @@ func (r SearchScope) Eq() TargetRule {
 	t.SetOperator(Eq)
 	t.SetExpression(r.targetScope()) // don't use main stringer here
 
-	_t := castAsCondition(t).
+	castAsCondition(t).
 		Encap(`"`).
 		Paren(true).
 		SetID(targetRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(TargetScope.String())
 
-	t = TargetRule(*_t)
 	return t
 }
 
@@ -127,9 +126,11 @@ func (r SearchScope) Eq() TargetRule {
 Ne performs no useful task, as negated equality comparison does not apply
 to TargetRule instances that bear the `targetscope` keyword.
 
-This method exists solely to convey this message and to conform to Go's
-interface type qualifier requirements. When executed, this method returns
-a bogus TargetRule instance.
+This method exists solely to convey this message. When executed, this method
+returns a bogus TargetRule instance.
+
+This method SHALL NOT appear within instances of TargetRuleFuncs that were
+crafted through execution of the receiver's TRF method.
 */
 func (r SearchScope) Ne() TargetRule { return badTargetRule }
 
@@ -141,8 +142,28 @@ func (r SearchScope) Keyword() Keyword {
 	return TargetScope
 }
 
-func (r SearchScope) Operators() []func() TargetRule {
-	return []func() TargetRule{r.Eq}
+/*
+TRF returns an instance of TargetRuleFuncs.
+
+Each of the return instance's key values represent a single ComparisonOperator
+that is allowed for use in the creation of TargetRule instances which bear the
+receiver instance as an expression value. The value for each key is the actual
+instance method to -- optionally -- use for the creation of the TargetRule.
+
+This is merely a convenient alternative to maintaining knowledge of which
+ComparisonOperator instances apply to which types. Instances of this type
+are also used to streamline package unit tests.
+
+Please note that if the receiver is in an aberrant state, or if it has not yet
+been initialized, the execution of ANY of the return instance's value methods
+will return bogus TargetRule instances. While this is useful in unit testing,
+the end user must only execute this method IF and WHEN the receiver has been
+properly populated and prepared for such activity.
+*/
+func (r SearchScope) TRF() TargetRuleFuncs {
+	return newTargetRuleFuncs(targetRuleFuncMap{
+		Eq: r.Eq,
+	})
 }
 
 /*

@@ -9,6 +9,30 @@ const badDotNot = `<invalid_object_identifier>`
 var badOID ObjectIdentifier
 
 /*
+ObjectIdentifierContext is a convenient interface type that is qualified by the following types:
+
+• ObjectIdentifier
+
+• ObjectIdentifiers
+
+The qualifying methods shown below are intended to make the generalized handling of distinguished
+names slightly easier without an absolute need for type assertion at every step. These methods are
+inherently read-only in nature.
+
+To alter the underlying value, or to gain access to all of a given type's methods, type assertion
+of qualifying instances shall be necessary.
+*/
+type ObjectIdentifierContext interface {
+	String() string
+	Kind() string
+	Keyword() Keyword
+	IsZero() bool
+	Valid() error
+
+	isObjectIdentifierContext()
+}
+
+/*
 ObjectIdentifier embeds an instance of go-objectid's
 DotNotation type.
 
@@ -42,6 +66,8 @@ func (r ObjectIdentifier) String() string {
 	return r.objectIdentifier.DotNotation.String()
 }
 
+func (r ObjectIdentifier) isObjectIdentifierContext() {}
+
 /*
 Keyword returns the Keyword (interface) assigned to the
 receiver instance. This shall be the keyword that appears
@@ -53,6 +79,43 @@ func (r ObjectIdentifier) Keyword() Keyword {
 		return nil
 	}
 	return r.objectIdentifier.TargetKeyword
+}
+
+/*
+Kind returns the string value for the kind of ObjectIdentifier
+described by the receiver. It will return either `targetcontrol`
+or `extop`.
+*/
+func (r ObjectIdentifier) Kind() string {
+	if r.IsZero() {
+		return `<uninitialized>`
+	}
+	return r.objectIdentifier.TargetKeyword.String()
+}
+
+/*
+TRF returns an instance of TargetRuleFuncs.
+
+Each of the return instance's key values represent a single ComparisonOperator
+that is allowed for use in the creation of TargetRule instances which bear the
+receiver instance as an expression value. The value for each key is the actual
+instance method to -- optionally -- use for the creation of the TargetRule.
+
+This is merely a convenient alternative to maintaining knowledge of which
+ComparisonOperator instances apply to which types. Instances of this type
+are also used to streamline package unit tests.
+
+Please note that if the receiver is in an aberrant state, or if it has not yet
+been initialized, the execution of ANY of the return instance's value methods
+will return bogus TargetRule instances. While this is useful in unit testing,
+the end user must only execute this method IF and WHEN the receiver has been
+properly populated and prepared for such activity.
+*/
+func (r ObjectIdentifier) TRF() TargetRuleFuncs {
+	return newTargetRuleFuncs(targetRuleFuncMap{
+		Eq: r.Eq,
+		Ne: r.Ne,
+	})
 }
 
 func (r ObjectIdentifier) ObjectIdentifiers() (o ObjectIdentifiers) {
@@ -140,6 +203,12 @@ func (r ObjectIdentifier) Valid() (err error) {
 		return
 	}
 
+	raw := r.objectIdentifier.DotNotation.String()
+	if !isDotNot(raw) {
+		err = badObjectIdentifierErr(raw)
+		return
+	}
+
 	if !(r.objectIdentifier.DotNotation.Len() > 0 &&
 		r.objectIdentifier.TargetKeyword != TargetKeyword(0x0)) {
 		err = badObjectIdentifierKeywordErr(r.objectIdentifier.TargetKeyword)
@@ -224,11 +293,48 @@ func isDotNot(x string) bool {
 }
 
 /*
+TRF returns an instance of TargetRuleFuncs.
+
+Each of the return instance's key values represent a single ComparisonOperator
+that is allowed for use in the creation of TargetRule instances which bear the
+receiver instance as an expression value. The value for each key is the actual
+instance method to -- optionally -- use for the creation of the TargetRule.
+
+This is merely a convenient alternative to maintaining knowledge of which
+ComparisonOperator instances apply to which types. Instances of this type
+are also used to streamline package unit tests.
+
+Please note that if the receiver is in an aberrant state, or if it has not yet
+been initialized, the execution of ANY of the return instance's value methods
+will return bogus TargetRule instances. While this is useful in unit testing,
+the end user must only execute this method IF and WHEN the receiver has been
+properly populated and prepared for such activity.
+*/
+func (r ObjectIdentifiers) TRF() TargetRuleFuncs {
+	return newTargetRuleFuncs(targetRuleFuncMap{
+		Eq: r.Eq,
+		Ne: r.Ne,
+	})
+}
+
+/*
 IsZero wraps go-stackage's Stack.IsZero method.
 */
 func (r ObjectIdentifiers) IsZero() bool {
 	_r, _ := castAsStack(r)
 	return _r.IsZero()
+}
+
+/*
+Valid returns an instance of error in the event the receiver is in
+an aberrant state.
+*/
+func (r ObjectIdentifiers) Valid() (err error) {
+	if r.Kind() == `<uninitialized>` {
+		err = nilInstanceErr(r)
+	}
+
+	return
 }
 
 /*
@@ -253,6 +359,8 @@ func (r ObjectIdentifiers) Index(idx int) (x ObjectIdentifier) {
 	}
 	return
 }
+
+func (r ObjectIdentifiers) isObjectIdentifierContext() {}
 
 /*
 String is a stringer method that returns the string
@@ -313,7 +421,7 @@ func (r ObjectIdentifiers) contains(x any) bool {
 		return false
 	}
 
-	if len(candidate) == 0 {
+	if len(candidate) == 0 || candidate == badDotNot {
 		return false
 	}
 
@@ -490,8 +598,8 @@ func objectIdentifiersPushPolicy(r, x any, kw TargetKeyword) (err error) {
 	case string:
 
 		// case match is a string-based objectIdentifier
-		if len(tv) == 0 {
-			err = pushErrorNilOrZero(r, x, kw)
+		if !isDotNot(tv) {
+			err = badObjectIdentifierErr(tv)
 		}
 
 	case TargetKeyword:
@@ -668,7 +776,7 @@ Category wraps go-stackage's Stack.Category method.
 */
 func (r ObjectIdentifiers) Kind() string {
 	if r.IsZero() {
-		return ``
+		return `<uninitialized>`
 	}
 	return keywordFromCategory(r).String()
 }

@@ -15,10 +15,177 @@ var (
 )
 
 /*
-TR returns a populated instance of TargetRule. Note there are more
-convenient ways of crafting this type instance and in general this
-package-level is not needed unless the user wishes to craft the
-TargetRule instance in one shot as opposed to incrementally.
+TargetRuleFuncs contains one (1) or more instances of TargetRuleMethod,
+representing a particular TargetRule "builder" method for execution by
+the caller.
+
+See the Operators method extended through all eligible types for further
+details.
+*/
+type TargetRuleFuncs struct {
+	*targetRuleFuncMap
+}
+
+/*
+newTargetRuleFuncs populates an instance of *targetRuleFuncMap, which
+is embedded within the return instance of TargetRuleFuncs.
+*/
+func newTargetRuleFuncs(m targetRuleFuncMap) TargetRuleFuncs {
+	if len(m) == 0 {
+		return TargetRuleFuncs{nil}
+	}
+
+	M := make(targetRuleFuncMap, len(m))
+	for k, v := range m {
+		M[k] = v
+	}
+
+	return TargetRuleFuncs{&M}
+}
+
+/*
+Index calls the input index (idx) within the internal structure of the
+receiver instance. If found, an instance of ComparisonOperator and its
+accompanying TargetRuleMethod instance are returned.
+
+Valid input index types are integer (int), ComparisonOperator constant
+or string identifier. In the case of a string identifier, valid values
+are as follows:
+
+• For Eq (1): `=`, `Eq`, `Equal To`
+
+• For Ne (2): `=`, `Ne`, `Not Equal To`
+
+• For Lt (3): `=`, `Lt`, `Less Than`
+
+• For Le (4): `=`, `Le`, `Less Than Or Equal`
+
+• For Gt (5): `=`, `Gt`, `Greater Than`
+
+• For Ge (6): `=`, `Ge`, `Greater Than Or Equal`
+
+Case is not significant in the string matching process.
+
+Please note that use of this method by way of integer or ComparisonOperator
+values utilizes fewer resources than a string lookup.
+
+See the ComparisonOperator type's Context, String and Description methods
+for accessing the above string values easily.
+
+If the index was not matched, an invalid ComparisonOperator is returned
+alongside a nil TargetRuleMethod. This will also apply to situations in
+which the type instance which crafted the receiver is uninitialized, or
+is in an otherwise aberrant state.
+*/
+func (r TargetRuleFuncs) Index(idx any) (ComparisonOperator, TargetRuleMethod) {
+	return r.index(idx)
+}
+
+/*
+index is a private method called by TargetRuleFuncs.Index.
+*/
+func (r TargetRuleFuncs) index(idx any) (cop ComparisonOperator, meth TargetRuleMethod) {
+	if r.IsZero() {
+		return
+	}
+	cop = badCop
+
+	// perform a type switch upon the input
+	// index type
+	switch tv := idx.(type) {
+
+	case ComparisonOperator:
+		// cast cop as an int, and make recursive
+		// call to this function.
+		return r.index(int(tv))
+
+	case int:
+		// there are only six (6) valid
+		// operators, numbered one (1)
+		// through six (6).
+		if !(1 <= tv && tv <= 6) {
+			return
+		}
+
+		var found bool
+		if meth, found = (*r.targetRuleFuncMap)[ComparisonOperator(tv)]; found {
+			cop = ComparisonOperator(tv)
+		}
+
+	case string:
+		cop, meth = rangeTargetRuleFuncMap(tv, r.targetRuleFuncMap)
+	}
+
+	return
+}
+
+func rangeTargetRuleFuncMap(candidate string, fm *targetRuleFuncMap) (cop ComparisonOperator, meth TargetRuleMethod) {
+	// iterate all map entries, and see if
+	// input string value matches the value
+	// returned by these three (3) methods:
+	for k, v := range *fm {
+		if strInSliceFold(candidate, []string{
+			k.String(),      // e.g.: "="
+			k.Context(),     // e.g.: "Eq"
+			k.Description(), // e.g.: "Equal To"
+		}) {
+			cop = k
+			meth = v
+			break
+		}
+	}
+
+	return
+}
+
+/*
+IsZero returns a Boolean value indicative of whether the receiver is
+nil, or unset.
+*/
+func (r TargetRuleFuncs) IsZero() bool {
+	return r.targetRuleFuncMap == nil
+}
+
+/*
+Len returns the integer length of the receiver. Note that the return
+value will NEVER be less than zero (0) nor greater than six (6).
+*/
+func (r TargetRuleFuncs) Len() int {
+	if r.IsZero() {
+		return 0
+	}
+
+	return len((*r.targetRuleFuncMap))
+}
+
+/*
+TargetRuleMethod is the closure signature for methods used to build
+new instances of TargetRule.
+
+The signature is qualified by the following methods extended through
+all eligible types defined in this package:
+
+• Eq
+
+• Ne
+
+Note that TargetRule instances only support a very limited subset
+of these methods when compared to BindRule instances. In fact, some
+TargetRule instances only support ONE such method: Eq.
+*/
+type TargetRuleMethod func() TargetRule
+
+/*
+targetRuleFuncMap is a private type intended to be used within
+instances of TargetRuleFuncs.
+*/
+type targetRuleFuncMap map[ComparisonOperator]TargetRuleMethod
+
+/*
+TR returns a populated instance of TargetRule.  Note there are far more
+convenient (and safer!) ways of crafting instances of this type.
+
+Generally speaking, this function is not needed by the end user.
 */
 func TR(kw, op, ex any) TargetRule {
 	return newTargetRule(kw, op, ex)

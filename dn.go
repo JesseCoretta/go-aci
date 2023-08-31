@@ -528,6 +528,110 @@ func (r TargetDistinguishedNames) resetKeyword(x any) {
 }
 
 /*
+BRF returns an instance of BindRuleFuncs.
+
+Each of the return instance's key values represent a single instance of the
+ComparisonOperator type that is allowed for use in the creation of BindRule
+instances which bear the receiver instance as an expression value. The value
+for each key is the actual BindRuleMethod instance for OPTIONAL use in the
+creation of a BindRule instance.
+
+This is merely a convenient alternative to maintaining knowledge of which
+ComparisonOperator instances apply to which types. Instances of this type
+are also used to streamline package unit tests.
+
+Please note that if the receiver is in an aberrant state, or if it has not
+yet been initialized, the execution of ANY of the return instance's value
+methods will return bogus BindRule instances. While this is useful in unit
+testing, the end user must only execute this method IF and WHEN the receiver
+has been properly populated and prepared for such activity.
+*/
+func (r BindDistinguishedName) BRF() BindRuleFuncs {
+	return newBindRuleFuncs(bindRuleFuncMap{
+		Eq: r.Eq,
+		Ne: r.Ne,
+	})
+}
+
+/*
+BRF returns an instance of BindRuleFuncs.
+
+Each of the return instance's key values represent a single instance of the
+ComparisonOperator type that is allowed for use in the creation of BindRule
+instances which bear the receiver instance as an expression value. The value
+for each key is the actual BindRuleMethod instance for OPTIONAL use in the
+creation of a BindRule instance.
+
+This is merely a convenient alternative to maintaining knowledge of which
+ComparisonOperator instances apply to which types. Instances of this type
+are also used to streamline package unit tests.
+
+Please note that if the receiver is in an aberrant state, or if it has not
+yet been initialized, the execution of ANY of the return instance's value
+methods will return bogus BindRule instances. While this is useful in unit
+testing, the end user must only execute this method IF and WHEN the receiver
+has been properly populated and prepared for such activity.
+*/
+func (r BindDistinguishedNames) BRF() BindRuleFuncs {
+	return newBindRuleFuncs(bindRuleFuncMap{
+		Eq: r.Eq,
+		Ne: r.Ne,
+	})
+}
+
+/*
+TRF returns an instance of TargetRuleFuncs.
+
+Each of the return instance's key values represent a single instance of the
+ComparisonOperator type that is allowed for use in the creation of TargetRule
+instances which bear the receiver instance as an expression value. The value
+for each key is the actual TargetRuleMethod instance for OPTIONAL use in the
+creation of a TargetRule instance.
+
+This is merely a convenient alternative to maintaining knowledge of which
+ComparisonOperator instances apply to which types. Instances of this type
+are also used to streamline package unit tests.
+
+Please note that if the receiver is in an aberrant state, or if it has not
+yet been initialized, the execution of ANY of the return instance's value
+methods will return bogus TargetRule instances. While this is useful in unit
+testing, the end user must only execute this method IF and WHEN the receiver
+has been properly populated and prepared for such activity.
+*/
+func (r TargetDistinguishedName) TRF() TargetRuleFuncs {
+	return newTargetRuleFuncs(targetRuleFuncMap{
+		Eq: r.Eq,
+		Ne: r.Ne,
+	})
+}
+
+/*
+TRF returns an instance of TargetRuleFuncs.
+
+Each of the return instance's key values represent a single instance of the
+ComparisonOperator type that is allowed for use in the creation of TargetRule
+instances which bear the receiver instance as an expression value. The value
+for each key is the actual TargetRuleMethod instance for OPTIONAL use in the
+creation of a TargetRule instance.
+
+This is merely a convenient alternative to maintaining knowledge of which
+ComparisonOperator instances apply to which types. Instances of this type
+are also used to streamline package unit tests.
+
+Please note that if the receiver is in an aberrant state, or if it has not
+yet been initialized, the execution of ANY of the return instance's value
+methods will return bogus TargetRule instances. While this is useful in unit
+testing, the end user must only execute this method IF and WHEN the receiver
+has been properly populated and prepared for such activity.
+*/
+func (r TargetDistinguishedNames) TRF() TargetRuleFuncs {
+	return newTargetRuleFuncs(targetRuleFuncMap{
+		Eq: r.Eq,
+		Ne: r.Ne,
+	})
+}
+
+/*
 ID wraps go-stackage's Stack.ID method.
 */
 func (r BindDistinguishedNames) ID() string {

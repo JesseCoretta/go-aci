@@ -5,79 +5,17 @@ import (
 	"testing"
 )
 
-func TestObjectIdentifier_codecov(t *testing.T) {
-	for kw, fn := range map[TargetKeyword]func(...any) ObjectIdentifier{
-		TargetCtrl:  Ctrl,
-		TargetExtOp: ExtOp,
-	} {
-		for _, oid := range []string{
-			`1.3.6.1.4.1.56521.999.83`,
-			`1.3.6.1.4.1.56521.999.84`,
-			`1.3.6.1.4.1.56521.999.85`,
-			`1.3.6.1.4.1.56521.999.86`,
-			`1.3.6.1.4.1.56521.999.87`,
-			`1.3.6.1.4.1.56521.999.88`,
-			`1.3.6.1.4.1.56521.999.89`,
-			`1.3.6.1.4.1.56521.999.90`,
-			`1.3.6.1.4.1.56521.999.91`,
-		} {
-			var O ObjectIdentifier
-
-			if err := O.Valid(); err == nil {
-				t.Errorf("%s failed: invalid %T returned no validity error",
-					t.Name(), O)
-			}
-
-			if !O.IsZero() {
-				t.Errorf("%s failed: non-zero %T", t.Name(), O)
-			}
-
-			_ = O.ObjectIdentifiers() // codecov
-
-			if O.String() != badDotNot {
-				t.Errorf("%s failed: unexpected string result; want '%s', got '%s'",
-					t.Name(), badDotNot, O)
-			}
-
-			// process OID
-			O = fn(oid)
-
-			// OIDs qualify for equality and negated equality
-			// comparison operators.
-			cops := map[ComparisonOperator]func() TargetRule{
-				Eq: O.Eq,
-				Ne: O.Ne,
-			}
-
-			_ = O.ObjectIdentifiers() // codecov
-
-			// try every comparison operator supported in
-			// this context ...
-			for c := 1; c < len(cops)+1; c++ {
-				cop := ComparisonOperator(c)
-				wcop := sprintf("( %s %s %q )", O.Keyword(), cop, O.String())
-
-				// create targetrule T using comparison
-				// operator (cop).
-				if T := cops[cop](); T.String() != wcop {
-					err := unexpectedStringResult(kw.String(), wcop, T.String())
-					t.Errorf("%s failed [%s rule]: %v", t.Name(), kw.String(), err)
-				}
-
-			}
-		}
-	}
-}
-
 func TestObjectIdentifiers_codecov(t *testing.T) {
-	var Os ObjectIdentifiers = Ctrls()
 
-	for kw, fn := range map[TargetKeyword]func(...any) ObjectIdentifier{
-		TargetCtrl:  Ctrl,
-		TargetExtOp: ExtOp,
+	for keyword, Oidsfn := range map[TargetKeyword]func(...any) ObjectIdentifiers{
+		TargetCtrl:  Ctrls,
+		TargetExtOp: ExtOps,
 	} {
-		Os.reset()
-		Os.Push(kw)
+		var Oids ObjectIdentifiers = Oidsfn()
+
+		_ = Oids.Len()
+		Oids.reset()
+		Oids.Push(keyword)
 
 		for _, oid := range []string{
 			`1.3.6.1.4.1.56521.999.83`,
@@ -90,72 +28,91 @@ func TestObjectIdentifiers_codecov(t *testing.T) {
 			`1.3.6.1.4.1.56521.999.90`,
 			`1.3.6.1.4.1.56521.999.91`,
 		} {
-			var O ObjectIdentifier
-			var Ol int = Os.Len()
+			var (
+				Ol   int                           = Oids.Len()
+				ofn  func(...any) ObjectIdentifier = Oids.F()
+				Oid  ObjectIdentifier
+				octx ObjectIdentifierContext
+			)
 
-			if err := O.Valid(); err == nil {
-				t.Errorf("%s multival failed: invalid %T returned no validity error",
-					t.Name(), O)
-			}
-
-			if O.String() != badDotNot {
-				t.Errorf("%s multival failed: unexpected string result; want '%s', got '%s'",
-					t.Name(), badDotNot, O)
-			}
-
-			if Os.Push(O); Os.Len() > Ol {
-				t.Errorf("%s multival failed: invalid %T instance pushed into %T without error",
-					t.Name(), O, Os)
+			if err := testEmptyOidContext(t, keyword, Oid, Oids, Ol); err != nil {
+				t.Errorf(err.Error())
 			}
 
 			// process OID
-			O = fn(oid)
+			Oid = ofn(oid)
+			Ol = Oids.Len()
 
-			/*
-			   if err := O.Valid(); err != nil {
-			           t.Errorf("%s failed: %v", t.Name(), err)
-			   }
-			*/
-
-			Ol = Os.Len()
-			Os.Push(O)
-			if Os.Len() != Ol+1 {
-				t.Errorf("%s multival failed: valid %T[%s] instance (%s) not pushed into %T[%s; len:%d]",
-					t.Name(), O, O.Keyword(), O, Os, Os.Keyword(), Ol)
+			if Oids.Push(Oid); Oids.Len() != Ol+1 {
+				t.Errorf("%s [%s] multival failed: valid %T[%s] instance (%s) not pushed into %T[%s; len:%d]",
+					t.Name(), keyword, Oid, Oid.Keyword(), Oid, Oids, Oids.Keyword(), Ol)
 			}
 
-			// OIDs qualify for equality and negated equality
-			// comparison operators.
-			cops := map[ComparisonOperator]func() TargetRule{
-				Eq: Os.Eq,
-				Ne: Os.Ne,
-			}
+			for sop, trfn := range []func() TargetRuleFuncs{
+				Oid.TRF,
+				Oids.TRF,
+			} {
+				octx = testMakeOidContext(sop, Oid, Oids)
+				trf := trfn()
+				for i := 0; i < trf.Len(); i++ {
+					cop, meth := trf.Index(i + 1)
+					if meth == nil {
+						t.Errorf("%s [%s] multival failed: expected %s method (%T), got nil",
+							t.Name(), keyword, cop.Context(), meth)
+					}
 
-			// try every comparison operator supported in
-			// this context ...
-			for c := 1; c < len(cops)+1; c++ {
-				cop := ComparisonOperator(c)
-				wcop := sprintf("( %s %s %q )", O.Keyword(), cop, Os.String())
-
-				// create targetrule T using comparison
-				// operator (cop).
-				if T := cops[cop](); T.String() != wcop {
-					err := unexpectedStringResult(kw.String(), wcop, T.String())
-					t.Errorf("%s multival failed [%s rule]: %v", t.Name(), kw.String(), err)
+					wcop := sprintf("( %s %s %q )", octx.Keyword(), cop, octx.String())
+					if T := meth(); T.String() != wcop {
+						err := unexpectedStringResult(octx.String(), wcop, T.String())
+						t.Errorf("%s [%s] multival failed [%s rule]: %v",
+							t.Name(), keyword, octx.Keyword(), err)
+					}
 				}
-
 			}
 		}
 	}
 }
 
-func TestObjectIdentifier(t *testing.T) {
-	got := Ctrl(`1.3.6.1.4.1.56521.999.5`)
-	want := `1.3.6.1.4.1.56521.999.5`
-
-	if want != got.String() {
-		t.Errorf("%s failed: want '%s', got '%s'", t.Name(), want, got)
+func testMakeOidContext(phase int, oid ObjectIdentifier, oids ObjectIdentifiers) (octx ObjectIdentifierContext) {
+	if phase == 0 {
+		octx = oid
+		return
 	}
+
+	octx = oids
+	return
+}
+
+func testEmptyOidContext(t *testing.T, kw Keyword, oid ObjectIdentifier, oids ObjectIdentifiers, ol int) (err error) {
+	err = oid.Valid()
+	if err != nil {
+		if err.Error() != `aci.ObjectIdentifier instance is nil` {
+			err = errorf("%s [%s] multival failed: invalid %T returned no validity error",
+				t.Name(), kw, oid)
+		} else {
+			err = nil
+		}
+	} else {
+		err = errorf("%s [%s] multival failed: invalid %T returned no validity error",
+			t.Name(), kw, oid)
+	}
+
+	if oid.String() != badDotNot {
+		err = errorf("%s [%s] multival failed: unexpected string result; want '%s', got '%s'",
+			t.Name(), kw, badDotNot, oid)
+	}
+
+	if oids.Push(oid); oids.Len() > ol {
+		err = errorf("%s [%s] multival failed (len): invalid %T (%s) pushed into %T without error",
+			t.Name(), kw, oid, oid, oids)
+	}
+
+	if oids.Contains(oid) {
+		err = errorf("%s [%s] multival failed (contains): invalid %T instance pushed into %T without error",
+			t.Name(), kw, oid, oids)
+	}
+
+	return
 }
 
 /*

@@ -186,6 +186,20 @@ func strInSlice(str string, slice []string) bool {
 	return false
 }
 
+/*
+strInSliceFold returns a boolean value indicative of whether
+the specified string (str) is present within slice. Case is
+not significant in the matching process.
+*/
+func strInSliceFold(str string, slice []string) bool {
+	for i := 0; i < len(slice); i++ {
+		if eq(str, slice[i]) {
+			return true
+		}
+	}
+	return false
+}
+
 func isPowerOfTwo(x int) bool {
 	return x&(x-1) == 0
 }

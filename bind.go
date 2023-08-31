@@ -13,6 +13,181 @@ var (
 	badBindRules BindRules
 )
 
+/*
+BindRuleFuncs contains one (1) or more instances of BindRuleMethod,
+representing a particular BindRule "builder" method for execution by
+the caller.
+
+See the Operators method extended through all eligible types for further
+details.
+*/
+type BindRuleFuncs struct {
+	*bindRuleFuncMap
+}
+
+/*
+newBindRuleFuncs populates an instance of *bindRuleFuncMap, which
+is embedded within the return instance of BindRuleFuncs.
+*/
+func newBindRuleFuncs(m bindRuleFuncMap) BindRuleFuncs {
+	if len(m) == 0 {
+		return BindRuleFuncs{nil}
+	}
+
+	M := make(bindRuleFuncMap, len(m))
+	for k, v := range m {
+		M[k] = v
+	}
+
+	return BindRuleFuncs{&M}
+}
+
+/*
+Index calls the input index (idx) within the internal structure of the
+receiver instance. If found, an instance of ComparisonOperator and its
+accompanying BindRuleMethod instance are returned.
+
+Valid input index types are integer (int), ComparisonOperator constant
+or string identifier. In the case of a string identifier, valid values
+are as follows:
+
+• For Eq (1): `=`, `Eq`, `Equal To`
+
+• For Ne (2): `=`, `Ne`, `Not Equal To`
+
+• For Lt (3): `=`, `Lt`, `Less Than`
+
+• For Le (4): `=`, `Le`, `Less Than Or Equal`
+
+• For Gt (5): `=`, `Gt`, `Greater Than`
+
+• For Ge (6): `=`, `Ge`, `Greater Than Or Equal`
+
+Case is not significant in the string matching process.
+
+Please note that use of this method by way of integer or ComparisonOperator
+values utilizes fewer resources than a string lookup.
+
+See the ComparisonOperator type's Context, String and Description methods
+for accessing the above string values easily.
+
+If the index was not matched, an invalid ComparisonOperator is returned
+alongside a nil BindRuleMethod. This will also apply to situations in
+which the type instance which crafted the receiver is uninitialized, or
+is in an otherwise aberrant state.
+*/
+func (r BindRuleFuncs) Index(idx any) (ComparisonOperator, BindRuleMethod) {
+	return r.index(idx)
+}
+
+/*
+index is a private method called by BindRuleFuncs.Index.
+*/
+func (r BindRuleFuncs) index(idx any) (cop ComparisonOperator, meth BindRuleMethod) {
+	if r.IsZero() {
+		return
+	}
+	cop = badCop
+
+	// perform a type switch upon the input
+	// index type
+	switch tv := idx.(type) {
+
+	case ComparisonOperator:
+		// cast cop as an int, and make recursive
+		// call to this function.
+		return r.Index(int(tv))
+
+	case int:
+		// there are only six (6) valid
+		// operators, numbered one (1)
+		// through six (6).
+		if !(1 <= tv && tv <= 6) {
+			return
+		}
+
+		var found bool
+		if meth, found = (*r.bindRuleFuncMap)[ComparisonOperator(tv)]; found {
+			cop = ComparisonOperator(tv)
+			return
+		}
+
+	case string:
+		cop, meth = rangeBindRuleFuncMap(tv, r.bindRuleFuncMap)
+	}
+
+	return
+}
+
+func rangeBindRuleFuncMap(candidate string, fm *bindRuleFuncMap) (cop ComparisonOperator, meth BindRuleMethod) {
+	// iterate all map entries, and see if
+	// input string value matches the value
+	// returned by these three (3) methods:
+	for k, v := range *fm {
+		if strInSliceFold(candidate, []string{
+			k.String(),      // e.g.: "="
+			k.Context(),     // e.g.: "Eq"
+			k.Description(), // e.g.: "Equal To"
+		}) {
+			cop = k
+			meth = v
+			break
+		}
+	}
+
+	return
+}
+
+/*
+IsZero returns a Boolean value indicative of whether the receiver is
+nil, or unset.
+*/
+func (r BindRuleFuncs) IsZero() bool {
+	return r.bindRuleFuncMap == nil
+}
+
+/*
+Len returns the integer length of the receiver. Note that the return
+value will NEVER be less than zero (0) nor greater than six (6).
+*/
+func (r BindRuleFuncs) Len() int {
+	if r.IsZero() {
+		return 0
+	}
+
+	return len((*r.bindRuleFuncMap))
+}
+
+/*
+BindRuleMethod is the closure signature for methods used to build
+new instances of BindRule.
+
+The signature is qualified by the following methods extended through
+all eligible types defined in this package:
+
+• Eq
+
+• Ne
+
+• Lt
+
+• Le
+
+• Gt
+
+• Ge
+
+Note that certain types only support a subset of the above list. Very
+few types support all of the above.
+*/
+type BindRuleMethod func() BindRule
+
+/*
+bindRuleFuncMap is a private type intended to be used within
+instances of BindRuleFuncs.
+*/
+type bindRuleFuncMap map[ComparisonOperator]BindRuleMethod
+
 func (r BindRule) isBindContextQualifier() bool {
 	return true
 }
@@ -173,8 +348,7 @@ func And(x ...any) (b BindRules) {
 	_b := stackAnd().
 		SetID(bindRuleID).
 		SetCategory(`and`).
-		NoPadding(!StackPadding).
-		SetCategory(TargetAttr.String())
+		NoPadding(!StackPadding)
 
 	// cast _a as a proper BindRules instance
 	// (b). We do it this way to gain access
@@ -219,8 +393,7 @@ func Or(x ...any) (b BindRules) {
 	_b := stackOr().
 		SetID(bindRuleID).
 		SetCategory(`or`).
-		NoPadding(!StackPadding).
-		SetCategory(TargetAttr.String())
+		NoPadding(!StackPadding)
 
 	// cast _a as a proper BindRules instance
 	// (b). We do it this way to gain access
@@ -265,8 +438,7 @@ func Not(x ...any) (b BindRules) {
 	_b := stackNot().
 		SetID(bindRuleID).
 		SetCategory(`not`).
-		NoPadding(!StackPadding).
-		SetCategory(TargetAttr.String())
+		NoPadding(!StackPadding)
 
 	// cast _a as a proper BindRules instance
 	// (b). We do it this way to gain access
