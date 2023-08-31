@@ -934,7 +934,7 @@ This example demonstrates the use of the AttributeFilterOperations type's Kind
 method.
 */
 func ExampleAttributeFilterOperations_Kind() {
-	var aFOs AttributeFilterOperation
+	var aFOs AttributeFilterOperations
 
 	fmt.Printf("%s", aFOs.Kind())
 	// Output: targattrfilters
@@ -1083,9 +1083,21 @@ This example demonstrates the creation of an instance of AttributeFilterOperatio
 followed by a call of its Valid method for the purpose of sanity checking the receiver.
 */
 func ExampleAttributeFilterOperations_Valid() {
-	var afos AttributeFilterOperations
+	attr := AT(`uidNumber`)
+	filter := Filter(`(&(objectClass=accounting)(terminated=FALSE))`)
+	aF1 := AF(attr, filter)
+
+	attr = AT(`gidNumber`)
+	filter = Filter(`(objectClass=account)`)
+	aF2 := AF(attr, filter)
+
+	// Create the second AttributeFilterOperation
+	// instance (aFO2)
+	var afos AttributeFilterOperations = AFOs()
+	afos.Push(DelOp.AFO(aF1, aF2))
+
 	fmt.Printf("Valid: %t", afos.Valid() == nil)
-	// Output: Valid: false
+	// Output: Valid: true
 }
 
 /*
@@ -1120,4 +1132,50 @@ In this example, the instance is shown in string representation.
 func ExampleAttributeOperation_String() {
 	fmt.Printf("%s and %s", AddOp, DelOp)
 	// Output: add and delete
+}
+
+func ExampleSearchFilter_IsZero() {
+	filter := Filter(`(|(objectClass=contractor)(objectClass=intern))`)
+	fmt.Printf("%t", filter.IsZero())
+	// Output: false
+}
+
+func ExampleSearchFilter_Keyword() {
+	filter := Filter(`(|(objectClass=contractor)(objectClass=intern))`)
+	fmt.Printf("%s", filter.Keyword())
+	// Output: targetfilter
+}
+
+func ExampleSearchFilter_Set() {
+	var filter SearchFilter
+	filter.Set(`(|(objectClass=contractor)(objectClass=intern))`)
+	fmt.Printf("%t", filter.IsZero())
+	// Output: false
+}
+
+func ExampleSearchFilter_String() {
+	var filter SearchFilter
+	filter.Set(`(|(objectClass=contractor)(objectClass=intern))`)
+	fmt.Printf("%s", filter)
+	// Output: (|(objectClass=contractor)(objectClass=intern))
+}
+
+func ExampleSearchFilter_Eq() {
+	var filter SearchFilter
+	filter.Set(`(|(objectClass=contractor)(objectClass=intern))`)
+	fmt.Printf("%s", filter.Eq())
+	// Output: ( targetfilter = "(|(objectClass=contractor)(objectClass=intern))" )
+}
+
+func ExampleSearchFilter_Ne() {
+	var filter SearchFilter
+	filter.Set(`(|(objectClass=contractor)(objectClass=intern))`)
+	fmt.Printf("%s", filter.Ne())
+	// Output: ( targetfilter != "(|(objectClass=contractor)(objectClass=intern))" )
+}
+
+func ExampleSearchFilter_Valid() {
+	var filter SearchFilter
+	fmt.Printf("%v", filter.Valid())
+	// Output: aci.SearchFilter instance is nil
 }

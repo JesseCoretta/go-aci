@@ -614,10 +614,6 @@ func (r AttributeFilterOperations) Valid() error {
 		return nilInstanceErr(r)
 	}
 
-	if r.Kind() != TargetAttrFilters.String() {
-		return unexpectedKindErr(r, TargetAttrFilters.String(), r.Kind())
-	}
-
 	// assume the object has been fashioned
 	// to deceive the package - use the
 	// actual go-stackage index caller so
@@ -642,8 +638,7 @@ func (r AttributeFilterOperations) Valid() error {
 Kind returns the categorical label assigned to the receiver.
 */
 func (r AttributeFilterOperations) Kind() string {
-	_r, _ := castAsStack(r)
-	return _r.Category()
+	return TargetAttrFilters.String()
 }
 
 /*
@@ -653,33 +648,7 @@ the receiver instance.
 func (r AttributeFilterOperations) String() string {
 	_r, _ := castAsStack(r)
 	return _r.String()
-	/*
-		if r.IsZero() {
-			return ``
-		}
-
-		var vals []string
-		for i := 0; i < r.Len(); i++ {
-			afo := r.Index(i)
-			vals = append(vals, afo.String())
-		}
-
-		return join(vals, `,`)
-	*/
 }
-
-/*
-presentationPolicy conforms to go-stackage's PresentationPolicy closure signature.
-This method is used to allow a complete override of the default go-stackage Stack
-"stringer" behavior in favor of specialized functionality. If and when the String
-method for instances of this type is called, the custom function shall be used in
-place of the default.
-*/
-//func (r AttributeFilterOperations) presentationPolicy(_ any) string {
-// We execute the custom String method above, as opposed to
-// calling go-stackage's Stack.String method explicitly.
-//return r.String()
-//}
 
 /*
 Eq initializes and returns a new TargetRule instance configured to express the
@@ -998,7 +967,7 @@ func (r AttributeFilterOperation) Eq() TargetRule {
 	var t TargetRule
 	t.SetKeyword(TargetAttrFilters)
 	t.SetOperator(Eq)
-	t.SetExpression(r.String()) // TODO: investigate why 'r' stringer lacks operation name (add=)
+	t.SetExpression(r.String())
 
 	castAsCondition(t).
 		Encap(`"`).
