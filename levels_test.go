@@ -5,6 +5,149 @@ import (
 	"testing"
 )
 
+func ExampleLevel_String() {
+	fmt.Printf("%s", Level8)
+	// Output: 8
+}
+
+func ExampleInheritance_Eq() {
+	attr := AT(`manager`)
+	uat := UAT(attr, AV(`uid=frank,ou=People,dc=example,dc=com`))
+	inh := Inherit(uat, 1, 3)
+	fmt.Printf("%s", inh.Eq())
+	// Output: userattr = "parent[1,3].manager#uid=frank,ou=People,dc=example,dc=com"
+}
+
+func ExampleInheritance_Ne() {
+	attr := AT(`manager`)
+	uat := UAT(attr, AV(`uid=frank,ou=People,dc=example,dc=com`))
+	inh := Inherit(uat, 1, 3)
+	fmt.Printf("%s", inh.Ne())
+	// Output: userattr != "parent[1,3].manager#uid=frank,ou=People,dc=example,dc=com"
+}
+
+func ExampleInheritance_IsZero() {
+	attr := AT(`manager`)
+	uat := UAT(attr, AV(`uid=frank,ou=People,dc=example,dc=com`))
+	inh := Inherit(uat, 1, 3)
+	fmt.Printf("%t", inh.IsZero())
+	// Output: false
+}
+
+func ExampleInheritance_Len() {
+	attr := AT(`manager`)
+	uat := UAT(attr, AV(`uid=frank,ou=People,dc=example,dc=com`))
+	inh := Inherit(uat, 1, 3)
+	fmt.Printf("Number of levels: %d", inh.Len())
+	// Output: Number of levels: 2
+}
+
+func ExampleInheritance_Positive() {
+	attr := AT(`manager`)
+	uat := UAT(attr, AV(`uid=frank,ou=People,dc=example,dc=com`))
+	inh := Inherit(uat, 1, 3)
+	fmt.Printf("Level 5 positive? %t", inh.Positive(5))
+	// Output: Level 5 positive? false
+}
+
+func ExampleInheritance_Levels() {
+	attr := AT(`manager`)
+	uat := UAT(attr, AV(`uid=frank,ou=People,dc=example,dc=com`))
+	inh := Inherit(uat, 1, 3)
+	fmt.Printf("Levels: %s", inh.Levels())
+	// Output: Levels: 1,3
+}
+
+func ExampleInheritance_Shift() {
+	attr := AT(`manager`)
+	uat := UAT(attr, AV(`uid=frank,ou=People,dc=example,dc=com`))
+	inh := Inherit(uat, 1, 3)
+	inh.Shift(7) // add one more we forgot
+
+	fmt.Printf("Number of levels: %d", inh.Len())
+	// Output: Number of levels: 3
+}
+
+func ExampleInheritance_Unshift() {
+	attr := AT(`manager`)
+	uat := UAT(attr, AV(`uid=frank,ou=People,dc=example,dc=com`))
+	inh := Inherit(uat, 1, 3, 8)
+	inh.Unshift(1) // we changed our mind
+
+	fmt.Printf("Number of levels: %d [%s]", inh.Len(), inh.Levels())
+	// Output: Number of levels: 2 [3,8]
+}
+
+func ExampleInheritance_Keyword() {
+	var inh Inheritance
+
+	//fmt.Printf("Keyword found: %t", inh.Keyword().String() != ``)
+	// Would return: Keyword found: false
+
+	attr := AT(`manager`)
+	// we'll use the userattr keyword (bestowed
+	// by UAT), and for a value we'll just give
+	// it an explicit bind type (USERDN). If it
+	// is preferable to use groupattr keyword,
+	// simply supplant UAT with GAT func.
+	uat := UAT(attr, USERDN)
+	inh = Inherit(uat, 6, 7) // levels 6 & 7
+
+	fmt.Printf("Keyword: %s", inh.Keyword())
+	// Output: Keyword: userattr
+}
+
+func ExampleLevels_IsZero() {
+	var l Levels
+	fmt.Printf("Zero: %t", l.IsZero())
+	// Output: Zero: true
+}
+
+func ExampleLevels_Valid() {
+	var l Levels
+	fmt.Printf("Valid: %t", l.Valid() == nil)
+	// Output: Valid: false
+}
+
+func ExampleLevels_Shift() {
+	var l Levels
+	l.Shift(Level4, Level0) // variadic style
+	l.Shift(Level1).        // fluent ...
+				Shift(Level6) // ... style
+	l.Shift(2) // lazy ints supported too!
+	fmt.Printf("%d Levels: %s", l.Len(), l)
+	// Output: 5 Levels: 0,1,2,4,6
+}
+
+func ExampleLevels_Len() {
+	var l Levels
+	l.Shift(Level4, Level0)
+	fmt.Printf("Level count: %d", l.Len())
+	// Output: Level count: 2
+}
+
+func ExampleLevels_Positive() {
+	var l Levels
+	l.Shift(Level4, Level0)
+	fmt.Printf("Level 4 positive? %t", l.Positive(4))
+	// Output: Level 4 positive? true
+}
+
+func ExampleLevels_Unshift() {
+	var l Levels
+	l.Shift(Level4, Level0)
+	l.Unshift(Level0)
+	fmt.Printf("Levels: %s", l)
+	// Output: Levels: 4
+}
+
+func ExampleLevels_String() {
+	var l Levels
+	l.Shift(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+	fmt.Printf("%d Levels: %s", l.Len(), l)
+	// Output: 10 Levels: 0,1,2,3,4,5,6,7,8,9
+}
+
 func TestInheritance(t *testing.T) {
 	inh := Inherit(UAT(AT(`manager`), USERDN), Level0, Level1, Level2, Level8)
 	want := `userattr = "parent[0,1,2,8].manager#USERDN"`

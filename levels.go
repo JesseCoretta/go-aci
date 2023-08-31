@@ -7,6 +7,7 @@ within the ACIv3 standard.
 
 // Maps for resolving level instances
 var (
+	bitIter      = bitSize(Levels(0)) - 4 // we don't use all of uint16, no sense iterating the whole thing
 	levelMap     = make(map[int]Level, 0)
 	levelNumbers = make(map[string]Level, 0)
 )
@@ -28,7 +29,7 @@ const (
 	Level8                   // 256 - eight (8) levels below baseObject
 	Level9                   // 512 - nine  (9) levels below baseObject
 
-	AllLevels Level = Level(1023) // ALL levels; zero (0) through nine (9)
+	AllLevels Level = Level(2046) // ALL levels; zero (0) through nine (9)
 )
 
 /*
@@ -45,7 +46,7 @@ instances of Inheritance. It contains a Level bit container and
 an AttributeBindTypeOrValue instance.
 */
 type inheritance struct {
-	Level
+	Levels
 	AttributeBindTypeOrValue
 }
 
@@ -72,15 +73,24 @@ func newInheritance(x AttributeBindTypeOrValue, lvl ...any) (i *inheritance) {
 }
 
 /*
-Level describes a discrete numerical abstract of a subordinate level.
-Level describes one (1) or more additive values of Level that collectively
-express the subordinate level condition within a given Bind Rule that involves
-inheritance.
+Level describes a discrete numerical abstract of a subordinate level. Level
+describes any single Level definition. Level constants are intended for "storage"
+within an instance of Levels -- the compound counterpart of this type.
 
-Valid levels are level zero (0) through level nine (9), though this may
-vary across implementations.
+Valid Level constants are level zero (0) through level nine (9), though this
+will vary across implementations.
 */
 type Level uint16
+
+/*
+Levels is the compound (bitshifted) counterpart to the scalar Level type.
+
+Levels can express all combinations Level values; for example, if a Levels
+instance has an underlying value of three (3), this describes the presence
+of the individual Level0 (1) and Level1 (2) definitions within said value
+(i.e.: 1+2=3).
+*/
+type Levels uint16
 
 /*
 IsZero returns a boolean value indicative of whether the receiver instance
@@ -215,7 +225,7 @@ func parseInheritance(inh string) (I Inheritance, err error) {
 
 	// Bail if nothing was found (do not fall
 	// back to default when parsing).
-	if I.inheritance.Level == noLvl {
+	if I.inheritance.Levels == Levels(noLvl) {
 		// bogus or unsupported identifiers?
 		err = levelsNotFoundErr()
 		return
@@ -245,12 +255,23 @@ would represent an abstract length of two (2).
 func (r Inheritance) Len() int {
 	var D int
 	for i := 0; i < bitSize(noLvl); i++ {
-		if d := Day(1 << i); r.Positive(d) {
+		if d := Level(1 << i); r.Positive(d) {
 			D++
 		}
 	}
 
 	return D
+}
+
+/*
+Level returns the compound Level instance within the receiver. The
+return value does not represent any single Level, rather it
+*/
+func (r Inheritance) Levels() Levels {
+	if r.IsZero() {
+		return Levels(noLvl)
+	}
+	return r.inheritance.Levels
 }
 
 /*
@@ -282,18 +303,36 @@ func (r Inheritance) String() string {
 		return badInheritance
 	}
 
-	/*
-		if r.IsZero() {
-			return `parent[0]`
-		}
-	*/
+	// string representation of Levels
+	// sequence
+	lvls := r.inheritance.Levels.String()
 
+	return sprintf("parent[%s].%s", lvls,
+		r.inheritance.AttributeBindTypeOrValue)
+}
+
+func (r Levels) Len() (l int) {
+	for i := 0; i < bitIter; i++ {
+		shift := Level(1 << i)
+		if r.Positive(shift) {
+			l++
+		}
+	}
+
+	return
+}
+
+/*
+String is a string method that returns the string
+representation of the receiver instance.
+*/
+func (r Levels) String() string {
 	var levels []string
-	if r.inheritance.Level == noLvl {
+	if r == Levels(noLvl) {
 		// No levels? default to level 0 (baseObject)
 		levels = append(levels, Level0.String())
 	} else {
-		for i := 1; i < 12; i++ {
+		for i := 0; i < bitIter; i++ {
 			shift := Level(1 << i)
 			if r.Positive(shift) {
 				levels = append(levels, shift.String())
@@ -301,8 +340,7 @@ func (r Inheritance) String() string {
 		}
 	}
 
-	return sprintf("parent[%s].%s", join(levels, `,`),
-		r.inheritance.AttributeBindTypeOrValue)
+	return join(levels, `,`)
 }
 
 /*
@@ -312,7 +350,7 @@ func (r Level) String() (lvl string) {
 	for k, v := range levelNumbers {
 		if r == v {
 			lvl = k
-			return
+			break
 		}
 	}
 
@@ -323,11 +361,16 @@ func (r Level) String() (lvl string) {
 Shift shifts the receiver instance of Levels to include Level x, if not already present.
 */
 func (r Inheritance) Shift(x ...any) Inheritance {
-	r.inheritance.shift(x...)
+	r.inheritance.Levels.shift(x...)
 	return r
 }
 
-func (r *inheritance) shift(x ...any) {
+func (r *Levels) Shift(x ...any) *Levels {
+	r.shift(x...)
+	return r
+}
+
+func (r *Levels) shift(x ...any) {
 	for i := 0; i < len(x); i++ {
 		var lvl Level
 		switch tv := x[i].(type) {
@@ -348,7 +391,7 @@ func (r *inheritance) shift(x ...any) {
 			continue
 		}
 
-		(*r).Level |= lvl
+		(*r) |= Levels(lvl)
 	}
 }
 
@@ -390,11 +433,28 @@ func assertIntInheritance(x int) (lvl Level) {
 Positive returns a boolean value indicative of whether the receiver instance of Levels includes Level x.
 */
 func (r Inheritance) Positive(x any) bool {
-	return r.inheritance.positive(x)
+	return r.inheritance.Levels.positive(x)
 }
 
-func (r *inheritance) positive(x any) (posi bool) {
-	if r.isZero() {
+func (r *Levels) Positive(x any) bool {
+	return r.positive(x)
+}
+
+func (r Levels) IsZero() bool {
+	return int(r) == 0
+}
+
+func (r *Levels) Valid() error {
+	if r.IsZero() {
+		return nilInstanceErr(r)
+	}
+
+	// TODO: additional checks?
+	return nil
+}
+
+func (r *Levels) positive(x any) (posi bool) {
+	if r.IsZero() {
 		return
 	}
 
@@ -417,7 +477,7 @@ func (r *inheritance) positive(x any) (posi bool) {
 		return
 	}
 
-	posi = (r.Level & lvl) > 0
+	posi = ((*r) & Levels(lvl)) > 0
 	return
 }
 
@@ -425,11 +485,16 @@ func (r *inheritance) positive(x any) (posi bool) {
 Unshift right-shifts the receiver instance of Levels to remove Level x, if present.
 */
 func (r Inheritance) Unshift(x ...any) Inheritance {
-	r.inheritance.unshift(x...)
+	r.inheritance.Levels.unshift(x...)
 	return r
 }
 
-func (r *inheritance) unshift(x ...any) {
+func (r *Levels) Unshift(x ...any) *Levels {
+	r.unshift(x...)
+	return r
+}
+
+func (r *Levels) unshift(x ...any) {
 	for i := 0; i < len(x); i++ {
 		var lvl Level
 		switch tv := x[0].(type) {
@@ -450,7 +515,7 @@ func (r *inheritance) unshift(x ...any) {
 			continue
 		}
 
-		r.Level = r.Level &^ lvl
+		(*r) = (*r) &^ Levels(lvl)
 	}
 
 	return
