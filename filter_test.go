@@ -1169,7 +1169,7 @@ func ExampleSearchFilter_Eq() {
 
 func ExampleSearchFilter_Ne() {
 	var filter SearchFilter
-	filter.Set(`(|(objectClass=contractor)(objectClass=intern))`)
+	filter.Set(`(&(objectClass=contractor)(objectClass=intern))`)
 	fmt.Printf("%s", filter.Ne())
 	// Output: ( targetfilter != "(|(objectClass=contractor)(objectClass=intern))" )
 }
@@ -1179,3 +1179,4 @@ func ExampleSearchFilter_Valid() {
 	fmt.Printf("%v", filter.Valid())
 	// Output: aci.SearchFilter instance is nil
 }
+
