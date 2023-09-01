@@ -143,6 +143,27 @@ func (r BindRuleFuncs) IsZero() bool {
 }
 
 /*
+Valid returns the first encountered error returned as a result of
+execution of the first available BindRuleMethod instance. This is
+useful in cases where a user wants to see if the desired instance(s)
+of BindRuleMethod will produce a usable BindRule or BindRules.
+*/
+func (r BindRuleFuncs) Valid() (err error) {
+	if r.IsZero() {
+		err = nilInstanceErr(r)
+		return
+	}
+
+	// Eq is always available for all eligible
+	// types, so let's use that unconditionally.
+	// If any one method works, then all of them
+	// will work.
+	_, meth := r.Index(Eq)
+	err = meth().Valid()
+	return
+}
+
+/*
 Len returns the integer length of the receiver. Note that the return
 value will NEVER be less than zero (0) nor greater than six (6).
 */

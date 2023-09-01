@@ -144,7 +144,12 @@ func ExampleBindRuleFuncs_IsZero() {
 	var brf BindRuleFuncs
 	fmt.Printf("Zero: %t", brf.IsZero())
 	// Output: Zero: true
+}
 
+func ExampleBindRuleFuncs_Valid() {
+	var brf BindRuleFuncs
+	fmt.Printf("Error: %v", brf.Valid())
+	// Output: Error: aci.BindRuleFuncs instance is nil
 }
 
 func ExampleBindRuleFuncs_Len() {
@@ -164,6 +169,15 @@ func ExampleBindRuleFuncs_Len() {
 func ExampleBindRuleMethod() {
 	ssf := SSF(256)
 	brf := ssf.BRF()
+
+	// verify that the receiver (ssf) is copacetic
+	// and will produce a legal expression if meth
+	// is executed
+	if err := brf.Valid(); err != nil {
+		fmt.Println(err)
+		return
+	}
+
 	for i := 0; i < brf.Len(); i++ {
 		// IMPORTANT: Do not call index 0. Either adjust your
 		// loop variable (i) to begin at 1, and terminate at
@@ -190,3 +204,5 @@ func ExampleBindRuleMethod() {
 	// [5] aci.BindRuleMethod instance [Le] execution returned aci.BindRule: ( ssf <= "256" )
 	// [6] aci.BindRuleMethod instance [Ge] execution returned aci.BindRule: ( ssf >= "256" )
 }
+
+
