@@ -1649,7 +1649,7 @@ func UDNs(x ...any) (d BindDistinguishedNames) {
 		NoPadding(!StackPadding).
 		SetCategory(BindUDN.String())
 
-	// cast _d as a proper BindDistinguishedName
+	// cast _d as a proper BindDistinguishedNames
 	// instance (d). We do it this way to gain
 	// access to the method for the *specific
 	// instance* being created (d), thus allowing
@@ -1697,7 +1697,7 @@ func RDNs(x ...any) (d BindDistinguishedNames) {
 		NoPadding(!StackPadding).
 		SetCategory(BindRDN.String())
 
-	// cast _d as a proper BindDistinguishedName
+	// cast _d as a proper BindDistinguishedNames
 	// instance (d). We do it this way to gain
 	// access to the method for the *specific
 	// instance* being created (d), thus allowing
@@ -1745,7 +1745,7 @@ func GDNs(x ...any) (d BindDistinguishedNames) {
 		NoPadding(!StackPadding).
 		SetCategory(BindGDN.String())
 
-	// cast _d as a proper BindDistinguishedName
+	// cast _d as a proper BindDistinguishedNames
 	// instance (d). We do it this way to gain
 	// access to the method for the *specific
 	// instance* being created (d), thus allowing
@@ -1793,7 +1793,7 @@ func TDNs(x ...any) (d TargetDistinguishedNames) {
 		NoPadding(!StackPadding).
 		SetCategory(Target.String())
 
-	// cast _d as a proper TargetDistinguishedName
+	// cast _d as a proper TargetDistinguishedNames
 	// instance (d). We do it this way to gain
 	// access to the method for the *specific
 	// instance* being created (d), thus allowing
@@ -1841,7 +1841,7 @@ func TTDNs(x ...any) (d TargetDistinguishedNames) {
 		NoPadding(!StackPadding).
 		SetCategory(TargetTo.String())
 
-	// cast _d as a proper TargetDistinguishedName
+	// cast _d as a proper TargetDistinguishedNames
 	// instance (d). We do it this way to gain
 	// access to the method for the *specific
 	// instance* being created (d), thus allowing
@@ -1889,7 +1889,7 @@ func TFDNs(x ...any) (d TargetDistinguishedNames) {
 		NoPadding(!StackPadding).
 		SetCategory(TargetFrom.String())
 
-	// cast _d as a proper TargetDistinguishedName
+	// cast _d as a proper TargetDistinguishedNames
 	// instance (d). We do it this way to gain
 	// access to the method for the *specific
 	// instance* being created (d), thus allowing

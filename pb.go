@@ -156,7 +156,7 @@ func (r PermissionBindRules) Len() int {
 /*
 Category wraps go-stackage's Stack.ID method.
 */
-func (r PermissionBindRules) ID() string {
+func (r PermissionBindRules) Kind() string {
 	return pbrsRuleID
 }
 
@@ -254,13 +254,35 @@ store one (1) or more instances of PermissionBindRule.
 Instances of this kind are used as a component in top-level Instruction (ACI)
 assembly.
 */
-func PBRs() PermissionBindRules {
-	return PermissionBindRules(stackList().
+func PBRs(x ...any) (pbr PermissionBindRules) {
+	// create a native stackage.Stack
+	// and configure before typecast.
+	_p := PermissionBindRules(stackList().
+		NoNesting(true).
 		SetID(pbrsRuleID).
-		SetDelimiter(rune(59)).
+		SetDelimiter(rune(32)).
 		SetCategory(pbrsRuleID).
 		NoPadding(!StackPadding).
 		SetPushPolicy(permissionBindRulesPushPolicy))
+
+	// cast _p as a proper PermissionBindRules
+	// instance (pbr). We do it this way to gain
+	// access to the method for the *specific
+	// instance* being created (pbr), thus allowing
+	// things like uniqueness checks, etc., to
+	// occur during push attempts, providing more
+	// helpful and non-generalized feedback.
+	pbr = PermissionBindRules(_p)
+
+	// Assuming one (1) or more items were
+	// submitted during the call, (try to)
+	// push them into our initialized stack.
+	// Note that any failed push(es) will
+	// have no impact on the validity of
+	// the return instance.
+	_p.Push(x...)
+
+	return
 }
 
 const pbrRuleID = `pbr`

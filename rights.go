@@ -296,6 +296,10 @@ func (r Permission) String() string {
 	if (*r.permission.Right) == AllAccess {
 		rights = append(rights, AllAccess.String())
 		return r.sprintf(rights)
+	} else if (*r.permission.Right) == Right(1023) {
+		rights = append(rights, AllAccess.String())
+		rights = append(rights, ProxyAccess.String())
+		return r.sprintf(rights)
 	} else if (*r.permission.Right) == NoAccess {
 		rights = append(rights, NoAccess.String())
 		return r.sprintf(rights)

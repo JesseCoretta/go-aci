@@ -68,3 +68,139 @@ func ExamplePermissionBindRule_Kind() {
 	fmt.Printf("%s", pbr.Kind())
 	// Output: pbr
 }
+
+/*
+This example demonstrates the creation of a PermissionBindRules instance using the PBRs
+package level function.
+*/
+func ExamplePBRs() {
+	rule1 := PermissionBindRule{
+		Deny(AllAccess, ProxyAccess),
+		GDN(`cn=disgruntled_employees,ou=Groups,dc=example,dc=com`).Eq(),
+	}
+
+	rule2 := PermissionBindRule{
+		Allow(AllAccess),
+		UDN(`cn=Courtney Tolana,ou=Admin,ou=People,dc=example,dc=com`).Eq(),
+	}
+
+	// Init/Push in one shot
+	pbrs := PBRs(rule1, rule2)
+
+	fmt.Printf("%d %T instances found within %T", pbrs.Len(), rule1, pbrs)
+	// Output: 2 aci.PermissionBindRule instances found within aci.PermissionBindRules
+}
+
+func ExamplePermissionBindRules_Kind() {
+	var pbrs PermissionBindRules
+	fmt.Printf("%s", pbrs.Kind())
+	// Output: pbrs
+}
+
+func ExamplePermissionBindRules_IsZero() {
+	var pbrs PermissionBindRules
+	fmt.Printf("Zero: %t", pbrs.IsZero())
+	// Output: Zero: true
+}
+
+func ExamplePermissionBindRules_Valid() {
+	var pbrs PermissionBindRules
+	fmt.Printf("Valid: %t", pbrs.Valid() == nil)
+	// Output: Valid: false
+}
+
+func ExamplePermissionBindRules_Len() {
+	var pbrs PermissionBindRules
+	fmt.Printf("Length: %d", pbrs.Len())
+	// Output: Length: 0
+}
+
+func ExamplePermissionBindRules_Push() {
+	rule1 := PermissionBindRule{
+		Deny(AllAccess, ProxyAccess),
+		GDN(`cn=disgruntled_employees,ou=Groups,dc=example,dc=com`).Eq(),
+	}
+
+	rule2 := PermissionBindRule{
+		Allow(AllAccess),
+		UDN(`cn=Courtney Tolana,ou=Admin,ou=People,dc=example,dc=com`).Eq(),
+	}
+
+	// Init/Push in one shot
+	pbrs := PBRs()
+	pbrs.Push(rule1)
+	pbrs.Push(rule2)
+
+	fmt.Printf("%d %T instances found within %T", pbrs.Len(), rule1, pbrs)
+	// Output: 2 aci.PermissionBindRule instances found within aci.PermissionBindRules
+}
+
+func ExamplePermissionBindRules_Index() {
+	rule1 := PermissionBindRule{
+		Deny(AllAccess, ProxyAccess),
+		GDN(`cn=disgruntled_employees,ou=Groups,dc=example,dc=com`).Eq(),
+	}
+
+	rule2 := PermissionBindRule{
+		Allow(AllAccess),
+		UDN(`cn=Courtney Tolana,ou=Admin,ou=People,dc=example,dc=com`).Eq(),
+	}
+
+	// Init/Push in one shot
+	pbrs := PBRs()
+	pbrs.Push(rule1)
+	pbrs.Push(rule2)
+
+	for i := 0; i < pbrs.Len(); i++ {
+		slice := pbrs.Index(i)
+		fmt.Printf("%s\n", slice)
+	}
+	// Output:
+	// deny(all,proxy) groupdn = "ldap:///cn=disgruntled_employees,ou=Groups,dc=example,dc=com";
+	// allow(all) userdn = "ldap:///cn=Courtney Tolana,ou=Admin,ou=People,dc=example,dc=com";
+}
+
+func ExamplePermissionBindRules_Pop() {
+	rule1 := PermissionBindRule{
+		Deny(AllAccess, ProxyAccess),
+		GDN(`cn=disgruntled_employees,ou=Groups,dc=example,dc=com`).Eq(),
+	}
+
+	rule2 := PermissionBindRule{
+		Allow(AllAccess),
+		UDN(`cn=Courtney Tolana,ou=Admin,ou=People,dc=example,dc=com`).Eq(),
+	}
+
+	// Init/Push in one shot
+	pbrs := PBRs()
+	pbrs.Push(rule1)
+	pbrs.Push(rule2)
+
+	// Pop the most recent (LIFO) slice
+	// for interrogation. Note that this
+	// REMOVED it from the above stack.
+	popped := pbrs.Pop()
+
+	fmt.Printf("Popped: %s", popped)
+	// Output: Popped: allow(all) userdn = "ldap:///cn=Courtney Tolana,ou=Admin,ou=People,dc=example,dc=com";
+}
+
+func ExamplePermissionBindRules_String() {
+	rule1 := PermissionBindRule{
+		Deny(AllAccess, ProxyAccess),
+		GDN(`cn=disgruntled_employees,ou=Groups,dc=example,dc=com`).Eq(),
+	}
+
+	rule2 := PermissionBindRule{
+		Allow(AllAccess),
+		UDN(`cn=Courtney Tolana,ou=Admin,ou=People,dc=example,dc=com`).Eq(),
+	}
+
+	// Init/Push in one shot
+	pbrs := PBRs()
+	pbrs.Push(rule1)
+	pbrs.Push(rule2)
+
+	fmt.Printf("%s", pbrs)
+	// Output: deny(all,proxy) groupdn = "ldap:///cn=disgruntled_employees,ou=Groups,dc=example,dc=com"; allow(all) userdn = "ldap:///cn=Courtney Tolana,ou=Admin,ou=People,dc=example,dc=com";
+}
