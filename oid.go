@@ -131,27 +131,17 @@ func (r ObjectIdentifier) TRF() TargetRuleFuncs {
 	})
 }
 
-func (r ObjectIdentifier) ObjectIdentifiers() (o ObjectIdentifiers) {
-	switch kw := r.Keyword(); kw {
-	case TargetCtrl:
-		o = Ctrls(r)
-	case TargetExtOp:
-		o = ExtOps(r)
-	}
-
-	return
-}
-
 /*
 IsZero wraps go-objectid's DotNotation.IsZero method.
 */
 func (r ObjectIdentifier) IsZero() bool {
 	if r.objectIdentifier == nil {
 		return true
+	} else if r.objectIdentifier.DotNotation == nil {
+		return true
 	}
 
-	return r.objectIdentifier.DotNotation.IsZero() &&
-		r.objectIdentifier.TargetKeyword == TargetKeyword(0x0)
+	return r.objectIdentifier.TargetKeyword == TargetKeyword(0x0)
 }
 
 /*
@@ -308,7 +298,7 @@ func newObjectID(kw TargetKeyword, x ...any) (o *objectIdentifier, err error) {
 
 func isDotNot(x string) bool {
 	o, err := objectid.NewDotNotation(x)
-	return err == nil && o.Valid()
+	return err == nil && o != nil
 }
 
 /*
@@ -635,7 +625,7 @@ func objectIdentifiersPushPolicy(r, x any, kw TargetKeyword) (err error) {
 		if err = tv.Valid(); err != nil {
 			break
 
-		} else if tv.objectIdentifier.TargetKeyword != kw {
+		} else if tv.Keyword() != kw {
 			err = badObjectIdentifierKeywordErr(tv.objectIdentifier.TargetKeyword)
 		}
 
@@ -798,20 +788,4 @@ func (r ObjectIdentifiers) Kind() string {
 		return `<uninitialized>`
 	}
 	return keywordFromCategory(r).String()
-}
-
-/*
-setID wraps go-stackage's Stack.SetID method.
-*/
-func (r ObjectIdentifiers) setID(id string) {
-	_t, _ := castAsStack(r)
-	_t.SetID(id)
-}
-
-/*
-setCategory wraps go-stackage's Stack.SetCategory method.
-*/
-func (r ObjectIdentifiers) setCategory(cat string) {
-	_t, _ := castAsStack(r)
-	_t.SetCategory(cat)
 }

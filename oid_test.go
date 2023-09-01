@@ -15,10 +15,17 @@ func TestObjectIdentifiers_codecov(t *testing.T) {
 
 		_ = Oids.Len()
 		Oids.reset()
+		Oids.resetKeyword(keyword)
+		Oids.resetKeyword(keyword.String())
 		Oids.Push(keyword)
 		_ = Oids.Keyword()
 		_ = Oids.Kind()
+		_ = Oids.Ne()
+		_ = Oids.Eq()
 		_ = Oids.Valid()
+		_ = Oids.setQuoteStyle(1)
+		_ = Oids.setQuoteStyle(0)
+		Oids.isObjectIdentifierContext()
 
 		for _, oid := range []string{
 			`1.3.6.1.4.1.56521.999.83`,
@@ -38,18 +45,52 @@ func TestObjectIdentifiers_codecov(t *testing.T) {
 				octx ObjectIdentifierContext
 			)
 
+			Oid.isObjectIdentifierContext()
+			_ = Oid.Len()
+			_ = Oid.Kind()
+			_ = Oid.Valid()
+			_ = Oid.Keyword()
+
 			if err := testEmptyOidContext(t, keyword, Oid, Oids, Ol); err != nil {
 				t.Errorf(err.Error())
 			}
 
 			// process OID
 			Oid = ofn(oid)
+			Oid = ofn(Oid)
+			badOid := ofn(5465734.3, '𝝅', '🤮', '🤮', '🤮', '🤮', '🤮', '🤮', '🤮', '☜', 'Ҩ', 'ↂ', '⼼', 'ↂ', 'Ҩ', '☞')
+			_ = badOid.String()
+			_ = badOid.Valid()
+			_ = badOid.Eq()
 			Ol = Oids.Len()
+			_ = Oid.Len()
+			_ = Oid.Kind()
+			_ = Oid.Keyword()
+			_ = Oid.Ne()
+			_ = Oid.Eq()
+			_ = Oid.Valid()
 
 			if Oids.Push(Oid); !Oids.Contains(oid) {
 				t.Errorf("%s [%s] multival failed: valid %T[%s] instance (%s) not pushed into %T[%s; len:%d]",
 					t.Name(), keyword, Oid, Oid.Keyword(), Oid, Oids, Oids.Keyword(), Ol)
 			}
+			_ = Oids.Contains('𝝅')
+			_ = Oids.Contains(43785)
+			_ = Oids.Contains(nil)
+			_ = Oids.Contains(``)
+
+			popped := Oids.Pop()
+			Oids.Push(popped)
+			Oids.Push(popped.String())
+			Oids.Push(3444444.445)
+			Oids.Push()
+			Oids.Push(``) // crashes go-objectid
+			Oids.Push('𝝅')
+			_ = Oids.Keyword()
+			_ = Oids.Kind()
+
+			_ = Oids.setQuoteStyle(1)
+			_ = Oids.setQuoteStyle(0)
 
 			for sop, trfn := range []func() TargetRuleFuncs{
 				Oid.TRF,
