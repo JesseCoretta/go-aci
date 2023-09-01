@@ -48,7 +48,7 @@ func ExamplePermissionBindRule_String() {
 	}
 
 	fmt.Printf("%s", pbr)
-	// Output: allow(none) userdn = "ldap:///uid=disgrunted_employee,ou=People,dc=example,dc=com";
+	// Output: allow(none) userdn = "ldap:///uid=disgruntled_employee,ou=People,dc=example,dc=com";
 }
 
 func ExamplePermissionBindRule_IsZero() {
