@@ -22,6 +22,7 @@ func TestBindDistinguishedName_codecov(t *testing.T) {
 			_ = O.isDistinguishedNameContext()
 			_ = O.Eq()
 			_ = O.Ne()
+			_ = O.Len()
 
 			if err := O.Valid(); err == nil {
 				t.Errorf("%s failed: invalid %T returned no validity error",
@@ -39,6 +40,7 @@ func TestBindDistinguishedName_codecov(t *testing.T) {
 
 			// process DN
 			O = fn(dn)
+			_ = O.Len()
 			dnBefore := O.String()
 
 			O.Set(dn) // set to same DN using Set method
@@ -49,28 +51,21 @@ func TestBindDistinguishedName_codecov(t *testing.T) {
 					t.Name(), err)
 			}
 
-			O.Set(`#barf`, kw)
-
-			// DNs qualify for equality and negated equality
-			// comparison operators.
-			cops := map[ComparisonOperator]func() BindRule{
-				Eq: O.Eq,
-				Ne: O.Ne,
-			}
+			O.Set(`159`)
+			O.Set(``)
+			O.Set(`uid=jesse,ou=People,dc=example,dc=com`, kw)
 
 			// try every comparison operator supported in
 			// this context ...
-			for c := 1; c < len(cops)+1; c++ {
-				cop := ComparisonOperator(c)
-				wcop := sprintf("%s %s %q", O.Keyword(), cop, O.String())
-
-				// create targetrule B using comparison
-				// operator (cop).
-				if B := cops[cop](); B.String() != wcop {
-					err := unexpectedStringResult(kw.String(), wcop, B.String())
-					t.Errorf("%s failed [%s rule]: %v", t.Name(), kw.String(), err)
+			brf := O.BRF()
+			for i := 0; i < brf.Len(); i++ {
+				cop, meth := brf.Index(i + 1)
+				wcop := sprintf("( %s %s \"ldap:///uid=jesse,ou=People,dc=example,dc=com\" )", O.Keyword(), cop)
+				if T := meth(); T.Paren().String() != wcop {
+					err := unexpectedStringResult(O.String(), wcop, T.String())
+					t.Errorf("%s [%s] multival failed [%s rule]: %v",
+						t.Name(), O.Keyword(), kw, err)
 				}
-
 			}
 		}
 	}
@@ -90,6 +85,7 @@ func TestTargetDistinguishedName_codecov(t *testing.T) {
 			_ = O.isDistinguishedNameContext()
 			_ = O.Eq()
 			_ = O.Ne()
+			_ = O.Len()
 
 			if err := O.Valid(); err == nil {
 				t.Errorf("%s failed: invalid %T returned no validity error",
@@ -107,6 +103,7 @@ func TestTargetDistinguishedName_codecov(t *testing.T) {
 
 			// process DN
 			O = fn(dn)
+			_ = O.Len()
 			dnBefore := O.String()
 
 			O.Set(dn) // set to same DN using Set method
@@ -117,6 +114,8 @@ func TestTargetDistinguishedName_codecov(t *testing.T) {
 					t.Name(), err)
 			}
 
+			O.Set(`159`)
+			O.Set(``)
 			O.Set(`#barf`, kw)
 
 			// DNs qualify for equality and negated equality

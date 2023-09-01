@@ -391,10 +391,10 @@ an opportunity for setting a DN at a later point versus doing so
 during the initialization process.
 */
 func (r *distinguishedName) set(x string, kw Keyword) {
-	_r := newDistinguishedName(x, kw)
-	if len(*_r.string) == 0 {
+	if len(x) == 0 {
 		return
 	}
+	_r := newDistinguishedName(x, kw)
 	*r = *_r
 }
 
