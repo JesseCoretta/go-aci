@@ -144,10 +144,10 @@ func TestURI_codecov(t *testing.T) {
 
 func ExampleURI() {
 	dn := UDN(`ou=People,o=example`)
-	attrs := UAs(`cn`, `sn`, `givenName`, `objectClass`, `uid`)
-	filter := `ldap:///ou=People,o=example??sub?(objectClass=employee)`
+	filter := Filter(`(objectClass=employee)`)
+	scope := Subtree
 
-	uri := URI(dn, attrs, filter)
+	uri := URI(dn, filter, scope)
 
 	fmt.Printf("%s", uri)
 	// Output: ldap:///ou=People,o=example??sub?(objectClass=employee)

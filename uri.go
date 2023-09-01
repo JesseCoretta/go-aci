@@ -465,7 +465,7 @@ func (r ldapURI) string() string {
 	} else if !r.avbt.IsZero() {
 		param = sprintf("?%s", r.avbt)
 	} else {
-		return sprintf("%s???", r.dn)
+		return sprintf("%s??%s?", r.dn, r.scope)
 	}
 
 	return sprintf("%s%s", r.dn, param)
@@ -532,10 +532,8 @@ In short, choose:
 */
 func (r *LDAPURI) Set(x ...any) LDAPURI {
 	if r.IsZero() {
-		_r := URI()
-		*r = _r
-		//r.ldapURI = newLDAPURI(x...)
-		//return *r
+		r.ldapURI = newLDAPURI(x...)
+		return *r
 	}
 
 	r.ldapURI.set(x...)
@@ -572,9 +570,7 @@ func (r *ldapURI) set(x ...any) {
 
 		case SearchScope:
 			// Value is an LDAP Search Scope
-			//if tv != Subordinate {
-			r.scope = tv // check elsewhere
-			//}
+			r.scope = tv
 
 		case AttributeBindTypeOrValue:
 			// Value is an AttributeBindTypeOr Value
@@ -582,7 +578,7 @@ func (r *ldapURI) set(x ...any) {
 
 		case SearchFilter:
 			// Value is an LDAP Search Filter
-			r.filter = Filter(tv.String())
+			r.filter = tv
 
 		case AttributeTypes:
 			// Value(s) are one or more LDAP

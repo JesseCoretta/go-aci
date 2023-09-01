@@ -47,3 +47,48 @@ func ExampleBindRuleFuncs() {
 	// [Equal To] ( groupdn = "ldap:///cn=X.500 Administrators,ou=Groups,dc=example,dc=com" )
 	// [Not Equal To] ( groupdn != "ldap:///cn=X.500 Administrators,ou=Groups,dc=example,dc=com" )
 }
+
+/*
+This example demonstrates the union between a group distinguished name and a timeframe,
+expressed as a BindRules instance. Parenthetical encapsulation is enabled for inner stack
+elements, but not the outer (AND) stack itself.
+*/
+func ExampleAnd() {
+	and := And(
+		GDN(`cn=X.500 Administrators,ou=Groups,dc=example,dc=com`).Eq().Paren(),
+		Timeframe(ToD(`1730`), ToD(`2330`)).Paren(),
+	)
+	fmt.Printf("%s", and)
+	// Output: ( groupdn = "ldap:///cn=X.500 Administrators,ou=Groups,dc=example,dc=com" ) AND ( timeofday >= "1730" AND timeofday < "2330" )
+}
+
+/*
+This example demonstrates a logical OR between a value matching bind rule and an LDAP URI
+bearing the userdn keyword context. Parentheticals are enabled at every point.
+*/
+func ExampleOr() {
+	or := Or(
+		UAT(`manager`, `LDAPURL`).Eq().Paren(),
+		URI(UDN(`ou=People,dc=example,dc=com`), Subtree).Eq().Paren(),
+	)
+	fmt.Printf("%s", or.Paren())
+	// Output: ( ( userattr = "manager#LDAPURL" ) OR ( userdn = "ldap:///ou=People,dc=example,dc=com??sub?" ) )
+}
+
+/*
+This example demonstrates a logical NOT that excludes a value matching userattr context or
+an LDAPURI bearing the userdn key context. The NOT operation should generally encompass one
+(1) or more conditions within an OR context.  Additionally, NOT operations generally reside
+within an outer AND context as shown. YMMV.
+*/
+func ExampleNot() {
+	and := And(
+		IP(`192.168.`).Eq().Paren(),
+		Not(Or(
+			UAT(`manager`, `LDAPURL`).Eq().Paren(),
+			URI(UDN(`ou=People,dc=example,dc=com`), Subtree).Eq().Paren(),
+		).Paren()),
+	)
+	fmt.Printf("%s", and)
+	// Output: ( ip = "192.168." ) AND NOT ( ( userattr = "manager#LDAPURL" ) OR ( userdn = "ldap:///ou=People,dc=example,dc=com??sub?" ) )
+}
