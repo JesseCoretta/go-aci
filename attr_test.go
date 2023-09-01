@@ -18,6 +18,88 @@ func ExampleAT() {
 	// Output: homeDirectory
 }
 
+/*
+This example demonstrates the string representation of the receiver instance.
+*/
+func ExampleAttributeType_String() {
+	fmt.Printf("%s", AT(`owner`))
+	// Output: owner
+}
+
+/*
+This example demonstrates the use of the useless Keyword method, as AttributeType
+instances do not have any knowledge of Keywords at this time.
+*/
+func ExampleAttributeType_Keyword() {
+	fmt.Printf("%v", AT(`owner`).Keyword())
+	// Output: <nil>
+}
+
+/*
+This example demonstrates the use of the useless Kind method, as this information
+is normally derived from a Keyword, which the receiver does not have.
+*/
+func ExampleAttributeType_Kind() {
+	fmt.Printf("'%s'", AT(`owner`).Kind())
+	// Output: ''
+}
+
+/*
+This example demonstrates the use of the useless Len method, as this information
+is only made available to satisfy Go's interface signature requirements as they
+pertain to the AttributeTypeContext interface.
+*/
+func ExampleAttributeType_Len() {
+	fmt.Printf("%d", AT(`owner`).Len())
+	// Output: 1
+}
+
+/*
+This example demonstrates a check of the receiver for "nilness".
+*/
+func ExampleAttributeType_IsZero() {
+	fmt.Printf("%t", AT(`owner`).IsZero())
+	// Output: false
+}
+
+/*
+This example demonstrates a check of the receiver for an aberrant state.
+*/
+func ExampleAttributeType_Valid() {
+	fmt.Printf("Valid: %t", AT(`owner`).Valid() == nil)
+	// Output: Valid: true
+}
+
+/*
+This example demonstrates how a caller can determine the number of comparison
+operator methods are available for use by the receiver instance.
+*/
+func ExampleAttributeType_TRF() {
+	var at AttributeType
+	fmt.Printf("%d available comparison operator methods", at.TRF().Len())
+	// Output: 2 available comparison operator methods
+}
+
+/*
+This example demonstrates the creation of an equality TargetRule (targetattr)
+using the receiver instance as input:
+*/
+func ExampleAttributeType_Eq() {
+	attr := AT(`*`)
+	fmt.Printf("%s", attr.Eq())
+	// Output: ( targetattr = "*" )
+}
+
+/*
+This example demonstrates the creation of a negated equality TargetRule
+(targetattr) using the receiver instance as input:
+*/
+func ExampleAttributeType_Ne() {
+	attr := AT(`aci`)
+	fmt.Printf("%s", attr.Ne())
+	// Output: ( targetattr != "aci" )
+}
+
 func ExampleABTV() {
 	var atb AttributeBindTypeOrValue = ABTV(BindUAT)
 	atb.Set(AT(`owner`), GROUPDN)
@@ -124,11 +206,31 @@ func ExampleAttributeBindTypeOrValue_String() {
 	// Output: manager#USERDN
 }
 
+/*
+This example demonstrates the creation of an instance of AttributeBindTypeOrValue followed
+by a call of its String method through fmt.Printf.
+
+The return value is the entirely of the receiver in string representation.
+*/
 func ExampleAttributeBindTypeOrValue_Set() {
 	var atb AttributeBindTypeOrValue = ABTV(BindUAT)
 	atb.Set(AT(`manager`), USERDN)
 	fmt.Printf("%s value is %s", atb.Keyword(), atb)
 	// Output: userattr value is manager#USERDN
+}
+
+/*
+This example demonstrates the creation of an instance of AttributeBindTypeOrValue followed
+by a call of its String method through fmt.Printf. In this example, the receiver instance
+is populated using only string values.
+
+The return value is the entirely of the receiver in string representation.
+*/
+func ExampleAttributeBindTypeOrValue_Set_alt() {
+	var atb AttributeBindTypeOrValue
+	atb.Set(`manager`, `USERDN`)
+	fmt.Printf("%s", atb)
+	// Output: manager#USERDN
 }
 
 /*
@@ -190,7 +292,8 @@ func TestAttributeTypes(t *testing.T) {
 		TargetAttr: TAs,
 	} {
 		var attrs AttributeTypes = atfn()
-
+		_ = attrs.Eq()
+		_ = attrs.Ne()
 		_ = attrs.Len()
 		attrs.reset()
 		attrs.Push(keyword)
