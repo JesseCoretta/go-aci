@@ -204,5 +204,3 @@ func ExampleBindRuleMethod() {
 	// [5] aci.BindRuleMethod instance [Le] execution returned aci.BindRule: ( ssf <= "256" )
 	// [6] aci.BindRuleMethod instance [Ge] execution returned aci.BindRule: ( ssf >= "256" )
 }
-
-
