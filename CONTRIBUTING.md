@@ -47,6 +47,5 @@ The `_examples` folder is intended to house user-authored implementations of thi
 - Comments would be nice
   - While nowhere near as strict as the above generalized "Technical Guidelines", commentary within your contributed app code would be greatly appreciated by the end user
   - Don't hold yourself to the same writing style as that of the SDK -- you're trying to "sell" the idea of your app to other individuals of varied experience levels; it need not read like a science journal
-  - Imformal writing is perfectly fine; remember, this is the piece of code
 - All contributed example content shall immediately become subject to the terms of the MIT license
   - The MIT license text block should appear prominently at the top of your `main.go` file as inline text; it need not be pushed as a separate file itself
