@@ -30,10 +30,6 @@ newBindRuleFuncs populates an instance of *bindRuleFuncMap, which
 is embedded within the return instance of BindRuleFuncs.
 */
 func newBindRuleFuncs(m bindRuleFuncMap) BindRuleFuncs {
-	if len(m) == 0 {
-		return BindRuleFuncs{nil}
-	}
-
 	M := make(bindRuleFuncMap, len(m))
 	for k, v := range m {
 		M[k] = v

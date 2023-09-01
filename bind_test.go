@@ -5,6 +5,23 @@ import (
 	"testing"
 )
 
+func TestParseBindRuleFuncs(t *testing.T) {
+	brf := newBindRuleFuncs(bindRuleFuncMap{})
+
+	_ = brf.Len()
+	_ = brf.IsZero()
+	_, _ = brf.Index(0)
+
+	ssf := SSF(256)
+	brf = ssf.BRF()
+
+	for i := 0; i < brf.Len(); i++ {
+		if cop, meth := brf.Index(i + 1); meth().String() != fmt.Sprintf("ssf %s %q", cop, `256`) {
+			t.Errorf("%s failed: failed to call index %d [%s] non-nil %T", t.Name(), i, cop.Context(), brf)
+		}
+	}
+}
+
 func TestParseBindRule(t *testing.T) {
 	want := `userdn = "ldap:///cn=Jesse Coretta,ou=People,dc=example,dc=com"`
 
@@ -91,4 +108,85 @@ func ExampleNot() {
 	)
 	fmt.Printf("%s", and)
 	// Output: ( ip = "192.168." ) AND NOT ( ( userattr = "manager#LDAPURL" ) OR ( userdn = "ldap:///ou=People,dc=example,dc=com??sub?" ) )
+}
+
+func ExampleBindRuleFuncs_Index() {
+	ssf := SSF(256)
+	brf := ssf.BRF()
+
+	for i := 0; i < brf.Len(); i++ {
+		// IMPORTANT: Do not call index 0. Either adjust your
+		// loop variable (i) to begin at 1, and terminate at
+		// brf.Len()+1 --OR-- simply +1 the index call as we
+		// are doing here (seems easier). The reason for this
+		// is because there is no valid ComparisonOperator
+		// with an underlying uint8 value of zero (0). See
+		// the ComparisonOperator constants for details.
+		idx := i + 1
+		cop, meth := brf.Index(idx)
+
+		// create the bindrule, and make it parenthetical
+		rule := meth().Paren()
+
+		// grab the raw string output
+		fmt.Printf("[%d] %T instance [%s] execution returned %T: %s\n", idx, meth, cop.Context(), rule, rule)
+	}
+	// Output:
+	// [1] aci.BindRuleMethod instance [Eq] execution returned aci.BindRule: ( ssf = "256" )
+	// [2] aci.BindRuleMethod instance [Ne] execution returned aci.BindRule: ( ssf != "256" )
+	// [3] aci.BindRuleMethod instance [Lt] execution returned aci.BindRule: ( ssf < "256" )
+	// [4] aci.BindRuleMethod instance [Gt] execution returned aci.BindRule: ( ssf > "256" )
+	// [5] aci.BindRuleMethod instance [Le] execution returned aci.BindRule: ( ssf <= "256" )
+	// [6] aci.BindRuleMethod instance [Ge] execution returned aci.BindRule: ( ssf >= "256" )
+}
+
+func ExampleBindRuleFuncs_IsZero() {
+	var brf BindRuleFuncs
+	fmt.Printf("Zero: %t", brf.IsZero())
+	// Output: Zero: true
+
+}
+
+func ExampleBindRuleFuncs_Len() {
+	// Note: we need not populate the value to get a
+	// BRF list, but the methods in that list won't
+	// actually work until the instance (ssf) is in
+	// an acceptable state. Since all we're doing
+	// here is checking the length, a receiver that
+	// is nil/zero is totally fine.
+	var ssf SecurityStrengthFactor // not init'd
+	total := ssf.BRF().Len()
+
+	fmt.Printf("There are %d available comparison operator methods for %T BindRules", total, ssf)
+	// Output: There are 6 available comparison operator methods for aci.SecurityStrengthFactor BindRules
+}
+
+func ExampleBindRuleMethod() {
+	ssf := SSF(256)
+	brf := ssf.BRF()
+	for i := 0; i < brf.Len(); i++ {
+		// IMPORTANT: Do not call index 0. Either adjust your
+		// loop variable (i) to begin at 1, and terminate at
+		// brf.Len()+1 --OR-- simply +1 the index call as we
+		// are doing here (seems easier). The reason for this
+		// is because there is no valid ComparisonOperator
+		// with an underlying uint8 value of zero (0). See
+		// the ComparisonOperator constants for details.
+		idx := i + 1
+		cop, meth := brf.Index(idx)
+
+		// execute meth and modify the returned BindRule
+		// instance to make it parenthetical in one shot.
+		rule := meth().Paren()
+
+		// grab the raw string output
+		fmt.Printf("[%d] %T instance [%s] execution returned %T: %s\n", idx, meth, cop.Context(), rule, rule)
+	}
+	// Output:
+	// [1] aci.BindRuleMethod instance [Eq] execution returned aci.BindRule: ( ssf = "256" )
+	// [2] aci.BindRuleMethod instance [Ne] execution returned aci.BindRule: ( ssf != "256" )
+	// [3] aci.BindRuleMethod instance [Lt] execution returned aci.BindRule: ( ssf < "256" )
+	// [4] aci.BindRuleMethod instance [Gt] execution returned aci.BindRule: ( ssf > "256" )
+	// [5] aci.BindRuleMethod instance [Le] execution returned aci.BindRule: ( ssf <= "256" )
+	// [6] aci.BindRuleMethod instance [Ge] execution returned aci.BindRule: ( ssf >= "256" )
 }
