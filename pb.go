@@ -101,18 +101,11 @@ func (r *PermissionBindRule) valid() (err error) {
 		err = nilInstanceErr(r.B)
 	} else if r.P.IsZero() {
 		err = nilInstanceErr(r.P)
-	} else if r.B.ID() != bindRuleID {
-		err = badPTBRuleKeywordErr(r.B, bindRuleID, bindRuleID, r.B.ID())
+	} else if r.B.Kind() != bindRuleID {
+		err = badPTBRuleKeywordErr(r.B, bindRuleID, bindRuleID, r.B.Kind())
 	}
 
 	return
-}
-
-/*
-ID wraps go-stackage's Stack.ID method.
-*/
-func (r PermissionBindRule) ID() string {
-	return pbrRuleID
 }
 
 /*

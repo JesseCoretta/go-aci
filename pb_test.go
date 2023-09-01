@@ -68,9 +68,3 @@ func ExamplePermissionBindRule_Kind() {
 	fmt.Printf("%s", pbr.Kind())
 	// Output: pbr
 }
-
-func ExamplePermissionBindRule_ID() {
-	var pbr PermissionBindRule
-	fmt.Printf("%s", pbr.ID())
-	// Output: pbr
-}
