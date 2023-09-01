@@ -19,6 +19,32 @@ var (
 )
 
 /*
+AttributeTypeContext is a convenient interface type that is qualified by the following types:
+
+• AttributeType
+
+• AttributeTypes
+
+The qualifying methods shown below are intended to make the generalized handling of attributeTypes
+slightly easier without an absolute need for type assertion at every step.
+
+These methods are inherently read-only in nature.
+
+To alter the underlying value, or to gain access to all of a given type's methods, type assertion
+of qualifying instances shall be necessary.
+*/
+type AttributeTypeContext interface {
+	Len() int
+	String() string
+	Kind() string
+	Keyword() Keyword
+	IsZero() bool
+	Valid() error
+
+	isAttributeTypeContext()
+}
+
+/*
 AttributeBindTypeOrValue contains a statement of the following syntax:
 
 	<AttributeName>#<BindType -OR- AttributeValue>
@@ -50,6 +76,20 @@ func (r AttributeBindTypeOrValue) IsZero() bool {
 	}
 
 	return r.BindKeyword == 0x0
+}
+
+/*
+ABTV will return a new instance of AttributeBindTypeOrValue. The required
+BindKeyword must be either BindUAT or BindGAT. The optional input values
+(x), if provided, will be used to set the instance.
+*/
+func ABTV(kw BindKeyword, x ...any) (a AttributeBindTypeOrValue) {
+	switch kw {
+	case BindUAT, BindGAT:
+		a = userOrGroupAttr(kw, x...)
+	}
+
+	return
 }
 
 /*
@@ -93,6 +133,9 @@ and/or AttributeValue instances, created via the package-level AT and AV
 functions respectively.
 */
 func (r *AttributeBindTypeOrValue) Set(x ...any) *AttributeBindTypeOrValue {
+	if r.IsZero() {
+		r.atbtv = new(atbtv)
+	}
 	r.atbtv.set(x...)
 	return r
 }
@@ -145,6 +188,32 @@ func (r AttributeBindTypeOrValue) Ne() BindRule {
 		SetCategory(r.BindKeyword.String())
 
 	return b
+}
+
+/*
+BRF returns an instance of BindRuleFuncs.
+
+Each of the return instance's key values represent a single instance of the
+ComparisonOperator type that is allowed for use in the creation of BindRule
+instances which bear the receiver instance as an expression value. The value
+for each key is the actual BindRuleMethod instance for OPTIONAL use in the
+creation of a BindRule instance.
+
+This is merely a convenient alternative to maintaining knowledge of which
+ComparisonOperator instances apply to which types. Instances of this type
+are also used to streamline package unit tests.
+
+Please note that if the receiver is in an aberrant state, or if it has not
+yet been initialized, the execution of ANY of the return instance's value
+methods will return bogus BindRule instances. While this is useful in unit
+testing, the end user must only execute this method IF and WHEN the receiver
+has been properly populated and prepared for such activity.
+*/
+func (r AttributeBindTypeOrValue) BRF() BindRuleFuncs {
+	return newBindRuleFuncs(bindRuleFuncMap{
+		Eq: r.Eq,
+		Ne: r.Ne,
+	})
 }
 
 /*
@@ -261,6 +330,36 @@ func (r AttributeBindTypeOrValue) String() (s string) {
 }
 
 /*
+Parse reads the input string (raw) in an attempt to marshal its contents
+into the receiver instance (r). An error is returned at the end of the
+process.
+
+If no suitable BindKeyword is provided (bkw), the default is BindUAT.
+Valid options are BindUAT and BindGAT.
+*/
+func (r *AttributeBindTypeOrValue) Parse(raw string, bkw ...any) (err error) {
+	var _r AttributeBindTypeOrValue
+	if _r, err = parseATBTV(raw, bkw); err != nil {
+		return
+	}
+	*r = _r
+
+	return
+}
+
+/*
+Valid returns an error indicative of whether the receiver is in
+an aberrant state.
+*/
+func (r AttributeBindTypeOrValue) Valid() error {
+	if r.IsZero() {
+		return nilInstanceErr(r)
+	}
+
+	return nil
+}
+
+/*
 parseATBTV parses the input string (x) in an attempt to marshal its contents
 into an instance of AttributeBindTypeOrValue (A), which is returned alongside
 an error (err).
@@ -356,6 +455,48 @@ func (r AttributeType) Ne() TargetRule {
 }
 
 /*
+Keyword performs no useful task, as the receiver instance has no concept
+of keywords. This method exists solely to satisfy Go's interface signature
+requirements and will return nil if executed.
+*/
+func (r AttributeType) Kind() string { return `` }
+
+/*
+Keyword performs no useful task, as the receiver instance has no concept
+of keywords. This method exists solely to satisfy Go's interface signature
+requirements and will return nil if executed.
+*/
+func (r AttributeType) Keyword() Keyword { return nil }
+
+func (r AttributeType) isAttributeTypeContext() {}
+
+/*
+TRF returns an instance of TargetRuleFuncs.
+
+Each of the return instance's key values represent a single instance of the
+ComparisonOperator type that is allowed for use in the creation of TargetRule
+instances which bear the receiver instance as an expression value. The value
+for each key is the actual TargetRuleMethod instance for OPTIONAL use in the
+creation of a TargetRule instance.
+
+This is merely a convenient alternative to maintaining knowledge of which
+ComparisonOperator instances apply to which types. Instances of this type
+are also used to streamline package unit tests.
+
+Please note that if the receiver is in an aberrant state, or if it has not
+yet been initialized, the execution of ANY of the return instance's value
+methods will return bogus TargetRule instances. While this is useful in unit
+testing, the end user must only execute this method IF and WHEN the receiver
+has been properly populated and prepared for such activity.
+*/
+func (r AttributeType) TRF() TargetRuleFuncs {
+	return newTargetRuleFuncs(targetRuleFuncMap{
+		Eq: r.Eq,
+		Ne: r.Ne,
+	})
+}
+
+/*
 AT initializes, sets and returns an AT instance in one shot. The
 input value x shall be a string attributeType name (e.g.: `manager`).
 */
@@ -379,6 +520,26 @@ func (r AttributeType) String() (s string) {
 	}
 
 	return
+}
+
+/*
+Len returns 0 or 1 to describe an abstract length of
+the receiver. This method exists only to satisfy Go's
+interface signature requirements and need not be used.
+*/
+func (r AttributeType) Len() int {
+	if err := r.Valid(); err != nil {
+		return 0
+	}
+	return 1
+}
+
+func (r AttributeType) Valid() error {
+	if r.IsZero() {
+		return nilInstanceErr(r)
+	}
+
+	return nil
 }
 
 /*
@@ -437,6 +598,36 @@ func (r AttributeTypes) F() func(string) AttributeType {
 	return AT
 }
 
+func (r AttributeTypes) reset() {
+	_r, _ := castAsStack(r)
+	_r.Reset()
+}
+
+func (r AttributeTypes) resetKeyword(x any) {
+	if r.Len() > 0 {
+		return
+	}
+
+	switch tv := x.(type) {
+	case Keyword:
+		r.resetKeyword(tv.String())
+
+	case string:
+		_r, _ := castAsStack(r)
+
+		switch lc(tv) {
+		case TargetAttr.String():
+			_r.SetCategory(lc(tv)).
+				SetPushPolicy(r.pushPolicy)
+
+		case BindUAT.String(), BindGAT.String():
+			_r.SetCategory(tv).
+				SetPushPolicy(r.pushPolicy)
+
+		}
+	}
+}
+
 /*
 Eq initializes and returns a new TargetRule instance configured to express the
 evaluation of the receiver value as Equal-To a `targetattr` keyword context.
@@ -485,6 +676,34 @@ func (r AttributeTypes) Ne() TargetRule {
 		SetCategory(TargetAttr.String())
 
 	return t
+}
+
+func (r AttributeTypes) isAttributeTypeContext() {}
+
+/*
+TRF returns an instance of TargetRuleFuncs.
+
+Each of the return instance's key values represent a single instance of the
+ComparisonOperator type that is allowed for use in the creation of TargetRule
+instances which bear the receiver instance as an expression value. The value
+for each key is the actual TargetRuleMethod instance for OPTIONAL use in the
+creation of a TargetRule instance.
+
+This is merely a convenient alternative to maintaining knowledge of which
+ComparisonOperator instances apply to which types. Instances of this type
+are also used to streamline package unit tests.
+
+Please note that if the receiver is in an aberrant state, or if it has not
+yet been initialized, the execution of ANY of the return instance's value
+methods will return bogus TargetRule instances. While this is useful in unit
+testing, the end user must only execute this method IF and WHEN the receiver
+has been properly populated and prepared for such activity.
+*/
+func (r AttributeTypes) TRF() TargetRuleFuncs {
+	return newTargetRuleFuncs(targetRuleFuncMap{
+		Eq: r.Eq,
+		Ne: r.Ne,
+	})
 }
 
 /*
@@ -567,8 +786,23 @@ Kind wraps go-stackage's Stack.Category method for the
 purpose of identifying the context of the receiver instance.
 */
 func (r AttributeTypes) Kind() string {
+	if r.IsZero() {
+		return `<uninitialized>`
+	}
 	_r, _ := castAsStack(r)
 	return _r.Category()
+}
+
+/*
+Valid returns an instance of error in the event the receiver is in
+an aberrant state.
+*/
+func (r AttributeTypes) Valid() (err error) {
+	if r.Kind() == `<uninitialized>` {
+		err = nilInstanceErr(r)
+	}
+
+	return
 }
 
 /*

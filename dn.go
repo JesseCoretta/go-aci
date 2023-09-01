@@ -230,6 +230,18 @@ func (r BindDistinguishedName) String() string {
 }
 
 /*
+Len returns 0 or 1 to describe an abstract length of
+the receiver. This method exists only to satisfy Go's
+interface signature requirements and need not be used.
+*/
+func (r BindDistinguishedName) Len() int {
+	if err := r.Valid(); err != nil {
+		return 0
+	}
+	return 1
+}
+
+/*
 String is a stringer method that returns the string representation
 of the receiver instance.
 
@@ -243,6 +255,18 @@ func (r TargetDistinguishedName) String() string {
 	}
 
 	return sprintf("%s%s", LocalScheme, (*r.distinguishedName.string))
+}
+
+/*
+Len returns 0 or 1 to describe an abstract length of
+the receiver. This method exists only to satisfy Go's
+interface signature requirements and need not be used.
+*/
+func (r TargetDistinguishedName) Len() int {
+	if err := r.Valid(); err != nil {
+		return 0
+	}
+	return 1
 }
 
 /*
@@ -1876,6 +1900,7 @@ given type's methods, type assertion of qualifying instances
 shall be necessary.
 */
 type DistinguishedNameContext interface {
+	Len() int
 	String() string
 	Kind() string
 	Keyword() Keyword

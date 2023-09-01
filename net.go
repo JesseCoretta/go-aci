@@ -58,13 +58,12 @@ func (r IPAddr) Eq() BindRule {
 	b.SetOperator(Eq)
 	b.SetExpression(r)
 
-	_b := castAsCondition(b).
+	castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(BindIP.String())
 
-	b = BindRule(*_b)
 	return b
 }
 
@@ -79,14 +78,39 @@ func (r IPAddr) Ne() BindRule {
 	b.SetOperator(Ne)
 	b.SetExpression(r)
 
-	_b := castAsCondition(b).
+	castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(BindIP.String())
 
-	b = BindRule(*_b)
 	return b
+}
+
+/*
+BRF returns an instance of BindRuleFuncs.
+
+Each of the return instance's key values represent a single instance of the
+ComparisonOperator type that is allowed for use in the creation of BindRule
+instances which bear the receiver instance as an expression value. The value
+for each key is the actual BindRuleMethod instance for OPTIONAL use in the
+creation of a BindRule instance.
+
+This is merely a convenient alternative to maintaining knowledge of which
+ComparisonOperator instances apply to which types. Instances of this type
+are also used to streamline package unit tests.
+
+Please note that if the receiver is in an aberrant state, or if it has not
+yet been initialized, the execution of ANY of the return instance's value
+methods will return bogus BindRule instances. While this is useful in unit
+testing, the end user must only execute this method IF and WHEN the receiver
+has been properly populated and prepared for such activity.
+*/
+func (r IPAddr) BRF() BindRuleFuncs {
+	return newBindRuleFuncs(bindRuleFuncMap{
+		Eq: r.Eq,
+		Ne: r.Ne,
+	})
 }
 
 /*
@@ -377,13 +401,12 @@ func (r FQDN) Eq() BindRule {
 	b.SetOperator(Eq)
 	b.SetExpression(r)
 
-	_b := castAsCondition(b).
+	castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(BindDNS.String())
 
-	b = BindRule(*_b)
 	return b
 }
 
@@ -401,14 +424,39 @@ func (r FQDN) Ne() BindRule {
 	b.SetOperator(Ne)
 	b.SetExpression(r)
 
-	_b := castAsCondition(b).
+	castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(BindDNS.String())
 
-	b = BindRule(*_b)
 	return b
+}
+
+/*
+BRF returns an instance of BindRuleFuncs.
+
+Each of the return instance's key values represent a single instance of the
+ComparisonOperator type that is allowed for use in the creation of BindRule
+instances which bear the receiver instance as an expression value. The value
+for each key is the actual BindRuleMethod instance for OPTIONAL use in the
+creation of a BindRule instance.
+
+This is merely a convenient alternative to maintaining knowledge of which
+ComparisonOperator instances apply to which types. Instances of this type
+are also used to streamline package unit tests.
+
+Please note that if the receiver is in an aberrant state, or if it has not
+yet been initialized, the execution of ANY of the return instance's value
+methods will return bogus BindRule instances. While this is useful in unit
+testing, the end user must only execute this method IF and WHEN the receiver
+has been properly populated and prepared for such activity.
+*/
+func (r FQDN) BRF() BindRuleFuncs {
+	return newBindRuleFuncs(bindRuleFuncMap{
+		Eq: r.Eq,
+		Ne: r.Ne,
+	})
 }
 
 /*

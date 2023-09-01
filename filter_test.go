@@ -700,6 +700,12 @@ func ExampleAttributeFilterOperation_Valid() {
 	// Output: true
 }
 
+func ExampleAttributeFilterOperation_TRF() {
+	var afo AttributeFilterOperation
+	fmt.Printf("%d available comparison operator methods", afo.TRF().Len())
+	// Output: 2 available comparison operator methods
+}
+
 /*
 This example demonstrates the creation of an instance of AttributeFilterOperations,
 which is used to store individual AttributeFilterOperation instances.
@@ -777,6 +783,12 @@ func ExampleAttributeFilterOperations_Contains() {
 
 	fmt.Printf("%t", aFOs.Contains(`delete=uidNumber:(&(objectClass=accounting)(terminated=FALSE)) && gidNumber:(objectClass=account)`))
 	// Output: true
+}
+
+func ExampleAttributeFilterOperations_TRF() {
+	var afos AttributeFilterOperations
+	fmt.Printf("%d available comparison operator methods", afos.TRF().Len())
+	// Output: 2 available comparison operator methods
 }
 
 /*
@@ -1186,6 +1198,13 @@ func ExampleSearchFilter_Eq() {
 	filter.Set(`(|(objectClass=contractor)(objectClass=intern))`)
 	fmt.Printf("%s", filter.Eq())
 	// Output: ( targetfilter = "(|(objectClass=contractor)(objectClass=intern))" )
+}
+
+func ExampleSearchFilter_TRF() {
+	var filter SearchFilter
+	filter.Set(`(|(objectClass=contractor)(objectClass=intern))`)
+	fmt.Printf("%d available comparison operator methods", filter.TRF().Len())
+	// Output: 2 available comparison operator methods
 }
 
 func ExampleSearchFilter_Ne() {

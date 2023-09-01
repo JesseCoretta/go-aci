@@ -52,6 +52,32 @@ func (r SearchFilter) Valid() (err error) {
 }
 
 /*
+TRF returns an instance of TargetRuleFuncs.
+
+Each of the return instance's key values represent a single instance of
+the ComparisonOperator type that is allowed for use in the creation of
+TargetRule instances which bear the receiver instance as an expression
+value. The value for each key is the actual TargetRuleMethod instance for
+OPTIONAL use in the creation of a TargetRule instance.
+
+This is merely a convenient alternative to maintaining knowledge of which
+ComparisonOperator instances apply to which types. Instances of this type
+are also used to streamline package unit tests.
+
+Please note that if the receiver is in an aberrant state, or if it has not
+yet been initialized, the execution of ANY of the return instance's value
+methods will return bogus TargetRule instances. While this is useful in unit
+testing, the end user must only execute this method IF and WHEN the receiver
+has been properly populated and prepared for such activity.
+*/
+func (r SearchFilter) TRF() TargetRuleFuncs {
+	return newTargetRuleFuncs(targetRuleFuncMap{
+		Eq: r.Eq,
+		Ne: r.Ne,
+	})
+}
+
+/*
 Filter initializes (and optionally sets) a new instance of SearchFilter.
 Instances of this kind are used in LDAPURIs, as well as certain target
 rules.
@@ -686,6 +712,32 @@ Negated equality TargetRule instances should be used with caution.
 func (r AttributeFilterOperations) Ne() TargetRule { return badTargetRule }
 
 /*
+TRF returns an instance of TargetRuleFuncs.
+
+Each of the return instance's key values represent a single instance of
+the ComparisonOperator type that is allowed for use in the creation of
+TargetRule instances which bear the receiver instance as an expression
+value. The value for each key is the actual TargetRuleMethod instance for
+OPTIONAL use in the creation of a TargetRule instance.
+
+This is merely a convenient alternative to maintaining knowledge of which
+ComparisonOperator instances apply to which types. Instances of this type
+are also used to streamline package unit tests.
+
+Please note that if the receiver is in an aberrant state, or if it has not
+yet been initialized, the execution of ANY of the return instance's value
+methods will return bogus TargetRule instances. While this is useful in unit
+testing, the end user must only execute this method IF and WHEN the receiver
+has been properly populated and prepared for such activity.
+*/
+func (r AttributeFilterOperations) TRF() TargetRuleFuncs {
+	return newTargetRuleFuncs(targetRuleFuncMap{
+		Eq: r.Eq,
+		Ne: r.Ne,
+	})
+}
+
+/*
 pushPolicy conforms to go-stackage's PushPolicy closure signature. This method
 is used to govern attempts to push instances into a stack, allowing or rejecting
 attempts based upon instance type and other conditions. An error is returned to
@@ -989,6 +1041,32 @@ qualifying signature. When executed, this method will return a bogus TargetRule.
 Negated equality TargetRule instances should be used with caution.
 */
 func (r AttributeFilterOperation) Ne() TargetRule { return badTargetRule }
+
+/*
+TRF returns an instance of TargetRuleFuncs.
+
+Each of the return instance's key values represent a single instance of
+the ComparisonOperator type that is allowed for use in the creation of
+TargetRule instances which bear the receiver instance as an expression
+value. The value for each key is the actual TargetRuleMethod instance for
+OPTIONAL use in the creation of a TargetRule instance.
+
+This is merely a convenient alternative to maintaining knowledge of which
+ComparisonOperator instances apply to which types. Instances of this type
+are also used to streamline package unit tests.
+
+Please note that if the receiver is in an aberrant state, or if it has not
+yet been initialized, the execution of ANY of the return instance's value
+methods will return bogus TargetRule instances. While this is useful in unit
+testing, the end user must only execute this method IF and WHEN the receiver
+has been properly populated and prepared for such activity.
+*/
+func (r AttributeFilterOperation) TRF() TargetRuleFuncs {
+	return newTargetRuleFuncs(targetRuleFuncMap{
+		Eq: r.Eq,
+		Ne: r.Ne,
+	})
+}
 
 /*
 AFO returns a freshly initialized instance of AttributeFilterOperation, configured

@@ -15,14 +15,15 @@ ObjectIdentifierContext is a convenient interface type that is qualified by the 
 
 • ObjectIdentifiers
 
-The qualifying methods shown below are intended to make the generalized handling of distinguished
-names slightly easier without an absolute need for type assertion at every step. These methods are
-inherently read-only in nature.
+The qualifying methods shown below are intended to make the generalized handling of ASN.1 object
+identifiers slightly easier without an absolute need for type assertion at every step. These methods
+are inherently read-only in nature.
 
 To alter the underlying value, or to gain access to all of a given type's methods, type assertion
 of qualifying instances shall be necessary.
 */
 type ObjectIdentifierContext interface {
+	Len() int
 	String() string
 	Kind() string
 	Keyword() Keyword
@@ -64,6 +65,18 @@ func (r ObjectIdentifier) String() string {
 		return badDotNot
 	}
 	return r.objectIdentifier.DotNotation.String()
+}
+
+/*
+Len returns 0 or 1 to describe an abstract length of
+the receiver. This method exists only to satisfy Go's
+interface signature requirements and need not be used.
+*/
+func (r ObjectIdentifier) Len() int {
+	if err := r.Valid(); err != nil {
+		return 0
+	}
+	return 1
 }
 
 func (r ObjectIdentifier) isObjectIdentifierContext() {}

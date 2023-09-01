@@ -7,7 +7,7 @@ within the ACIv3 standard.
 
 // Maps for resolving level instances
 var (
-	bitIter      = bitSize(Levels(0)) - 4 // we don't use all of uint16, no sense iterating the whole thing
+	levelBitIter = bitSize(Levels(0)) - 4 // we don't use all of uint16, no sense iterating the whole thing
 	levelMap     = make(map[int]Level, 0)
 	levelNumbers = make(map[string]Level, 0)
 )
@@ -33,7 +33,7 @@ const (
 )
 
 /*
-Inheritance describes an inherited Bind Rule syntax, allowing access
+Inheritance describes an inherited BindRule syntax, allowing access
 control over child entry enumeration below the specified parent.
 */
 type Inheritance struct {
@@ -113,6 +113,32 @@ func (r Inheritance) Valid() (err error) {
 	}
 
 	return
+}
+
+/*
+BRF returns an instance of BindRuleFuncs.
+
+Each of the return instance's key values represent a single instance of
+the ComparisonOperator type that is allowed for use in the creation of
+BindRule instances which bear the receiver instance as an expression
+value. The value for each key is the actual BindRuleMethod instance for
+OPTIONAL use in the creation of a BindRule instance.
+
+This is merely a convenient alternative to maintaining knowledge of which
+ComparisonOperator instances apply to which types. Instances of this type
+are also used to streamline package unit tests.
+
+Please note that if the receiver is in an aberrant state, or if it has not
+yet been initialized, the execution of ANY of the return instance's value
+methods will return bogus BindRule instances. While this is useful in unit
+testing, the end user must only execute this method IF and WHEN the receiver
+has been properly populated and prepared for such activity.
+*/
+func (r Inheritance) BRF() BindRuleFuncs {
+	return newBindRuleFuncs(bindRuleFuncMap{
+		Eq: r.Eq,
+		Ne: r.Ne,
+	})
 }
 
 /*
@@ -264,8 +290,7 @@ func (r Inheritance) Len() int {
 }
 
 /*
-Level returns the compound Level instance within the receiver. The
-return value does not represent any single Level, rather it
+Levels returns the compound Levels instance within the receiver.
 */
 func (r Inheritance) Levels() Levels {
 	if r.IsZero() {
@@ -294,25 +319,33 @@ func (r Inheritance) Keyword() Keyword {
 }
 
 /*
-String is a stringer method that returns the string name value for receiver instance of Inheritance.
+String is a stringer method that returns the string name value for
+receiver instance of Inheritance.
 
-The return value(s) are enclosed within square-brackets, comma-delimited and prefixed with "parent".
+The return value(s) are enclosed within square-brackets, followed
+by comma delimitation and are prefixed with "parent" before being
+returned.
 */
 func (r Inheritance) String() string {
 	if err := r.Valid(); err != nil {
 		return badInheritance
 	}
 
-	// string representation of Levels
-	// sequence
+	// string representation of Levels sequence
 	lvls := r.inheritance.Levels.String()
 
 	return sprintf("parent[%s].%s", lvls,
 		r.inheritance.AttributeBindTypeOrValue)
 }
 
+/*
+Len returns the abstract integer length of the receiver, quantifying
+the number of Level instances currently being expressed. For example,
+if the receiver instance has its Level4 and Level7 bits enabled, this
+would represent an abstract length of two (2).
+*/
 func (r Levels) Len() (l int) {
-	for i := 0; i < bitIter; i++ {
+	for i := 0; i < levelBitIter; i++ {
 		shift := Level(1 << i)
 		if r.Positive(shift) {
 			l++
@@ -332,7 +365,7 @@ func (r Levels) String() string {
 		// No levels? default to level 0 (baseObject)
 		levels = append(levels, Level0.String())
 	} else {
-		for i := 0; i < bitIter; i++ {
+		for i := 0; i < levelBitIter; i++ {
 			shift := Level(1 << i)
 			if r.Positive(shift) {
 				levels = append(levels, shift.String())
@@ -358,18 +391,26 @@ func (r Level) String() (lvl string) {
 }
 
 /*
-Shift shifts the receiver instance of Levels to include Level x, if not already present.
+Shift wraps Levels.Shift via the underlying Levels value
+found within the receiver instance.
 */
 func (r Inheritance) Shift(x ...any) Inheritance {
 	r.inheritance.Levels.shift(x...)
 	return r
 }
 
+/*
+Shift shifts the receiver instance of Levels to include Level
+x, if not already present.
+*/
 func (r *Levels) Shift(x ...any) *Levels {
 	r.shift(x...)
 	return r
 }
 
+/*
+shift is a private method called by the Shift method.
+*/
 func (r *Levels) shift(x ...any) {
 	for i := 0; i < len(x); i++ {
 		var lvl Level
@@ -430,21 +471,36 @@ func assertIntInheritance(x int) (lvl Level) {
 }
 
 /*
-Positive returns a boolean value indicative of whether the receiver instance of Levels includes Level x.
+Positive returns a boolean value indicative of whether
+the receiver instance of Levels includes Level x.
 */
 func (r Inheritance) Positive(x any) bool {
 	return r.inheritance.Levels.positive(x)
 }
 
-func (r *Levels) Positive(x any) bool {
+/*
+Positive returns a Boolean value indicative of whether
+the receiver has the appropriate bits enabled to include
+abstract value x, which describes a Level definition.
+*/
+func (r Levels) Positive(x any) bool {
 	return r.positive(x)
 }
 
+/*
+IsZero returns a Boolean value indicative of whether the
+receiver is in an aberrant state.
+*/
 func (r Levels) IsZero() bool {
 	return int(r) == 0
 }
 
-func (r *Levels) Valid() error {
+/*
+Valid returns an error instance that describes the undesirable
+state of the receiver, if applicable. A nil error is returned
+otherwise.
+*/
+func (r Levels) Valid() error {
 	if r.IsZero() {
 		return nilInstanceErr(r)
 	}
@@ -453,7 +509,10 @@ func (r *Levels) Valid() error {
 	return nil
 }
 
-func (r *Levels) positive(x any) (posi bool) {
+/*
+positive is a private method executed by the Positive method.
+*/
+func (r Levels) positive(x any) (posi bool) {
 	if r.IsZero() {
 		return
 	}
@@ -477,23 +536,31 @@ func (r *Levels) positive(x any) (posi bool) {
 		return
 	}
 
-	posi = ((*r) & Levels(lvl)) > 0
+	posi = (r & Levels(lvl)) > 0
 	return
 }
 
 /*
-Unshift right-shifts the receiver instance of Levels to remove Level x, if present.
+Unshift wraps Levels.Unshift via the underlying Levels value
+found within the receiver instance.
 */
 func (r Inheritance) Unshift(x ...any) Inheritance {
 	r.inheritance.Levels.unshift(x...)
 	return r
 }
 
+/*
+Unshift right-shifts the receiver instance of Levels to
+remove Level x, if present.
+*/
 func (r *Levels) Unshift(x ...any) *Levels {
 	r.unshift(x...)
 	return r
 }
 
+/*
+unshift is a private method called by the Unshift method.
+*/
 func (r *Levels) unshift(x ...any) {
 	for i := 0; i < len(x); i++ {
 		var lvl Level
