@@ -17,13 +17,13 @@ Once you've accomplished the above items, you're probably ready to start making 
 
 This section contains a few guidelines that I've imposed. This list may change at any time.
 
- 1. Cyclomatics - A maximum cyclomatic complexity factor of nine (9) is imposed
+ -. Cyclomatics - A maximum cyclomatic complexity factor of nine (9) is imposed
    - This means that no function or method provided as contributed content shall exceed this limit
- 2. Unit Tests - Contributed content shall be accompanied by sufficiently scaled unit tests
+ -. Unit Tests - Contributed content shall be accompanied by sufficiently scaled unit tests
    - A massive code coverage % drop as a result of a pull request would be undesirable
- 3. Comments - All exported (public) functions, methods, constants and global variables are to be reasonably well-documented
+ -. Comments - All exported (public) functions, methods, constants and global variables are to be reasonably well-documented
    - I reserve the right to correct grammar, if and when needed
- 4. Target Audience - Keep in mind this is an unusual tool intended for that rare specimen of LDAP architect/admin: the kind who know this sort of thing by heart, but wish there was an easier way to do certain things
+ -. Target Audience - Keep in mind this is an unusual tool intended for that rare specimen of LDAP architect/admin: the kind who know this sort of thing by heart, but wish there was an easier way to do certain things
    - This is not intended to augment the operation of any directory server
    - This is not intended to make decisions as to best practices in the context of rule authorship
    - This package is only as good as the LDAP engineer wielding it
