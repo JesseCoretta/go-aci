@@ -962,7 +962,12 @@ func assertTargetOID(expr parser.RuleExpression, key TargetKeyword) (ex ObjectId
 
 	// create an appropriate container based on the
 	// Target Rule keyword.
-	ex = stackByOIDKeyword(key)
+	switch key {
+	case TargetExtOp:
+		ex = ExtOps()
+	default:
+		ex = Ctrls()
+	}
 
 	// Honor the established quotation scheme that
 	// was observed during ANTLR4 processing.
@@ -1000,23 +1005,26 @@ func assertTargetTFDN(expr parser.RuleExpression, key TargetKeyword) (ex TargetD
 
 	// create an appropriate container based on the
 	// Target Rule keyword.
-	tdn := stackByTDNKeyword(key)
+	switch key {
+	case TargetTo:
+		ex = TTDNs()
+	case TargetFrom:
+		ex = TFDNs()
+	default:
+		ex = TDNs()
+	}
 
 	// Honor the established quotation scheme that
 	// was observed during ANTLR4 processing.
-	tdn.setQuoteStyle(expr.Style)
+	ex.setQuoteStyle(expr.Style)
 
 	// Assign the raw (DN) values to the
 	// return value. If nothing was found,
 	// bail out now.
-	if tdn.setExpressionValues(key, expr.Values...); tdn.Len() == 0 {
+	if ex.setExpressionValues(key, expr.Values...); ex.Len() == 0 {
 		err = noTBRuleExpressionValues(badTargetDN, targetRuleID, key)
 		return
 	}
-
-	// Envelope our DN stack within an
-	// 'any' instance, which is returned.
-	ex = tdn
 
 	return
 }

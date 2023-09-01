@@ -248,7 +248,7 @@ func permissionBindRulesPushPolicy(x any) (err error) {
 			err = pushErrorNilOrZero(PermissionBindRules{}, tv, nil)
 		} else {
 			if err = tv.Valid(); err != nil {
-				err = pushErrorInvalidCandidate(PermissionBindRules{}, tv, nil, err)
+				err = pushErrorNilOrZero(PermissionBindRules{}, tv, nil, err)
 			}
 		}
 

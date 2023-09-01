@@ -783,9 +783,17 @@ func (r ObjectIdentifiers) ID() string {
 /*
 Category wraps go-stackage's Stack.Category method.
 */
-func (r ObjectIdentifiers) Kind() string {
+func (r ObjectIdentifiers) Kind() (k string) {
+	k = `<uninitialized>`
 	if r.IsZero() {
-		return `<uninitialized>`
+		return
 	}
-	return keywordFromCategory(r).String()
+	_r, _ := castAsStack(r)
+	switch _k := lc(_r.Category()); _k {
+	case TargetExtOp.String(),
+		TargetCtrl.String():
+		k = _k
+	}
+
+	return
 }

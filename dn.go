@@ -1168,7 +1168,21 @@ This shall be the keyword that appears in a BindRule bearing the receiver
 as a condition value.
 */
 func (r BindDistinguishedNames) Keyword() Keyword {
-	return keywordFromCategory(r)
+	if r.IsZero() {
+		return nil
+	}
+
+	_r, _ := castAsStack(r)
+	switch _k := lc(_r.Category()); _k {
+	case BindUDN.String():
+		return BindUDN
+	case BindGDN.String():
+		return BindGDN
+	case BindRDN.String():
+		return BindRDN
+	}
+
+	return nil
 }
 
 /*
@@ -1194,11 +1208,25 @@ func (r BindDistinguishedNames) F() func(string) BindDistinguishedName {
 
 /*
 Keyword returns the Keyword (interface) assigned to the receiver instance.
-This shall be the keyword that appears in a TargetRule bearing the receiver
+This shall be the keyword that appears in a BindRule bearing the receiver
 as a condition value.
 */
 func (r TargetDistinguishedNames) Keyword() Keyword {
-	return keywordFromCategory(r)
+	if r.IsZero() {
+		return nil
+	}
+
+	_r, _ := castAsStack(r)
+	switch _k := lc(_r.Category()); _k {
+	case Target.String():
+		return Target
+	case TargetTo.String():
+		return TargetTo
+	case TargetFrom.String():
+		return TargetFrom
+	}
+
+	return nil
 }
 
 /*
@@ -1232,7 +1260,7 @@ so long as the raw string is of a non-zero length.
 */
 func (r BindDistinguishedNames) Push(x ...any) BindDistinguishedNames {
 	_r, _ := castAsStack(r)
-	kw := keywordFromCategory(r)
+	kw := r.Keyword()
 	if kw == nil {
 		// not initialized?!
 		return r
@@ -1308,7 +1336,7 @@ so long as the raw string is of a non-zero length.
 */
 func (r TargetDistinguishedNames) Push(x ...any) TargetDistinguishedNames {
 	_r, _ := castAsStack(r)
-	kw := keywordFromCategory(r)
+	kw := r.Keyword()
 	if kw == nil {
 		// not initialized?!
 		return r

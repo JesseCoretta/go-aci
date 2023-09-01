@@ -91,6 +91,50 @@ func TestStrInSlice(t *testing.T) {
 	}
 }
 
+func TestIsIdentifier(t *testing.T) {
+	for at, result := range map[string]bool{
+		`cn`:                true,
+		`givenName`:         true,
+		`objectClass`:       true,
+		`DRINK`:             false,
+		`license`:           true,
+		``:                  false,
+		`>rjd2<`:            false,
+		`color;lang-fr`:     true,
+		`😀🐾💜`:               false,
+		`1.3.6.1.4.1.56521`: false,
+	} {
+
+		if isIdentifier(at) != result {
+			t.Errorf("%s failed: unexpected result for '%s'; expected '%t', got '%t'",
+				t.Name(), at, !result, result)
+		}
+	}
+}
+
+func TestHash(t *testing.T) {
+	for hash, slice := range map[string]any{
+		`93BCF19C9214DCB94C51D48FCC3A9FA02281A41F`: AT(`squatcobbler`),
+		`1654544702C1F92D67E0C4ACB0798EB0A36D8134`: Filter(`(&(objectClass=employee)(cn=Jane Doe))`),
+		`3F49EF78318778E87101BFF58E5216092F0BE4DA`: AF(AT(`squatcobbler`), Filter(`(&(objectClass=employee)(cn=Jane Doe))`)),
+		`190572C17D966B0C729FE357535CBB47C27B249B`: ExtOps().Push(`1.3.6.1.4.1.56521.999.5`).Push(`1.3.6.1.4.1.56521.999.4`),
+		`DA983C2E1EC588345DCF309C31AFBF56B3899FC8`: ExtOp(`1.3.6.1.4.1.56521.999.5`),
+		`7875A6DCADFA0778C7CE2B839801092CF2855FD4`: UDN(`uid=jesse,ou=People,dc=example,dc=com`),
+		`619683DB9EF9D4649743EE1DEDDB3923D6E5F704`: ToD(`1319`),
+		`F195DAC6821622980E970883EFEAA04CDFF8132D`: DoW(Sat, Sun),
+		`6D1A3C16AA5486F9E09BE8476DE15D2E339926F2`: EXTERNAL,
+		`38113F5D93F1E10FF5F94788A82C1B22CD82D5C3`: Inherit(UAT(AT(`manager`), AV(`uid=frank,ou=People,dc=example,dc=com`)), 1, 3),
+		`E244BC50910AA5AC6B07C9BADF84A111C1A48AEF`: Inherit(GAT(AT(`owner`), AV(`cn=Executives,ou=Group,dc=example,dc=com`)), 2, 8),
+	} {
+		if result, err := Hash(slice); err != nil {
+			t.Errorf("%s failed: %v", t.Name(), err)
+		} else if !eq(hash, result) {
+			t.Errorf("%s failed: unexpected result for '%T'; expected '%s', got '%s'",
+				t.Name(), slice, hash, result)
+		}
+	}
+}
+
 /*
 TestOperator_codecov shall test every possible permutation of B/T keywords and
 ComparisonOperator. Each permutation result will be compared with the expected

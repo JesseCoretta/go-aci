@@ -1240,7 +1240,15 @@ func assertBindUGRDN(expr parser.RuleExpression, key BindKeyword) (ex any, err e
 
 	// create an appropriate container based on the
 	// Bind Rule keyword.
-	bdn := stackByBDNKeyword(key)
+	var bdn BindDistinguishedNames
+	switch key {
+	case BindRDN:
+		bdn = RDNs()
+	case BindGDN:
+		bdn = GDNs()
+	default:
+		bdn = UDNs()
+	}
 
 	// Honor the established quotation scheme that
 	// was observed during ANTLR4 processing.

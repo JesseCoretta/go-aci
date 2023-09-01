@@ -269,11 +269,6 @@ func pushErrorNotUnique(receiver, candidate any, key Keyword, er ...error) error
 	return pushError(receiver, candidate, key, emsg, er...)
 }
 
-func pushErrorInvalidCandidate(receiver, candidate any, key Keyword, er ...error) error {
-	emsg := "Cannot push aberrant %T into %T [%s]: %v"
-	return pushError(receiver, candidate, key, emsg, er...)
-}
-
 func pushErrorNilOrZero(receiver, candidate any, key Keyword, er ...error) error {
 	var emsg string = "Cannot push zero-length or nil %T into %T [%s]: %v"
 	return pushError(receiver, candidate, key, emsg, er...)
