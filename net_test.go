@@ -55,8 +55,8 @@ func TestFQDN(t *testing.T) {
 		wcop := sprintf("( %s %s \"www.example.com\" )", f.Keyword(), cop)
 		if T := meth(); T.Paren().String() != wcop {
 			err := unexpectedStringResult(F.String(), wcop, T.String())
-			t.Errorf("%s [%s] multival failed [%s rule]: %v",
-				t.Name(), F.Keyword(), typ, err)
+			t.Errorf("%s [%s] multival failed [%s rule]; %s, %s: %v",
+				t.Name(), F.Keyword(), cop.Context(), cop.Description(), typ, err)
 		}
 	}
 }
