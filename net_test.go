@@ -7,6 +7,8 @@ import (
 
 func TestFQDN(t *testing.T) {
 	var f FQDN = DNS()
+	_ = f.Len()
+	_ = f.Keyword()
 	var typ string = f.Keyword().String()
 
 	if f.len() != 0 {
@@ -45,26 +47,17 @@ func TestFQDN(t *testing.T) {
 		t.Errorf("%s failed; want '%d', got '%d'", t.Name(), 3, llen)
 	}
 
-	// FQDN qualifies for equality and negated equality
-	// comparison operators.
-	cops := map[ComparisonOperator]func() BindRule{
-		Eq: F.Eq,
-		Ne: F.Ne,
-	}
-
 	// try every comparison operator supported in
 	// this context ...
-	for c := 1; c < len(cops)+1; c++ {
-		cop := ComparisonOperator(c)
-		wcop := sprintf("%s %s %q", F.Keyword(), cop, got)
-
-		// create bindrule B using comparison
-		// operator (cop).
-		if B := cops[cop](); B.String() != wcop {
-			err := unexpectedStringResult(typ, wcop, B.String())
-			t.Errorf("%s failed [%s rule]: %v", t.Name(), typ, err)
+	brf := F.BRF()
+	for i := 0; i < brf.Len(); i++ {
+		cop, meth := brf.Index(i + 1)
+		wcop := sprintf("( %s %s \"www.example.com\" )", f.Keyword(), cop)
+		if T := meth(); T.Paren().String() != wcop {
+			err := unexpectedStringResult(F.String(), wcop, T.String())
+			t.Errorf("%s [%s] multival failed [%s rule]: %v",
+				t.Name(), F.Keyword(), typ, err)
 		}
-
 	}
 }
 
@@ -77,8 +70,11 @@ func TestDNS_alternativeFQDN(t *testing.T) {
 	}
 }
 
-func TestIPAddr_C(t *testing.T) {
+func TestIPAddr_BRF(t *testing.T) {
 	var i IPAddr
+	_ = i.Len()
+	_ = i.Keyword()
+
 	if !i.IsZero() {
 		t.Errorf("%s failed: non-zero %T instance", t.Name(), i)
 	}
@@ -87,6 +83,8 @@ func TestIPAddr_C(t *testing.T) {
 		t.Errorf("%s failed: unexpected string result; want '%s', got '%s'",
 			t.Name(), badAddr, got)
 	}
+
+	var typ string = i.Keyword().String()
 
 	i.Set(`192.168.0`)
 	i.Set(`12.3.45.*`)
@@ -99,6 +97,24 @@ func TestIPAddr_C(t *testing.T) {
 
 	if cond := i.Ne(); cond.IsZero() {
 		t.Errorf("%s failed: nil %T instance!", t.Name(), cond)
+	}
+
+	// try every comparison operator supported in
+	// this context ...
+	brf := i.BRF()
+	for j := 0; j < brf.Len(); j++ {
+		cop, meth := brf.Index(j + 1)
+		if meth == nil {
+			t.Errorf("%s [%s] multival failed: expected %s method (%T), got nil",
+				t.Name(), i.Keyword(), cop.Context(), meth)
+		}
+
+		wcop := sprintf("( %s %s %q )", i.Keyword(), cop, i)
+		if T := meth(); T.Paren().String() != wcop {
+			err := unexpectedStringResult(i.String(), wcop, T.String())
+			t.Errorf("%s [%s] multival failed [%s rule]: %v",
+				t.Name(), i.Keyword(), typ, err)
+		}
 	}
 }
 
