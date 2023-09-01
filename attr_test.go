@@ -295,8 +295,16 @@ func TestAttributeTypes(t *testing.T) {
 		_ = attrs.Eq()
 		_ = attrs.Ne()
 		_ = attrs.Len()
+		attrs.isAttributeTypeContext()
 		attrs.reset()
 		attrs.Push(keyword)
+		attrs.resetKeyword(keyword)
+		attrs.resetKeyword(keyword.String())
+		attrs.setQuoteStyle(1)
+		attrs.setQuoteStyle(0)
+		attrs.Contains(3.14159)
+		attrs.Push('𝝅')
+
 		_ = attrs.Keyword()
 		_ = attrs.Kind()
 		_ = attrs.Valid()
@@ -314,6 +322,7 @@ func TestAttributeTypes(t *testing.T) {
 				attr AttributeType
 				actx AttributeTypeContext
 			)
+			attr.isAttributeTypeContext()
 
 			if err := testEmptyAttrContext(t, keyword, attr, attrs, al); err != nil {
 				t.Errorf(err.Error())
@@ -327,6 +336,14 @@ func TestAttributeTypes(t *testing.T) {
 				t.Errorf("%s [%s] multival failed: valid %T[%s] instance (%s) not pushed into %T[%s; len:%d]",
 					t.Name(), keyword, attr, keyword, attr, attrs, attrs.Keyword(), al)
 			}
+			popped := attrs.Pop()
+			attrs.Push(popped)
+			attrs.Push(popped.String())
+			attrs.Push(3.14159)
+			attrs.Push('𝝅')
+
+			attrs.setQuoteStyle(1)
+			attrs.setQuoteStyle(0)
 
 			actx = testMakeAttrContext(1, attr, attrs)
 			trf := attrs.TRF()

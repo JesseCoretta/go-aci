@@ -727,18 +727,6 @@ func (r AttributeTypes) setQuoteStyle(style int) AttributeTypes {
 }
 
 /*
-setCategory wraps go-stackage's Stack.SetCategory method privately.
-
-DECOM
-*/
-func (r AttributeTypes) setCategory(cat string) AttributeTypes {
-	_r, _ := castAsStack(r)
-	_r.SetCategory(cat)
-	r = AttributeTypes(_r)
-	return r
-}
-
-/*
 IsZero wraps go-stackage's Stack.IsZero method.
 */
 func (r AttributeTypes) IsZero() bool {
