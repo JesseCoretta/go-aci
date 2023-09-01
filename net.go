@@ -133,6 +133,13 @@ func (r IPAddr) Keyword() Keyword {
 }
 
 /*
+Kind returns the string representation of the receiver's kind.
+*/
+func (r IPAddr) Kind() string {
+	return BindIP.String()
+}
+
+/*
 Set assigns the provided address component to the receiver and
 returns the receiver instance in fluent-form.
 
@@ -165,6 +172,22 @@ func (r IPAddr) IsZero() bool {
 	}
 
 	return r.ipAddrs.isZero()
+}
+
+/*
+Valid returns an error indicative of whether the receiver
+is in an aberrant state.
+*/
+func (r IPAddr) Valid() error {
+	if r.IsZero() {
+		return nilInstanceErr(r)
+	}
+
+	if r.Len() == 0 {
+		return nilInstanceErr(r)
+	}
+
+	return nil
 }
 
 func (r *ipAddrs) isZero() bool {
