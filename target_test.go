@@ -36,7 +36,8 @@ func TestTargetKeyword_Set_targetScope(t *testing.T) {
 
 /*
 This example demonstrates a similar scenario to the one described in the above example, but with
-an alternative means of quotation demonstrated.
+an alternative means of quotation demonstrated. Additionally, string primitives are used instead
+of proper ExtOp style OIDs.
 */
 func ExampleExtOps_alternativeQuotationScheme() {
 	// Here we set double-quote encapsulation
@@ -44,13 +45,13 @@ func ExampleExtOps_alternativeQuotationScheme() {
 	// ExtOps function.
 	ext := ExtOps().Push(
 		// These aren't real control OIDs.
-		ExtOp(`1.3.6.1.4.1.56521.999.5`),
-		ExtOp(`1.3.6.1.4.1.56521.999.6`),
-		ExtOp(`1.3.6.1.4.1.56521.999.7`),
+		`1.3.6.1.4.1.56521.999.5`,
+		`1.3.6.1.4.1.56521.999.6`,
+		`1.3.6.1.4.1.56521.999.7`,
 	)
 
-	fmt.Printf("%s", ext.Eq())
-	// Output: ( extop = "1.3.6.1.4.1.56521.999.5 || 1.3.6.1.4.1.56521.999.6 || 1.3.6.1.4.1.56521.999.7" )
+	fmt.Printf("%s", ext.Eq().SetQuoteStyle(1)) // see MultivalSliceQuotes const for details
+	// Output: ( extop = "1.3.6.1.4.1.56521.999.5" || "1.3.6.1.4.1.56521.999.6" || "1.3.6.1.4.1.56521.999.7" )
 }
 
 /*
@@ -157,4 +158,21 @@ func ExampleTRs() {
 	)
 	fmt.Printf("%s", t)
 	// Output: ( target = "ldap:///uid=jesse,ou=People,dc=example,dc=com" ) ( targetfilter = "(&(uid=jesse)(objectClass=*))" ) ( extop = "1.3.6.1.4.1.56521.999.5" )
+}
+
+/*
+This example demonstrates the indexing, iteration and execution of the available
+comparison operator methods for the TargetDistinguishedName type.
+*/
+func ExampleTargetRuleFuncs() {
+	var tdn TargetDistinguishedName = TTDN(`uid=*,ou=People,dc=example,dc=com`)
+	trf := tdn.TRF()
+
+	for i := 0; i < trf.Len(); i++ {
+		cop, meth := trf.Index(i + 1) // zero (0) should never be accessed, start at 1
+		fmt.Printf("[%s] %s\n", cop.Description(), meth())
+	}
+	// Output:
+	// [Equal To] ( target_to = "ldap:///uid=*,ou=People,dc=example,dc=com" )
+	// [Not Equal To] ( target_to != "ldap:///uid=*,ou=People,dc=example,dc=com" )
 }
