@@ -744,6 +744,11 @@ attempts based upon instance type and other conditions. An error is returned to
 the caller revealing the outcome of the attempt.
 */
 func (r AttributeFilterOperations) pushPolicy(x any) (err error) {
+	if r.contains(x) {
+		err = pushErrorNotUnique(r, x, TargetAttrFilters)
+		return
+	}
+
 	switch tv := x.(type) {
 	case string:
 		if len(tv) == 0 {
@@ -768,6 +773,11 @@ attempts based upon instance type and other conditions. An error is returned to
 the caller revealing the outcome of the attempt.
 */
 func (r AttributeFilterOperation) pushPolicy(x any) (err error) {
+	if r.contains(x) {
+		err = pushErrorNotUnique(r, x, TargetAttrFilters)
+		return
+	}
+
 	switch tv := x.(type) {
 	case string:
 		if len(tv) == 0 {
@@ -799,12 +809,12 @@ func (r AttributeFilterOperation) Push(x ...any) AttributeFilterOperation {
 	_r, _ := castAsStack(r)
 	for i := 0; i < len(x); i++ {
 		switch tv := x[i].(type) {
-		case AttributeFilter:
-			_r.Push(tv)
 		case string:
 			if af, err := parseAttributeFilter(tv); err == nil {
 				_r.Push(af)
 			}
+		case AttributeFilter:
+			_r.Push(tv)
 		}
 	}
 
@@ -1139,11 +1149,7 @@ func (r AttributeOperation) makeLabel() string {
 setCategory assigns the categorical string label (cat) to the receiver.
 */
 func (r AttributeFilterOperation) setCategory(cat string) {
-	nx, conv := castAsStack(r)
-	if !conv {
-		return
-	}
-
+	nx, _ := castAsStack(r)
 	nx.SetCategory(cat)
 }
 

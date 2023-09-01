@@ -9,6 +9,9 @@ func TestSearchFilter_setFromVar(t *testing.T) {
 	want := `(&(objectClass=employee)(cn=Jesse Coretta))`
 	var f SearchFilter
 
+	_ = f.Eq()
+	_ = f.Ne()
+
 	// for codecov (check panic potential)
 	if empty := f.String(); empty != `` {
 		t.Errorf("%T failed: [%T.String]; should be empty",
@@ -71,8 +74,13 @@ func TestFilter_Set(t *testing.T) {
 }
 
 func TestAttributeFilter(t *testing.T) {
+	var af AttributeFilter
+	_ = af.AttributeType()
+	_ = af.SearchFilter()
+	_ = af.String()
+
 	want := `objectClass:(&(objectClass=employee)(cn=Jesse Coretta))`
-	af := AF(`objectClass`, `(&(objectClass=employee)(cn=Jesse Coretta))`)
+	af = AF(`objectClass`, `(&(objectClass=employee)(cn=Jesse Coretta))`)
 	if want != af.String() {
 		t.Errorf("%T failed [AttributeFilter]:\nwant '%s'\ngot  '%s'",
 			t.Name(), want, af)
@@ -83,7 +91,31 @@ func TestAttributeFilterOperation_byStringParse(t *testing.T) {
 	straf := `objectClass:(&(objectClass=employee)(cn=Jesse Coretta))`
 	want := `add=` + straf
 
-	afo := AddOp.AFO(straf)
+	var afo AttributeFilterOperation = AFO()
+
+	adder := AddOp.AFO(straf)
+
+	afo.Push()
+	_ = afo.Valid()
+	_ = afo.Contains('𝝅')
+	_ = afo.Push('𝝅')
+	_ = afo.Push(nil)
+	_ = afo.Push(adder)
+	_ = afo.Push(adder.String())
+	_ = afo.Pop()
+	_ = afo.Valid()
+
+	var af AttributeFilter
+	af.Parse(straf)
+
+	_ = hasAttributeFilterOperationPrefix(``)
+	_ = hasAttributeFilterOperationPrefix(af.String())
+
+	_ = afo.Contains(``)
+	_ = afo.Contains(af)
+	afo.Push(af)
+	_ = afo.Push(af.String())
+
 	if afo.String() != want {
 		t.Errorf("%T failed [AttributeFilterOperation.AFO]:\nwant '%s'\ngot  '%s'",
 			t.Name(), want, afo)
@@ -143,6 +175,8 @@ func TestAttributeFilterOperations_byStringParse(t *testing.T) {
 
 	// Parse the entirety of the want literal.
 	var afos AttributeFilterOperations
+	_ = afos.Contains('𝝅')
+
 	if err := afos.Parse(want); err != nil {
 		t.Errorf("%s failed [AttributeFilterOperations.Parse(raw)]: %v",
 			t.Name(), err)
@@ -223,17 +257,33 @@ func TestAttributeFilterOperations_toTargetRule(t *testing.T) {
 	af4 := `telephoneNumber:(telephoneNumber=456*)`
 
 	var afos AttributeFilterOperations
+	afos.Push()
+	_ = afos.Valid()
 
 	// for codecov
 	if !afos.IsZero() {
 		t.Errorf("%s failed [%T.IsZero]:\nwant 'true'\ngot 'false'",
 			t.Name(), afos)
 	}
+	_ = afos.Contains('𝝅')
+
+	adder := AddOp.AFO(af1, af2)
+	deler := DelOp.AFO(af3, af4)
 
 	afos = AFOs(
-		AddOp.AFO(af1, af2),
-		DelOp.AFO(af3, af4),
+		adder,
+		deler,
 	)
+
+	_ = afos.Push('𝝅')
+	_ = afos.Push(nil)
+	_ = afos.Push(adder)
+	_ = afos.Push(adder.String())
+	_ = afos.SetDelimiter(1)
+	_ = afos.SetDelimiter(0)
+	_ = afos.SetDelimiter()
+	_ = afos.Valid()
+
 	rule := afos.Eq()
 
 	want1 := `add=` + af1 + ` && ` + af2
@@ -279,6 +329,7 @@ approach is to simply use its String method to get the whole value, if desired.
 func ExampleAttributeFilter_Parse() {
 	aftxt := `objectClass:(&(objectClass=employee)(cn=Jesse Coretta))`
 	var af AttributeFilter
+	_ = af.Parse(`4537895439h`)
 	err := af.Parse(aftxt)
 	if err != nil {
 		fmt.Println(err)
