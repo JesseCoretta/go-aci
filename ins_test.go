@@ -6,6 +6,13 @@ import (
 )
 
 func TestACIs(t *testing.T) {
+	var Ins Instructions
+	_ = Ins.Valid()
+	_ = Ins.IsZero()
+	_ = Ins.String()
+	_ = Ins.Len()
+	_ = Ins.Index(0)
+
 	// Make a target rule that encompasses any account
 	// with a DN syntax of "uid=<userid>,ou=People,dc=example,dc=com"
 	C := TDN(`uid=*,ou=People,dc=example,dc=com`).Eq()
@@ -31,17 +38,34 @@ func TestACIs(t *testing.T) {
 	acl := `Limit people access to timeframe`
 
 	// Finally, craft the Instruction instance
-	i := ACI(acl, tgt, pbrule)
+	var i Instruction
+	_ = i.TRs()
+	_ = i.PBRs()
+	_ = i.ACL()
+
+	i = ACI(acl, tgt, pbrule)
+	_ = i.TRs()
+	_ = i.PBRs()
+	_ = i.ACL()
 
 	want := `( target = "ldap:///uid=*,ou=People,dc=example,dc=com" )(version 3.0; acl "Limit people access to timeframe"; allow(read,search,compare) ( timeofday >= "1730" AND timeofday < "2400" );)`
 	if want != i.String() {
 		t.Errorf("%s failed: want '%s', got '%s'", t.Name(), want, i)
 	}
 
-	As := ACIs()
-	As.Push(i)
-	if As.Len() == 0 {
-		t.Errorf("%s failed to push %T into %T", t.Name(), i, As)
+	Ins = ACIs()
+	Ins.Push(i)
+	popped := Ins.Pop()
+	Ins.Push(popped)
+	Ins.F()
+	Ins.Push(popped.String())
+	Ins.Push(`<3 <3 <3`)
+	if Ins.Len() != 1 {
+		t.Errorf("%s failed to push %T into %T", t.Name(), i, Ins)
+	}
+
+	if Ins.String() != Ins.Index(0).String() {
+		t.Errorf("%s strcmp fail", t.Name())
 	}
 }
 

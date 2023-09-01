@@ -208,10 +208,10 @@ func (r Instruction) TRs() (trs TargetRules) {
 }
 
 /*
-PB returns the PermissionBindRules found within the underlying receiver instance.
+PBRs returns the PermissionBindRules found within the underlying receiver instance.
 Note that a bogus Rule is returned if the receiver is nil, or unset.
 */
-func (r Instruction) PBs() (pbrs PermissionBindRules) {
+func (r Instruction) PBRs() (pbrs PermissionBindRules) {
 	if !r.IsZero() {
 		pbrs = r.instruction.PBRs
 	}
