@@ -31,7 +31,7 @@ level function, which automatically invokes value checks.
 */
 type PermissionBindRule struct {
 	P Permission
-	B BindRules
+	B BindContext // BindRule -or- BindRules are allowed
 }
 
 /*
@@ -46,7 +46,7 @@ Generally, an ACI only has a single PermissionBindRule, though multiple
 instances of this type are allowed per the syntax specification honored
 by this package.
 */
-func PBR(P Permission, B BindRules) (r PermissionBindRule) {
+func PBR(P Permission, B BindContext) (r PermissionBindRule) {
 	_r := PermissionBindRule{P, B}
 	if err := _r.Valid(); err == nil {
 		r = _r
@@ -65,12 +65,16 @@ evaluate as true:
 
 • Rule.Len returns zero (0) for B
 */
-func (r PermissionBindRule) Valid() (err error) {
+func (r *PermissionBindRule) Valid() (err error) {
 	return r.valid()
 }
 
-func (r PermissionBindRule) IsZero() bool {
-	return r.P.IsZero() && r.B.IsZero()
+func (r *PermissionBindRule) IsZero() bool {
+	if r == nil {
+		return true
+	}
+
+	return r.P.IsZero() && r.B == nil
 }
 
 func (r PermissionBindRule) Kind() string {
@@ -80,7 +84,12 @@ func (r PermissionBindRule) Kind() string {
 /*
 valid is a private method invoked by PermissionBindRule.Valid.
 */
-func (r PermissionBindRule) valid() (err error) {
+func (r *PermissionBindRule) valid() (err error) {
+	if r == nil {
+		err = nilInstanceErr(r)
+		return
+	}
+
 	if err = r.P.Valid(); err != nil {
 		return
 
@@ -107,13 +116,6 @@ func (r PermissionBindRule) ID() string {
 }
 
 /*
-Category wraps go-stackage's Stack.Category method.
-*/
-func (r PermissionBindRule) Category() string {
-	return pbrRuleID
-}
-
-/*
 String is a stringer method that returns the string representation
 of the receiver.
 */
@@ -127,7 +129,7 @@ string is a private method called by PermissionBindRule.String.
 func (r PermissionBindRule) string() (s string) {
 	s = badPB
 	if err := r.valid(); err == nil {
-		s = sprintf("%s %s", r.P, r.B)
+		s = sprintf("%s %s;", r.P, r.B)
 	}
 
 	return
@@ -156,13 +158,6 @@ Len wraps go-stackage's Stack.Len method.
 func (r PermissionBindRules) Len() int {
 	_r, _ := castAsStack(r)
 	return _r.Len()
-}
-
-/*
-Category wraps go-stackage's Stack.Category method.
-*/
-func (r PermissionBindRules) Category() string {
-	return pbrsRuleID
 }
 
 /*

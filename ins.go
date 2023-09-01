@@ -118,7 +118,7 @@ func (r Instruction) String() string {
 		return badACI
 	}
 
-	return sprintf("%s(%s; acl \"%s\"; %s;)",
+	return sprintf("%s(%s; acl \"%s\"; %s)",
 		r.instruction.TRs,
 		version(), // sprints Version const.
 		r.instruction.ACL,

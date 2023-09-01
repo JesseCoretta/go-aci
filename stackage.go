@@ -26,8 +26,8 @@ const (
 	Eq ComparisonOperator = ComparisonOperator(stackage.Eq) // 0x1, "Equal To"
 	Ne ComparisonOperator = ComparisonOperator(stackage.Ne) // 0x2, "Not Equal to"     !! USE WITH CAUTION !!
 	Lt ComparisonOperator = ComparisonOperator(stackage.Lt) // 0x3, "Less Than"
-	Le ComparisonOperator = ComparisonOperator(stackage.Le) // 0x4, "Less Than Or Equal"
-	Gt ComparisonOperator = ComparisonOperator(stackage.Gt) // 0x5, "Greater Than"
+	Gt ComparisonOperator = ComparisonOperator(stackage.Gt) // 0x4, "Greater Than"
+	Le ComparisonOperator = ComparisonOperator(stackage.Le) // 0x5, "Less Than Or Equal"
 	Ge ComparisonOperator = ComparisonOperator(stackage.Ge) // 0x6, "Greater Than Or Equal"
 )
 

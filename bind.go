@@ -1311,7 +1311,16 @@ type BindContext interface {
 	// Only meaningful when run on BindRules instances.
 	IsNesting() bool
 
-	// Category will report `bind` in all scenarios.
+	// Valid returns an error instance that indicates
+	// whether the receiver is in an aberrant state.
+	Valid() error
+
+	// ID will report `bind` in all scenarios.
+	ID() string
+
+	// Category will report the logical state of a BindRule
+	// or BindRules instance. This will read `and`, or`,
+	// `not`.
 	Category() string
 
 	// Kind will report `stack` for a BindRules instance, or

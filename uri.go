@@ -544,13 +544,6 @@ func (r *LDAPURI) Set(x ...any) LDAPURI {
 set is a private method called by LDAPURI.Set.
 */
 func (r *ldapURI) set(x ...any) {
-	/*
-		if r == nil {
-			R := newLDAPURI()
-			r = R
-		}
-	*/
-
 	// Iterate each of the user-specified
 	// input values ...
 	for i := 0; i < len(x); i++ {
