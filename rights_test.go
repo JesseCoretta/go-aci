@@ -53,6 +53,40 @@ func TestDeny(t *testing.T) {
 	}
 }
 
+func ExampleRight_String() {
+	// iterate all of the known Right definitions
+	// defined as constants in this package.
+	for idx, privilege := range []Right{
+		NoAccess,
+		ReadAccess,
+		WriteAccess,
+		AddAccess,
+		DeleteAccess,
+		SearchAccess,
+		CompareAccess,
+		SelfWriteAccess,
+		ProxyAccess,
+		ImportAccess,
+		ExportAccess,
+		AllAccess, // does NOT include proxy access !
+	} {
+		fmt.Printf("Privilege %02d/%d: %s (bit:%d)\n", idx+1, 12, privilege, int(privilege))
+	}
+	// Output:
+	// Privilege 01/12: none (bit:0)
+	// Privilege 02/12: read (bit:1)
+	// Privilege 03/12: write (bit:2)
+	// Privilege 04/12: add (bit:4)
+	// Privilege 05/12: delete (bit:8)
+	// Privilege 06/12: search (bit:16)
+	// Privilege 07/12: compare (bit:32)
+	// Privilege 08/12: selfwrite (bit:64)
+	// Privilege 09/12: proxy (bit:128)
+	// Privilege 10/12: import (bit:256)
+	// Privilege 11/12: export (bit:512)
+	// Privilege 12/12: all (bit:895)
+}
+
 /*
 This example demonstrates the withholding (denial) of all privileges except proxy.
 */
@@ -61,6 +95,60 @@ func ExampleDeny() {
 	D := Deny(AllAccess)
 	fmt.Printf("%s", D)
 	// Output: deny(all)
+}
+
+func ExamplePermission_IsZero() {
+	var priv Permission
+	fmt.Printf("Privileges are undefined: %t", priv.IsZero())
+	// Output: Privileges are undefined: true
+}
+
+func ExamplePermission_Valid() {
+	var priv Permission
+	fmt.Printf("%T is ready for use: %t", priv, priv.Valid() == nil)
+	// Output: aci.Permission is ready for use: false
+}
+
+func ExamplePermission_Disposition() {
+	priv := Allow(`read`, `write`, `compare`, `selfwrite`)
+	fmt.Printf("%s", priv.Disposition())
+	// Output: allow
+}
+
+func ExamplePermission_String() {
+	priv := Allow(`read`, `write`, `compare`, `selfwrite`)
+	fmt.Printf("%s", priv)
+	// Output: allow(read,write,compare,selfwrite)
+}
+
+func ExamplePermission_Shift() {
+	var priv Permission = Allow() // you MUST initialize Permission explicitly using Allow or Deny funcs
+	priv.Shift(ReadAccess, ProxyAccess)
+	fmt.Printf("Allows proxy: %t", priv.Positive(`proxy`))
+	// Output: Allows proxy: true
+}
+
+func ExamplePermission_Len() {
+	var priv Permission = Deny() // you MUST initialize Permission explicitly using Allow or Deny funcs
+	priv.Shift(ReadAccess, WriteAccess, CompareAccess, SearchAccess, ProxyAccess)
+	fmt.Printf("Number of privileges denied: %d", priv.Len())
+	// Output: Number of privileges denied: 5
+}
+
+func ExamplePermission_Positive() {
+	var priv Permission = Deny(`read`, `write`, `proxy`, `search`) // you MUST initialize Permission explicitly using Allow or Deny funcs
+	fmt.Printf("Forbids read access: %t", priv.Positive(`read`))
+	// Output: Forbids read access: true
+}
+
+func ExamplePermission_Unshift() {
+	var priv Permission = Deny() // you MUST initialize Permission explicitly using Allow or Deny funcs
+	priv.Shift(ReadAccess, WriteAccess, CompareAccess, SearchAccess, ProxyAccess)
+
+	priv.Unshift(CompareAccess) // remove the negated compare privilege
+
+	fmt.Printf("Forbids compare: %t", priv.Positive(`compare`))
+	// Output: Forbids compare: false
 }
 
 func TestRights_bogus(t *testing.T) {
@@ -113,7 +201,7 @@ func TestRights_lrShift(t *testing.T) {
 
 			term, typ := testGetRightsTermType(i, k, v)
 
-			shifters := map[int]func(any) Permission{
+			shifters := map[int]func(...any) Permission{
 				0: p.Shift,
 				1: p.Unshift,
 			}

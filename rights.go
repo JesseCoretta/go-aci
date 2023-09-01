@@ -275,7 +275,7 @@ this would represent an abstract length of two (2).
 func (r Permission) Len() int {
 	var D int
 	for i := 0; i < bitSize(NoAccess); i++ {
-		if d := Day(1 << i); r.Positive(d) {
+		if d := Right(1 << i); r.Positive(d) {
 			D++
 		}
 	}
@@ -301,7 +301,7 @@ func (r Permission) String() string {
 		return r.sprintf(rights)
 	}
 
-	for i := 0; i < 16; i++ {
+	for i := 0; i < bitSize(NoAccess); i++ {
 		right := Right(1 << i)
 		if r.Positive(right) {
 			rights = append(rights, right.String())
@@ -346,22 +346,28 @@ func (r Permission) Positive(x any) bool {
 /*
 Shift left-shifts the receiver instance to include Right x, if not already present.
 */
-func (r Permission) Shift(x any) Permission {
+func (r Permission) Shift(x ...any) Permission {
 	if err := r.Valid(); err != nil {
 		return r
 	}
-	r.permission.shift(x)
+
+	for i := 0; i < len(x); i++ {
+		r.permission.shift(x[i])
+	}
 	return r
 }
 
 /*
 Unshift right-shifts the receiver instance to remove Right x, if present.
 */
-func (r Permission) Unshift(x any) Permission {
+func (r Permission) Unshift(x ...any) Permission {
 	if err := r.Valid(); err != nil {
 		return r
 	}
-	r.permission.unshift(x)
+
+	for i := 0; i < len(x); i++ {
+		r.permission.unshift(x[i])
+	}
 	return r
 }
 
