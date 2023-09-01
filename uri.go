@@ -392,13 +392,12 @@ func (r LDAPURI) makeBindRule(negate ...bool) BindRule {
 	// so we can apply some additional changes
 	// using methods we didn't wrap because it
 	// wouldn't be necessary otherwise.
-	_b := castAsCondition(b).
+	castAsCondition(b).
 		Encap(`"`).
 		SetID(bindRuleID).
 		NoPadding(!RulePadding).
 		SetCategory(kw.String())
 
-	b = BindRule(*_b)
 	return b
 }
 
@@ -531,12 +530,16 @@ In short, choose:
 
 • DN and AttributeBindTypeOrValue
 */
-func (r *LDAPURI) Set(x ...any) *LDAPURI {
-	if r == nil {
-		*r = URI()
+func (r *LDAPURI) Set(x ...any) LDAPURI {
+	if r.IsZero() {
+		_r := URI()
+		*r = _r
+		//r.ldapURI = newLDAPURI(x...)
+		//return *r
 	}
+
 	r.ldapURI.set(x...)
-	return r
+	return *r
 }
 
 /*

@@ -1,6 +1,7 @@
 package aci
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -139,4 +140,85 @@ func TestURI_codecov(t *testing.T) {
 			t.Name(), atbtval, got)
 	}
 
+}
+
+func ExampleURI() {
+	dn := UDN(`ou=People,o=example`)
+	attrs := UAs(`cn`, `sn`, `givenName`, `objectClass`, `uid`)
+	filter := `ldap:///ou=People,o=example??sub?(objectClass=employee)`
+
+	uri := URI(dn, attrs, filter)
+
+	fmt.Printf("%s", uri)
+	// Output: ldap:///ou=People,o=example??sub?(objectClass=employee)
+}
+
+func ExampleLDAPURI_Parse() {
+	raw := `ldap:///ou=People,dc=example,dc=com?cn,sn,givenName,objectClass,uid?one?(&(objectClass=employee)(terminated=FALSE))`
+
+	var uri LDAPURI
+	if err := uri.Parse(raw); err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Printf("%s", uri)
+	// Output: ldap:///ou=People,dc=example,dc=com?cn,sn,givenName,objectClass,uid?one?(&(objectClass=employee)(terminated=FALSE))
+}
+
+func ExampleLDAPURI_Set() {
+	var uri LDAPURI
+	uri.Set(`ldap:///ou=People,dc=example,dc=com?cn,sn,givenName,objectClass,uid?one?(&(objectClass=employee)(terminated=FALSE))`)
+	fmt.Printf("%s", uri)
+	// Output: ldap:///ou=People,dc=example,dc=com?cn,sn,givenName,objectClass,uid?one?(&(objectClass=employee)(terminated=FALSE))
+}
+
+func ExampleLDAPURI_IsZero() {
+	var uri LDAPURI
+	fmt.Printf("Zero: %t", uri.IsZero())
+	// Output: Zero: true
+}
+
+func ExampleLDAPURI_Valid() {
+	var uri LDAPURI
+	fmt.Printf("Valid: %t", uri.Valid() == nil)
+	// Output: Valid: false
+}
+
+func ExampleLDAPURI_Keyword() {
+	dn := GDN(`ou=Groups,dc=example,dc=com`)
+	filter := Filter(`(&(objectClass=distributionList)(status=active))`)
+	uri := URI(dn, filter)
+
+	fmt.Printf("Keyword: %s", uri.Keyword())
+	// Output: Keyword: groupdn
+}
+
+func ExampleLDAPURI_String() {
+	var uri LDAPURI
+	uri.Set(`ldap:///ou=People,dc=example,dc=com?cn,sn,givenName,objectClass,uid?one?(&(objectClass=employee)(terminated=FALSE))`)
+	fmt.Printf("%s", uri)
+	// Output: ldap:///ou=People,dc=example,dc=com?cn,sn,givenName,objectClass,uid?one?(&(objectClass=employee)(terminated=FALSE))
+}
+
+func ExampleLDAPURI_Eq() {
+	dn := GDN(`ou=Groups,dc=example,dc=com`)
+	filter := Filter(`(&(objectClass=distributionList)(status=active))`)
+	attrs := UAs(`cn`, `sn`, `givenName`, `objectClass`, `uid`)
+	uri := URI(dn, attrs, filter, SingleLevel)
+
+	fmt.Printf("%s", uri.Eq())
+	// Output: groupdn = "ldap:///ou=Groups,dc=example,dc=com?cn,sn,givenName,objectClass,uid?one?(&(objectClass=distributionList)(status=active))"
+}
+
+func ExampleLDAPURI_Ne() {
+	raw := `ldap:///ou=People,dc=example,dc=com?cn,sn,givenName,objectClass,uid?one?(&(objectClass=employee)(terminated=FALSE))`
+	uri := URI(raw)
+	fmt.Printf("%s", uri.Ne())
+	// Output: userdn != "ldap:///ou=People,dc=example,dc=com?cn,sn,givenName,objectClass,uid?one?(&(objectClass=employee)(terminated=FALSE))"
+}
+
+func ExampleLDAPURI_BRF() {
+	var uri LDAPURI
+	fmt.Printf("%d available comparison operator methods", uri.BRF().Len())
+	// Output: 2 available comparison operator methods
 }
