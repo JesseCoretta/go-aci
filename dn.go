@@ -552,7 +552,7 @@ func (r TargetDistinguishedNames) resetKeyword(x any) {
 }
 
 /*
-BRF returns an instance of BindRuleFuncs.
+BRF returns an instance of BindRuleMethods.
 
 Each of the return instance's key values represent a single instance of the
 ComparisonOperator type that is allowed for use in the creation of BindRule
@@ -570,15 +570,15 @@ methods will return bogus BindRule instances. While this is useful in unit
 testing, the end user must only execute this method IF and WHEN the receiver
 has been properly populated and prepared for such activity.
 */
-func (r BindDistinguishedName) BRF() BindRuleFuncs {
-	return newBindRuleFuncs(bindRuleFuncMap{
+func (r BindDistinguishedName) BRF() BindRuleMethods {
+	return newBindRuleMethods(bindRuleFuncMap{
 		Eq: r.Eq,
 		Ne: r.Ne,
 	})
 }
 
 /*
-BRF returns an instance of BindRuleFuncs.
+BRF returns an instance of BindRuleMethods.
 
 Each of the return instance's key values represent a single instance of the
 ComparisonOperator type that is allowed for use in the creation of BindRule
@@ -596,15 +596,15 @@ methods will return bogus BindRule instances. While this is useful in unit
 testing, the end user must only execute this method IF and WHEN the receiver
 has been properly populated and prepared for such activity.
 */
-func (r BindDistinguishedNames) BRF() BindRuleFuncs {
-	return newBindRuleFuncs(bindRuleFuncMap{
+func (r BindDistinguishedNames) BRF() BindRuleMethods {
+	return newBindRuleMethods(bindRuleFuncMap{
 		Eq: r.Eq,
 		Ne: r.Ne,
 	})
 }
 
 /*
-TRF returns an instance of TargetRuleFuncs.
+TRF returns an instance of TargetRuleMethods.
 
 Each of the return instance's key values represent a single instance of the
 ComparisonOperator type that is allowed for use in the creation of TargetRule
@@ -622,15 +622,15 @@ methods will return bogus TargetRule instances. While this is useful in unit
 testing, the end user must only execute this method IF and WHEN the receiver
 has been properly populated and prepared for such activity.
 */
-func (r TargetDistinguishedName) TRF() TargetRuleFuncs {
-	return newTargetRuleFuncs(targetRuleFuncMap{
+func (r TargetDistinguishedName) TRF() TargetRuleMethods {
+	return newTargetRuleMethods(targetRuleFuncMap{
 		Eq: r.Eq,
 		Ne: r.Ne,
 	})
 }
 
 /*
-TRF returns an instance of TargetRuleFuncs.
+TRF returns an instance of TargetRuleMethods.
 
 Each of the return instance's key values represent a single instance of the
 ComparisonOperator type that is allowed for use in the creation of TargetRule
@@ -648,8 +648,8 @@ methods will return bogus TargetRule instances. While this is useful in unit
 testing, the end user must only execute this method IF and WHEN the receiver
 has been properly populated and prepared for such activity.
 */
-func (r TargetDistinguishedNames) TRF() TargetRuleFuncs {
-	return newTargetRuleFuncs(targetRuleFuncMap{
+func (r TargetDistinguishedNames) TRF() TargetRuleMethods {
+	return newTargetRuleMethods(targetRuleFuncMap{
 		Eq: r.Eq,
 		Ne: r.Ne,
 	})

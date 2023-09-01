@@ -52,7 +52,7 @@ func (r SearchFilter) Valid() (err error) {
 }
 
 /*
-TRF returns an instance of TargetRuleFuncs.
+TRF returns an instance of TargetRuleMethods.
 
 Each of the return instance's key values represent a single instance of
 the ComparisonOperator type that is allowed for use in the creation of
@@ -70,8 +70,8 @@ methods will return bogus TargetRule instances. While this is useful in unit
 testing, the end user must only execute this method IF and WHEN the receiver
 has been properly populated and prepared for such activity.
 */
-func (r SearchFilter) TRF() TargetRuleFuncs {
-	return newTargetRuleFuncs(targetRuleFuncMap{
+func (r SearchFilter) TRF() TargetRuleMethods {
+	return newTargetRuleMethods(targetRuleFuncMap{
 		Eq: r.Eq,
 		Ne: r.Ne,
 	})
@@ -712,7 +712,7 @@ Negated equality TargetRule instances should be used with caution.
 func (r AttributeFilterOperations) Ne() TargetRule { return badTargetRule }
 
 /*
-TRF returns an instance of TargetRuleFuncs.
+TRF returns an instance of TargetRuleMethods.
 
 Each of the return instance's key values represent a single instance of
 the ComparisonOperator type that is allowed for use in the creation of
@@ -730,8 +730,8 @@ methods will return bogus TargetRule instances. While this is useful in unit
 testing, the end user must only execute this method IF and WHEN the receiver
 has been properly populated and prepared for such activity.
 */
-func (r AttributeFilterOperations) TRF() TargetRuleFuncs {
-	return newTargetRuleFuncs(targetRuleFuncMap{
+func (r AttributeFilterOperations) TRF() TargetRuleMethods {
+	return newTargetRuleMethods(targetRuleFuncMap{
 		Eq: r.Eq,
 		Ne: r.Ne,
 	})
@@ -1053,7 +1053,7 @@ Negated equality TargetRule instances should be used with caution.
 func (r AttributeFilterOperation) Ne() TargetRule { return badTargetRule }
 
 /*
-TRF returns an instance of TargetRuleFuncs.
+TRF returns an instance of TargetRuleMethods.
 
 Each of the return instance's key values represent a single instance of
 the ComparisonOperator type that is allowed for use in the creation of
@@ -1071,8 +1071,8 @@ methods will return bogus TargetRule instances. While this is useful in unit
 testing, the end user must only execute this method IF and WHEN the receiver
 has been properly populated and prepared for such activity.
 */
-func (r AttributeFilterOperation) TRF() TargetRuleFuncs {
-	return newTargetRuleFuncs(targetRuleFuncMap{
+func (r AttributeFilterOperation) TRF() TargetRuleMethods {
+	return newTargetRuleMethods(targetRuleFuncMap{
 		Eq: r.Eq,
 		Ne: r.Ne,
 	})

@@ -753,8 +753,8 @@ func ExampleAttributeFilterOperation_Valid() {
 
 func ExampleAttributeFilterOperation_TRF() {
 	var afo AttributeFilterOperation
-	fmt.Printf("%d available comparison operator methods", afo.TRF().Len())
-	// Output: 2 available comparison operator methods
+	fmt.Printf("%d available aci.TargetRuleMethod instances", afo.TRF().Len())
+	// Output: 2 available aci.TargetRuleMethod instances
 }
 
 /*
@@ -838,8 +838,8 @@ func ExampleAttributeFilterOperations_Contains() {
 
 func ExampleAttributeFilterOperations_TRF() {
 	var afos AttributeFilterOperations
-	fmt.Printf("%d available comparison operator methods", afos.TRF().Len())
-	// Output: 2 available comparison operator methods
+	fmt.Printf("%d available aci.TargetRuleMethod instances", afos.TRF().Len())
+	// Output: 2 available aci.TargetRuleMethod instances
 }
 
 /*
@@ -1254,8 +1254,8 @@ func ExampleSearchFilter_Eq() {
 func ExampleSearchFilter_TRF() {
 	var filter SearchFilter
 	filter.Set(`(|(objectClass=contractor)(objectClass=intern))`)
-	fmt.Printf("%d available comparison operator methods", filter.TRF().Len())
-	// Output: 2 available comparison operator methods
+	fmt.Printf("%d available aci.TargetRuleMethod instances", filter.TRF().Len())
+	// Output: 2 available aci.TargetRuleMethod instances
 }
 
 func ExampleSearchFilter_Ne() {

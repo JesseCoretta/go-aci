@@ -162,9 +162,9 @@ func ExampleTRs() {
 
 /*
 This example demonstrates the indexing, iteration and execution of the available
-comparison operator methods for the TargetDistinguishedName type.
+TargetRuleMethod instances for the TargetDistinguishedName type.
 */
-func ExampleTargetRuleFuncs() {
+func ExampleTargetRuleMethods() {
 	var tdn TargetDistinguishedName = TTDN(`uid=*,ou=People,dc=example,dc=com`)
 	trf := tdn.TRF()
 
@@ -175,4 +175,90 @@ func ExampleTargetRuleFuncs() {
 	// Output:
 	// [Equal To] ( target_to = "ldap:///uid=*,ou=People,dc=example,dc=com" )
 	// [Not Equal To] ( target_to != "ldap:///uid=*,ou=People,dc=example,dc=com" )
+}
+
+func ExampleTargetRuleMethods_Index() {
+	var dn TargetDistinguishedName = TFDN(`uid=*,ou=People,dc=example,dc=com`)
+	trf := dn.TRF()
+
+	for i := 0; i < trf.Len(); i++ {
+		// IMPORTANT: Do not call index 0. Either adjust your
+		// loop variable (i) to begin at 1, and terminate at
+		// trf.Len()+1 --OR-- simply +1 the index call as we
+		// are doing here (seems easier). The reason for this
+		// is because there is no valid ComparisonOperator
+		// with an underlying uint8 value of zero (0). See
+		// the ComparisonOperator constants for details.
+		idx := i + 1
+		cop, meth := trf.Index(idx)
+
+		// execute method to create the targetrule
+		rule := meth()
+
+		// grab the raw string output
+		fmt.Printf("[%d] %T instance [%s] execution returned %T: %s\n", idx, meth, cop.Context(), rule, rule)
+	}
+	// Output:
+	// [1] aci.TargetRuleMethod instance [Eq] execution returned aci.TargetRule: ( target_from = "ldap:///uid=*,ou=People,dc=example,dc=com" )
+	// [2] aci.TargetRuleMethod instance [Ne] execution returned aci.TargetRule: ( target_from != "ldap:///uid=*,ou=People,dc=example,dc=com" )
+}
+
+func ExampleTargetRuleMethods_IsZero() {
+	var trf TargetRuleMethods
+	fmt.Printf("Zero: %t", trf.IsZero())
+	// Output: Zero: true
+}
+
+func ExampleTargetRuleMethods_Valid() {
+	var trf TargetRuleMethods
+	fmt.Printf("Error: %v", trf.Valid())
+	// Output: Error: aci.TargetRuleMethods instance is nil
+}
+
+func ExampleTargetRuleMethods_Len() {
+	// Note: we need not populate the value to get a
+	// TRF list, but the methods in that list won't
+	// actually work until the instance (ssf) is in
+	// an acceptable state. Since all we're doing
+	// here is checking the length, a receiver that
+	// is nil/zero is totally fine.
+	var sco SearchScope = SingleLevel // any would do
+	total := sco.TRF().Len()
+
+	fmt.Printf("There is one (%d) available aci.TargetRuleMethod instance for creating %T TargetRules", total, sco)
+	// Output: There is one (1) available aci.TargetRuleMethod instance for creating aci.SearchScope TargetRules
+}
+
+func ExampleTargetRuleMethod() {
+	tfil := Filter(`(&(objectClass=employee)(terminated=FALSE))`)
+	trf := tfil.TRF()
+
+	// verify that the receiver (ssf) is copacetic
+	// and will produce a legal expression if meth
+	// is executed
+	if err := trf.Valid(); err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	for i := 0; i < trf.Len(); i++ {
+		// IMPORTANT: Do not call index 0. Either adjust your
+		// loop variable (i) to begin at 1, and terminate at
+		// trf.Len()+1 --OR-- simply +1 the index call as we
+		// are doing here (seems easier). The reason for this
+		// is because there is no valid ComparisonOperator
+		// with an underlying uint8 value of zero (0). See
+		// the ComparisonOperator constants for details.
+		idx := i + 1
+		cop, meth := trf.Index(idx)
+
+		// execute method to create the targetrule
+		rule := meth()
+
+		// grab the raw string output
+		fmt.Printf("[%d] %T instance [%s] execution returned %T: %s\n", idx, meth, cop.Context(), rule, rule)
+	}
+	// Output:
+	// [1] aci.TargetRuleMethod instance [Eq] execution returned aci.TargetRule: ( targetfilter = "(&(objectClass=employee)(terminated=FALSE))" )
+	// [2] aci.TargetRuleMethod instance [Ne] execution returned aci.TargetRule: ( targetfilter != "(&(objectClass=employee)(terminated=FALSE))" )
 }

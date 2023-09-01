@@ -14,28 +14,28 @@ var (
 )
 
 /*
-BindRuleFuncs contains one (1) or more instances of BindRuleMethod,
+BindRuleMethods contains one (1) or more instances of BindRuleMethod,
 representing a particular BindRule "builder" method for execution by
 the caller.
 
 See the Operators method extended through all eligible types for further
 details.
 */
-type BindRuleFuncs struct {
+type BindRuleMethods struct {
 	*bindRuleFuncMap
 }
 
 /*
-newBindRuleFuncs populates an instance of *bindRuleFuncMap, which
-is embedded within the return instance of BindRuleFuncs.
+newBindRuleMethods populates an instance of *bindRuleFuncMap, which
+is embedded within the return instance of BindRuleMethods.
 */
-func newBindRuleFuncs(m bindRuleFuncMap) BindRuleFuncs {
+func newBindRuleMethods(m bindRuleFuncMap) BindRuleMethods {
 	M := make(bindRuleFuncMap, len(m))
 	for k, v := range m {
 		M[k] = v
 	}
 
-	return BindRuleFuncs{&M}
+	return BindRuleMethods{&M}
 }
 
 /*
@@ -72,14 +72,14 @@ alongside a nil BindRuleMethod. This will also apply to situations in
 which the type instance which crafted the receiver is uninitialized, or
 is in an otherwise aberrant state.
 */
-func (r BindRuleFuncs) Index(idx any) (ComparisonOperator, BindRuleMethod) {
+func (r BindRuleMethods) Index(idx any) (ComparisonOperator, BindRuleMethod) {
 	return r.index(idx)
 }
 
 /*
-index is a private method called by BindRuleFuncs.Index.
+index is a private method called by BindRuleMethods.Index.
 */
-func (r BindRuleFuncs) index(idx any) (cop ComparisonOperator, meth BindRuleMethod) {
+func (r BindRuleMethods) index(idx any) (cop ComparisonOperator, meth BindRuleMethod) {
 	if r.IsZero() {
 		return
 	}
@@ -138,7 +138,7 @@ func rangeBindRuleFuncMap(candidate string, fm *bindRuleFuncMap) (cop Comparison
 IsZero returns a Boolean value indicative of whether the receiver is
 nil, or unset.
 */
-func (r BindRuleFuncs) IsZero() bool {
+func (r BindRuleMethods) IsZero() bool {
 	return r.bindRuleFuncMap == nil
 }
 
@@ -146,9 +146,9 @@ func (r BindRuleFuncs) IsZero() bool {
 Valid returns the first encountered error returned as a result of
 execution of the first available BindRuleMethod instance. This is
 useful in cases where a user wants to see if the desired instance(s)
-of BindRuleMethod will produce a usable BindRule or BindRules.
+of BindRuleMethod will produce a usable result.
 */
-func (r BindRuleFuncs) Valid() (err error) {
+func (r BindRuleMethods) Valid() (err error) {
 	if r.IsZero() {
 		err = nilInstanceErr(r)
 		return
@@ -167,7 +167,7 @@ func (r BindRuleFuncs) Valid() (err error) {
 Len returns the integer length of the receiver. Note that the return
 value will NEVER be less than zero (0) nor greater than six (6).
 */
-func (r BindRuleFuncs) Len() int {
+func (r BindRuleMethods) Len() int {
 	if r.IsZero() {
 		return 0
 	}
@@ -201,7 +201,7 @@ type BindRuleMethod func() BindRule
 
 /*
 bindRuleFuncMap is a private type intended to be used within
-instances of BindRuleFuncs.
+instances of BindRuleMethods.
 */
 type bindRuleFuncMap map[ComparisonOperator]BindRuleMethod
 

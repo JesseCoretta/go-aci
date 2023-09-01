@@ -92,7 +92,7 @@ func TestObjectIdentifiers_codecov(t *testing.T) {
 			_ = Oids.setQuoteStyle(1)
 			_ = Oids.setQuoteStyle(0)
 
-			for sop, trfn := range []func() TargetRuleFuncs{
+			for sop, trfn := range []func() TargetRuleMethods{
 				Oid.TRF,
 				Oids.TRF,
 			} {

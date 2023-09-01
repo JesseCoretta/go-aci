@@ -219,6 +219,6 @@ func ExampleLDAPURI_Ne() {
 
 func ExampleLDAPURI_BRF() {
 	var uri LDAPURI
-	fmt.Printf("%d available comparison operator methods", uri.BRF().Len())
-	// Output: 2 available comparison operator methods
+	fmt.Printf("%d available aci.BindRuleMethod instances", uri.BRF().Len())
+	// Output: 2 available aci.BindRuleMethod instances
 }

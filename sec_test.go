@@ -175,8 +175,8 @@ func ExampleSSF_setLater() {
 
 func ExampleAuthenticationMethod_BRF() {
 	meths := Anonymous.BRF()
-	fmt.Printf("%d available comparison operator methods", meths.Len())
-	// Output: 2 available comparison operator methods
+	fmt.Printf("%d available aci.BindRuleMethod instances", meths.Len())
+	// Output: 2 available aci.BindRuleMethod instances
 }
 
 func ExampleAuthenticationMethod_Ne() {
@@ -192,8 +192,8 @@ func ExampleAuthenticationMethod_Eq() {
 func ExampleSecurityStrengthFactor_BRF() {
 	var factor SecurityStrengthFactor = SSF(128)
 	meths := factor.BRF()
-	fmt.Printf("%d available comparison operator methods", meths.Len())
-	// Output: 6 available comparison operator methods
+	fmt.Printf("%d available aci.BindRuleMethod instances", meths.Len())
+	// Output: 6 available aci.BindRuleMethod instances
 }
 
 func ExampleAuthenticationMethod_String() {

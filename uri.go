@@ -312,7 +312,7 @@ func (r LDAPURI) Ne() BindRule {
 }
 
 /*
-BRF returns an instance of BindRuleFuncs.
+BRF returns an instance of BindRuleMethods.
 
 Each of the return instance's key values represent a single instance of the
 ComparisonOperator type that is allowed for use in the creation of BindRule
@@ -330,8 +330,8 @@ methods will return bogus BindRule instances. While this is useful in unit
 testing, the end user must only execute this method IF and WHEN the receiver
 has been properly populated and prepared for such activity.
 */
-func (r LDAPURI) BRF() BindRuleFuncs {
-	return newBindRuleFuncs(bindRuleFuncMap{
+func (r LDAPURI) BRF() BindRuleMethods {
+	return newBindRuleMethods(bindRuleFuncMap{
 		Eq: r.Eq,
 		Ne: r.Ne,
 	})

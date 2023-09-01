@@ -15,24 +15,24 @@ var (
 )
 
 /*
-TargetRuleFuncs contains one (1) or more instances of TargetRuleMethod,
+TargetRuleMethods contains one (1) or more instances of TargetRuleMethod,
 representing a particular TargetRule "builder" method for execution by
 the caller.
 
 See the Operators method extended through all eligible types for further
 details.
 */
-type TargetRuleFuncs struct {
+type TargetRuleMethods struct {
 	*targetRuleFuncMap
 }
 
 /*
-newTargetRuleFuncs populates an instance of *targetRuleFuncMap, which
-is embedded within the return instance of TargetRuleFuncs.
+newTargetRuleMethods populates an instance of *targetRuleFuncMap, which
+is embedded within the return instance of TargetRuleMethods.
 */
-func newTargetRuleFuncs(m targetRuleFuncMap) TargetRuleFuncs {
+func newTargetRuleMethods(m targetRuleFuncMap) TargetRuleMethods {
 	if len(m) == 0 {
-		return TargetRuleFuncs{nil}
+		return TargetRuleMethods{nil}
 	}
 
 	M := make(targetRuleFuncMap, len(m))
@@ -40,7 +40,7 @@ func newTargetRuleFuncs(m targetRuleFuncMap) TargetRuleFuncs {
 		M[k] = v
 	}
 
-	return TargetRuleFuncs{&M}
+	return TargetRuleMethods{&M}
 }
 
 /*
@@ -77,14 +77,14 @@ alongside a nil TargetRuleMethod. This will also apply to situations in
 which the type instance which crafted the receiver is uninitialized, or
 is in an otherwise aberrant state.
 */
-func (r TargetRuleFuncs) Index(idx any) (ComparisonOperator, TargetRuleMethod) {
+func (r TargetRuleMethods) Index(idx any) (ComparisonOperator, TargetRuleMethod) {
 	return r.index(idx)
 }
 
 /*
-index is a private method called by TargetRuleFuncs.Index.
+index is a private method called by TargetRuleMethods.Index.
 */
-func (r TargetRuleFuncs) index(idx any) (cop ComparisonOperator, meth TargetRuleMethod) {
+func (r TargetRuleMethods) index(idx any) (cop ComparisonOperator, meth TargetRuleMethod) {
 	if r.IsZero() {
 		return
 	}
@@ -142,15 +142,36 @@ func rangeTargetRuleFuncMap(candidate string, fm *targetRuleFuncMap) (cop Compar
 IsZero returns a Boolean value indicative of whether the receiver is
 nil, or unset.
 */
-func (r TargetRuleFuncs) IsZero() bool {
+func (r TargetRuleMethods) IsZero() bool {
 	return r.targetRuleFuncMap == nil
+}
+
+/*
+Valid returns the first encountered error returned as a result of
+execution of the first available TargetRuleMethod instance. This is
+useful in cases where a user wants to see if the desired instance(s)
+of TargetRuleMethod will produce a usable result.
+*/
+func (r TargetRuleMethods) Valid() (err error) {
+	if r.IsZero() {
+		err = nilInstanceErr(r)
+		return
+	}
+
+	// Eq is always available for all eligible
+	// types, so let's use that unconditionally.
+	// If any one method works, then all of them
+	// will work.
+	_, meth := r.Index(Eq)
+	err = meth().Valid()
+	return
 }
 
 /*
 Len returns the integer length of the receiver. Note that the return
 value will NEVER be less than zero (0) nor greater than six (6).
 */
-func (r TargetRuleFuncs) Len() int {
+func (r TargetRuleMethods) Len() int {
 	if r.IsZero() {
 		return 0
 	}
@@ -177,7 +198,7 @@ type TargetRuleMethod func() TargetRule
 
 /*
 targetRuleFuncMap is a private type intended to be used within
-instances of TargetRuleFuncs.
+instances of TargetRuleMethods.
 */
 type targetRuleFuncMap map[ComparisonOperator]TargetRuleMethod
 

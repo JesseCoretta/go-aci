@@ -5,8 +5,8 @@ import (
 	"testing"
 )
 
-func TestParseBindRuleFuncs(t *testing.T) {
-	brf := newBindRuleFuncs(bindRuleFuncMap{})
+func TestParseBindRuleMethods(t *testing.T) {
+	brf := newBindRuleMethods(bindRuleFuncMap{})
 
 	_ = brf.Len()
 	_ = brf.IsZero()
@@ -46,23 +46,6 @@ func TestParseBindRules(t *testing.T) {
 	if want != r.String() {
 		t.Errorf("%s failed:\nwant '%s',\ngot  '%s'", t.Name(), want, r)
 	}
-}
-
-/*
-This example demonstrates the indexing, iteration and execution of the available
-comparison operator methods for the BindDistinguishedName type.
-*/
-func ExampleBindRuleFuncs() {
-	var dn BindDistinguishedName = GDN(`cn=X.500 Administrators,ou=Groups,dc=example,dc=com`)
-	brf := dn.BRF()
-
-	for i := 0; i < brf.Len(); i++ {
-		cop, meth := brf.Index(i + 1)                              // zero (0) should never be accessed, start at 1
-		fmt.Printf("[%s] %s\n", cop.Description(), meth().Paren()) // enable parentheticals, because why not
-	}
-	// Output:
-	// [Equal To] ( groupdn = "ldap:///cn=X.500 Administrators,ou=Groups,dc=example,dc=com" )
-	// [Not Equal To] ( groupdn != "ldap:///cn=X.500 Administrators,ou=Groups,dc=example,dc=com" )
 }
 
 /*
@@ -110,7 +93,24 @@ func ExampleNot() {
 	// Output: ( ip = "192.168." ) AND NOT ( ( userattr = "manager#LDAPURL" ) OR ( userdn = "ldap:///ou=People,dc=example,dc=com??sub?" ) )
 }
 
-func ExampleBindRuleFuncs_Index() {
+/*
+This example demonstrates the indexing, iteration and execution of the available
+comparison operator methods for the BindDistinguishedName type.
+*/
+func ExampleBindRuleMethods() {
+	var dn BindDistinguishedName = GDN(`cn=X.500 Administrators,ou=Groups,dc=example,dc=com`)
+	brf := dn.BRF()
+
+	for i := 0; i < brf.Len(); i++ {
+		cop, meth := brf.Index(i + 1)                              // zero (0) should never be accessed, start at 1
+		fmt.Printf("[%s] %s\n", cop.Description(), meth().Paren()) // enable parentheticals, because why not
+	}
+	// Output:
+	// [Equal To] ( groupdn = "ldap:///cn=X.500 Administrators,ou=Groups,dc=example,dc=com" )
+	// [Not Equal To] ( groupdn != "ldap:///cn=X.500 Administrators,ou=Groups,dc=example,dc=com" )
+}
+
+func ExampleBindRuleMethods_Index() {
 	ssf := SSF(256)
 	brf := ssf.BRF()
 
@@ -125,7 +125,8 @@ func ExampleBindRuleFuncs_Index() {
 		idx := i + 1
 		cop, meth := brf.Index(idx)
 
-		// create the bindrule, and make it parenthetical
+		// execute method to create the bindrule, while
+		// also enabling the (optional) parenthetical bit
 		rule := meth().Paren()
 
 		// grab the raw string output
@@ -140,19 +141,19 @@ func ExampleBindRuleFuncs_Index() {
 	// [6] aci.BindRuleMethod instance [Ge] execution returned aci.BindRule: ( ssf >= "256" )
 }
 
-func ExampleBindRuleFuncs_IsZero() {
-	var brf BindRuleFuncs
+func ExampleBindRuleMethods_IsZero() {
+	var brf BindRuleMethods
 	fmt.Printf("Zero: %t", brf.IsZero())
 	// Output: Zero: true
 }
 
-func ExampleBindRuleFuncs_Valid() {
-	var brf BindRuleFuncs
+func ExampleBindRuleMethods_Valid() {
+	var brf BindRuleMethods
 	fmt.Printf("Error: %v", brf.Valid())
-	// Output: Error: aci.BindRuleFuncs instance is nil
+	// Output: Error: aci.BindRuleMethods instance is nil
 }
 
-func ExampleBindRuleFuncs_Len() {
+func ExampleBindRuleMethods_Len() {
 	// Note: we need not populate the value to get a
 	// BRF list, but the methods in that list won't
 	// actually work until the instance (ssf) is in
@@ -162,8 +163,8 @@ func ExampleBindRuleFuncs_Len() {
 	var ssf SecurityStrengthFactor // not init'd
 	total := ssf.BRF().Len()
 
-	fmt.Printf("There are %d available comparison operator methods for %T BindRules", total, ssf)
-	// Output: There are 6 available comparison operator methods for aci.SecurityStrengthFactor BindRules
+	fmt.Printf("There are %d available aci.BindRuleMethod instances for creating %T BindRules", total, ssf)
+	// Output: There are 6 available aci.BindRuleMethod instances for creating aci.SecurityStrengthFactor BindRules
 }
 
 func ExampleBindRuleMethod() {
@@ -189,8 +190,8 @@ func ExampleBindRuleMethod() {
 		idx := i + 1
 		cop, meth := brf.Index(idx)
 
-		// execute meth and modify the returned BindRule
-		// instance to make it parenthetical in one shot.
+		// execute method to create the bindrule, while
+		// also enabling the (optional) parenthetical bit
 		rule := meth().Paren()
 
 		// grab the raw string output

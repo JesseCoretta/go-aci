@@ -129,7 +129,7 @@ to TargetRule instances that bear the `targetscope` keyword.
 This method exists solely to convey this message. When executed, this method
 returns a bogus TargetRule instance.
 
-This method SHALL NOT appear within instances of TargetRuleFuncs that were
+This method SHALL NOT appear within instances of TargetRuleMethods that were
 crafted through execution of the receiver's TRF method.
 */
 func (r SearchScope) Ne() TargetRule { return badTargetRule }
@@ -143,7 +143,7 @@ func (r SearchScope) Keyword() Keyword {
 }
 
 /*
-TRF returns an instance of TargetRuleFuncs.
+TRF returns an instance of TargetRuleMethods.
 
 Each of the return instance's key values represent a single ComparisonOperator
 that is allowed for use in the creation of TargetRule instances which bear the
@@ -160,8 +160,8 @@ will return bogus TargetRule instances. While this is useful in unit testing,
 the end user must only execute this method IF and WHEN the receiver has been
 properly populated and prepared for such activity.
 */
-func (r SearchScope) TRF() TargetRuleFuncs {
-	return newTargetRuleFuncs(targetRuleFuncMap{
+func (r SearchScope) TRF() TargetRuleMethods {
+	return newTargetRuleMethods(targetRuleFuncMap{
 		Eq: r.Eq,
 	})
 }

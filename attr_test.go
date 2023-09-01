@@ -76,8 +76,8 @@ operator methods are available for use by the receiver instance.
 */
 func ExampleAttributeType_TRF() {
 	var at AttributeType
-	fmt.Printf("%d available comparison operator methods", at.TRF().Len())
-	// Output: 2 available comparison operator methods
+	fmt.Printf("%d available aci.BindRuleMethod instances", at.TRF().Len())
+	// Output: 2 available aci.BindRuleMethod instances
 }
 
 /*
@@ -281,8 +281,8 @@ func ExampleAttributeBindTypeOrValue_Ne() {
 
 func ExampleAttributeBindTypeOrValue_BRF() {
 	var atb AttributeBindTypeOrValue
-	fmt.Printf("%d available comparison operator methods", atb.BRF().Len())
-	// Output: 2 available comparison operator methods
+	fmt.Printf("%d available aci.BindRuleMethod instances", atb.BRF().Len())
+	// Output: 2 available aci.BindRuleMethod instances
 }
 
 func TestAttributeTypes(t *testing.T) {
