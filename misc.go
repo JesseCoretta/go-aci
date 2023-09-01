@@ -245,34 +245,15 @@ func hashInstance(x any) (s string, err error) {
 }
 
 /*
-getCategoryFunc uses reflect to obtain and return a given
-type instance's Category method, if present. If not, nil
-is returned.
-*/
-func getCategoryFunc(x any) func() string {
-	v := valOf(x)
-	if v.IsZero() {
-		return nil
-	}
-
-	method := v.MethodByName(`Category`)
-	if method.Kind() == reflect.Invalid {
-		return nil
-	}
-
-	if meth, ok := method.Interface().(func() string); ok {
-		return meth
-	}
-
-	return nil
-}
-
-/*
 getStringFunc uses reflect to obtain and return a given
 type instance's String method, if present. If not, nil
 is returned.
 */
 func getStringFunc(x any) func() string {
+	if x == nil {
+		return nil
+	}
+
 	v := valOf(x)
 	if v.IsZero() {
 		return nil
@@ -354,6 +335,10 @@ will be cast as an int, multiplied by eight (8)
 and finally returned.
 */
 func bitSize(x any) (bits int) {
+	if x == nil {
+		return
+	}
+
 	// create a reflect.Type abstract
 	// instance using raw input x.
 	X := typOf(x)

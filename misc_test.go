@@ -114,6 +114,15 @@ func TestIsIdentifier(t *testing.T) {
 
 func TestHash(t *testing.T) {
 	for hash, slice := range map[string]any{
+		`bogusSlice01`: nil,
+		`bogusSlice02`: float32(123.5),
+		`bogusSlice03`: struct {
+			Type  string
+			Value string
+		}{
+			Type:  `One`,
+			Value: `Thing`,
+		},
 		`93BCF19C9214DCB94C51D48FCC3A9FA02281A41F`: AT(`squatcobbler`),
 		`1654544702C1F92D67E0C4ACB0798EB0A36D8134`: Filter(`(&(objectClass=employee)(cn=Jane Doe))`),
 		`3F49EF78318778E87101BFF58E5216092F0BE4DA`: AF(AT(`squatcobbler`), Filter(`(&(objectClass=employee)(cn=Jane Doe))`)),
@@ -126,9 +135,9 @@ func TestHash(t *testing.T) {
 		`38113F5D93F1E10FF5F94788A82C1B22CD82D5C3`: Inherit(UAT(AT(`manager`), AV(`uid=frank,ou=People,dc=example,dc=com`)), 1, 3),
 		`E244BC50910AA5AC6B07C9BADF84A111C1A48AEF`: Inherit(GAT(AT(`owner`), AV(`cn=Executives,ou=Group,dc=example,dc=com`)), 2, 8),
 	} {
-		if result, err := Hash(slice); err != nil {
+		if result, err := Hash(slice); err != nil && !hasPfx(hash, `bogus`) {
 			t.Errorf("%s failed: %v", t.Name(), err)
-		} else if !eq(hash, result) {
+		} else if !eq(hash, result) && !hasPfx(hash, `bogus`) {
 			t.Errorf("%s failed: unexpected result for '%T'; expected '%s', got '%s'",
 				t.Name(), slice, hash, result)
 		}

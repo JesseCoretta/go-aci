@@ -757,12 +757,9 @@ resolves the raw value into a BindKeyword. Failure to
 do so will return a bogus Keyword.
 */
 func (r BindRules) Keyword() Keyword {
-	if meth := getCategoryFunc(r); meth != nil {
-		var kw any = matchBKW(meth())
-		return kw.(BindKeyword)
-	}
-
-	return nil
+	_r, _ := castAsStack(r)
+	var kw any = matchBKW(_r.Category())
+	return kw.(BindKeyword)
 }
 
 /*
