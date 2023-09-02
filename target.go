@@ -256,17 +256,11 @@ func (r TargetRule) Kind() string {
 }
 
 /*
-setID wraps go-stackage's Stack.SetID method.
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
 */
-func (r TargetRule) setID(id string) {
-	castAsCondition(r).SetID(id)
-}
-
-/*
-setCategory wraps go-stackage's Stack.SetCategory method.
-*/
-func (r TargetRule) setCategory(cat string) {
-	castAsCondition(r).SetCategory(cat)
+func (r TargetRule) Compare(x any) bool {
+	return compareHashInstance(r, x)
 }
 
 /*
@@ -450,6 +444,14 @@ func (r TargetRules) Kind() string {
 }
 
 /*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r TargetRules) Compare(x any) bool {
+	return compareHashInstance(r, x)
+}
+
+/*
 TRs creates and returns a new instance of TargetRules with an initialized
 embedded stack configured to function as a Target Rule store that is
 meant to contain one (1) or more Condition instances, each of which bear
@@ -535,18 +537,6 @@ func (r TargetRules) String() string {
 }
 
 /*
-setCategory wraps go-stackage's Stack.SetCategory method.
-*/
-func (r TargetRules) setCategory(cat string) {
-	if r.IsZero() {
-		return
-	}
-
-	_t, _ := castAsStack(r)
-	_t.SetCategory(cat)
-}
-
-/*
 IsZero wraps go-stackage's Stack.IsZero method.
 */
 func (r TargetRules) IsZero() bool {
@@ -589,18 +579,6 @@ func (r TargetRules) Category() string {
 
 	_t, _ := castAsStack(r)
 	return _t.Category()
-}
-
-/*
-setID wraps go-stackage's Stack.SetID method.
-*/
-func (r TargetRules) setID(id string) {
-	if r.IsZero() {
-		return
-	}
-
-	_t, _ := castAsStack(r)
-	_t.SetID(id)
 }
 
 /*

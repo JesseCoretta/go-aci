@@ -79,6 +79,14 @@ func (r AttributeBindTypeOrValue) IsZero() bool {
 }
 
 /*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r AttributeBindTypeOrValue) Compare(x any) bool {
+	return compareHashInstance(r, x)
+}
+
+/*
 ABTV will return a new instance of AttributeBindTypeOrValue. The required
 BindKeyword must be either BindUAT or BindGAT. The optional input values
 (x), if provided, will be used to set the instance.
@@ -405,6 +413,14 @@ type AttributeType struct {
 }
 
 /*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r AttributeType) Compare(x any) bool {
+	return compareHashInstance(r, x)
+}
+
+/*
 Eq initializes and returns a new TargetRule instance configured to express the
 evaluation of the receiver value as Equal-To a `targetattr` keyword context.
 */
@@ -562,6 +578,14 @@ type AttributeValue struct {
 }
 
 /*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r AttributeValue) Compare(x any) bool {
+	return compareHashInstance(r, x)
+}
+
+/*
 AV initializes, sets and returns an AttributeValue instance in one shot. The
 input value x shall be a known BindType constant, such as USERDN, OR a raw
 string attributeType value, such as `uid=bob,ou=People,dc=example,dc=com`.
@@ -596,6 +620,14 @@ As there is only one possibility for instances of this design, the AT function i
 */
 func (r AttributeTypes) F() func(string) AttributeType {
 	return AT
+}
+
+/*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r AttributeTypes) Compare(x any) bool {
+	return compareHashInstance(r, x)
 }
 
 func (r AttributeTypes) reset() {

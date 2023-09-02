@@ -245,6 +245,19 @@ func Hash(x any) (string, error) {
 	return hashInstance(x)
 }
 
+func compareHashInstance(r, x any) bool {
+	var rh, xh string
+	var err error
+
+	if rh, err = hashInstance(r); err != nil {
+		return false
+	} else if xh, err = hashInstance(x); err != nil {
+		return false
+	}
+
+	return rh == xh
+}
+
 /*
 hashInstance is a private function called by the Hash
 package level function. It uses crypto/sha1 to compute
@@ -419,4 +432,11 @@ func condenseWHSP(b string) (a string) {
 
 	a = trimS(a) //once more
 	return
+}
+
+func chopDNPfx(x string) string {
+	if hasPfx(x, LocalScheme) {
+		x = x[len(LocalScheme):]
+	}
+	return x
 }

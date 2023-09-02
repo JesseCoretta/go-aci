@@ -27,6 +27,18 @@ func ExampleAttributeType_String() {
 }
 
 /*
+This example demonstrates the SHA-1 hash comparison between two (2) AttributeType
+instances using the Compare method.
+*/
+func ExampleAttributeType_Compare() {
+	attr := AT(`cACertificate`)
+	oattr := AT(`cacertificate`)
+
+	fmt.Printf("Hashes are equal: %t", oattr.Compare(attr))
+	// Output: Hashes are equal: false
+}
+
+/*
 This example demonstrates the use of the useless Keyword method, as AttributeType
 instances do not have any knowledge of Keywords at this time.
 */
@@ -217,6 +229,24 @@ func ExampleAttributeBindTypeOrValue_Set() {
 	atb.Set(AT(`manager`), USERDN)
 	fmt.Printf("%s value is %s", atb.Keyword(), atb)
 	// Output: userattr value is manager#USERDN
+}
+
+/*
+This example demonstrates the SHA-1 hash comparison between two (2) AttributeBindTypeOrValue
+instances using the Compare method.
+*/
+func ExampleAttributeBindTypeOrValue_Compare() {
+	// these will eval as true (match) because the underlying
+	// string call does not include the Keyword. We need the
+	// bind rule to see that ...
+	attr := ABTV(BindUAT, `cACertificate`, `USERDN`)
+	oattr := ABTV(BindGAT, `cACertificate`, USERDN)
+
+	eqaBr := attr.Eq()
+	eqoBr := oattr.Eq()
+
+	fmt.Printf("Hashes are equal: %t", eqaBr.Compare(eqoBr))
+	// Output: Hashes are equal: false
 }
 
 /*

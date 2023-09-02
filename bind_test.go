@@ -412,3 +412,18 @@ func ExampleBindRuleMethod() {
 	// [5] aci.BindRuleMethod instance [Le] execution returned aci.BindRule: ( ssf <= "256" )
 	// [6] aci.BindRuleMethod instance [Ge] execution returned aci.BindRule: ( ssf >= "256" )
 }
+
+func ExampleBindRule_Compare() {
+	ssf1 := SSF(128).Eq()
+	ssf2 := SSF(127).Eq()
+	fmt.Printf("Equal: %t", ssf1.Compare(ssf2))
+	// Output: Equal: false
+}
+
+func ExampleBindRules_Compare() {
+	tf1 := Timeframe(ToD(`0130`), ToD(`1605`))
+	tf2 := Timeframe(ToD(`1215`), ToD(`1605`))
+
+	fmt.Printf("Equal: %t", tf1.Compare(tf2))
+	// Output: Equal: false
+}

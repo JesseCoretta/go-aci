@@ -146,6 +146,14 @@ of the DistinguishedNameContext interface.
 func (r BindDistinguishedName) isDistinguishedNameContext() {}
 
 /*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r BindDistinguishedName) Compare(x any) bool {
+	return compareHashInstance(r, x)
+}
+
+/*
 Valid returns an instance of error that reflects whether certain
 required elements or value combinations were present and deemed
 valid. A non-nil error indicates an undesirable receiver state.
@@ -212,6 +220,14 @@ isDistinguishedNameContext exists to prevent false positive qualifiers
 of the DistinguishedNameContext interface.
 */
 func (r TargetDistinguishedName) isDistinguishedNameContext() {}
+
+/*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r TargetDistinguishedName) Compare(x any) bool {
+	return compareHashInstance(r, x)
+}
 
 /*
 String is a stringer method that returns the string representation
@@ -480,6 +496,7 @@ func newDistinguishedName(x string, kw Keyword) (d *distinguishedName) {
 	d.Keyword = kw
 
 	if len(x) != 0 {
+		x = chopDNPfx(x)
 		d.string = &x
 	}
 
@@ -549,6 +566,22 @@ func (r TargetDistinguishedNames) resetKeyword(x any) {
 				SetPushPolicy(r.tFromDNPushPolicy)
 		}
 	}
+}
+
+/*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r BindDistinguishedNames) Compare(x any) bool {
+	return compareHashInstance(r, x)
+}
+
+/*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r TargetDistinguishedNames) Compare(x any) bool {
+	return compareHashInstance(r, x)
 }
 
 /*
@@ -1927,6 +1960,7 @@ type DistinguishedNameContext interface {
 	Len() int
 	String() string
 	Kind() string
+	Compare() bool
 	Keyword() Keyword
 	IsZero() bool
 	Valid() error

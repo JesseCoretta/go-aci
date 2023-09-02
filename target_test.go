@@ -23,6 +23,8 @@ func TestTargetRuleMethods(t *testing.T) {
 	if trf.Len() != 2 {
 		t.Errorf("%s failed: unexpected %T length: want %d, got %d", t.Name(), trf, 2, trf.Len())
 	}
+	_, _ = trf.Index(-100)
+	_, _ = trf.Index(100)
 }
 
 func TestCtrls(t *testing.T) {
@@ -59,6 +61,8 @@ func TestTargetKeyword_Set_targetScope(t *testing.T) {
 func TestTargetRule_bogus(t *testing.T) {
 	var tr TargetRule
 	_ = tr.ID()
+	_ = tr.Kind()
+	_ = tr.NoPadding()
 	_ = tr.Category()
 	_ = tr.IsZero()
 	_ = tr.Valid()
@@ -80,7 +84,10 @@ func TestTargetRules_bogus(t *testing.T) {
 	_ = tr.ReadOnly()
 	_ = tr.NoPadding()
 	_ = tr.String()
+	_ = tr.Pop()
 	_ = tr.Index(100)
+	_ = tr.remove(14)
+	tr.reset()
 }
 
 /*
@@ -485,4 +492,27 @@ func ExampleParseTargetRules_alternativeQuotation() {
 
 	fmt.Printf("%s", tr)
 	// Output: ( target_to = "ldap:///cn=*,ou=Contractors,ou=People,dc=example,dc=com || ldap:///cn=*,ou=X.500 Administrators,ou=People,dc=example,dc=com || ldap:///cn=*,ou=Executives,ou=People,dc=example,dc=com" )( targetscope = "subordinate" )( targattrfilters = "add=nsroleDN:(!(nsroledn=cn=X.500 Administrator)) && employeeStatus:(!(drink=beer)) && telephoneNumber:(telephoneNumber=612*)" )
+}
+
+func ExampleTargetRule_Compare() {
+	tdn1 := TDN(`uid=jesse,ou=People,dc=example,dc=com`).Eq()
+	tdn2 := TDN(`uid=jesse,ou=People,dc=example,dc=com`).Ne()
+	fmt.Printf("Equal: %t", tdn1.Compare(tdn2))
+	// Output: Equal: false
+}
+
+func ExampleTargetRules_Compare() {
+	trs1 := TRs()
+	tdn1 := TDN(`uid=jesse,ou=People,dc=example,dc=com`).Eq()
+	tfdn1 := TFDN(`ou=People,dc=example,dc=com`).Eq()
+
+	trs2 := TRs()
+	tf2 := Filter(`(objectClass=*`).Eq()
+	tsc2 := SingleLevel.Eq()
+
+	trs1.Push(tdn1, tfdn1)
+	trs2.Push(tf2, tsc2)
+
+	fmt.Printf("Equal: %t", trs1.Compare(trs2))
+	// Output: Equal: false
 }

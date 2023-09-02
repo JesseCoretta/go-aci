@@ -1,6 +1,7 @@
 package aci
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -340,3 +341,66 @@ func TestDistinguishedName_codecov(t *testing.T) {
 	}
 }
 */
+
+/*
+This example demonstrates the SHA-1 hash comparison between two (2) instances of
+BindDistinguishedName using the Compare method.
+
+These seemingly different distinguished names actually evaluate as equal because
+the local LDAP prefix (ldap:///) is stripped off when the UDN (or similar) function
+is run. When the String method is executed for a distinguished name at a later point,
+said prefix is artificially imposed. Therefore in this scenario, the two values are
+in fact equal.
+*/
+func ExampleBindDistinguishedName_Compare() {
+	dn1 := UDN(`uid=jesse,ou=People,dc=example,dc=com`)
+	dn2 := UDN(`ldap:///uid=jesse,ou=People,dc=example,dc=com`)
+
+	fmt.Printf("Hashes are equal: %t", dn1.Compare(dn2))
+	// Output: Hashes are equal: true
+}
+
+/*
+This example demonstrates the SHA-1 hash comparison between two (2) instances of
+BindDistinguishedNames using the Compare method.
+
+The comparison evaluates as false because, while the contents match, their ordering
+does not.
+*/
+func ExampleBindDistinguishedNames_Compare() {
+	adns := UDNs(`uid=jesse,ou=People,dc=example,dc=com`, `uid=courtney,ou=People,dc=example,dc=com`)
+	odns := UDNs(`uid=courtney,ou=People,dc=example,dc=com`, `uid=jesse,ou=People,dc=example,dc=com`)
+
+	fmt.Printf("Hashes are equal: %t", odns.Compare(adns))
+	// Output: Hashes are equal: false
+}
+
+/*
+This example demonstrates the SHA-1 hash comparison between two (2) instances of
+BindDistinguishedNames using the Compare method.
+
+The comparison evaluates as false because, while the contents match, their ordering
+does not.
+*/
+func ExampleTargetDistinguishedNames_Compare() {
+	adns := TFDNs(`uid=jesse,ou=People,dc=example,dc=com`, `uid=courtney,ou=People,dc=example,dc=com`)
+	odns := TFDNs(`uid=courtney,ou=People,dc=example,dc=com`, `uid=jesse,ou=People,dc=example,dc=com`)
+
+	fmt.Printf("Hashes are equal: %t", odns.Compare(adns))
+	// Output: Hashes are equal: false
+}
+
+/*
+This example demonstrates the SHA-1 hash comparison between two (2) instances of
+TargetDistinguishedName using the Compare method.
+
+The comparison evaluates as false because the case folding schemes do not match
+for the `T` in Tolana.
+*/
+func ExampleTargetDistinguishedName_Compare() {
+	dn1 := TDN(`cn=Courtney tolana,ou=People,dc=example,dc=com`)
+	dn2 := TDN(`cn=Courtney Tolana,ou=People,dc=example,dc=com`)
+
+	fmt.Printf("Hashes are equal: %t", dn1.Compare(dn2))
+	// Output: Hashes are equal: false
+}

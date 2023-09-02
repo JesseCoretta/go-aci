@@ -208,6 +208,14 @@ type bindRuleFuncMap map[ComparisonOperator]BindRuleMethod
 func (r BindRule) isBindContextQualifier() {}
 
 /*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r BindRule) Compare(x any) bool {
+	return compareHashInstance(r, x)
+}
+
+/*
 Kind returns the string literal `condition` to identify the receiver
 as a stackage.Condition type alias.
 */
@@ -375,6 +383,14 @@ func (r BindRule) IsZero() bool {
 }
 
 func (r BindRules) isBindContextQualifier() {}
+
+/*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r BindRules) Compare(x any) bool {
+	return compareHashInstance(r, x)
+}
 
 /*
 Kind returns the string literal `stack` to identify the receiver as
