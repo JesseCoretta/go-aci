@@ -647,36 +647,6 @@ func (r TargetRules) ReadOnly(state ...bool) TargetRules {
 }
 
 /*
-Insert wraps go-stackage's Stack.Insert method.
-*/
-func (r TargetRules) insert(x any, left int) bool {
-	_t, _ := castAsStack(r)
-
-	assert, ok := x.(TargetRule)
-	if !ok {
-		return false
-	}
-
-	ok = _t.Insert(assert, left)
-
-	return ok
-}
-
-/*
-replace wraps go-stackage's Stack.Replace method.
-*/
-func (r TargetRules) replace(x any, idx int) bool {
-	_t, _ := castAsStack(r)
-
-	_, ok := x.(TargetRule)
-	if !ok {
-		return false
-	}
-
-	return _t.Replace(x, idx)
-}
-
-/*
 NoPadding wraps go-stackage's Stack.NoPadding method.
 */
 func (r TargetRules) NoPadding(state ...bool) TargetRules {
