@@ -229,14 +229,6 @@ func newTargetRule(kw, op, ex any) (t TargetRule) {
 	return
 }
 
-func (r TargetRule) isConditionContextQualifier() bool {
-	return true
-}
-
-func (r TargetRule) isRuleContextQualifier() bool {
-	return true
-}
-
 /*
 Valid wraps go-stackage's Condition.Valid method.
 */

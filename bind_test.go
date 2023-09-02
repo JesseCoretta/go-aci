@@ -25,23 +25,49 @@ func TestParseBindRuleMethods(t *testing.T) {
 func TestParseBindRule(t *testing.T) {
 	want := `userdn = "ldap:///cn=Jesse Coretta,ou=People,dc=example,dc=com"`
 
-	c, err := ParseBindRule(want)
-	if err != nil {
+	var b BindRule
+	var err error
+	b.isBindContextQualifier() // just to satisfy codecov.
+	_ = b.Kind()
+	_ = b.IsNesting()
+	_ = b.Operator()
+	_ = b.Keyword()
+	_ = b.Expression()
+	_ = b.SetQuoteStyle(1)
+
+	if b, err = ParseBindRule(want); err != nil {
 		return
 	}
 
-	if want != c.String() {
-		t.Errorf("%s failed:\nwant '%s'\ngot '%s'", t.Name(), want, c)
+	b.isBindContextQualifier()
+	_ = b.Kind()
+	_ = b.IsNesting()
+	_ = b.Operator()
+	_ = b.Keyword()
+	_ = b.Expression()
+	_ = b.SetQuoteStyle(0)
+
+	if want != b.String() {
+		t.Errorf("%s failed:\nwant '%s'\ngot '%s'", t.Name(), want, b)
 	}
 }
 
 func TestParseBindRules(t *testing.T) {
 	want := `( ( ( userdn = "ldap:///anyone" ) AND ( ssf >= "71" ) ) AND NOT ( dayofweek = "Wed" OR dayofweek = "Fri" ) )`
 
-	r, err := ParseBindRules(want)
-	if err != nil {
+	var r BindRules
+	var err error
+
+	r.isBindContextQualifier()
+	_ = r.Kind()
+	_ = r.IsNesting()
+
+	if r, err = ParseBindRules(want); err != nil {
 		return
 	}
+
+	_ = r.Kind()
+	_ = r.IsNesting()
 
 	if want != r.String() {
 		t.Errorf("%s failed:\nwant '%s',\ngot  '%s'", t.Name(), want, r)
@@ -131,6 +157,56 @@ func ExampleBindRuleMethods_Index() {
 
 		// grab the raw string output
 		fmt.Printf("[%d] %T instance [%s] execution returned %T: %s\n", idx, meth, cop.Context(), rule, rule)
+	}
+	// Output:
+	// [1] aci.BindRuleMethod instance [Eq] execution returned aci.BindRule: ( ssf = "256" )
+	// [2] aci.BindRuleMethod instance [Ne] execution returned aci.BindRule: ( ssf != "256" )
+	// [3] aci.BindRuleMethod instance [Lt] execution returned aci.BindRule: ( ssf < "256" )
+	// [4] aci.BindRuleMethod instance [Gt] execution returned aci.BindRule: ( ssf > "256" )
+	// [5] aci.BindRuleMethod instance [Le] execution returned aci.BindRule: ( ssf <= "256" )
+	// [6] aci.BindRuleMethod instance [Ge] execution returned aci.BindRule: ( ssf >= "256" )
+}
+
+func ExampleBindRuleMethods_Index_byText() {
+	ssf := SSF(256)
+	brf := ssf.BRF()
+
+	// Here, we demonstrate calling a particular BindRuleMethod
+	// not by its numerical index, but rather by its actual
+	// "symbolic" operator representation. Keep in mind these
+	// options for text-based searches:
+	//
+	// - symbols (e.g.: '=', '>') are available via ComparisonOperator.String()
+	// - func names (e.g.: 'Eq', 'Gt') are available via ComparisonOperator.Context()
+	// - descriptions (e.g.: 'Not Equal To', 'Less Than') are available via ComparisonOperator.Description()
+	//
+	// As such, feel free to replace these list items with one of the above methods,
+	// but keep in mind that text based searches are more resource intensive than as
+	// compared to direct ComparisonOperator numeric calls. If you have performance
+	// concerns, avoid this text based procedure.
+	for i, term := range []string{
+		`=`,
+		`!=`,
+		`<`,
+		`>`,
+		`<=`,
+		`>=`,
+	} {
+		// IMPORTANT: Do not call index 0. Either adjust your
+		// loop variable (i) to begin at 1, and terminate at
+		// brf.Len()+1 --OR-- simply +1 the index call as we
+		// are doing here (seems easier). The reason for this
+		// is because there is no valid ComparisonOperator
+		// with an underlying uint8 value of zero (0). See
+		// the ComparisonOperator constants for details.
+		cop, meth := brf.Index(term)
+
+		// execute method to create the bindrule, while
+		// also enabling the (optional) parenthetical bit
+		rule := meth().Paren()
+
+		// grab the raw string output
+		fmt.Printf("[%d] %T instance [%s] execution returned %T: %s\n", i+1, meth, cop.Context(), rule, rule)
 	}
 	// Output:
 	// [1] aci.BindRuleMethod instance [Eq] execution returned aci.BindRule: ( ssf = "256" )

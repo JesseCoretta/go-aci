@@ -203,6 +203,49 @@ func ExampleTargetRuleMethods_Index() {
 	// [2] aci.TargetRuleMethod instance [Ne] execution returned aci.TargetRule: ( target_from != "ldap:///uid=*,ou=People,dc=example,dc=com" )
 }
 
+func ExampleTargetRuleMethods_Index_byText() {
+	attrs := TAs(`cn`, `sn`, `givenName`, `objectClass`, `uid`, `homeDirectory`)
+	trf := attrs.TRF()
+
+	// Here, we demonstrate calling a particular TargetRuleMethod
+	// not by its numerical index, but rather by its actual
+	// "symbolic" operator representation. Keep in mind these
+	// options for text-based searches:
+	//
+	// - symbols (e.g.: '=', '>') are available via ComparisonOperator.String()
+	// - func names (e.g.: 'Eq', 'Gt') are available via ComparisonOperator.Context()
+	// - descriptions (e.g.: 'Not Equal To', 'Less Than') are available via ComparisonOperator.Description()
+	//
+	// As such, feel free to replace these list items with one of the above methods,
+	// but keep in mind that text based searches are more resource intensive than as
+	// compared to direct ComparisonOperator numeric calls. If you have performance
+	// concerns, avoid this text based procedure.
+	for i, term := range []string{
+		`=`,
+		`!=`,
+	} {
+		// IMPORTANT: Do not call index 0. Either adjust your
+		// loop variable (i) to begin at 1, and terminate at
+		// trf.Len()+1 --OR-- simply +1 the index call as we
+		// are doing here (seems easier). The reason for this
+		// is because there is no valid ComparisonOperator
+		// with an underlying uint8 value of zero (0). See
+		// the ComparisonOperator constants for details.
+		cop, meth := trf.Index(term)
+
+		// execute method to create the TargetRule, while
+		// enabling the so-called "Slice Quotation scheme"
+		// for one of the iterations (just for fun!)
+		rule := meth().SetQuoteStyle(i)
+
+		// grab the raw string output
+		fmt.Printf("[%d] %T instance [%s] execution returned %T: %s\n", i+1, meth, cop.Context(), rule, rule)
+	}
+	// Output:
+	// [1] aci.TargetRuleMethod instance [Eq] execution returned aci.TargetRule: ( targetattr = "cn || sn || givenName || objectClass || uid || homeDirectory" )
+	// [2] aci.TargetRuleMethod instance [Ne] execution returned aci.TargetRule: ( targetattr != "cn" || "sn" || "givenName" || "objectClass" || "uid" || "homeDirectory" )
+}
+
 func ExampleTargetRuleMethods_IsZero() {
 	var trf TargetRuleMethods
 	fmt.Printf("Zero: %t", trf.IsZero())

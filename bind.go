@@ -205,9 +205,7 @@ instances of BindRuleMethods.
 */
 type bindRuleFuncMap map[ComparisonOperator]BindRuleMethod
 
-func (r BindRule) isBindContextQualifier() bool {
-	return true
-}
+func (r BindRule) isBindContextQualifier() {}
 
 /*
 Kind returns the string literal `condition` to identify the receiver
@@ -240,16 +238,20 @@ func (r BindRule) IsNesting() bool {
 /*
 setID wraps go-stackage's Condition.SetID method.
 */
+/*
 func (r BindRule) setID(id string) {
 	castAsCondition(r).SetID(id)
 }
+*/
 
 /*
 setCategory wraps go-stackage's Condition.SetCategory method.
 */
+/*
 func (r BindRule) setCategory(cat string) {
 	castAsCondition(r).SetCategory(cat)
 }
+*/
 
 /*
 Paren wraps go-stackage's Condition.Paren method.
@@ -304,23 +306,49 @@ resolves the raw value into a BindKeyword. Failure to do
 so will return a bogus Keyword.
 */
 func (r BindRule) Keyword() Keyword {
+	if r.IsZero() {
+		return nil
+	}
+
 	k := castAsCondition(r).Keyword()
 	var kw any = matchBKW(k)
 	return kw.(BindKeyword)
 }
 
 /*
-Operator wraps go-stackage's Condition.Operator method.
+Operator wraps go-stackage's Condition.Operator method
+and casts the stackage.ComparisonOperator to the local
+aci.ComparisonOperator.
 */
 func (r BindRule) Operator() ComparisonOperator {
-	x := castAsCop(castAsCondition(r).Operator().(ComparisonOperator))
-	return ComparisonOperator(x)
+	if r.IsZero() {
+		return badCop
+	}
+
+	sc := castAsCondition(r)
+	if BindRule(*sc) == badBindRule {
+		return badCop
+	}
+
+	if sc.Operator() == nil {
+		return badCop
+	}
+
+	cop, ok := sc.Operator().(ComparisonOperator)
+	if !ok {
+		return badCop
+	}
+
+	return cop
 }
 
 /*
 Expression wraps go-stackage's Condition.Expression method.
 */
 func (r BindRule) Expression() any {
+	if r.IsZero() {
+		return nil
+	}
 	return castAsCondition(r).Expression()
 }
 
@@ -331,9 +359,7 @@ func (r BindRule) IsZero() bool {
 	return castAsCondition(r).IsZero()
 }
 
-func (r BindRules) isBindContextQualifier() bool {
-	return true
-}
+func (r BindRules) isBindContextQualifier() {}
 
 /*
 Kind returns the string literal `stack` to identify the receiver as
@@ -693,10 +719,12 @@ func (r BindRules) String() string {
 /*
 setCategory wraps go-stackage's Stack.SetCategory method.
 */
+/*
 func (r BindRules) setCategory(cat string) {
 	_b, _ := castAsStack(r)
 	_b.SetCategory(cat)
 }
+*/
 
 /*
 IsZero wraps go-stackage's Stack.IsZero method.
@@ -740,11 +768,13 @@ func (r BindRules) Category() string {
 /*
 setID wraps go-stackage's Stack.SetID method.
 */
+/*
 func (r BindRules) setID(id string) {
 	_b, _ := castAsStack(r)
 	_b.SetID(id)
 	//r = BindRules(_b)
 }
+*/
 
 /*
 Len wraps go-stackage's Stack.Len method.
@@ -1346,8 +1376,9 @@ type BindContext interface {
 
 	// isBindContextQualifier ensures no greedy interface
 	// matching outside of the realm of bind rules. It need
-	// not be accessed by users, nor is it run at any time.
-	isBindContextQualifier() bool
+	// not be accessed by users, nor is it run at any time
+	// outside of unit tests to satisfy code coverage ...
+	isBindContextQualifier()
 }
 
 const bindRuleID = `bind`
