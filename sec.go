@@ -135,6 +135,14 @@ func (r AuthenticationMethod) String() (am string) {
 }
 
 /*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r AuthenticationMethod) Compare(x any) bool {
+	return compareHashInstance(r, x)
+}
+
+/*
 SecurityStrengthFactor embeds a pointer to uint8. A nil uint8 value indicates an effective
 security strength factor of zero (0). A non-nil uint8 value expresses uint8 + 1, thereby
 allowing a range of 0-256 "within" a uint8 instance.
@@ -363,6 +371,14 @@ func (r SecurityStrengthFactor) String() string {
 		return `0`
 	}
 	return sprintf("%d", int((*r.ssf.uint8))+1)
+}
+
+/*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r SecurityStrengthFactor) Compare(x any) bool {
+	return compareHashInstance(r, x)
 }
 
 /*

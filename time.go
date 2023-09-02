@@ -235,6 +235,14 @@ func (r DayOfWeek) String() string {
 }
 
 /*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r DayOfWeek) Compare(x any) bool {
+	return compareHashInstance(r, x)
+}
+
+/*
 Valid returns a boolean value indicative of whether the receiver contains one or
 more valid bits representing known Day values. At least one Day must be positive
 within the receiver.
@@ -353,6 +361,14 @@ func (r Day) String() (day string) {
 	}
 
 	return
+}
+
+/*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r Day) Compare(x any) bool {
+	return compareHashInstance(r, x)
 }
 
 ////////////////////////////////////////////////////////////////
@@ -587,6 +603,14 @@ func (r TimeOfDay) BRF() BindRuleMethods {
 		Gt: r.Gt,
 		Ge: r.Ge,
 	})
+}
+
+/*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r TimeOfDay) Compare(x any) bool {
+	return compareHashInstance(r, x)
 }
 
 /*

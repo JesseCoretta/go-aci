@@ -267,6 +267,14 @@ func (r Right) String() (p string) {
 }
 
 /*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r Right) Compare(x any) bool {
+	return compareHashInstance(r, x)
+}
+
+/*
 Len returns the abstract integer length of the receiver, quantifying
 the number of Right instances currently being expressed. For example,
 if the receiver instance has its Read and Delete Right bits enabled,
@@ -312,6 +320,14 @@ func (r Permission) String() string {
 		}
 	}
 	return r.sprintf(rights)
+}
+
+/*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r Permission) Compare(x any) bool {
+	return compareHashInstance(r, x)
 }
 
 func (r Permission) sprintf(rights []string) string {

@@ -187,6 +187,20 @@ func ExampleCtrl() {
 	// Output: 1.3.6.1.4.1.56521.999.5
 }
 
+func ExampleObjectIdentifier_Compare() {
+	o1 := Ctrl(`1.3.6.1.4.1.56521.999.5`)
+	o2 := ExtOp(`1.3.6.1.4.1.56521.999.5`)
+	fmt.Printf("%t", o1.Compare(o2))
+	// Output: true
+}
+
+func ExampleObjectIdentifiers_Compare() {
+	o1 := Ctrls(`1.3.6.1.4.1.56521.999.5`, `1.3.6.1.4.1.56521.999.6`)
+	o2 := Ctrls(`1.3.6.1.4.1.56521.999.7`, `1.3.6.1.4.1.56521.999.6`)
+	fmt.Printf("%t", o1.Compare(o2))
+	// Output: false
+}
+
 /*
 This example demonstrates the creation of a multi-valued targetcontrol (LDAP Control)
 Target Rule expression.

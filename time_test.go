@@ -33,6 +33,18 @@ func ExampleDayOfWeek_String() {
 	// Output: Sun,Thur,Sat
 }
 
+/*
+This example demonstrates the SHA-1 hash comparison between two (2) DayOfWeek
+instances using the Compare method.
+*/
+func ExampleDayOfWeek_Compare() {
+	d1 := DoW(Thur, `Sat`, 1)
+	d2 := DoW(Thur, `saturday`, 1)
+
+	fmt.Printf("Hashes are equal: %t", d1.Compare(d2))
+	// Output: Hashes are equal: true
+}
+
 func ExampleDayOfWeek_Len() {
 	var d DayOfWeek = DoW(Thur, `Sat`, 1)
 	fmt.Printf("%d", d.Len())
@@ -126,6 +138,23 @@ func ExampleTimeOfDay_Keyword() {
 	var thyme TimeOfDay
 	fmt.Printf("%s", thyme.Keyword())
 	// Output: timeofday
+}
+
+func ExampleDay_Compare() {
+	fmt.Printf("Hashes are equal: %t", Thur.Compare(Sat))
+	// Output: Hashes are equal: false
+}
+
+/*
+This example demonstrates the SHA-1 hash comparison between two (2) TimeOfDay
+instances using the Compare method.
+*/
+func ExampleTimeOfDay_Compare() {
+	d1 := ToD(`1134`)
+	d2 := ToD(`1136`)
+
+	fmt.Printf("Hashes are equal: %t", d1.Compare(d2))
+	// Output: Hashes are equal: false
 }
 
 func ExampleTimeOfDay_IsZero() {

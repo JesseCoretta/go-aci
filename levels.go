@@ -116,6 +116,14 @@ func (r Inheritance) Valid() (err error) {
 }
 
 /*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r Inheritance) Compare(x any) bool {
+	return compareHashInstance(r, x)
+}
+
+/*
 BRF returns an instance of BindRuleMethods.
 
 Each of the return instance's key values represent a single instance of
@@ -391,6 +399,14 @@ func (r Level) String() (lvl string) {
 }
 
 /*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r Level) Compare(x any) bool {
+	return compareHashInstance(r, x)
+}
+
+/*
 Shift wraps Levels.Shift via the underlying Levels value
 found within the receiver instance.
 */
@@ -493,6 +509,14 @@ receiver is in an aberrant state.
 */
 func (r Levels) IsZero() bool {
 	return int(r) == 0
+}
+
+/*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r Levels) Compare(x any) bool {
+	return compareHashInstance(r, x)
 }
 
 /*

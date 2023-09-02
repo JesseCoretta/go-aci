@@ -51,6 +51,21 @@ func ExamplePermissionBindRule_String() {
 	// Output: allow(none) userdn = "ldap:///uid=disgruntled_employee,ou=People,dc=example,dc=com";
 }
 
+func ExamplePermissionBindRule_Compare() {
+	pbr1 := PermissionBindRule{
+		Allow(NoAccess),
+		UDN(`uid=disgruntled_employees,ou=Group,dc=example,dc=com`).Eq(),
+	}
+
+	pbr2 := PermissionBindRule{
+		Allow(NoAccess),
+		UDN(`uid=disgruntled_employee,ou=People,dc=example,dc=com`).Eq(),
+	}
+
+	fmt.Printf("%t", pbr1.Compare(pbr2))
+	// Output: false
+}
+
 func ExamplePermissionBindRule_IsZero() {
 	var pbr PermissionBindRule
 	fmt.Printf("Zero: %t", pbr.IsZero())
@@ -133,6 +148,38 @@ func ExamplePermissionBindRules_Push() {
 
 	fmt.Printf("%d %T instances found within %T", pbrs.Len(), rule1, pbrs)
 	// Output: 2 aci.PermissionBindRule instances found within aci.PermissionBindRules
+}
+
+func ExamplePermissionBindRules_Compare() {
+	rule1 := PermissionBindRule{
+		Deny(AllAccess, ProxyAccess),
+		GDN(`cn=disgruntled_employees,ou=Groups,dc=example,dc=com`).Eq(),
+	}
+
+	rule2 := PermissionBindRule{
+		Allow(AllAccess),
+		UDN(`cn=Courtney Tolana,ou=Admin,ou=People,dc=example,dc=com`).Eq(),
+	}
+
+	// Init/Push in one shot
+	pbrs1 := PBRs()
+	pbrs1.Push(rule1, rule2)
+
+	rule1 = PermissionBindRule{
+		Deny(AllAccess, ProxyAccess),
+		GDN(`cn=onboard_employees,ou=Groups,dc=example,dc=com`).Eq(),
+	}
+
+	rule2 = PermissionBindRule{
+		Allow(AllAccess),
+		UDN(`cn=Jesse Coretta,ou=Admin,ou=People,dc=example,dc=com`).Eq(),
+	}
+
+	pbrs2 := PBRs()
+	pbrs2.Push(rule1, rule2)
+
+	fmt.Printf("%t", pbrs1.Compare(pbrs2))
+	// Output: false
 }
 
 func ExamplePermissionBindRules_Index() {

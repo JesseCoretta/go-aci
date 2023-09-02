@@ -222,3 +222,18 @@ func ExampleLDAPURI_BRF() {
 	fmt.Printf("%d available aci.BindRuleMethod instances", uri.BRF().Len())
 	// Output: 2 available aci.BindRuleMethod instances
 }
+
+/*
+This example demonstrates the SHA-1 hash comparison between two (2)
+Inheritance instances using the Compare method.
+*/
+func ExampleLDAPURI_Compare() {
+	raw := `ldap:///ou=People,dc=example,dc=com?cn,sn,givenName,objectClass,uid?one?(&(objectClass=employee)(terminated=FALSE))`
+	uri1 := URI(raw)
+
+	raw = `ldap:///ou=People,dc=example,dc=com?cn,sn,givenName,objectClass,uid?sub?(&(objectClass=distributionList)(status=active))`
+	uri2 := URI(raw)
+
+	fmt.Printf("Hashes are equal: %t", uri1.Compare(uri2))
+	// Output: Hashes are equal: false
+}

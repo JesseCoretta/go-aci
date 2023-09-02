@@ -190,6 +190,45 @@ func ExampleInherit_gAT() {
 	// Output: groupattr = "parent[3,4].owner#USERDN"
 }
 
+/*
+This example demonstrates the SHA-1 hash comparison between two (2)
+Inheritance instances using the Compare method.
+*/
+func ExampleInheritance_Compare() {
+
+	attr := AT(`owner`)
+	gat := GAT(attr, USERDN)
+	inh1 := Inherit(gat, 3, 4)
+
+	attr = AT(`manager`)
+	uat := UAT(attr, AV(`uid=frank,ou=People,dc=example,dc=com`))
+	inh2 := Inherit(uat, 1, 3)
+
+	fmt.Printf("Hashes are equal: %t", inh1.Compare(inh2))
+	// Output: Hashes are equal: false
+}
+
+/*
+This example demonstrates the SHA-1 hash comparison between two (2)
+Level instances using the Compare method.
+*/
+func ExampleLevel_Compare() {
+	fmt.Printf("Hashes are equal: %t", Level8.Compare(Level7))
+	// Output: Hashes are equal: false
+}
+
+/*
+This example demonstrates the SHA-1 hash comparison between two (2)
+Level instances using the Compare method.
+*/
+func ExampleLevels_Compare() {
+	var l1, l2 Levels
+	l1.Shift(Level1, 3)
+	l2.Shift(Level2, 3, 4)
+	fmt.Printf("Hashes are equal: %t", l1.Compare(l2))
+	// Output: Hashes are equal: false
+}
+
 func TestLevels_bogus(t *testing.T) {
 	var inh Inheritance
 	if err := inh.Valid(); err == nil {

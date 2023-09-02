@@ -200,3 +200,24 @@ func ExampleAuthenticationMethod_String() {
 	fmt.Printf("%s", EXTERNAL)
 	// Output: SASL EXTERNAL
 }
+
+/*
+This example demonstrates the SHA-1 hash comparison between two (2)
+AuthenticationMethod instances using the Compare method.
+*/
+func ExampleAuthenticationMethod_Compare() {
+	fmt.Printf("%t", Anonymous.Compare(EXTERNAL))
+	// Output: false
+}
+
+/*
+This example demonstrates the SHA-1 hash comparison between two (2)
+SecurityStrengthFactor instances using the Compare method.
+*/
+func ExampleSecurityStrengthFactor_Compare() {
+	ssf1 := SSF(`101`)
+	ssf2 := SSF(101)
+
+	fmt.Printf("Hashes are equal: %t", ssf1.Compare(ssf2))
+	// Output: Hashes are equal: true
+}

@@ -122,6 +122,14 @@ func (r SearchFilter) String() string {
 }
 
 /*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r SearchFilter) Compare(x any) bool {
+	return compareHashInstance(r, x)
+}
+
+/*
 Set assigns the provided value as the LDAP Search Filter instance within the
 receiver. Note that this should only be done once, as filters cannot easily
 built "incrementally" by the user.
@@ -291,6 +299,14 @@ func (r AttributeFilter) SearchFilter() SearchFilter {
 }
 
 /*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r AttributeFilter) Compare(x any) bool {
+	return compareHashInstance(r, x)
+}
+
+/*
 set is a private method called by AttributeFilter.Set.
 */
 func (r *atf) set(x ...any) {
@@ -430,6 +446,14 @@ the context of this type instance, the Keyword returned is always TargetFilter.
 */
 func (r AttributeFilterOperations) Keyword() Keyword {
 	return TargetAttrFilters
+}
+
+/*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r AttributeFilterOperations) Compare(x any) bool {
+	return compareHashInstance(r, x)
 }
 
 /*
@@ -796,6 +820,14 @@ func (r AttributeFilterOperation) pushPolicy(x any) (err error) {
 	}
 
 	return
+}
+
+/*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r AttributeFilterOperation) Compare(x any) bool {
+	return compareHashInstance(r, x)
 }
 
 /*

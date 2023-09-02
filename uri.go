@@ -582,3 +582,11 @@ func (r *ldapURI) set(x ...any) {
 
 	return
 }
+
+/*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r LDAPURI) Compare(x any) bool {
+	return compareHashInstance(r, x)
+}

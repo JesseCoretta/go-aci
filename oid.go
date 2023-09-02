@@ -68,6 +68,14 @@ func (r ObjectIdentifier) String() string {
 }
 
 /*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r ObjectIdentifier) Compare(x any) bool {
+	return compareHashInstance(r, x)
+}
+
+/*
 Len returns 0 or 1 to describe an abstract length of
 the receiver. This method exists only to satisfy Go's
 interface signature requirements and need not be used.
@@ -380,6 +388,14 @@ This method wraps go-stackage's Stack.String method.
 func (r ObjectIdentifiers) String() string {
 	_r, _ := castAsStack(r)
 	return _r.String()
+}
+
+/*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r ObjectIdentifiers) Compare(x any) bool {
+	return compareHashInstance(r, x)
 }
 
 /*

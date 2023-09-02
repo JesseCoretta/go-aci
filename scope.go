@@ -181,6 +181,14 @@ func (r SearchScope) String() string {
 }
 
 /*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r SearchScope) Compare(x any) bool {
+	return compareHashInstance(r, x)
+}
+
+/*
 Target is a stringer method that returns the string
 representation of the receiver.
 

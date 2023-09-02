@@ -302,3 +302,27 @@ func ExampleFQDN_Valid() {
 	fmt.Printf("Valid: %t", i.Valid() == nil)
 	// Output: Valid: false
 }
+
+/*
+This example demonstrates the SHA-1 hash comparison between two (2)
+IPAddr instances using the Compare method.
+*/
+func ExampleIPAddr_Compare() {
+	addr1 := IP(`10.1.,192.168.`)
+	addr2 := IP(`10.1.,192.168.1.`)
+
+	fmt.Printf("Hashes are equal: %t", addr1.Compare(addr2))
+	// Output: Hashes are equal: false
+}
+
+/*
+This example demonstrates the SHA-1 hash comparison between two (2)
+FQDN instances using the Compare method.
+*/
+func ExampleFQDN_Compare() {
+	addr1 := DNS(`www`, `example`, `com`)
+	addr2 := DNS(`www.example.com`)
+
+	fmt.Printf("Hashes are equal: %t", addr1.Compare(addr2))
+	// Output: Hashes are equal: true
+}

@@ -117,6 +117,14 @@ func (r PermissionBindRule) String() string {
 }
 
 /*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r PermissionBindRule) Compare(x any) bool {
+	return compareHashInstance(r, x)
+}
+
+/*
 string is a private method called by PermissionBindRule.String.
 */
 func (r PermissionBindRule) string() (s string) {
@@ -184,6 +192,14 @@ This method wraps go-stackage's Stack.String method.
 func (r PermissionBindRules) String() string {
 	_r, _ := castAsStack(r)
 	return _r.String()
+}
+
+/*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r PermissionBindRules) Compare(x any) bool {
+	return compareHashInstance(r, x)
 }
 
 /*

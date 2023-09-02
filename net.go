@@ -48,6 +48,14 @@ func (r FQDN) Keyword() Keyword {
 }
 
 /*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r FQDN) Compare(x any) bool {
+	return compareHashInstance(r, x)
+}
+
+/*
 Eq initializes and returns a new BindRule instance configured to express the
 evaluation of the receiver value as Equal-To the `ip` Bind keyword context.
 */
@@ -111,6 +119,14 @@ func (r IPAddr) BRF() BindRuleMethods {
 		Eq: r.Eq,
 		Ne: r.Ne,
 	})
+}
+
+/*
+Compare returns a Boolean indicative of a SHA-1 comparison
+between the receiver (r) and input value x.
+*/
+func (r IPAddr) Compare(x any) bool {
+	return compareHashInstance(r, x)
 }
 
 /*

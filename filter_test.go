@@ -1208,6 +1208,54 @@ func ExampleAttributeOperation_AFO() {
 }
 
 /*
+This example demonstrates the SHA-1 hash comparison between two (2) AttributeFilterOperation
+instances using the Compare method.
+*/
+func ExampleAttributeFilterOperation_Compare() {
+	attr := AT(`uidNumber`)
+	filter := Filter(`(&(objectClass=accounting)(terminated=FALSE))`)
+	aF1 := AF(attr, filter)
+	aFO1 := AddOp.AFO(aF1)
+
+	attr = AT(`gidNumber`)
+	filter = Filter(`(&(objectClass=accounting)(terminated=FALSE))`)
+	aF2 := AF(attr, filter)
+	aFO2 := DelOp.AFO(aF2)
+
+	fmt.Printf("Hashes are equal: %t", aFO1.Compare(aFO2))
+	// Output: Hashes are equal: false
+}
+
+/*
+This example demonstrates the SHA-1 hash comparison between two (2) AttributeFilterOperations
+instances using the Compare method.
+
+The comparison returns false, as the compared instances are ordered differently.
+*/
+func ExampleAttributeFilterOperations_Compare() {
+	attr := AT(`uidNumber`)
+	filter := Filter(`(&(objectClass=accounting)(terminated=FALSE))`)
+	aF1 := AF(attr, filter)
+	aFO1 := AddOp.AFO(aF1)
+
+	attr = AT(`gidNumber`)
+	filter = Filter(`(&(objectClass=accounting)(terminated=FALSE))`)
+	aF2 := AF(attr, filter)
+	aFO2 := DelOp.AFO(aF2)
+
+	// Create the second AttributeFilterOperation
+	// instance (aFO2)
+	var afos1 AttributeFilterOperations = AFOs()
+	afos1.Push(aFO1, aFO2)
+
+	var afos2 AttributeFilterOperations = AFOs()
+	afos2.Push(aFO2, aFO1)
+
+	fmt.Printf("Hashes are equal: %t", afos1.Compare(afos2))
+	// Output: Hashes are equal: false
+}
+
+/*
 This example demonstrates the string representation of an AttributeOperation
 constant.
 
@@ -1269,4 +1317,28 @@ func ExampleSearchFilter_Valid() {
 	var filter SearchFilter
 	fmt.Printf("%v", filter.Valid())
 	// Output: aci.SearchFilter instance is nil
+}
+
+/*
+This example demonstrates the SHA-1 hash comparison between two (2) SearchFilter
+instances using the Compare method.
+*/
+func ExampleSearchFilter_Compare() {
+	f1 := Filter(`(|(objectClass=contractor)(objectClass=intern))`)
+	f2 := Filter(`(|(objectClass=contractor)(objectClass=intern))`)
+
+	fmt.Printf("Hashes are equal: %t", f1.Compare(f2))
+	// Output: Hashes are equal: true
+}
+
+/*
+This example demonstrates the SHA-1 hash comparison between two (2) AttributeFilter
+instances using the Compare method.
+*/
+func ExampleAttributeFilter_Compare() {
+	f1 := AF(`objectClass`, `(|(objectClass=contractor)(objectClass=intern))`)
+	f2 := AF(`homeDirectory`, `(|(objectClass=contractor)(objectClass=intern))`)
+
+	fmt.Printf("Hashes are equal: %t", f1.Compare(f2))
+	// Output: Hashes are equal: false
 }
