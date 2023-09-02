@@ -207,6 +207,30 @@ func isStackageStack(stack any) (is bool) {
 }
 
 /*
+isStackageStack merely matches the input type as a stackage.Stack
+type and returns the resultant Boolean value.
+*/
+func isStackageCondition(stack any) (is bool) {
+	switch stack.(type) {
+	case *stackage.Condition,
+		stackage.Condition:
+		is = true
+	}
+	return
+}
+
+func derefC(cond any) (c stackage.Condition) {
+	switch tv := cond.(type) {
+	case *stackage.Condition:
+		c = *tv
+	case stackage.Condition:
+		c = tv
+	}
+
+	return
+}
+
+/*
 castAsStack merely wraps (casts, converts) and returns any type
 alias of stackage.Stack as a native stackage.Stack.
 

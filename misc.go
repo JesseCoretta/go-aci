@@ -200,6 +200,34 @@ func strInSliceFold(str string, slice []string) bool {
 	return false
 }
 
+/*
+unquote removes leading and trailing quotation characters from
+str.
+
+This function considers any of ASCII #34 ("), ASCII #39 (') and
+ASCII #96 (`) to be eligible candidates for truncation, though
+only matches of the first and final slices are considered.
+*/
+func unquote(str string) string {
+	if len(str) <= 2 {
+		return str
+	}
+
+	// remove leading candidate
+	switch c := rune(str[0]); c {
+	case '"', '\'', '`':
+		str = str[1:]
+	}
+
+	// remove trailing candidate
+	switch c := rune(str[len(str)-1]); c {
+	case '"', '\'', '`':
+		str = str[:len(str)-1]
+	}
+
+	return str
+}
+
 func isPowerOfTwo(x int) bool {
 	return x&(x-1) == 0
 }

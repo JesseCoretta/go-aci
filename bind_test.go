@@ -166,6 +166,7 @@ func TestParseBindRules(t *testing.T) {
 	}
 
 	popped := r.Pop()
+	bl = r.Len()
 	if popped.String() != orig {
 		t.Errorf("%s failed: unexpected element popped; want '%s', got '%s'", t.Name(), orig, popped)
 	}
@@ -177,9 +178,31 @@ func TestParseBindRules(t *testing.T) {
 	}
 
 	r.insert(popped, 0)
-	if r.Len() != bl {
+	if r.Len() == bl {
 		t.Errorf("%s failed: content not inserted into %T", t.Name(), r)
 	}
+}
+
+func ExampleParseBindRules_messy() {
+	raw := `( 
+			(
+				( userdn = "ldap:///anyone" ) AND
+				( ssf >= "71" )
+
+			) AND NOT ( 
+				dayofweek = "Wed" OR
+				dayofweek = "Fri"
+			)
+	)`
+
+	br, err := ParseBindRules(raw)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Printf("%s", br)
+	// Output: ( ( ( userdn = "ldap:///anyone" ) AND ( ssf >= "71" ) ) AND NOT ( dayofweek = "Wed" OR dayofweek = "Fri" ) )
 }
 
 /*

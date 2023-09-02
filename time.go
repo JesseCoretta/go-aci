@@ -134,8 +134,6 @@ func DoW(x ...any) (D DayOfWeek) {
 			if tv.String() != badDoW {
 				d.Shift(tv)
 			}
-		default:
-			printf("UNHANDLED %T\n", tv)
 		}
 	}
 

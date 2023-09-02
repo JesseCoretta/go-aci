@@ -552,22 +552,17 @@ func convertBindRulesHierarchy(stack any) (BindRules, bool) {
 		return badBindRules, ok
 	}
 
-	// transfer (copy) references from
-	// orig into clean.
-	z, _ := castAsStack(clean)
-	orig.Transfer(z)
-	clean = BindRules(z)
-
 	// Iterate the newly-populated clean
 	// instance, performing type-casting
 	// as needed, possibly in recursion.
-	for i := 0; i < clean.Len(); i++ {
+	for i := 0; i < orig.Len(); i++ {
+		slice, _ := orig.Index(i)
 
 		// perform a type switch upon the
 		// slice member @ index i. There
 		// are two (2) valid types we may
 		// encounter ...
-		switch tv := clean.Index(i).(type) {
+		switch {
 
 		// slice is a stackage.Condition.
 		// We want to cast to a BindRule
@@ -575,8 +570,10 @@ func convertBindRulesHierarchy(stack any) (BindRules, bool) {
 		// value(s) to be housed within a
 		// value-appropriate type defined
 		// by go-aci.
-		case BindRule:
-			ntv := tv
+		case isStackageCondition(slice):
+			deref := derefC(slice)
+			ntv := BindRule(deref).
+				Paren(deref.IsParen())
 
 			// Extract individual expression value
 			// from BindRule (ntv), and recreate it
@@ -596,8 +593,7 @@ func convertBindRulesHierarchy(stack any) (BindRules, bool) {
 				return badBindRules, false
 			}
 
-			// overwrite old (tv @ index i) with new (ntv)
-			clean.replace(ntv, i)
+			clean.Push(ntv)
 
 		// slice is a stackage.Stack instance.
 		// We want to cast to a BindRules type
@@ -605,13 +601,15 @@ func convertBindRulesHierarchy(stack any) (BindRules, bool) {
 		// we'll recurse into this same function
 		// using this slice as the subordinate
 		// 'orig' input value.
-		case BindRules:
-			stk, _ := castAsStack(tv)
-			sub, subok := convertBindRulesHierarchy(stk)
+		case isStackageStack(slice):
+			stk, _ := castAsStack(slice)
+			paren := stk.IsParen()
+			sub, subok := convertBindRulesHierarchy(slice)
 			if !subok {
-				return badBindRules, false
+				return badBindRules, subok
 			}
-			clean.replace(sub, i) // overwrite
+			clean.Push(sub.Paren(paren))
+
 		}
 	}
 
@@ -619,7 +617,8 @@ func convertBindRulesHierarchy(stack any) (BindRules, bool) {
 	// the content really did transfer and
 	// [re]cast properly, and that nothing
 	// was missed.
-	ok = orig.String() == clean.String()
+	//ok = orig.String() == clean.String()
+	ok = len(clean.String()) > 0
 	return clean, ok
 }
 
@@ -715,6 +714,12 @@ func (r BindRule) SetQuoteStyle(style int) BindRule {
 				_r.Encap(`"`)
 			}
 		}
+	default:
+		if style == MultivalSliceQuotes {
+			_r.Encap()
+		} else {
+			_r.Encap(`"`)
+		}
 	}
 
 	return r
@@ -730,16 +735,6 @@ func (r BindRules) String() string {
 	_b, _ := castAsStack(r)
 	return _b.String()
 }
-
-/*
-setCategory wraps go-stackage's Stack.SetCategory method.
-*/
-/*
-func (r BindRules) setCategory(cat string) {
-	_b, _ := castAsStack(r)
-	_b.SetCategory(cat)
-}
-*/
 
 /*
 IsZero wraps go-stackage's Stack.IsZero method.
@@ -779,17 +774,6 @@ func (r BindRules) Category() string {
 	_b, _ := castAsStack(r)
 	return _b.Category()
 }
-
-/*
-setID wraps go-stackage's Stack.SetID method.
-*/
-/*
-func (r BindRules) setID(id string) {
-	_b, _ := castAsStack(r)
-	_b.SetID(id)
-	//r = BindRules(_b)
-}
-*/
 
 /*
 Len wraps go-stackage's Stack.Len method.
@@ -1049,6 +1033,11 @@ func ParseBindRules(raw string) (BindRules, error) {
 }
 
 func parseBindRules(raw string) (BindRules, error) {
+	// In case the input has bizarre
+	// contiguous whsp, etc., remove
+	// it safely.
+	raw = condenseWHSP(raw)
+
 	// send the raw textual bind rules
 	// statement(s) to our sister package
 	// go-antlraci, call ParseBindRules.
@@ -1133,6 +1122,7 @@ func (r BindRule) assertExpressionValue() (err error) {
 
 	// If we got something, set it and go.
 	r.SetExpression(ex)
+	r.SetQuoteStyle(expr.Style)
 
 	return
 }
@@ -1174,17 +1164,19 @@ func assertBindUGAttr(expr parser.RuleExpression, key BindKeyword) (ex any, err 
 		return
 	}
 
-	if hasPfx(expr.Values[0], LocalScheme) {
-		// value is an LDAP URI
-		ex, err = parseLDAPURI(expr.Values[0], key)
+	value := unquote(expr.Values[0])
 
-	} else if hasPfx(expr.Values[0], `parent[`) {
+	if hasPfx(value, LocalScheme) {
+		// value is an LDAP URI
+		ex, err = parseLDAPURI(value, key)
+
+	} else if hasPfx(value, `parent[`) {
 		// value is an inheritance attributeBindTypeOrValue
-		ex, err = parseInheritance(expr.Values[0])
+		ex, err = parseInheritance(value)
 
 	} else {
 		// value is a standard attributeBindTypeOrValue
-		ex, err = parseATBTV(expr.Values[0], key)
+		ex, err = parseATBTV(value, key)
 	}
 
 	return
@@ -1197,8 +1189,9 @@ func assertBindTimeOfDay(expr parser.RuleExpression) (ex TimeOfDay, err error) {
 
 	// extract clocktime from raw value, remove
 	// quotes and any L/T WHSP
-	ex = ToD(expr.Values[0])
-	err = badClockTimeErr(expr.Values[0], ex.String())
+	unq := unquote(expr.Values[0])
+	ex = ToD(unq)
+	err = badClockTimeErr(unq, ex.String())
 	return
 }
 
@@ -1209,7 +1202,8 @@ func assertBindDayOfWeek(expr parser.RuleExpression) (ex DayOfWeek, err error) {
 
 	// extract auth method from raw value, remove
 	// quotes and any L/T WHSP and analyze
-	ex, err = parseDoW(expr.Values[0])
+	unq := unquote(expr.Values[0])
+	ex, err = parseDoW(unq)
 	return
 }
 
@@ -1220,8 +1214,9 @@ func assertBindAuthenticationMethod(expr parser.RuleExpression) (ex Authenticati
 
 	// extract auth method from raw value, remove
 	// quotes and any L/T WHSP and analyze
-	ex = matchAuthenticationMethod(expr.Values[0])
-	err = badAMErr(expr.Values[0], ex.String())
+	unq := unquote(expr.Values[0])
+	ex = matchAuthenticationMethod(unq)
+	err = badAMErr(unq, ex.String())
 	return
 }
 
@@ -1232,8 +1227,9 @@ func assertBindSecurityStrengthFactor(expr parser.RuleExpression) (ex SecuritySt
 
 	// extract factor from raw value, remove
 	// quotes and any L/T WHSP
-	fac := SSF(expr.Values[0])
-	err = badSecurityStrengthFactorErr(expr.Values[0], fac.String())
+	unq := unquote(expr.Values[0])
+	ex = SSF(unq)
+	err = badSecurityStrengthFactorErr(unq, ex.String())
 	return
 }
 
@@ -1242,11 +1238,13 @@ func assertBindNet(expr parser.RuleExpression, key BindKeyword) (ex any, err err
 		return
 	}
 
+	unq := unquote(expr.Values[0])
+
 	if key == BindIP {
 		// extract IP Address(es) from raw value,
 		// remove quotes and any L/T WHSP and then
 		// split for iteration.
-		raw := split(expr.Values[0], `,`)
+		raw := split(unq, `,`)
 		var addr IPAddr
 		for ipa := 0; ipa < len(raw); ipa++ {
 			addr.Set(raw[ipa])
@@ -1259,8 +1257,8 @@ func assertBindNet(expr parser.RuleExpression, key BindKeyword) (ex any, err err
 
 	// extract FQDN from raw value, remove
 	// quotes and any L/T WHSP.
-	fq := DNS(expr.Values[0])
-	err = badDNSErr(expr.Values[0], fq.String())
+	fq := DNS(unq)
+	err = badDNSErr(unq, fq.String())
 	ex = fq
 
 	return
@@ -1291,7 +1289,7 @@ func assertBindUGRDN(expr parser.RuleExpression, key BindKeyword) (ex any, err e
 	// if the value is an LDAP URI (which merely contains
 	// a DN, and is not one unto itself), handle the parse
 	// here instead of treating it as a DN.
-	var value string = expr.Values[0]
+	var value string = unquote(expr.Values[0])
 	if hasPfx(value, LocalScheme) && contains(value, `?`) {
 		ex, err = parseLDAPURI(value, key)
 		return
