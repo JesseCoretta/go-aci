@@ -208,6 +208,15 @@ type bindRuleFuncMap map[ComparisonOperator]BindRuleMethod
 func (r BindRule) isBindContextQualifier() {}
 
 /*
+Traverse returns the receiver instance. This method only exists to satisfy
+Go's interface signature requirements for the BindContext interface. See
+BindRules.Traverse instead.
+*/
+func (r BindRule) Traverse(indices ...int) BindContext {
+	return r
+}
+
+/*
 Compare returns a Boolean indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
@@ -242,24 +251,6 @@ A Boolean value of false is returned in any scenario.
 func (r BindRule) IsNesting() bool {
 	return false
 }
-
-/*
-setID wraps go-stackage's Condition.SetID method.
-*/
-/*
-func (r BindRule) setID(id string) {
-	castAsCondition(r).SetID(id)
-}
-*/
-
-/*
-setCategory wraps go-stackage's Condition.SetCategory method.
-*/
-/*
-func (r BindRule) setCategory(cat string) {
-	castAsCondition(r).SetCategory(cat)
-}
-*/
 
 /*
 Paren wraps go-stackage's Condition.Paren method.
@@ -958,16 +949,27 @@ func (r BindRules) NoPadding(state ...bool) BindRules {
 /*
 Traverse wraps go-stackage's Stack.Traverse method.
 */
-func (r BindRules) Traverse(indices ...int) (any, bool) {
+func (r BindRules) Traverse(indices ...int) (B BindContext) {
 	_b, _ := castAsStack(r)
 	if br, ok := _b.Traverse(indices...); ok {
-		var x any
-		if x, ok = br.(BindContext); ok {
-			return x, ok
+		indices = indices[1:]
+		if isStackageStack(br) {
+			x, _ := castAsStack(br)
+			B = BindRules(x)
+			if len(indices) > 1 {
+				return B.Traverse(indices...)
+			}
+		} else if isStackageCondition(br) {
+			x := castAsCondition(br)
+			B = BindRule(derefC(x))
+		} else {
+			if assert, ok := br.(BindRule); ok && len(indices) <= 2 {
+				return assert
+			}
 		}
 	}
 
-	return nil, false
+	return
 }
 
 /*
@@ -1370,6 +1372,11 @@ type BindContext interface {
 	// whether the receiver contains a stack as a value.
 	// Only meaningful when run on BindRules instances.
 	IsNesting() bool
+
+	// Traverse will walk a structure of BindContext
+	// instances using a sequence of index integers.
+	// An instance of BindContext is returned, or nil.
+	Traverse(...int) BindContext
 
 	// Valid returns an error instance that indicates
 	// whether the receiver is in an aberrant state.

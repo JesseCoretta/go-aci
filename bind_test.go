@@ -92,7 +92,7 @@ func TestBindRules_bogus(t *testing.T) {
 	_ = br.Push(nil)
 	_ = br.Pop()
 	_ = br.Index(-100)
-	_, _ = br.Traverse([]int{1, 2, 3, 4}...)
+	_ = br.Traverse([]int{1, 2, 3, 4}...)
 	br.reset()
 }
 
@@ -202,8 +202,53 @@ func ExampleParseBindRules_messy() {
 		return
 	}
 
-	fmt.Printf("%s", br)
-	// Output: ( ( ( userdn = "ldap:///anyone" ) AND ( ssf >= "71" ) ) AND NOT ( dayofweek = "Wed" OR dayofweek = "Fri" ) )
+	called := br.Traverse(0, 0, 0)
+	fmt.Printf("%s", called)
+	// Output: ( userdn = "ldap:///anyone" )
+}
+
+/*
+This example demonstrates the useless nature of the Traverse method for a receiver
+that is an instance of BindRule. As BindRule is logically "singular", there is no
+structure in which a traversal would be possible. The Traverse method only exists
+to satisfy Go's interface signature requirements as they pertain to the BindContext
+type, and this test exists only to maintain code coverage and to convey this message.
+
+Execution of this method simply returns the receiver.
+*/
+func ExampleBindRule_Traverse() {
+	br := SSF(71).Eq()
+	fmt.Printf("%T", br.Traverse(1, 2, 3, 4, 5))
+	// Output: aci.BindRule
+}
+
+/*
+This example demonstrates the traversal of a BindRules structure to obtain a specific
+nested element, in this case the 'ssf >= "128"' expression.
+*/
+func ExampleBindRules_Traverse() {
+	// And() is the variable for the outermost stack, don't count it as an index.
+	// Rather, begin counting its children instead.
+	rules := And(
+		GDN(`cn=X.500 Administrators,ou=Groups,dc=example,dc=com`).Eq().Paren(),
+		Timeframe(ToD(`1730`), ToD(`2330`)).Paren(),
+
+		// Enter the Or stack by descending within the third element (AND slice #2)
+		Or(
+			UAT(`manager`, `LDAPURL`).Eq().Paren(),
+			GAT(`owner`, SELFDN).Eq().Paren(),
+			URI(UDN(`ou=People,dc=example,dc=com`), Subtree).Eq().Paren(),
+			// OR slice #3
+			And(
+				// Inner AND slice #0
+				SSF(128).Ge(),
+			),
+		),
+	)
+
+	ssf := rules.Traverse(2, 3, 0)
+	fmt.Printf("%s", ssf)
+	// Output: ssf >= "128"
 }
 
 /*
