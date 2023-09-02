@@ -357,3 +357,38 @@ func bitSize(x any) (bits int) {
 
 	return
 }
+
+/*
+condenseWHSP returns input string b with all contiguous
+WHSP characters condensed into single space characters.
+
+WHSP is qualified through space or TAB chars (ASCII #32
+and #9 respectively).
+*/
+func condenseWHSP(b string) (a string) {
+	// remove leading and trailing
+	// WHSP characters ...
+	b = trimS(b)
+	b = repAll(b, string(rune(10)), string(rune(32)))
+
+	var last bool
+	for i := 0; i < len(b); i++ {
+		c := rune(b[i])
+		switch c {
+		// match space (32) or tab (9)
+		case rune(9), rune(10), rune(32):
+			if !last {
+				last = true
+				a += string(rune(32))
+			}
+		default:
+			if last {
+				last = false
+			}
+			a += string(c)
+		}
+	}
+
+	a = trimS(a) //once more
+	return
+}

@@ -427,11 +427,6 @@ they pertain to the handling of a sequence of raw target rule text values. Note 
 example, we've added awkward spacing mixed-in with fair attempts to make the sequence of
 TargetRule expressions easier to read. This includes newline characters (ASCII #10) to
 really try and mess things up. 😈
-
-Note: never put newlines IN the actual (quoted) values themselves. It is definitely going
-to be tempting when you're working with complex and lengthy rules (e.g.: repeated '&&') in
-the context of `targattrfilters` or similar, but go-antlraci (currently) will throw errors
-when encountered.
 */
 func ExampleParseTargetRules() {
 
@@ -457,4 +452,37 @@ func ExampleParseTargetRules() {
 
 	fmt.Printf("%s", tr)
 	// Output: ( target_to = "ldap:///cn=*,ou=Contractors,ou=People,dc=example,dc=com" || "ldap:///cn=*,ou=X.500 Administrators,ou=People,dc=example,dc=com" || "ldap:///cn=*,ou=Executives,ou=People,dc=example,dc=com" )( targetscope = "subordinate" )( targattrfilters = "add=nsroleDN:(!(nsroledn=cn=X.500 Administrator)) && employeeStatus:(!(drink=beer)) && telephoneNumber:(telephoneNumber=612*)" )
+}
+
+/*
+This example is the same as the TargetRules example, except with the alternative
+quotation scheme in effect.
+*/
+func ExampleParseTargetRules_alternativeQuotation() {
+
+	omg := `(
+                target_to=
+                        "ldap:///cn=*,ou=Contractors,ou=People,dc=example,dc=com		||
+			 ldap:///cn=*,ou=X.500 Administrators,ou=People,dc=example,dc=com	||
+			 ldap:///cn=*,ou=Executives,ou=People,dc=example,dc=com"
+                )
+
+                ( targetscope=
+				"subordinate"
+		)
+
+                ( targattrfilters =
+                                "add=nsroleDN:(!(nsroledn=cn=X.500 Administrator))	&&
+				 employeeStatus:(!(drink=beer))				&&
+				 telephoneNumber:(telephoneNumber=612*)"
+                )`
+
+	tr, err := ParseTargetRules(omg)
+	if err != nil {
+		fmt.Println(err) // always check your parser errors.
+		return
+	}
+
+	fmt.Printf("%s", tr)
+	// Output: ( target_to = "ldap:///cn=*,ou=Contractors,ou=People,dc=example,dc=com || ldap:///cn=*,ou=X.500 Administrators,ou=People,dc=example,dc=com || ldap:///cn=*,ou=Executives,ou=People,dc=example,dc=com" )( targetscope = "subordinate" )( targattrfilters = "add=nsroleDN:(!(nsroledn=cn=X.500 Administrator)) && employeeStatus:(!(drink=beer)) && telephoneNumber:(telephoneNumber=612*)" )
 }

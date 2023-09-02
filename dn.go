@@ -1021,7 +1021,7 @@ func (r BindDistinguishedNames) setExpressionValues(key Keyword, values ...strin
 
 		// Identify this distinguished name value
 		// as D, as referenced by index integer i.
-		D := values[i]
+		D := trimS(values[i])
 
 		// Push DN into receiver. If the DN has
 		// the LocalScheme (ldap:///) prefix, we
@@ -1047,7 +1047,7 @@ func (r TargetDistinguishedNames) setExpressionValues(key Keyword, values ...str
 
 		// Identify this distinguished name value
 		// as D, as referenced by index integer i.
-		D := values[i]
+		D := trimS(values[i])
 
 		// Push DN into receiver. If the DN has
 		// the LocalScheme (ldap:///) prefix, we

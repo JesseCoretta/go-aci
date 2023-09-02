@@ -829,6 +829,11 @@ coaxes the raw string values into proper value-appropriate
 type instances made available by go-aci.
 */
 func parseTargetRules(raw string) (TargetRules, error) {
+	// In case the input has bizarre
+	// contiguous whsp, etc., remove
+	// it safely.
+	raw = condenseWHSP(raw)
+
 	// Call our go-antlraci (parser) package's
 	// ParseTargetRules function, and get the
 	// results (or bail if error).
