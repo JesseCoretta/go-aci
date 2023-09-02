@@ -68,6 +68,7 @@ func TestBindRule_bogus(t *testing.T) {
 	_ = br.Paren()
 	_ = br.Operator()
 	_ = br.IsNesting()
+	_ = br.NoPadding()
 	_ = br.Expression()
 	_ = br.Keyword()
 	_ = br.String()

@@ -946,22 +946,6 @@ func (r BindRules) insert(x any, left int) (ok bool) {
 }
 
 /*
-replace wraps go-stackage's Stack.Replace method.
-*/
-func (r BindRules) replace(x any, idx int) (ok bool) {
-	_b, _ := castAsStack(r)
-
-	switch tv := x.(type) {
-	case BindRule, BindRules:
-		ok = _b.Replace(tv, idx)
-	default:
-		return
-	}
-
-	return
-}
-
-/*
 NoPadding wraps go-stackage's Stack.NoPadding method.
 */
 func (r BindRules) NoPadding(state ...bool) BindRules {
