@@ -19,7 +19,7 @@ func TestBindDistinguishedName_codecov(t *testing.T) {
 			`cn=Courtney Tolana,ou=Contractors,ou=People,dc=example,dc=com`,
 		} {
 			var O BindDistinguishedName
-			_ = O.isDistinguishedNameContext()
+			O.isDistinguishedNameContext()
 			_ = O.Eq()
 			_ = O.Ne()
 			_ = O.Len()
@@ -82,7 +82,7 @@ func TestTargetDistinguishedName_codecov(t *testing.T) {
 			`cn=Courtney Tolana,ou=Contractors,ou=People,dc=example,dc=com`,
 		} {
 			var O TargetDistinguishedName
-			_ = O.isDistinguishedNameContext()
+			O.isDistinguishedNameContext()
 			_ = O.Eq()
 			_ = O.Ne()
 			_ = O.Len()
@@ -151,8 +151,8 @@ func TestBindDistinguishedNames_codecov(t *testing.T) {
 	_ = Os.Eq()
 	_ = Os.Ne()
 	Os.reset()
-	_ = Os.setQuoteStyle(1)
 	_ = Os.setQuoteStyle(0)
+	_ = Os.setQuoteStyle(1)
 
 	for kw, fn := range map[BindKeyword]func(...any) BindDistinguishedNames{
 		BindUDN: UDNs,
@@ -199,8 +199,8 @@ func TestBindDistinguishedNames_codecov(t *testing.T) {
 					t.Name(), Id, O, O.Keyword(), O, Os, Kw, Ol)
 			}
 
-			_ = Os.setQuoteStyle(1)
 			_ = Os.setQuoteStyle(0)
+			_ = Os.setQuoteStyle(1)
 
 			// DNs qualify for equality and negated equality
 			// comparison operators.
@@ -235,8 +235,8 @@ func TestTargetDistinguishedNames_codecov(t *testing.T) {
 	_ = Os.Eq()
 	_ = Os.Ne()
 	Os.reset()
-	_ = Os.setQuoteStyle(1)
 	_ = Os.setQuoteStyle(0)
+	_ = Os.setQuoteStyle(1)
 
 	for kw, fn := range map[TargetKeyword]func(...any) TargetDistinguishedNames{
 		Target:     TDNs,
@@ -283,8 +283,8 @@ func TestTargetDistinguishedNames_codecov(t *testing.T) {
 					t.Name(), Id, O, O.Keyword(), O, Os, Kw, Ol)
 			}
 
-			_ = Os.setQuoteStyle(1)
 			_ = Os.setQuoteStyle(0)
+			_ = Os.setQuoteStyle(1)
 
 			// DNs qualify for equality and negated equality
 			// comparison operators.

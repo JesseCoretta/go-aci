@@ -143,7 +143,7 @@ func (r BindDistinguishedName) Valid() (err error) {
 isDistinguishedNameContext exists to prevent false positive qualifiers
 of the DistinguishedNameContext interface.
 */
-func (r BindDistinguishedName) isDistinguishedNameContext() bool { return true }
+func (r BindDistinguishedName) isDistinguishedNameContext() {}
 
 /*
 Valid returns an instance of error that reflects whether certain
@@ -211,7 +211,7 @@ func (r TargetDistinguishedName) Kind() string {
 isDistinguishedNameContext exists to prevent false positive qualifiers
 of the DistinguishedNameContext interface.
 */
-func (r TargetDistinguishedName) isDistinguishedNameContext() bool { return true }
+func (r TargetDistinguishedName) isDistinguishedNameContext() {}
 
 /*
 String is a stringer method that returns the string representation
@@ -884,12 +884,12 @@ func (r TargetDistinguishedNames) Ne() TargetRule {
 func dnToCondition(dest any, op ComparisonOperator) (any, bool) {
 	switch tv := dest.(type) {
 
-	// case matched bind rule DN(s)
 	case BindDistinguishedNames:
+		// case matched bind rule DN(s)
 		return bindDNToCondition(tv, op)
 
-	// case matched target rule DN(s)
 	case TargetDistinguishedNames:
+		// case matched target rule DN(s)
 		return targetDNToCondition(tv, op)
 
 	case BindDistinguishedName:
@@ -1014,7 +1014,7 @@ func targetDNToCondition(dest any, op ComparisonOperator) (TargetRule, bool) {
 setExpressionValues is a private method called by assertBindUGRDN for
 DN-based Bind Rules parsing.
 */
-func (r BindDistinguishedNames) setExpressionValues(key Keyword, values ...string) (err error) {
+func (r BindDistinguishedNames) setExpressionValues(key Keyword, values ...string) {
 	// iterate each string-based distinguishedName
 	// in the values sequence ...
 	for i := 0; i < len(values); i++ {
@@ -1034,15 +1034,13 @@ func (r BindDistinguishedNames) setExpressionValues(key Keyword, values ...strin
 			r.Push(BindDistinguishedName{newDistinguishedName(D, key)})
 		}
 	}
-
-	return
 }
 
 /*
 setExpressionValues is a private method called by assertTargetTFDN for
 DN-based Target Rules parsing.
 */
-func (r TargetDistinguishedNames) setExpressionValues(key Keyword, values ...string) (err error) {
+func (r TargetDistinguishedNames) setExpressionValues(key Keyword, values ...string) {
 	// iterate each string-based distinguishedName
 	// in the values sequence ...
 	for i := 0; i < len(values); i++ {
@@ -1062,8 +1060,6 @@ func (r TargetDistinguishedNames) setExpressionValues(key Keyword, values ...str
 			r.Push(TargetDistinguishedName{newDistinguishedName(D, key)})
 		}
 	}
-
-	return
 }
 
 /*
@@ -1935,7 +1931,7 @@ type DistinguishedNameContext interface {
 	IsZero() bool
 	Valid() error
 
-	isDistinguishedNameContext() bool
+	isDistinguishedNameContext()
 }
 
 /*

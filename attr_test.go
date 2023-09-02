@@ -342,8 +342,8 @@ func TestAttributeTypes(t *testing.T) {
 			attrs.Push(3.14159)
 			attrs.Push('𝝅')
 
-			attrs.setQuoteStyle(1)
 			attrs.setQuoteStyle(0)
+			attrs.setQuoteStyle(1)
 
 			actx = testMakeAttrContext(1, attr, attrs)
 			trf := attrs.TRF()

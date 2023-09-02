@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestParseTargetRuleMethods(t *testing.T) {
+func TestTargetRuleMethods(t *testing.T) {
 	var trf TargetRuleMethods
 	_ = trf.Len()
 	_ = trf.IsZero()
@@ -99,7 +99,7 @@ func ExampleExtOps_alternativeQuotationScheme() {
 		`1.3.6.1.4.1.56521.999.7`,
 	)
 
-	fmt.Printf("%s", ext.Eq().SetQuoteStyle(1)) // see MultivalSliceQuotes const for details
+	fmt.Printf("%s", ext.Eq().SetQuoteStyle(0)) // see MultivalSliceQuotes const for details
 	// Output: ( extop = "1.3.6.1.4.1.56521.999.5" || "1.3.6.1.4.1.56521.999.6" || "1.3.6.1.4.1.56521.999.7" )
 }
 
@@ -291,8 +291,8 @@ func ExampleTargetRuleMethods_Index_byText() {
 		fmt.Printf("[%d] %T instance [%s] execution returned %T: %s\n", i+1, meth, cop.Context(), rule, rule)
 	}
 	// Output:
-	// [1] aci.TargetRuleMethod instance [Eq] execution returned aci.TargetRule: ( targetattr = "cn || sn || givenName || objectClass || uid || homeDirectory" )
-	// [2] aci.TargetRuleMethod instance [Ne] execution returned aci.TargetRule: ( targetattr != "cn" || "sn" || "givenName" || "objectClass" || "uid" || "homeDirectory" )
+	// [1] aci.TargetRuleMethod instance [Eq] execution returned aci.TargetRule: ( targetattr = "cn" || "sn" || "givenName" || "objectClass" || "uid" || "homeDirectory" )
+	// [2] aci.TargetRuleMethod instance [Ne] execution returned aci.TargetRule: ( targetattr != "cn || sn || givenName || objectClass || uid || homeDirectory" )
 }
 
 func ExampleTargetRuleMethods_IsZero() {
@@ -364,4 +364,97 @@ func ExampleTR() {
 	var rule TargetRule = TR(TargetScope, Eq, SingleLevel)
 	fmt.Printf("%s", rule)
 	// Output: ( targetscope = "onelevel" )
+}
+
+/*
+This example demonstrates the imported ANTLR4-based go-antlraci parser capabilities as
+they pertain to the handling of raw target rule text.
+*/
+func ExampleParseTargetRule() {
+
+	// NOTE: padding manually stripped out, and an
+	// extraneous horizontal tab (ASCII #9) added
+	// for purely demonstrative reasons ...
+	raw := `(target_to=	"ldap:///cn=*,ou=Contractors,ou=People,dc=example,dc=com")`
+	tr, err := ParseTargetRule(raw)
+	if err != nil {
+		fmt.Println(err) // always check your parser errors.
+		return
+	}
+	fmt.Printf("%s", tr)
+	// Output: ( target_to = "ldap:///cn=*,ou=Contractors,ou=People,dc=example,dc=com" )
+}
+
+/*
+This example demonstrates the imported ANTLR4-based go-antlraci parser capabilities as
+they pertain to the handling of raw target rule text that contains multiple values with
+specific delimiters and standard quotation.
+
+Additionally, upon receiving the returned value, we'll disable padding just for fun.
+*/
+func ExampleParseTargetRule_multiValuedWithStandardQuotation() {
+
+	raw := `(target_to="ldap:///cn=*,ou=Contractors,ou=People,dc=example,dc=com"||"ldap:///cn*,ou=X.500 Administrators,ou=People,dc=example,dc=com")`
+	tr, err := ParseTargetRule(raw)
+	if err != nil {
+		fmt.Println(err) // always check your parser errors.
+		return
+	}
+	fmt.Printf("%s", tr.NoPadding(true))
+	// Output: (target_to="ldap:///cn=*,ou=Contractors,ou=People,dc=example,dc=com" || "ldap:///cn*,ou=X.500 Administrators,ou=People,dc=example,dc=com")
+}
+
+/*
+This example demonstrates the imported ANTLR4-based go-antlraci parser capabilities as
+they pertain to the handling of raw target rule text that contains multiple values with
+specific delimiters and alternative quotation.
+*/
+func ExampleParseTargetRule_multiValuedWithAlternativeQuotation() {
+
+	raw := `(target_to="ldap:///cn=*,ou=Contractors,ou=People,dc=example,dc=com||ldap:///cn=*,ou=X.500 Administrators,ou=People,dc=example,dc=com")`
+	tr, err := ParseTargetRule(raw)
+	if err != nil {
+		fmt.Println(err) // always check your parser errors.
+		return
+	}
+	fmt.Printf("%s", tr)
+	// Output: ( target_to = "ldap:///cn=*,ou=Contractors,ou=People,dc=example,dc=com || ldap:///cn=*,ou=X.500 Administrators,ou=People,dc=example,dc=com" )
+}
+
+/*
+This example demonstrates the imported ANTLR4-based go-antlraci parser capabilities as
+they pertain to the handling of a sequence of raw target rule text values. Note in this
+example, we've added awkward spacing mixed-in with fair attempts to make the sequence of
+TargetRule expressions easier to read. This includes newline characters (ASCII #10) to
+really try and mess things up. 😈
+
+Note: never put newlines IN the actual (quoted) values themselves. It is definitely going
+to be tempting when you're working with complex and lengthy rules (e.g.: repeated '&&') in
+the context of `targattrfilters` or similar, but go-antlraci (currently) will throw errors
+when encountered.
+*/
+func ExampleParseTargetRules() {
+
+	omg := `(
+		target_to=
+			"ldap:///cn=*,ou=Contractors,ou=People,dc=example,dc=com"		||
+			"ldap:///cn=*,ou=X.500 Administrators,ou=People,dc=example,dc=com"	||
+			"ldap:///cn=*,ou=Executives,ou=People,dc=example,dc=com"
+		)
+
+		( targetscope="subordinate"  )
+
+		(
+			targattrfilters =
+				"add=nsroleDN:(!(nsroledn=cn=X.500 Administrator)) && employeeStatus:(!(drink=beer)) && telephoneNumber:(telephoneNumber=612*)"
+		)`
+
+	tr, err := ParseTargetRules(omg)
+	if err != nil {
+		fmt.Println(err) // always check your parser errors.
+		return
+	}
+
+	fmt.Printf("%s", tr)
+	// Output: ( target_to = "ldap:///cn=*,ou=Contractors,ou=People,dc=example,dc=com" || "ldap:///cn=*,ou=X.500 Administrators,ou=People,dc=example,dc=com" || "ldap:///cn=*,ou=Executives,ou=People,dc=example,dc=com" )( targetscope = "subordinate" )( targattrfilters = "add=nsroleDN:(!(nsroledn=cn=X.500 Administrator)) && employeeStatus:(!(drink=beer)) && telephoneNumber:(telephoneNumber=612*)" )
 }

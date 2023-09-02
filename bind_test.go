@@ -96,7 +96,7 @@ func TestBindRules_bogus(t *testing.T) {
 }
 
 func TestParseBindRule(t *testing.T) {
-	want := `userdn = "ldap:///cn=Jesse Coretta,ou=People,dc=example,dc=com"`
+	want := `userdn = "ldap:///cn=Jesse Coretta,ou=People,dc=example,dc=com" || "ldap:///anyone"`
 
 	var b BindRule
 	var err error
@@ -118,8 +118,6 @@ func TestParseBindRule(t *testing.T) {
 	_ = b.Operator()
 	_ = b.Keyword()
 	_ = b.Expression()
-	_ = b.SetQuoteStyle(1)
-	_ = b.SetQuoteStyle(0)
 
 	if want != b.String() {
 		t.Errorf("%s failed:\nwant '%s'\ngot '%s'", t.Name(), want, b)

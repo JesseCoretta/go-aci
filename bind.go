@@ -297,7 +297,22 @@ representation of the receiver instance.
 This method wraps go-stackage's Condition.String method.
 */
 func (r BindRule) String() string {
+	if r.IsZero() {
+		return ``
+	}
 	return castAsCondition(r).String()
+}
+
+/*
+NoPadding wraps go-stackage's Condition.NoPadding method.
+*/
+func (r BindRule) NoPadding(state ...bool) BindRule {
+	if r.IsZero() {
+		return r
+	}
+
+	castAsCondition(r).NoPadding(state...)
+	return r
 }
 
 /*

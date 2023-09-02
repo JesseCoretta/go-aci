@@ -23,8 +23,8 @@ func TestObjectIdentifiers_codecov(t *testing.T) {
 		_ = Oids.Ne()
 		_ = Oids.Eq()
 		_ = Oids.Valid()
-		_ = Oids.setQuoteStyle(1)
 		_ = Oids.setQuoteStyle(0)
+		_ = Oids.setQuoteStyle(1)
 		Oids.isObjectIdentifierContext()
 
 		for _, oid := range []string{
@@ -89,8 +89,8 @@ func TestObjectIdentifiers_codecov(t *testing.T) {
 			_ = Oids.Keyword()
 			_ = Oids.Kind()
 
-			_ = Oids.setQuoteStyle(1)
 			_ = Oids.setQuoteStyle(0)
+			_ = Oids.setQuoteStyle(1)
 
 			for sop, trfn := range []func() TargetRuleMethods{
 				Oid.TRF,

@@ -293,7 +293,22 @@ representation of the receiver instance.
 This method wraps go-stackage's Condition.String method.
 */
 func (r TargetRule) String() string {
+	if r.IsZero() {
+		return ``
+	}
 	return castAsCondition(r).String()
+}
+
+/*
+NoPadding wraps go-stackage's Condition.NoPadding method.
+*/
+func (r TargetRule) NoPadding(state ...bool) TargetRule {
+	if r.IsZero() {
+		return r
+	}
+
+	castAsCondition(r).NoPadding(state...)
+	return r
 }
 
 /*
@@ -330,6 +345,12 @@ func (r TargetRule) SetQuoteStyle(style int) TargetRule {
 				_r.Encap(`"`)
 			}
 		}
+	default:
+		if style == MultivalSliceQuotes {
+			_r.Encap()
+		} else {
+			_r.Encap(`"`)
+		}
 	}
 
 	return r
@@ -339,10 +360,11 @@ func (r TargetRule) SetQuoteStyle(style int) TargetRule {
 /*
 SetKeyword wraps go-stackage's Condition.SetKeyword method.
 */
-func (r *TargetRule) SetKeyword(kw any) {
+func (r *TargetRule) SetKeyword(kw any) *TargetRule {
 	x := castAsCondition(*r)
 	x.SetKeyword(kw)
 	*r = TargetRule(*x)
+	return r
 }
 
 /*
@@ -350,9 +372,9 @@ SetOperator wraps go-stackage's Condition.SetOperator method.
 Valid input types are ComparisonOperator or its string value
 equivalent (e.g.: `>=` for Ge).
 */
-func (r *TargetRule) SetOperator(op any) {
+func (r *TargetRule) SetOperator(op any) *TargetRule {
 	if !keywordAllowsComparisonOperator(r.Keyword(), op) {
-		return
+		return r
 	}
 
 	var cop ComparisonOperator
@@ -363,26 +385,28 @@ func (r *TargetRule) SetOperator(op any) {
 		cop = tv
 	default:
 		// bogus operator type
-		return
+		return r
 	}
 
 	// operator not known? bail out
 	if cop == ComparisonOperator(0) {
-		return
+		return r
 	}
 
 	x := castAsCondition(*r)
 	x.SetOperator(castAsCop(cop))
 	*r = TargetRule(*x)
+	return r
 }
 
 /*
 SetExpression wraps go-stackage's Condition.SetExpression method.
 */
-func (r *TargetRule) SetExpression(expr any) {
+func (r *TargetRule) SetExpression(expr any) *TargetRule {
 	x := castAsCondition(*r)
 	x.SetExpression(expr)
 	*r = TargetRule(*x)
+	return r
 }
 
 /*
@@ -656,7 +680,7 @@ func (r TargetRules) insert(x any, left int) bool {
 	}
 
 	ok = _t.Insert(assert, left)
-	//r = TargetRules(_t)
+
 	return ok
 }
 
@@ -691,25 +715,6 @@ func (r TargetRules) Valid() (err error) {
 	_t, _ := castAsStack(r)
 	err = _t.Valid()
 	return
-}
-
-/*
-setQuoteStyle shall set the receiver instance to the quotation
-scheme defined by integer i.  This is a private method called
-during parsing of AttributeTypes instances, typically following
-the ANTLR phase.
-*/
-func (r TargetRules) setQuoteStyle(i int) {
-	if r.IsZero() {
-		return
-	}
-
-	_t, _ := castAsStack(r)
-	if i == 1 {
-		_t.Encap()
-	} else {
-		_t.Encap(`"`)
-	}
 }
 
 /*
@@ -833,14 +838,30 @@ func parseTargetRules(raw string) (TargetRules, error) {
 		return badTargetRules, err
 	}
 
+	// create our (eventual) return object.
+	t := TRs().NoPadding(true)
+
 	// transfer (copy) Target Rule references from _t into _z.
 	_z, _ := castAsStack(_t)
-	t := TargetRules(_z)
 
-	// iterate our target rule slice members, identifying
-	// each by integer index i.
+	// transfer raw contents into new TargetRules
+	// instance.
+	for i := 0; i < _z.Len(); i++ {
+		slice, _ := _z.Index(i)
+		switch tv := slice.(type) {
+		case stackage.Condition:
+			t.Push(TargetRule(tv))
+		case *stackage.Condition:
+			t.Push(TargetRule(*tv))
+		}
+	}
+
+	// iterate our (new) target rule slice members,
+	// identifying each by integer index i. Try to
+	// marshal the parser.RuleExpression contents
+	// into the appropriate go-aci type.
 	for i := 0; i < t.Len(); i++ {
-		tr := t.Index(0)
+		trv := t.Index(i)
 
 		// Extract individual expression value
 		// from TargetRule (ntv), and recreate it
@@ -857,12 +878,9 @@ func parseTargetRules(raw string) (TargetRules, error) {
 		//   DistinguishedNames[<N1>] -> <dn1>
 		//                     [<N2>] -> <dn2>
 		//                     [<N3>] -> <dn3>
-		if err = tr.assertExpressionValue(); err != nil {
+		if err = trv.assertExpressionValue(); err != nil {
 			return badTargetRules, err
 		}
-
-		// overwrite old (tv @ index i) with new (ntv)
-		//t.replace(ntv, i)
 	}
 
 	return t, err
@@ -880,7 +898,7 @@ func (r TargetRule) assertExpressionValue() (err error) {
 	// bail out.
 	expr, ok := r.Expression().(parser.RuleExpression)
 	if !ok {
-		err = parseBindRuleInvalidExprTypeErr(expr, r, parser.RuleExpression{})
+		err = parseBindRuleInvalidExprTypeErr(r, expr, r.Expression())
 		return
 	}
 
@@ -911,7 +929,6 @@ func (r TargetRule) assertExpressionValue() (err error) {
 		} else {
 			// value (seems to be) an LDAP Search Filter
 			// TODO - assertion func
-			//ex, err = assertTargetFilter(expr)
 			ex = Filter(expr.Values[0])
 		}
 
@@ -940,6 +957,7 @@ func (r TargetRule) assertExpressionValue() (err error) {
 	}
 
 	r.SetExpression(ex)
+	r.SetQuoteStyle(expr.Style)
 
 	return
 }
@@ -949,19 +967,22 @@ assertTargetScope processes the raw expression value (expr) provided by go-antlr
 into a proper instance of SearchScope (ex), which is returned alongside an instance of
 error (err).
 */
-func assertTargetScope(expr parser.RuleExpression) (ex SearchScope, err error) {
+func assertTargetScope(expr parser.RuleExpression) (ex string, err error) {
 	if expr.Len() != 1 {
 		err = unexpectedValueCountErr(TargetScope.String(), 1, expr.Len())
 		return
 	}
 
+	var temp SearchScope
 	// base is a fallback for a bogus scope, so
 	// if the user did not originally request
 	// base, we know they requested something
 	// totally unsupported.
-	if ex = strToScope(expr.Values[0]); ex == noScope {
+	if temp = strToScope(expr.Values[0]); temp == noScope {
 		err = bogusValueErr(TargetScope.String(), expr.Values[0])
+		return
 	}
+	ex = temp.Target() // TODO: this is a hack. find something cleaner
 
 	return
 }
@@ -1019,7 +1040,7 @@ A DistinguishedNames instance is returned in the event that the raw value(s) rep
 Quotation schemes are supported seamlessly and either scheme shall be honored per the ANTLR4
 parsed content.
 */
-func assertTargetTFDN(expr parser.RuleExpression, key TargetKeyword) (ex TargetDistinguishedNames, err error) {
+func assertTargetTFDN(expr parser.RuleExpression, key TargetKeyword) (ex any, err error) {
 	// Don't waste time if expression values
 	// are nonexistent.
 	if expr.Len() == 0 {
@@ -1029,26 +1050,29 @@ func assertTargetTFDN(expr parser.RuleExpression, key TargetKeyword) (ex TargetD
 
 	// create an appropriate container based on the
 	// Target Rule keyword.
+	var tdn TargetDistinguishedNames
 	switch key {
 	case TargetTo:
-		ex = TTDNs()
+		tdn = TTDNs()
 	case TargetFrom:
-		ex = TFDNs()
+		tdn = TFDNs()
 	default:
-		ex = TDNs()
+		tdn = TDNs()
 	}
 
 	// Honor the established quotation scheme that
 	// was observed during ANTLR4 processing.
-	ex.setQuoteStyle(expr.Style)
+	tdn.setQuoteStyle(expr.Style)
 
 	// Assign the raw (DN) values to the
 	// return value. If nothing was found,
 	// bail out now.
-	if ex.setExpressionValues(key, expr.Values...); ex.Len() == 0 {
+	if tdn.setExpressionValues(key, expr.Values...); tdn.Len() == 0 {
 		err = noTBRuleExpressionValues(badTargetDN, targetRuleID, key)
 		return
 	}
+
+	ex = tdn
 
 	return
 }

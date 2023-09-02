@@ -51,7 +51,7 @@ const AttributeFilterOperationsSemiDelim = 1
 //
 // This constant may be fed to the SetQuoteStyle method that is
 // extended through eligible types.
-const MultivalOuterQuotes = 0
+const MultivalOuterQuotes = 1
 
 // MultivalSliceQuotes represents an alternative quotation scheme
 // offered by this package. In cases where a multi-valued BindRule
@@ -65,7 +65,7 @@ const MultivalOuterQuotes = 0
 //
 // This constant may be fed to the SetQuoteStyle method that is
 // extended through eligible types.
-const MultivalSliceQuotes = 1
+const MultivalSliceQuotes = 0
 
 /*
 RulePadding is a global variable that will be applies to ALL
