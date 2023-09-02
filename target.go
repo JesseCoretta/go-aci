@@ -218,6 +218,11 @@ newTargetRule is a private function called by the TR function.
 func newTargetRule(kw, op, ex any) (t TargetRule) {
 	t.SetKeyword(kw)
 	t.SetOperator(op)
+
+	if sc, ok := ex.(SearchScope); ok {
+		ex = sc.Target()
+	}
+
 	t.SetExpression(ex)
 
 	castAsCondition(t).

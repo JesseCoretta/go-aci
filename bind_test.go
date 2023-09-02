@@ -27,6 +27,35 @@ func TestParseBindRuleMethods(t *testing.T) {
 	}
 }
 
+func TestBindRules_wordToStack(t *testing.T) {
+	for word, expect := range map[string]bool{
+		`BAND`:                         false,
+		`AND`:                          true,
+		`aNd`:                          true,
+		`and`:                          true,
+		`andy`:                         false,
+		`OR`:                           true,
+		`or`:                           true,
+		`oR`:                           true,
+		`orwellian`:                    false,
+		`NOT`:                          true,
+		`not`:                          true,
+		`nOT`:                          true,
+		`AND NOT`:                      true,
+		`and not`:                      true,
+		`aNd NoT`:                      true,
+		`andnot`:                       true,
+		`and not a moment too soon...`: false,
+		``:                             false,
+		`&*#($`:                        false,
+	} {
+		if _, result := wordToStack(word); expect != result {
+			t.Errorf("%s unexpected result: want %t, got %t",
+				t.Name(), expect, result)
+		}
+	}
+}
+
 // mainly this exists to satisfy codecov, but also
 // aid in identifying panic points.
 func TestBindRule_bogus(t *testing.T) {
@@ -38,6 +67,7 @@ func TestBindRule_bogus(t *testing.T) {
 	_ = br.Valid()
 	_ = br.Paren()
 	_ = br.Operator()
+	_ = br.IsNesting()
 	_ = br.Expression()
 	_ = br.Keyword()
 	_ = br.String()
@@ -49,6 +79,7 @@ func TestBindRules_bogus(t *testing.T) {
 	var br BindRules
 	_ = br.ID()
 	_ = br.Category()
+	_ = br.IsNesting()
 	_ = br.IsZero()
 	_ = br.Len()
 	_ = br.Fold()
@@ -57,8 +88,11 @@ func TestBindRules_bogus(t *testing.T) {
 	_ = br.ReadOnly()
 	_ = br.NoPadding()
 	_ = br.String()
+	_ = br.Push(nil)
+	_ = br.Pop()
 	_ = br.Index(-100)
 	_, _ = br.Traverse([]int{1, 2, 3, 4}...)
+	br.reset()
 }
 
 func TestParseBindRule(t *testing.T) {
@@ -84,6 +118,7 @@ func TestParseBindRule(t *testing.T) {
 	_ = b.Operator()
 	_ = b.Keyword()
 	_ = b.Expression()
+	_ = b.SetQuoteStyle(1)
 	_ = b.SetQuoteStyle(0)
 
 	if want != b.String() {
@@ -100,16 +135,52 @@ func TestParseBindRules(t *testing.T) {
 	r.isBindContextQualifier()
 	_ = r.Kind()
 	_ = r.IsNesting()
+	_ = r.Pop()
+	_ = r.Push()
 
 	if r, err = ParseBindRules(want); err != nil {
 		return
 	}
 
 	_ = r.Kind()
-	_ = r.IsNesting()
 
 	if want != r.String() {
 		t.Errorf("%s failed:\nwant '%s',\ngot  '%s'", t.Name(), want, r)
+	}
+
+	if r.Keyword() == nil {
+		t.Errorf("%s failed: unidentified %T", t.Name(), r.Keyword())
+	}
+
+	if !r.IsNesting() {
+		t.Errorf("%s failed: nesting not detected", t.Name())
+	}
+
+	bl := r.Len()
+	orig := r.String()
+
+	r.Push(BindRules{})
+
+	var ctx BindContext = BindRule{}
+
+	if r.Push(ctx); r.Len() != bl {
+		t.Errorf("%s failed: bogus enveloped content was pushed into %T", t.Name(), r)
+	}
+
+	popped := r.Pop()
+	if popped.String() != orig {
+		t.Errorf("%s failed: unexpected element popped; want '%s', got '%s'", t.Name(), orig, popped)
+	}
+
+	r.Push(popped)
+	r.remove(r.Len() - 1)
+	if r.Len() != bl {
+		t.Errorf("%s failed: content not removed from %T", t.Name(), r)
+	}
+
+	r.insert(popped, 0)
+	if r.Len() != bl {
+		t.Errorf("%s failed: content not inserted into %T", t.Name(), r)
 	}
 }
 

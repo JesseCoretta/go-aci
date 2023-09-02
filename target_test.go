@@ -10,6 +10,7 @@ func TestParseTargetRuleMethods(t *testing.T) {
 	_ = trf.Len()
 	_ = trf.IsZero()
 	_, _ = trf.Index(0)
+	_, _ = trf.Index(140)
 
 	trf = newTargetRuleMethods(targetRuleFuncMap{})
 
@@ -352,4 +353,15 @@ func ExampleTargetRuleMethod() {
 	// Output:
 	// [1] aci.TargetRuleMethod instance [Eq] execution returned aci.TargetRule: ( targetfilter = "(&(objectClass=employee)(terminated=FALSE))" )
 	// [2] aci.TargetRuleMethod instance [Ne] execution returned aci.TargetRule: ( targetfilter != "(&(objectClass=employee)(terminated=FALSE))" )
+}
+
+/*
+This example demonstrates the creation of a TargetRule in a completely manual way. Users
+will almost certainly want to use the (far easier) methods for Eq, Ne, etc., extended via
+the very type instances intended for representation within a rule.
+*/
+func ExampleTR() {
+	var rule TargetRule = TR(TargetScope, Eq, SingleLevel)
+	fmt.Printf("%s", rule)
+	// Output: ( targetscope = "onelevel" )
 }
