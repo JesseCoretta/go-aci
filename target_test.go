@@ -5,6 +5,25 @@ import (
 	"testing"
 )
 
+func TestParseTargetRuleMethods(t *testing.T) {
+	var trf TargetRuleMethods
+	_ = trf.Len()
+	_ = trf.IsZero()
+	_, _ = trf.Index(0)
+
+	trf = newTargetRuleMethods(targetRuleFuncMap{})
+
+	_ = trf.Len()
+	_ = trf.IsZero()
+	_, _ = trf.Index(0)
+
+	attrs := TAs(`cn`, `sn`, `givenName`, `objectClass`, `uid`, `homeDirectory`)
+	trf = attrs.TRF()
+	if trf.Len() != 2 {
+		t.Errorf("%s failed: unexpected %T length: want %d, got %d", t.Name(), trf, 2, trf.Len())
+	}
+}
+
 func TestCtrls(t *testing.T) {
 	L := Ctrls()
 	o1 := Ctrl(`1.3.6.1.4.1.56521.101.2.1.1`)
@@ -32,6 +51,35 @@ func TestTargetKeyword_Set_targetScope(t *testing.T) {
 	if want != got.String() {
 		t.Errorf("%s failed: want '%s', got '%s'", t.Name(), want, got)
 	}
+}
+
+// mainly this exists to satisfy codecov, but also
+// aid in identifying panic points.
+func TestTargetRule_bogus(t *testing.T) {
+	var tr TargetRule
+	_ = tr.ID()
+	_ = tr.Category()
+	_ = tr.IsZero()
+	_ = tr.Valid()
+	_ = tr.Operator()
+	_ = tr.Expression()
+	_ = tr.Keyword()
+	_ = tr.String()
+}
+
+// mainly this exists to satisfy codecov, but also
+// aid in identifying panic points.
+func TestTargetRules_bogus(t *testing.T) {
+	var tr TargetRules
+	_ = tr.ID()
+	_ = tr.Category()
+	_ = tr.IsZero()
+	_ = tr.Len()
+	_ = tr.Valid()
+	_ = tr.ReadOnly()
+	_ = tr.NoPadding()
+	_ = tr.String()
+	_ = tr.Index(100)
 }
 
 /*

@@ -6,7 +6,12 @@ import (
 )
 
 func TestParseBindRuleMethods(t *testing.T) {
-	brf := newBindRuleMethods(bindRuleFuncMap{})
+	var brf BindRuleMethods
+	_ = brf.Len()
+	_ = brf.IsZero()
+	_, _ = brf.Index(0)
+
+	brf = newBindRuleMethods(bindRuleFuncMap{})
 
 	_ = brf.Len()
 	_ = brf.IsZero()
@@ -20,6 +25,40 @@ func TestParseBindRuleMethods(t *testing.T) {
 			t.Errorf("%s failed: failed to call index %d [%s] non-nil %T", t.Name(), i, cop.Context(), brf)
 		}
 	}
+}
+
+// mainly this exists to satisfy codecov, but also
+// aid in identifying panic points.
+func TestBindRule_bogus(t *testing.T) {
+	var br BindRule
+	_ = br.ID()
+	_ = br.Category()
+	_ = br.IsZero()
+	_ = br.Len()
+	_ = br.Valid()
+	_ = br.Paren()
+	_ = br.Operator()
+	_ = br.Expression()
+	_ = br.Keyword()
+	_ = br.String()
+}
+
+// mainly this exists to satisfy codecov, but also
+// aid in identifying panic points.
+func TestBindRules_bogus(t *testing.T) {
+	var br BindRules
+	_ = br.ID()
+	_ = br.Category()
+	_ = br.IsZero()
+	_ = br.Len()
+	_ = br.Fold()
+	_ = br.Valid()
+	_ = br.Paren()
+	_ = br.ReadOnly()
+	_ = br.NoPadding()
+	_ = br.String()
+	_ = br.Index(-100)
+	_, _ = br.Traverse([]int{1, 2, 3, 4}...)
 }
 
 func TestParseBindRule(t *testing.T) {

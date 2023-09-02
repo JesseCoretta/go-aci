@@ -275,6 +275,9 @@ func (r TargetRule) Category() string {
 ID wraps go-stackage's Condition.ID method.
 */
 func (r TargetRule) ID() string {
+	if r.IsZero() {
+		return ``
+	}
 	return castAsCondition(r).ID()
 }
 
@@ -630,9 +633,10 @@ func (r TargetRules) Index(idx int) TargetRule {
 /*
 ReadOnly wraps go-stackage's Stack.ReadOnly method.
 */
-func (r TargetRules) ReadOnly(state ...bool) {
+func (r TargetRules) ReadOnly(state ...bool) TargetRules {
 	_t, _ := castAsStack(r)
 	_t.ReadOnly(state...)
+	return r
 }
 
 /*
@@ -668,9 +672,11 @@ func (r TargetRules) replace(x any, idx int) bool {
 /*
 NoPadding wraps go-stackage's Stack.NoPadding method.
 */
-func (r TargetRules) NoPadding(state ...bool) {
+func (r TargetRules) NoPadding(state ...bool) TargetRules {
 	_t, _ := castAsStack(r)
 	_t.NoPadding(state...)
+
+	return r
 }
 
 /*
