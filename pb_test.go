@@ -2,7 +2,7 @@ package aci
 
 import (
 	"fmt"
-	//"testing"
+	"testing"
 )
 
 /*
@@ -250,4 +250,24 @@ func ExamplePermissionBindRules_String() {
 
 	fmt.Printf("%s", pbrs)
 	// Output: deny(all,proxy) groupdn = "ldap:///cn=disgruntled_employees,ou=Groups,dc=example,dc=com"; allow(all) userdn = "ldap:///cn=Courtney Tolana,ou=Admin,ou=People,dc=example,dc=com";
+}
+
+func TestPermissionBindRule_codecov(t *testing.T) {
+	var pb PermissionBindRule
+	_ = pb.IsZero()
+	_ = pb.Valid()
+	pb.B = And()
+	_ = pb.Valid()
+}
+
+func TestPermissionBindRules_codecov(t *testing.T) {
+	var pbs PermissionBindRules
+	_ = pbs.IsZero()
+	_ = pbs.Valid()
+	_ = pbs.Valid()
+
+	var pb PermissionBindRule
+	pb.B = And()
+	pbs.Push(pb)
+	_ = pbs.Len()
 }
