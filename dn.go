@@ -146,7 +146,7 @@ of the DistinguishedNameContext interface.
 func (r BindDistinguishedName) isDistinguishedNameContext() {}
 
 /*
-Compare returns a Boolean indicative of a SHA-1 comparison
+Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
 func (r BindDistinguishedName) Compare(x any) bool {
@@ -222,7 +222,7 @@ of the DistinguishedNameContext interface.
 func (r TargetDistinguishedName) isDistinguishedNameContext() {}
 
 /*
-Compare returns a Boolean indicative of a SHA-1 comparison
+Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
 func (r TargetDistinguishedName) Compare(x any) bool {
@@ -286,7 +286,7 @@ func (r TargetDistinguishedName) Len() int {
 }
 
 /*
-IsZero returns a boolean value indicative of whether the receiver
+IsZero returns a Boolean value indicative of whether the receiver
 is considered nil, or unset.
 */
 func (r BindDistinguishedName) IsZero() bool {
@@ -294,7 +294,7 @@ func (r BindDistinguishedName) IsZero() bool {
 }
 
 /*
-IsZero returns a boolean value indicative of whether the receiver
+IsZero returns a Boolean value indicative of whether the receiver
 is considered nil, or unset.
 */
 func (r TargetDistinguishedName) IsZero() bool {
@@ -572,7 +572,7 @@ func (r TargetDistinguishedNames) resetKeyword(x any) {
 }
 
 /*
-Compare returns a Boolean indicative of a SHA-1 comparison
+Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
 func (r BindDistinguishedNames) Compare(x any) bool {
@@ -580,7 +580,7 @@ func (r BindDistinguishedNames) Compare(x any) bool {
 }
 
 /*
-Compare returns a Boolean indicative of a SHA-1 comparison
+Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
 func (r TargetDistinguishedNames) Compare(x any) bool {
@@ -588,7 +588,7 @@ func (r TargetDistinguishedNames) Compare(x any) bool {
 }
 
 /*
-BRF returns an instance of BindRuleMethods.
+BRM returns an instance of BindRuleMethods.
 
 Each of the return instance's key values represent a single instance of the
 ComparisonOperator type that is allowed for use in the creation of BindRule
@@ -606,7 +606,7 @@ methods will return bogus BindRule instances. While this is useful in unit
 testing, the end user must only execute this method IF and WHEN the receiver
 has been properly populated and prepared for such activity.
 */
-func (r BindDistinguishedName) BRF() BindRuleMethods {
+func (r BindDistinguishedName) BRM() BindRuleMethods {
 	return newBindRuleMethods(bindRuleFuncMap{
 		Eq: r.Eq,
 		Ne: r.Ne,
@@ -614,7 +614,7 @@ func (r BindDistinguishedName) BRF() BindRuleMethods {
 }
 
 /*
-BRF returns an instance of BindRuleMethods.
+BRM returns an instance of BindRuleMethods.
 
 Each of the return instance's key values represent a single instance of the
 ComparisonOperator type that is allowed for use in the creation of BindRule
@@ -632,7 +632,7 @@ methods will return bogus BindRule instances. While this is useful in unit
 testing, the end user must only execute this method IF and WHEN the receiver
 has been properly populated and prepared for such activity.
 */
-func (r BindDistinguishedNames) BRF() BindRuleMethods {
+func (r BindDistinguishedNames) BRM() BindRuleMethods {
 	return newBindRuleMethods(bindRuleFuncMap{
 		Eq: r.Eq,
 		Ne: r.Ne,
@@ -640,7 +640,7 @@ func (r BindDistinguishedNames) BRF() BindRuleMethods {
 }
 
 /*
-TRF returns an instance of TargetRuleMethods.
+TRM returns an instance of TargetRuleMethods.
 
 Each of the return instance's key values represent a single instance of the
 ComparisonOperator type that is allowed for use in the creation of TargetRule
@@ -658,7 +658,7 @@ methods will return bogus TargetRule instances. While this is useful in unit
 testing, the end user must only execute this method IF and WHEN the receiver
 has been properly populated and prepared for such activity.
 */
-func (r TargetDistinguishedName) TRF() TargetRuleMethods {
+func (r TargetDistinguishedName) TRM() TargetRuleMethods {
 	return newTargetRuleMethods(targetRuleFuncMap{
 		Eq: r.Eq,
 		Ne: r.Ne,
@@ -666,7 +666,7 @@ func (r TargetDistinguishedName) TRF() TargetRuleMethods {
 }
 
 /*
-TRF returns an instance of TargetRuleMethods.
+TRM returns an instance of TargetRuleMethods.
 
 Each of the return instance's key values represent a single instance of the
 ComparisonOperator type that is allowed for use in the creation of TargetRule
@@ -684,7 +684,7 @@ methods will return bogus TargetRule instances. While this is useful in unit
 testing, the end user must only execute this method IF and WHEN the receiver
 has been properly populated and prepared for such activity.
 */
-func (r TargetDistinguishedNames) TRF() TargetRuleMethods {
+func (r TargetDistinguishedNames) TRM() TargetRuleMethods {
 	return newTargetRuleMethods(targetRuleFuncMap{
 		Eq: r.Eq,
 		Ne: r.Ne,
@@ -1319,7 +1319,7 @@ func (r BindDistinguishedNames) Push(x ...any) BindDistinguishedNames {
 }
 
 /*
-Contains returns a boolean value indicative of whether value x,
+Contains returns a Boolean value indicative of whether value x,
 if a string or BindDistinguishedName instance, already resides
 within the receiver instance.
 
@@ -1395,7 +1395,7 @@ func (r TargetDistinguishedNames) Push(x ...any) TargetDistinguishedNames {
 }
 
 /*
-Contains returns a boolean value indicative of whether value x,
+Contains returns a Boolean value indicative of whether value x,
 if a string or TargetDistinguishedName instance, already resides
 within the receiver instance.
 

@@ -130,7 +130,7 @@ This method exists solely to convey this message. When executed, this method
 returns a bogus TargetRule instance.
 
 This method SHALL NOT appear within instances of TargetRuleMethods that were
-crafted through execution of the receiver's TRF method.
+crafted through execution of the receiver's TRM method.
 */
 func (r SearchScope) Ne() TargetRule { return badTargetRule }
 
@@ -143,7 +143,7 @@ func (r SearchScope) Keyword() Keyword {
 }
 
 /*
-TRF returns an instance of TargetRuleMethods.
+TRM returns an instance of TargetRuleMethods.
 
 Each of the return instance's key values represent a single ComparisonOperator
 that is allowed for use in the creation of TargetRule instances which bear the
@@ -160,7 +160,7 @@ will return bogus TargetRule instances. While this is useful in unit testing,
 the end user must only execute this method IF and WHEN the receiver has been
 properly populated and prepared for such activity.
 */
-func (r SearchScope) TRF() TargetRuleMethods {
+func (r SearchScope) TRM() TargetRuleMethods {
 	return newTargetRuleMethods(targetRuleFuncMap{
 		Eq: r.Eq,
 	})
@@ -181,7 +181,7 @@ func (r SearchScope) String() string {
 }
 
 /*
-Compare returns a Boolean indicative of a SHA-1 comparison
+Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
 func (r SearchScope) Compare(x any) bool {

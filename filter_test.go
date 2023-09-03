@@ -751,9 +751,9 @@ func ExampleAttributeFilterOperation_Valid() {
 	// Output: true
 }
 
-func ExampleAttributeFilterOperation_TRF() {
+func ExampleAttributeFilterOperation_TRM() {
 	var afo AttributeFilterOperation
-	fmt.Printf("%d available aci.TargetRuleMethod instances", afo.TRF().Len())
+	fmt.Printf("%d available aci.TargetRuleMethod instances", afo.TRM().Len())
 	// Output: 2 available aci.TargetRuleMethod instances
 }
 
@@ -836,9 +836,9 @@ func ExampleAttributeFilterOperations_Contains() {
 	// Output: true
 }
 
-func ExampleAttributeFilterOperations_TRF() {
+func ExampleAttributeFilterOperations_TRM() {
 	var afos AttributeFilterOperations
-	fmt.Printf("%d available aci.TargetRuleMethod instances", afos.TRF().Len())
+	fmt.Printf("%d available aci.TargetRuleMethod instances", afos.TRM().Len())
 	// Output: 2 available aci.TargetRuleMethod instances
 }
 
@@ -1299,10 +1299,10 @@ func ExampleSearchFilter_Eq() {
 	// Output: ( targetfilter = "(|(objectClass=contractor)(objectClass=intern))" )
 }
 
-func ExampleSearchFilter_TRF() {
+func ExampleSearchFilter_TRM() {
 	var filter SearchFilter
 	filter.Set(`(|(objectClass=contractor)(objectClass=intern))`)
-	fmt.Printf("%d available aci.TargetRuleMethod instances", filter.TRF().Len())
+	fmt.Printf("%d available aci.TargetRuleMethod instances", filter.TRM().Len())
 	// Output: 2 available aci.TargetRuleMethod instances
 }
 

@@ -117,7 +117,7 @@ func (r PermissionBindRule) String() string {
 }
 
 /*
-Compare returns a Boolean indicative of a SHA-1 comparison
+Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
 func (r PermissionBindRule) Compare(x any) bool {
@@ -195,7 +195,7 @@ func (r PermissionBindRules) String() string {
 }
 
 /*
-Compare returns a Boolean indicative of a SHA-1 comparison
+Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
 func (r PermissionBindRules) Compare(x any) bool {

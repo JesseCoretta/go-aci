@@ -263,7 +263,7 @@ func (r instruction) valid() (err error) {
 }
 
 /*
-IsZero returns a boolean value indicative of whether the receiver
+IsZero returns a Boolean value indicative of whether the receiver
 is nil, or unset.
 */
 func (r Instruction) IsZero() bool {

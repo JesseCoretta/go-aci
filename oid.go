@@ -68,7 +68,7 @@ func (r ObjectIdentifier) String() string {
 }
 
 /*
-Compare returns a Boolean indicative of a SHA-1 comparison
+Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
 func (r ObjectIdentifier) Compare(x any) bool {
@@ -115,7 +115,7 @@ func (r ObjectIdentifier) Kind() string {
 }
 
 /*
-TRF returns an instance of TargetRuleMethods.
+TRM returns an instance of TargetRuleMethods.
 
 Each of the return instance's key values represent a single ComparisonOperator
 that is allowed for use in the creation of TargetRule instances which bear the
@@ -132,7 +132,7 @@ will return bogus TargetRule instances. While this is useful in unit testing,
 the end user must only execute this method IF and WHEN the receiver has been
 properly populated and prepared for such activity.
 */
-func (r ObjectIdentifier) TRF() TargetRuleMethods {
+func (r ObjectIdentifier) TRM() TargetRuleMethods {
 	return newTargetRuleMethods(targetRuleFuncMap{
 		Eq: r.Eq,
 		Ne: r.Ne,
@@ -310,7 +310,7 @@ func isDotNot(x string) bool {
 }
 
 /*
-TRF returns an instance of TargetRuleMethods.
+TRM returns an instance of TargetRuleMethods.
 
 Each of the return instance's key values represent a single ComparisonOperator
 that is allowed for use in the creation of TargetRule instances which bear the
@@ -327,7 +327,7 @@ will return bogus TargetRule instances. While this is useful in unit testing,
 the end user must only execute this method IF and WHEN the receiver has been
 properly populated and prepared for such activity.
 */
-func (r ObjectIdentifiers) TRF() TargetRuleMethods {
+func (r ObjectIdentifiers) TRM() TargetRuleMethods {
 	return newTargetRuleMethods(targetRuleFuncMap{
 		Eq: r.Eq,
 		Ne: r.Ne,
@@ -391,7 +391,7 @@ func (r ObjectIdentifiers) String() string {
 }
 
 /*
-Compare returns a Boolean indicative of a SHA-1 comparison
+Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
 func (r ObjectIdentifiers) Compare(x any) bool {
@@ -417,7 +417,7 @@ func (r ObjectIdentifiers) Keyword() Keyword {
 }
 
 /*
-Contains returns a boolean value indicative of whether value x,
+Contains returns a Boolean value indicative of whether value x,
 if a string or ObjectIdentifier instance, already resides
 within the receiver instance.
 

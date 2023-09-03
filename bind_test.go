@@ -6,23 +6,23 @@ import (
 )
 
 func TestBindRuleMethods(t *testing.T) {
-	var brf BindRuleMethods
-	_ = brf.Len()
-	_ = brf.IsZero()
-	_, _ = brf.Index(0)
+	var brm BindRuleMethods
+	_ = brm.Len()
+	_ = brm.IsZero()
+	_, _ = brm.Index(0)
 
-	brf = newBindRuleMethods(bindRuleFuncMap{})
+	brm = newBindRuleMethods(bindRuleFuncMap{})
 
-	_ = brf.Len()
-	_ = brf.IsZero()
-	_, _ = brf.Index(0)
+	_ = brm.Len()
+	_ = brm.IsZero()
+	_, _ = brm.Index(0)
 
 	ssf := SSF(256)
-	brf = ssf.BRF()
+	brm = ssf.BRM()
 
-	for i := 0; i < brf.Len(); i++ {
-		if cop, meth := brf.Index(i + 1); meth().String() != fmt.Sprintf("ssf %s %q", cop, `256`) {
-			t.Errorf("%s failed: failed to call index %d [%s] non-nil %T", t.Name(), i, cop.Context(), brf)
+	for i := 0; i < brm.Len(); i++ {
+		if cop, meth := brm.Index(i + 1); meth().String() != fmt.Sprintf("ssf %s %q", cop, `256`) {
+			t.Errorf("%s failed: failed to call index %d [%s] non-nil %T", t.Name(), i, cop.Context(), brm)
 		}
 	}
 }
@@ -251,10 +251,10 @@ comparison operator methods for the BindDistinguishedName type.
 */
 func ExampleBindRuleMethods() {
 	var dn BindDistinguishedName = GDN(`cn=X.500 Administrators,ou=Groups,dc=example,dc=com`)
-	brf := dn.BRF()
+	brm := dn.BRM()
 
-	for i := 0; i < brf.Len(); i++ {
-		cop, meth := brf.Index(i + 1)                              // zero (0) should never be accessed, start at 1
+	for i := 0; i < brm.Len(); i++ {
+		cop, meth := brm.Index(i + 1)                              // zero (0) should never be accessed, start at 1
 		fmt.Printf("[%s] %s\n", cop.Description(), meth().Paren()) // enable parentheticals, because why not
 	}
 	// Output:
@@ -264,18 +264,18 @@ func ExampleBindRuleMethods() {
 
 func ExampleBindRuleMethods_Index() {
 	ssf := SSF(256)
-	brf := ssf.BRF()
+	brm := ssf.BRM()
 
-	for i := 0; i < brf.Len(); i++ {
+	for i := 0; i < brm.Len(); i++ {
 		// IMPORTANT: Do not call index 0. Either adjust your
 		// loop variable (i) to begin at 1, and terminate at
-		// brf.Len()+1 --OR-- simply +1 the index call as we
+		// brm.Len()+1 --OR-- simply +1 the index call as we
 		// are doing here (seems easier). The reason for this
 		// is because there is no valid ComparisonOperator
 		// with an underlying uint8 value of zero (0). See
 		// the ComparisonOperator constants for details.
 		idx := i + 1
-		cop, meth := brf.Index(idx)
+		cop, meth := brm.Index(idx)
 
 		// execute method to create the bindrule, while
 		// also enabling the (optional) parenthetical bit
@@ -295,7 +295,7 @@ func ExampleBindRuleMethods_Index() {
 
 func ExampleBindRuleMethods_Index_byText() {
 	ssf := SSF(256)
-	brf := ssf.BRF()
+	brm := ssf.BRM()
 
 	// Here, we demonstrate calling a particular BindRuleMethod
 	// not by its numerical index, but rather by its actual
@@ -320,12 +320,12 @@ func ExampleBindRuleMethods_Index_byText() {
 	} {
 		// IMPORTANT: Do not call index 0. Either adjust your
 		// loop variable (i) to begin at 1, and terminate at
-		// brf.Len()+1 --OR-- simply +1 the index call as we
+		// brm.Len()+1 --OR-- simply +1 the index call as we
 		// are doing here (seems easier). The reason for this
 		// is because there is no valid ComparisonOperator
 		// with an underlying uint8 value of zero (0). See
 		// the ComparisonOperator constants for details.
-		cop, meth := brf.Index(term)
+		cop, meth := brm.Index(term)
 
 		// execute method to create the bindrule, while
 		// also enabling the (optional) parenthetical bit
@@ -344,26 +344,26 @@ func ExampleBindRuleMethods_Index_byText() {
 }
 
 func ExampleBindRuleMethods_IsZero() {
-	var brf BindRuleMethods
-	fmt.Printf("Zero: %t", brf.IsZero())
+	var brm BindRuleMethods
+	fmt.Printf("Zero: %t", brm.IsZero())
 	// Output: Zero: true
 }
 
 func ExampleBindRuleMethods_Valid() {
-	var brf BindRuleMethods
-	fmt.Printf("Error: %v", brf.Valid())
+	var brm BindRuleMethods
+	fmt.Printf("Error: %v", brm.Valid())
 	// Output: Error: aci.BindRuleMethods instance is nil
 }
 
 func ExampleBindRuleMethods_Len() {
 	// Note: we need not populate the value to get a
-	// BRF list, but the methods in that list won't
+	// BRM list, but the methods in that list won't
 	// actually work until the instance (ssf) is in
 	// an acceptable state. Since all we're doing
 	// here is checking the length, a receiver that
 	// is nil/zero is totally fine.
 	var ssf SecurityStrengthFactor // not init'd
-	total := ssf.BRF().Len()
+	total := ssf.BRM().Len()
 
 	fmt.Printf("There are %d available aci.BindRuleMethod instances for creating %T BindRules", total, ssf)
 	// Output: There are 6 available aci.BindRuleMethod instances for creating aci.SecurityStrengthFactor BindRules
@@ -371,26 +371,26 @@ func ExampleBindRuleMethods_Len() {
 
 func ExampleBindRuleMethod() {
 	ssf := SSF(256)
-	brf := ssf.BRF()
+	brm := ssf.BRM()
 
 	// verify that the receiver (ssf) is copacetic
 	// and will produce a legal expression if meth
 	// is executed
-	if err := brf.Valid(); err != nil {
+	if err := brm.Valid(); err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	for i := 0; i < brf.Len(); i++ {
+	for i := 0; i < brm.Len(); i++ {
 		// IMPORTANT: Do not call index 0. Either adjust your
 		// loop variable (i) to begin at 1, and terminate at
-		// brf.Len()+1 --OR-- simply +1 the index call as we
+		// brm.Len()+1 --OR-- simply +1 the index call as we
 		// are doing here (seems easier). The reason for this
 		// is because there is no valid ComparisonOperator
 		// with an underlying uint8 value of zero (0). See
 		// the ComparisonOperator constants for details.
 		idx := i + 1
-		cop, meth := brf.Index(idx)
+		cop, meth := brm.Index(idx)
 
 		// execute method to create the bindrule, while
 		// also enabling the (optional) parenthetical bit

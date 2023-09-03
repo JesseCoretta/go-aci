@@ -499,3 +499,29 @@ func TestMatchDoW(t *testing.T) {
 		}
 	}
 }
+
+func TestTime_codecov(t *testing.T) {
+	var tod TimeOfDay
+	_ = tod.IsZero()
+	_ = tod.Eq()
+	_ = tod.Ne()
+	_ = tod.Gt()
+	_ = tod.Ge()
+	_ = tod.Le()
+	_ = tod.Lt()
+	_ = tod.Valid()
+	_ = tod.Set(``)
+	_ = tod.BRM()
+}
+
+func TestDay_codecov(t *testing.T) {
+	var dow DayOfWeek
+	_ = dow.IsZero()
+	_ = dow.Positive(noDay)
+	_ = dow.Unshift(noDay)
+	_ = dow.Shift(noDay)
+	_ = dow.Eq()
+	_ = dow.Ne()
+	_ = dow.Valid()
+	_ = dow.BRM()
+}

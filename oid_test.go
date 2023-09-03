@@ -92,14 +92,14 @@ func TestObjectIdentifiers_codecov(t *testing.T) {
 			_ = Oids.setQuoteStyle(0)
 			_ = Oids.setQuoteStyle(1)
 
-			for sop, trfn := range []func() TargetRuleMethods{
-				Oid.TRF,
-				Oids.TRF,
+			for sop, trmn := range []func() TargetRuleMethods{
+				Oid.TRM,
+				Oids.TRM,
 			} {
 				octx = testMakeOidContext(sop, Oid, Oids)
-				trf := trfn()
-				for i := 0; i < trf.Len(); i++ {
-					cop, meth := trf.Index(i + 1)
+				trm := trmn()
+				for i := 0; i < trm.Len(); i++ {
+					cop, meth := trm.Index(i + 1)
 					if meth == nil {
 						t.Errorf("%s [%s] multival failed: expected %s method (%T), got nil",
 							t.Name(), keyword, cop.Context(), meth)

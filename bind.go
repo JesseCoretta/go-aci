@@ -213,7 +213,7 @@ func (r BindRule) Traverse(indices ...int) BindContext {
 }
 
 /*
-Compare returns a Boolean indicative of a SHA-1 comparison
+Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
 func (r BindRule) Compare(x any) bool {
@@ -372,7 +372,7 @@ func (r BindRule) IsZero() bool {
 func (r BindRules) isBindContextQualifier() {}
 
 /*
-Compare returns a Boolean indicative of a SHA-1 comparison
+Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
 func (r BindRules) Compare(x any) bool {

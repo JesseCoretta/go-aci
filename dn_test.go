@@ -58,9 +58,9 @@ func TestBindDistinguishedName_codecov(t *testing.T) {
 
 			// try every comparison operator supported in
 			// this context ...
-			brf := O.BRF()
-			for i := 0; i < brf.Len(); i++ {
-				cop, meth := brf.Index(i + 1)
+			brm := O.BRM()
+			for i := 0; i < brm.Len(); i++ {
+				cop, meth := brm.Index(i + 1)
 				wcop := sprintf("( %s %s \"ldap:///uid=jesse,ou=People,dc=example,dc=com\" )", O.Keyword(), cop)
 				if T := meth(); T.Paren().String() != wcop {
 					err := unexpectedStringResult(O.String(), wcop, T.String())

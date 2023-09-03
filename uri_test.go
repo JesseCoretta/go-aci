@@ -217,9 +217,9 @@ func ExampleLDAPURI_Ne() {
 	// Output: userdn != "ldap:///ou=People,dc=example,dc=com?cn,sn,givenName,objectClass,uid?one?(&(objectClass=employee)(terminated=FALSE))"
 }
 
-func ExampleLDAPURI_BRF() {
+func ExampleLDAPURI_BRM() {
 	var uri LDAPURI
-	fmt.Printf("%d available aci.BindRuleMethod instances", uri.BRF().Len())
+	fmt.Printf("%d available aci.BindRuleMethod instances", uri.BRM().Len())
 	// Output: 2 available aci.BindRuleMethod instances
 }
 

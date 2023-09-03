@@ -93,7 +93,7 @@ of the individual Level0 (1) and Level1 (2) definitions within said value
 type Levels uint16
 
 /*
-IsZero returns a boolean value indicative of whether the receiver instance
+IsZero returns a Boolean value indicative of whether the receiver instance
 is nil, or unset.
 */
 func (r Inheritance) IsZero() bool {
@@ -116,7 +116,7 @@ func (r Inheritance) Valid() (err error) {
 }
 
 /*
-Compare returns a Boolean indicative of a SHA-1 comparison
+Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
 func (r Inheritance) Compare(x any) bool {
@@ -124,7 +124,7 @@ func (r Inheritance) Compare(x any) bool {
 }
 
 /*
-BRF returns an instance of BindRuleMethods.
+BRM returns an instance of BindRuleMethods.
 
 Each of the return instance's key values represent a single instance of
 the ComparisonOperator type that is allowed for use in the creation of
@@ -142,7 +142,7 @@ methods will return bogus BindRule instances. While this is useful in unit
 testing, the end user must only execute this method IF and WHEN the receiver
 has been properly populated and prepared for such activity.
 */
-func (r Inheritance) BRF() BindRuleMethods {
+func (r Inheritance) BRM() BindRuleMethods {
 	return newBindRuleMethods(bindRuleFuncMap{
 		Eq: r.Eq,
 		Ne: r.Ne,
@@ -399,7 +399,7 @@ func (r Level) String() (lvl string) {
 }
 
 /*
-Compare returns a Boolean indicative of a SHA-1 comparison
+Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
 func (r Level) Compare(x any) bool {
@@ -487,7 +487,7 @@ func assertIntInheritance(x int) (lvl Level) {
 }
 
 /*
-Positive returns a boolean value indicative of whether
+Positive returns a Boolean value indicative of whether
 the receiver instance of Levels includes Level x.
 */
 func (r Inheritance) Positive(x any) bool {
@@ -512,7 +512,7 @@ func (r Levels) IsZero() bool {
 }
 
 /*
-Compare returns a Boolean indicative of a SHA-1 comparison
+Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
 func (r Levels) Compare(x any) bool {

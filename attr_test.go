@@ -86,9 +86,9 @@ func ExampleAttributeType_Valid() {
 This example demonstrates how a caller can determine the number of comparison
 operator methods are available for use by the receiver instance.
 */
-func ExampleAttributeType_TRF() {
+func ExampleAttributeType_TRM() {
 	var at AttributeType
-	fmt.Printf("%d available aci.BindRuleMethod instances", at.TRF().Len())
+	fmt.Printf("%d available aci.BindRuleMethod instances", at.TRM().Len())
 	// Output: 2 available aci.BindRuleMethod instances
 }
 
@@ -309,9 +309,9 @@ func ExampleAttributeBindTypeOrValue_Ne() {
 	// Output: userattr != "manager#USERDN"
 }
 
-func ExampleAttributeBindTypeOrValue_BRF() {
+func ExampleAttributeBindTypeOrValue_BRM() {
 	var atb AttributeBindTypeOrValue
-	fmt.Printf("%d available aci.BindRuleMethod instances", atb.BRF().Len())
+	fmt.Printf("%d available aci.BindRuleMethod instances", atb.BRM().Len())
 	// Output: 2 available aci.BindRuleMethod instances
 }
 
@@ -376,9 +376,9 @@ func TestAttributeTypes(t *testing.T) {
 			attrs.setQuoteStyle(1)
 
 			actx = testMakeAttrContext(1, attr, attrs)
-			trf := attrs.TRF()
-			for i := 0; i < trf.Len(); i++ {
-				cop, meth := trf.Index(i + 1)
+			trm := attrs.TRM()
+			for i := 0; i < trm.Len(); i++ {
+				cop, meth := trm.Index(i + 1)
 				if meth == nil {
 					t.Errorf("%s [%s] multival failed: expected %s method (%T), got nil",
 						t.Name(), attrs.Keyword(), cop.Context(), meth)

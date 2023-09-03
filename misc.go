@@ -173,7 +173,7 @@ func isIdentifier(val string) bool {
 }
 
 /*
-strInSlice returns a boolean value indicative of whether the
+strInSlice returns a Boolean value indicative of whether the
 specified string (str) is present within slice. Please note
 that case is a significant element in the matching process.
 */
@@ -187,7 +187,7 @@ func strInSlice(str string, slice []string) bool {
 }
 
 /*
-strInSliceFold returns a boolean value indicative of whether
+strInSliceFold returns a Boolean value indicative of whether
 the specified string (str) is present within slice. Case is
 not significant in the matching process.
 */
@@ -313,7 +313,7 @@ func getStringFunc(x any) func() string {
 }
 
 /*
-isPtr returns a boolean value indicative of whether kind
+isPtr returns a Boolean value indicative of whether kind
 reflection revealed the presence of a pointer type.
 */
 func isPtr(x any) bool {

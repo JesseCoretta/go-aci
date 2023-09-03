@@ -312,7 +312,7 @@ func (r LDAPURI) Ne() BindRule {
 }
 
 /*
-BRF returns an instance of BindRuleMethods.
+BRM returns an instance of BindRuleMethods.
 
 Each of the return instance's key values represent a single instance of the
 ComparisonOperator type that is allowed for use in the creation of BindRule
@@ -330,7 +330,7 @@ methods will return bogus BindRule instances. While this is useful in unit
 testing, the end user must only execute this method IF and WHEN the receiver
 has been properly populated and prepared for such activity.
 */
-func (r LDAPURI) BRF() BindRuleMethods {
+func (r LDAPURI) BRM() BindRuleMethods {
 	return newBindRuleMethods(bindRuleFuncMap{
 		Eq: r.Eq,
 		Ne: r.Ne,
@@ -402,7 +402,7 @@ func (r LDAPURI) makeBindRule(negate ...bool) BindRule {
 }
 
 /*
-IsZero returns a boolean value indicative of whether the receiver
+IsZero returns a Boolean value indicative of whether the receiver
 is nil, or unset.
 */
 func (r LDAPURI) IsZero() bool {
@@ -596,7 +596,7 @@ func (r *ldapURI) set(x ...any) {
 }
 
 /*
-Compare returns a Boolean indicative of a SHA-1 comparison
+Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
 func (r LDAPURI) Compare(x any) bool {

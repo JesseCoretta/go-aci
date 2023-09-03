@@ -6,25 +6,25 @@ import (
 )
 
 func TestTargetRuleMethods(t *testing.T) {
-	var trf TargetRuleMethods
-	_ = trf.Len()
-	_ = trf.IsZero()
-	_, _ = trf.Index(0)
-	_, _ = trf.Index(140)
+	var trm TargetRuleMethods
+	_ = trm.Len()
+	_ = trm.IsZero()
+	_, _ = trm.Index(0)
+	_, _ = trm.Index(140)
 
-	trf = newTargetRuleMethods(targetRuleFuncMap{})
+	trm = newTargetRuleMethods(targetRuleFuncMap{})
 
-	_ = trf.Len()
-	_ = trf.IsZero()
-	_, _ = trf.Index(0)
+	_ = trm.Len()
+	_ = trm.IsZero()
+	_, _ = trm.Index(0)
 
 	attrs := TAs(`cn`, `sn`, `givenName`, `objectClass`, `uid`, `homeDirectory`)
-	trf = attrs.TRF()
-	if trf.Len() != 2 {
-		t.Errorf("%s failed: unexpected %T length: want %d, got %d", t.Name(), trf, 2, trf.Len())
+	trm = attrs.TRM()
+	if trm.Len() != 2 {
+		t.Errorf("%s failed: unexpected %T length: want %d, got %d", t.Name(), trm, 2, trm.Len())
 	}
-	_, _ = trf.Index(-100)
-	_, _ = trf.Index(100)
+	_, _ = trm.Index(-100)
+	_, _ = trm.Index(100)
 }
 
 func TestCtrls(t *testing.T) {
@@ -222,10 +222,10 @@ TargetRuleMethod instances for the TargetDistinguishedName type.
 */
 func ExampleTargetRuleMethods() {
 	var tdn TargetDistinguishedName = TTDN(`uid=*,ou=People,dc=example,dc=com`)
-	trf := tdn.TRF()
+	trm := tdn.TRM()
 
-	for i := 0; i < trf.Len(); i++ {
-		cop, meth := trf.Index(i + 1) // zero (0) should never be accessed, start at 1
+	for i := 0; i < trm.Len(); i++ {
+		cop, meth := trm.Index(i + 1) // zero (0) should never be accessed, start at 1
 		fmt.Printf("[%s] %s\n", cop.Description(), meth())
 	}
 	// Output:
@@ -235,18 +235,18 @@ func ExampleTargetRuleMethods() {
 
 func ExampleTargetRuleMethods_Index() {
 	var dn TargetDistinguishedName = TFDN(`uid=*,ou=People,dc=example,dc=com`)
-	trf := dn.TRF()
+	trm := dn.TRM()
 
-	for i := 0; i < trf.Len(); i++ {
+	for i := 0; i < trm.Len(); i++ {
 		// IMPORTANT: Do not call index 0. Either adjust your
 		// loop variable (i) to begin at 1, and terminate at
-		// trf.Len()+1 --OR-- simply +1 the index call as we
+		// trm.Len()+1 --OR-- simply +1 the index call as we
 		// are doing here (seems easier). The reason for this
 		// is because there is no valid ComparisonOperator
 		// with an underlying uint8 value of zero (0). See
 		// the ComparisonOperator constants for details.
 		idx := i + 1
-		cop, meth := trf.Index(idx)
+		cop, meth := trm.Index(idx)
 
 		// execute method to create the targetrule
 		rule := meth()
@@ -261,7 +261,7 @@ func ExampleTargetRuleMethods_Index() {
 
 func ExampleTargetRuleMethods_Index_byText() {
 	attrs := TAs(`cn`, `sn`, `givenName`, `objectClass`, `uid`, `homeDirectory`)
-	trf := attrs.TRF()
+	trm := attrs.TRM()
 
 	// Here, we demonstrate calling a particular TargetRuleMethod
 	// not by its numerical index, but rather by its actual
@@ -282,12 +282,12 @@ func ExampleTargetRuleMethods_Index_byText() {
 	} {
 		// IMPORTANT: Do not call index 0. Either adjust your
 		// loop variable (i) to begin at 1, and terminate at
-		// trf.Len()+1 --OR-- simply +1 the index call as we
+		// trm.Len()+1 --OR-- simply +1 the index call as we
 		// are doing here (seems easier). The reason for this
 		// is because there is no valid ComparisonOperator
 		// with an underlying uint8 value of zero (0). See
 		// the ComparisonOperator constants for details.
-		cop, meth := trf.Index(term)
+		cop, meth := trm.Index(term)
 
 		// execute method to create the TargetRule, while
 		// enabling the so-called "Slice Quotation scheme"
@@ -303,26 +303,26 @@ func ExampleTargetRuleMethods_Index_byText() {
 }
 
 func ExampleTargetRuleMethods_IsZero() {
-	var trf TargetRuleMethods
-	fmt.Printf("Zero: %t", trf.IsZero())
+	var trm TargetRuleMethods
+	fmt.Printf("Zero: %t", trm.IsZero())
 	// Output: Zero: true
 }
 
 func ExampleTargetRuleMethods_Valid() {
-	var trf TargetRuleMethods
-	fmt.Printf("Error: %v", trf.Valid())
+	var trm TargetRuleMethods
+	fmt.Printf("Error: %v", trm.Valid())
 	// Output: Error: aci.TargetRuleMethods instance is nil
 }
 
 func ExampleTargetRuleMethods_Len() {
 	// Note: we need not populate the value to get a
-	// TRF list, but the methods in that list won't
+	// TRM list, but the methods in that list won't
 	// actually work until the instance (ssf) is in
 	// an acceptable state. Since all we're doing
 	// here is checking the length, a receiver that
 	// is nil/zero is totally fine.
 	var sco SearchScope = SingleLevel // any would do
-	total := sco.TRF().Len()
+	total := sco.TRM().Len()
 
 	fmt.Printf("There is one (%d) available aci.TargetRuleMethod instance for creating %T TargetRules", total, sco)
 	// Output: There is one (1) available aci.TargetRuleMethod instance for creating aci.SearchScope TargetRules
@@ -330,26 +330,26 @@ func ExampleTargetRuleMethods_Len() {
 
 func ExampleTargetRuleMethod() {
 	tfil := Filter(`(&(objectClass=employee)(terminated=FALSE))`)
-	trf := tfil.TRF()
+	trm := tfil.TRM()
 
 	// verify that the receiver (ssf) is copacetic
 	// and will produce a legal expression if meth
 	// is executed
-	if err := trf.Valid(); err != nil {
+	if err := trm.Valid(); err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	for i := 0; i < trf.Len(); i++ {
+	for i := 0; i < trm.Len(); i++ {
 		// IMPORTANT: Do not call index 0. Either adjust your
 		// loop variable (i) to begin at 1, and terminate at
-		// trf.Len()+1 --OR-- simply +1 the index call as we
+		// trm.Len()+1 --OR-- simply +1 the index call as we
 		// are doing here (seems easier). The reason for this
 		// is because there is no valid ComparisonOperator
 		// with an underlying uint8 value of zero (0). See
 		// the ComparisonOperator constants for details.
 		idx := i + 1
-		cop, meth := trf.Index(idx)
+		cop, meth := trm.Index(idx)
 
 		// execute method to create the targetrule
 		rule := meth()

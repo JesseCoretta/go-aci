@@ -177,7 +177,7 @@ func (r *DayOfWeek) Shift(x Day) *DayOfWeek {
 }
 
 /*
-Positive returns a boolean value indicative of whether the receiver instance
+Positive returns a Boolean value indicative of whether the receiver instance
 of DayOfWeek includes Day x.
 */
 func (r DayOfWeek) Positive(x Day) bool {
@@ -201,7 +201,7 @@ func (r *DayOfWeek) Unshift(x Day) *DayOfWeek {
 }
 
 /*
-IsZero returns a boolean value indicative of whether the receiver is nil, or unset.
+IsZero returns a Boolean value indicative of whether the receiver is nil, or unset.
 */
 func (r DayOfWeek) IsZero() bool {
 	if &r == nil {
@@ -236,7 +236,7 @@ func (r DayOfWeek) String() string {
 }
 
 /*
-Compare returns a Boolean indicative of a SHA-1 comparison
+Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
 func (r DayOfWeek) Compare(x any) bool {
@@ -244,7 +244,7 @@ func (r DayOfWeek) Compare(x any) bool {
 }
 
 /*
-Valid returns a boolean value indicative of whether the receiver contains one or
+Valid returns a Boolean value indicative of whether the receiver contains one or
 more valid bits representing known Day values. At least one Day must be positive
 within the receiver.
 */
@@ -312,7 +312,7 @@ func (r DayOfWeek) Ne() BindRule {
 }
 
 /*
-BRF returns an instance of BindRuleMethods.
+BRM returns an instance of BindRuleMethods.
 
 Each of the return instance's key values represent a single instance of the
 ComparisonOperator type that is allowed for use in the creation of BindRule
@@ -330,7 +330,7 @@ methods will return bogus BindRule instances. While this is useful in unit
 testing, the end user must only execute this method IF and WHEN the receiver
 has been properly populated and prepared for such activity.
 */
-func (r DayOfWeek) BRF() BindRuleMethods {
+func (r DayOfWeek) BRM() BindRuleMethods {
 	return newBindRuleMethods(bindRuleFuncMap{
 		Eq: r.Eq,
 		Ne: r.Ne,
@@ -342,9 +342,8 @@ String is a stringer method that returns a single string name value for
 receiver instance of Day.
 */
 func (r Day) String() (day string) {
+	day = badDoW
 	switch r {
-	case noDay:
-		day = badDoW
 	case Sun:
 		day = `Sun`
 	case Mon:
@@ -365,7 +364,7 @@ func (r Day) String() (day string) {
 }
 
 /*
-Compare returns a Boolean indicative of a SHA-1 comparison
+Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
 func (r Day) Compare(x any) bool {
@@ -577,7 +576,7 @@ func (r TimeOfDay) Ge() BindRule {
 }
 
 /*
-BRF returns an instance of BindRuleMethods.
+BRM returns an instance of BindRuleMethods.
 
 Each of the return instance's key values represent a single instance of the
 ComparisonOperator type that is allowed for use in the creation of BindRule
@@ -595,7 +594,7 @@ methods will return bogus BindRule instances. While this is useful in unit
 testing, the end user must only execute this method IF and WHEN the receiver
 has been properly populated and prepared for such activity.
 */
-func (r TimeOfDay) BRF() BindRuleMethods {
+func (r TimeOfDay) BRM() BindRuleMethods {
 	return newBindRuleMethods(bindRuleFuncMap{
 		Eq: r.Eq,
 		Ne: r.Ne,
@@ -607,7 +606,7 @@ func (r TimeOfDay) BRF() BindRuleMethods {
 }
 
 /*
-Compare returns a Boolean indicative of a SHA-1 comparison
+Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
 func (r TimeOfDay) Compare(x any) bool {
@@ -633,7 +632,7 @@ func (r *timeOfDay) string() string {
 }
 
 /*
-Valid returns a boolean value indicative of whether
+Valid returns a Boolean value indicative of whether
 the receiver is believed to be in a valid state.
 */
 func (r TimeOfDay) Valid() (err error) {
@@ -644,7 +643,7 @@ func (r TimeOfDay) Valid() (err error) {
 }
 
 /*
-IsZero returns a boolean value indicative of whether
+IsZero returns a Boolean value indicative of whether
 the receiver is nil, or unset.
 */
 func (r TimeOfDay) IsZero() bool {

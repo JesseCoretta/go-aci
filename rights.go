@@ -267,7 +267,7 @@ func (r Right) String() (p string) {
 }
 
 /*
-Compare returns a Boolean indicative of a SHA-1 comparison
+Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
 func (r Right) Compare(x any) bool {
@@ -323,7 +323,7 @@ func (r Permission) String() string {
 }
 
 /*
-Compare returns a Boolean indicative of a SHA-1 comparison
+Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
 func (r Permission) Compare(x any) bool {
@@ -354,7 +354,7 @@ func (r permission) disposition() string {
 }
 
 /*
-Positive returns a boolean value indicative of whether a particular bit is positive (is set). Negation implies negative, or unset.
+Positive returns a Boolean value indicative of whether a particular bit is positive (is set). Negation implies negative, or unset.
 */
 func (r Permission) Positive(x any) bool {
 	if err := r.Valid(); err != nil {
@@ -392,7 +392,7 @@ func (r Permission) Unshift(x ...any) Permission {
 }
 
 /*
-IsZero returns a boolean value indicative of whether the receiver
+IsZero returns a Boolean value indicative of whether the receiver
 is nil, or unset.
 */
 func (r Permission) IsZero() bool {

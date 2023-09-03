@@ -49,9 +49,9 @@ func TestFQDN(t *testing.T) {
 
 	// try every comparison operator supported in
 	// this context ...
-	brf := F.BRF()
-	for i := 0; i < brf.Len(); i++ {
-		cop, meth := brf.Index(i + 1)
+	brm := F.BRM()
+	for i := 0; i < brm.Len(); i++ {
+		cop, meth := brm.Index(i + 1)
 		wcop := sprintf("( %s %s \"www.example.com\" )", f.Keyword(), cop)
 		if T := meth(); T.Paren().String() != wcop {
 			err := unexpectedStringResult(F.String(), wcop, T.String())
@@ -70,7 +70,7 @@ func TestDNS_alternativeFQDN(t *testing.T) {
 	}
 }
 
-func TestIPAddr_BRF(t *testing.T) {
+func TestIPAddr_BRM(t *testing.T) {
 	var i IPAddr
 	_ = i.Len()
 	_ = i.Keyword()
@@ -101,9 +101,9 @@ func TestIPAddr_BRF(t *testing.T) {
 
 	// try every comparison operator supported in
 	// this context ...
-	brf := i.BRF()
-	for j := 0; j < brf.Len(); j++ {
-		cop, meth := brf.Index(j + 1)
+	brm := i.BRM()
+	for j := 0; j < brm.Len(); j++ {
+		cop, meth := brm.Index(j + 1)
 		if meth == nil {
 			t.Errorf("%s [%s] multival failed: expected %s method (%T), got nil",
 				t.Name(), i.Keyword(), cop.Context(), meth)

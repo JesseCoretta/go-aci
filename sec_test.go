@@ -174,8 +174,8 @@ func ExampleSSF_setLater() {
 	// Output: 127
 }
 
-func ExampleAuthenticationMethod_BRF() {
-	meths := Anonymous.BRF()
+func ExampleAuthenticationMethod_BRM() {
+	meths := Anonymous.BRM()
 	fmt.Printf("%d available aci.BindRuleMethod instances", meths.Len())
 	// Output: 2 available aci.BindRuleMethod instances
 }
@@ -190,9 +190,9 @@ func ExampleAuthenticationMethod_Eq() {
 	// Output: authmethod = "SASL"
 }
 
-func ExampleSecurityStrengthFactor_BRF() {
+func ExampleSecurityStrengthFactor_BRM() {
 	var factor SecurityStrengthFactor = SSF(128)
-	meths := factor.BRF()
+	meths := factor.BRM()
 	fmt.Printf("%d available aci.BindRuleMethod instances", meths.Len())
 	// Output: 6 available aci.BindRuleMethod instances
 }

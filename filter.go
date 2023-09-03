@@ -52,7 +52,7 @@ func (r SearchFilter) Valid() (err error) {
 }
 
 /*
-TRF returns an instance of TargetRuleMethods.
+TRM returns an instance of TargetRuleMethods.
 
 Each of the return instance's key values represent a single instance of
 the ComparisonOperator type that is allowed for use in the creation of
@@ -70,7 +70,7 @@ methods will return bogus TargetRule instances. While this is useful in unit
 testing, the end user must only execute this method IF and WHEN the receiver
 has been properly populated and prepared for such activity.
 */
-func (r SearchFilter) TRF() TargetRuleMethods {
+func (r SearchFilter) TRM() TargetRuleMethods {
 	return newTargetRuleMethods(targetRuleFuncMap{
 		Eq: r.Eq,
 		Ne: r.Ne,
@@ -122,7 +122,7 @@ func (r SearchFilter) String() string {
 }
 
 /*
-Compare returns a Boolean indicative of a SHA-1 comparison
+Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
 func (r SearchFilter) Compare(x any) bool {
@@ -299,7 +299,7 @@ func (r AttributeFilter) SearchFilter() SearchFilter {
 }
 
 /*
-Compare returns a Boolean indicative of a SHA-1 comparison
+Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
 func (r AttributeFilter) Compare(x any) bool {
@@ -449,7 +449,7 @@ func (r AttributeFilterOperations) Keyword() Keyword {
 }
 
 /*
-Compare returns a Boolean indicative of a SHA-1 comparison
+Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
 func (r AttributeFilterOperations) Compare(x any) bool {
@@ -736,7 +736,7 @@ Negated equality TargetRule instances should be used with caution.
 func (r AttributeFilterOperations) Ne() TargetRule { return badTargetRule }
 
 /*
-TRF returns an instance of TargetRuleMethods.
+TRM returns an instance of TargetRuleMethods.
 
 Each of the return instance's key values represent a single instance of
 the ComparisonOperator type that is allowed for use in the creation of
@@ -754,7 +754,7 @@ methods will return bogus TargetRule instances. While this is useful in unit
 testing, the end user must only execute this method IF and WHEN the receiver
 has been properly populated and prepared for such activity.
 */
-func (r AttributeFilterOperations) TRF() TargetRuleMethods {
+func (r AttributeFilterOperations) TRM() TargetRuleMethods {
 	return newTargetRuleMethods(targetRuleFuncMap{
 		Eq: r.Eq,
 		Ne: r.Ne,
@@ -823,7 +823,7 @@ func (r AttributeFilterOperation) pushPolicy(x any) (err error) {
 }
 
 /*
-Compare returns a Boolean indicative of a SHA-1 comparison
+Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
 func (r AttributeFilterOperation) Compare(x any) bool {
@@ -1085,7 +1085,7 @@ Negated equality TargetRule instances should be used with caution.
 func (r AttributeFilterOperation) Ne() TargetRule { return badTargetRule }
 
 /*
-TRF returns an instance of TargetRuleMethods.
+TRM returns an instance of TargetRuleMethods.
 
 Each of the return instance's key values represent a single instance of
 the ComparisonOperator type that is allowed for use in the creation of
@@ -1103,7 +1103,7 @@ methods will return bogus TargetRule instances. While this is useful in unit
 testing, the end user must only execute this method IF and WHEN the receiver
 has been properly populated and prepared for such activity.
 */
-func (r AttributeFilterOperation) TRF() TargetRuleMethods {
+func (r AttributeFilterOperation) TRM() TargetRuleMethods {
 	return newTargetRuleMethods(targetRuleFuncMap{
 		Eq: r.Eq,
 		Ne: r.Ne,

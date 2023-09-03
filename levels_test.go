@@ -10,12 +10,12 @@ func ExampleLevel_String() {
 	// Output: 8
 }
 
-func ExampleInheritance_BRF() {
+func ExampleInheritance_BRM() {
 	attr := AT(`manager`)
 	uat := UAT(attr, AV(`uid=frank,ou=People,dc=example,dc=com`))
 	inh := Inherit(uat, 1, 3)
-	brf := inh.BRF()
-	fmt.Printf("%d available comparison operator methods", brf.Len())
+	brm := inh.BRM()
+	fmt.Printf("%d available comparison operator methods", brm.Len())
 	// Output: 2 available comparison operator methods
 }
 

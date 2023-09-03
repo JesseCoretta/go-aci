@@ -67,7 +67,7 @@ Slices are as follows:
 type atbtv [2]any
 
 /*
-IsZero returns a boolean value indicative of whether the receiver is nil,
+IsZero returns a Boolean value indicative of whether the receiver is nil,
 or unset.
 */
 func (r AttributeBindTypeOrValue) IsZero() bool {
@@ -79,7 +79,7 @@ func (r AttributeBindTypeOrValue) IsZero() bool {
 }
 
 /*
-Compare returns a Boolean indicative of a SHA-1 comparison
+Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
 func (r AttributeBindTypeOrValue) Compare(x any) bool {
@@ -199,7 +199,7 @@ func (r AttributeBindTypeOrValue) Ne() BindRule {
 }
 
 /*
-BRF returns an instance of BindRuleMethods.
+BRM returns an instance of BindRuleMethods.
 
 Each of the return instance's key values represent a single instance of the
 ComparisonOperator type that is allowed for use in the creation of BindRule
@@ -217,7 +217,7 @@ methods will return bogus BindRule instances. While this is useful in unit
 testing, the end user must only execute this method IF and WHEN the receiver
 has been properly populated and prepared for such activity.
 */
-func (r AttributeBindTypeOrValue) BRF() BindRuleMethods {
+func (r AttributeBindTypeOrValue) BRM() BindRuleMethods {
 	return newBindRuleMethods(bindRuleFuncMap{
 		Eq: r.Eq,
 		Ne: r.Ne,
@@ -240,7 +240,7 @@ func (r AttributeBindTypeOrValue) Keyword() Keyword {
 }
 
 /*
-isZero returns a boolean value indicative of whether the receiver is nil, or
+isZero returns a Boolean value indicative of whether the receiver is nil, or
 unset.
 */
 func (r *atbtv) isZero() bool {
@@ -413,7 +413,7 @@ type AttributeType struct {
 }
 
 /*
-Compare returns a Boolean indicative of a SHA-1 comparison
+Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
 func (r AttributeType) Compare(x any) bool {
@@ -487,7 +487,7 @@ func (r AttributeType) Keyword() Keyword { return nil }
 func (r AttributeType) isAttributeTypeContext() {}
 
 /*
-TRF returns an instance of TargetRuleMethods.
+TRM returns an instance of TargetRuleMethods.
 
 Each of the return instance's key values represent a single instance of the
 ComparisonOperator type that is allowed for use in the creation of TargetRule
@@ -505,7 +505,7 @@ methods will return bogus TargetRule instances. While this is useful in unit
 testing, the end user must only execute this method IF and WHEN the receiver
 has been properly populated and prepared for such activity.
 */
-func (r AttributeType) TRF() TargetRuleMethods {
+func (r AttributeType) TRM() TargetRuleMethods {
 	return newTargetRuleMethods(targetRuleFuncMap{
 		Eq: r.Eq,
 		Ne: r.Ne,
@@ -559,7 +559,7 @@ func (r AttributeType) Valid() error {
 }
 
 /*
-IsZero returns a boolean value indicative of whether the receiver is nil,
+IsZero returns a Boolean value indicative of whether the receiver is nil,
 or unset.
 */
 func (r AttributeType) IsZero() bool {
@@ -578,7 +578,7 @@ type AttributeValue struct {
 }
 
 /*
-Compare returns a Boolean indicative of a SHA-1 comparison
+Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
 func (r AttributeValue) Compare(x any) bool {
@@ -623,7 +623,7 @@ func (r AttributeTypes) F() func(string) AttributeType {
 }
 
 /*
-Compare returns a Boolean indicative of a SHA-1 comparison
+Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
 func (r AttributeTypes) Compare(x any) bool {
@@ -713,7 +713,7 @@ func (r AttributeTypes) Ne() TargetRule {
 func (r AttributeTypes) isAttributeTypeContext() {}
 
 /*
-TRF returns an instance of TargetRuleMethods.
+TRM returns an instance of TargetRuleMethods.
 
 Each of the return instance's key values represent a single instance of the
 ComparisonOperator type that is allowed for use in the creation of TargetRule
@@ -731,7 +731,7 @@ methods will return bogus TargetRule instances. While this is useful in unit
 testing, the end user must only execute this method IF and WHEN the receiver
 has been properly populated and prepared for such activity.
 */
-func (r AttributeTypes) TRF() TargetRuleMethods {
+func (r AttributeTypes) TRM() TargetRuleMethods {
 	return newTargetRuleMethods(targetRuleFuncMap{
 		Eq: r.Eq,
 		Ne: r.Ne,
@@ -927,7 +927,7 @@ func (r AttributeTypes) pushPolicy(x any) (err error) {
 }
 
 /*
-Contains returns a boolean value indicative of whether value x,
+Contains returns a Boolean value indicative of whether value x,
 if a string or AttributeType instance, already resides within
 the receiver instance.
 

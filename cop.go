@@ -121,7 +121,7 @@ func matchCOP(op string) ComparisonOperator {
 }
 
 /*
-keywordAllowsComparisonOperator returns a boolean value indicative of
+keywordAllowsComparisonOperator returns a Boolean value indicative of
 whether Keyword input value kw allows ComparisonOperator op
 for use in T/B rule instances.
 

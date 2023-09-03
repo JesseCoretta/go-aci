@@ -222,35 +222,6 @@ func ExampleParseTargetRules_alternativeQuotation() {
 	// Output: ( target_to = "ldap:///cn=*,ou=Contractors,ou=People,dc=example,dc=com || ldap:///cn=*,ou=X.500 Administrators,ou=People,dc=example,dc=com || ldap:///cn=*,ou=Executives,ou=People,dc=example,dc=com" )( targetscope = "subordinate" )( targattrfilters = "add=nsroleDN:(!(nsroledn=cn=X.500 Administrator)) && employeeStatus:(!(drink=beer)) && telephoneNumber:(telephoneNumber=612*)" )
 }
 
-/*
-// use for something else ...
-func ExampleParseTargetRules_Contains() {
-
-        omg1 := `(
-                target_to=
-                        "ldap:///cn=*,ou=Contractors,ou=People,dc=example,dc=com"               ||
-                        "ldap:///cn=*,ou=X.500 Administrators,ou=People,dc=example,dc=com"      ||
-                        "ldap:///cn=*,ou=Executives,ou=People,dc=example,dc=com"
-                )
-
-                ( targetscope="subordinate"  )
-
-                (
-                        targattrfilters =
-                                "add=nsroleDN:(!(nsroledn=cn=X.500 Administrator)) && employeeStatus:(!(drink=beer)) && telephoneNumber:(telephoneNumber=612*)"
-                )`
-
-        tr1, err := ParseTargetRules(omg1)
-        if err != nil {
-                fmt.Println(err) // always check your parser errors.
-                return
-        }
-
-        fmt.Printf("%t", tr1.Contains(TargetTo))
-        // Output: true
-}
-*/
-
 func TestParseBindRule_postANTLR(t *testing.T) {
 	var Br BindRule
 	_ = Br.assertExpressionValue()

@@ -252,7 +252,7 @@ func (r TargetRule) Kind() string {
 }
 
 /*
-Compare returns a Boolean indicative of a SHA-1 comparison
+Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
 func (r TargetRule) Compare(x any) bool {
@@ -460,7 +460,7 @@ func (r TargetRules) Kind() string {
 }
 
 /*
-Compare returns a Boolean indicative of a SHA-1 comparison
+Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
 func (r TargetRules) Compare(x any) bool {
@@ -705,7 +705,7 @@ func (r TargetRules) pushPolicy(x any) (err error) {
 }
 
 /*
-Contains returns a boolean value indicative of whether value x,
+Contains returns a Boolean value indicative of whether value x,
 if a string or TargetKeyword instance, already resides within
 the receiver instance.
 
