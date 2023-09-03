@@ -110,7 +110,7 @@ func (r SearchScope) Eq() TargetRule {
 	var t TargetRule
 	t.SetKeyword(TargetScope)
 	t.SetOperator(Eq)
-	t.SetExpression(r.targetScope()) // don't use main stringer here
+	t.SetExpression(r) // don't use main stringer here
 
 	castAsCondition(t).
 		Encap(`"`).
@@ -205,8 +205,10 @@ strToScope returns a SearchScope constant based on the string input.
 If a match does not occur, BaseObject (default) is returned.
 */
 func strToScope(x string) (s SearchScope) {
-	s = BaseObject //default
+	s = noScope
 	switch lc(x) {
+	case `base`, `baseobject`:
+		s = BaseObject
 	case `one`, `onelevel`:
 		s = SingleLevel
 	case `sub`, `subtree`:

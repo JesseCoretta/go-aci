@@ -517,7 +517,7 @@ AT initializes, sets and returns an AT instance in one shot. The
 input value x shall be a string attributeType name (e.g.: `manager`).
 */
 func AT(x string) (A AttributeType) {
-	if len(x) != 0 {
+	if isIdentifier(x) || x == `*` {
 		A = AttributeType{&x}
 	}
 

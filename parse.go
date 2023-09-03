@@ -489,13 +489,13 @@ func (r TargetRule) assertExpressionValue() (err error) {
 		} else {
 			// value (seems to be) an LDAP Search Filter
 			// TODO - assertion func
-			ex = Filter(expr.Values[0])
+			ex, err = assertTargetFilter(expr)
 		}
 
 	case TargetAttr:
 		// value is a targetattr expressive statement,
 		// possibly multi-valued.
-		ex = assertTargetAttributes(expr)
+		ex, err = assertTargetAttributes(expr)
 
 	case TargetCtrl, TargetExtOp:
 		// value is a targetcontrol or extop expressive
@@ -519,6 +519,22 @@ func (r TargetRule) assertExpressionValue() (err error) {
 	r.SetExpression(ex)
 	r.SetQuoteStyle(expr.Style)
 
+	return
+}
+
+func assertTargetFilter(expr parser.RuleExpression) (ex SearchFilter, err error) {
+	if expr.Len() != 1 {
+		err = unexpectedValueCountErr(TargetAttrFilters.String(), 1, expr.Len())
+		return
+	}
+
+	value := unquote(condenseWHSP(expr.Values[0]))
+	if len(value) < 3 {
+		err = nilInstanceErr(ex)
+		return
+	}
+
+	ex = Filter(value)
 	return
 }
 
@@ -617,12 +633,29 @@ assertTargetAttributes is a private functions called during the processing of a 
 expressive statement bearing the `targetattr` keyword context. An instance of AttributeTypes
 is returned.
 */
-func assertTargetAttributes(expr parser.RuleExpression) (ex AttributeTypes) {
+func assertTargetAttributes(expr parser.RuleExpression) (ex AttributeTypes, err error) {
+	// Don't waste time if expression values
+	// are nonexistent.
+	if expr.Len() == 0 {
+		err = noValueErr(ex, TargetAttr.String())
+		return
+	}
+
 	ex = TAs()
 	ex.setQuoteStyle(expr.Style)
 
 	for i := 0; i < expr.Len(); i++ {
-		ex.Push(AT(expr.Values[i]))
+		value := unquote(condenseWHSP(expr.Values[0]))
+		if len(value) == 0 {
+			err = nilInstanceErr(AttributeType{})
+			return
+		}
+		attr := AT(value)
+		if attr.IsZero() {
+			err = nilInstanceErr(attr)
+			return
+		}
+		ex.Push(attr)
 	}
 
 	return
@@ -640,21 +673,27 @@ func assertTargetAttrFilters(expr parser.RuleExpression) (ex AttributeFilterOper
 		return
 	}
 
-	if idx := idxr(expr.Values[0], ','); idx != -1 {
+	value := unquote(condenseWHSP(expr.Values[0]))
+	if len(value) < 3 {
+		err = nilInstanceErr(ex)
+		return
+	}
+
+	if idx := idxr(value, ','); idx != -1 {
 		// First, try to split on a comma rune (ASCII #44).
 		// This is the default, and is the most common char
 		// for use in delimiting values of this form.
 		ex, err = parseAttributeFilterOperations(expr.Values[0], 0)
 
-	} else if idx = idxr(expr.Values[0], ';'); idx != -1 {
+	} else if idx = idxr(value, ';'); idx != -1 {
 		// If no comma was found, try semicolon (ASCII #59).
-		ex, err = parseAttributeFilterOperations(expr.Values[0], 1)
+		ex, err = parseAttributeFilterOperations(value, 1)
 
-	} else if hasAttributeFilterOperationPrefix(expr.Values[0]) {
+	} else if hasAttributeFilterOperationPrefix(value) {
 		// Still nothing? Try AttributeFilterOperation (whether
 		// multivalued or not).
 		var afo AttributeFilterOperation
-		if afo, err = parseAttributeFilterOperation(expr.Values[0]); err != nil {
+		if afo, err = parseAttributeFilterOperation(value); err != nil {
 			return
 		}
 		ex = AFOs(afo)
@@ -662,7 +701,7 @@ func assertTargetAttrFilters(expr parser.RuleExpression) (ex AttributeFilterOper
 	} else {
 		// The only other thing it could be is a bare AttributeFilter.
 		var af AttributeFilter
-		if af, err = parseAttributeFilter(expr.Values[0]); err != nil {
+		if af, err = parseAttributeFilter(value); err != nil {
 			return
 		}
 
@@ -677,9 +716,14 @@ assertTargetScope processes the raw expression value (expr) provided by go-antlr
 into a proper instance of SearchScope (ex), which is returned alongside an instance of
 error (err).
 */
-func assertTargetScope(expr parser.RuleExpression) (ex string, err error) {
+func assertTargetScope(expr parser.RuleExpression) (ex SearchScope, err error) {
 	if expr.Len() != 1 {
 		err = unexpectedValueCountErr(TargetScope.String(), 1, expr.Len())
+		return
+	}
+	value := unquote(condenseWHSP(expr.Values[0]))
+	if len(value) == 0 {
+		err = nilInstanceErr(ex)
 		return
 	}
 
@@ -688,11 +732,11 @@ func assertTargetScope(expr parser.RuleExpression) (ex string, err error) {
 	// if the user did not originally request
 	// base, we know they requested something
 	// totally unsupported.
-	if temp = strToScope(expr.Values[0]); temp == noScope {
-		err = bogusValueErr(TargetScope.String(), expr.Values[0])
+	if temp = strToScope(value); temp == noScope {
+		err = bogusValueErr(TargetScope.String(), value)
 		return
 	}
-	ex = temp.Target() // TODO: this is a hack. find something cleaner
+	ex = temp
 
 	return
 }

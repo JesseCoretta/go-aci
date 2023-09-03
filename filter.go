@@ -1272,12 +1272,14 @@ func parseAttributeFilterOperations(raw string, delim int) (afos AttributeFilter
 	for i := 0; i < len(vals); i++ {
 		var afo AttributeFilterOperation
 
+		value := unquote(condenseWHSP(vals[i]))
+
 		// each of the slices created per the
 		// above char split should begin with
 		// an AttributeOperator prefix, which
 		// will be either `add=` or `delete=`.
 		// Bail out if we find otherwise.
-		if !hasAttributeFilterOperationPrefix(vals[i]) {
+		if !hasAttributeFilterOperationPrefix(value) {
 			err = afoMissingPrefixErr()
 			return
 		}
@@ -1285,7 +1287,7 @@ func parseAttributeFilterOperations(raw string, delim int) (afos AttributeFilter
 		// send parseAttributeFilterOperation
 		// the current slice iteration, returning
 		// an error if one ensues.
-		if afo, err = parseAttributeFilterOperation(vals[i]); err != nil {
+		if afo, err = parseAttributeFilterOperation(value); err != nil {
 			return
 		}
 
@@ -1309,6 +1311,11 @@ func parseAttributeFilterOperation(raw string) (afo AttributeFilterOperation, er
 		aop AttributeOperation
 		seq []string
 	)
+
+	if raw = unquote(condenseWHSP(raw)); len(raw) < 5 {
+		err = nilInstanceErr(afo)
+		return
+	}
 
 	if aop, val, err = parseAttrFilterOperPreamble(raw); err != nil {
 		return
@@ -1335,6 +1342,11 @@ Parse parses the string input value (raw) and attempts to marshal its contents i
 receiver instance. An error is returned if the attempt should fail for some reason.
 */
 func (r *AttributeFilter) Parse(raw string) (err error) {
+	if raw = unquote(condenseWHSP(raw)); len(raw) < 5 {
+		err = nilInstanceErr(r)
+		return
+	}
+
 	var _r AttributeFilter
 	if _r, err = parseAttributeFilter(raw); err == nil {
 		*r = _r
@@ -1356,7 +1368,12 @@ func parseAttributeFilter(raw string) (af AttributeFilter, err error) {
 	}
 
 	// TODO - validity checks??
-	at := AT(raw[:idx])      // cast first portion as attr
+	at := AT(raw[:idx]) // cast first portion as attr
+	if at.IsZero() {
+		err = nilInstanceErr(at)
+		return
+	}
+
 	f := Filter(raw[idx+1:]) // cast second portion as filter
 	af.Set(at, f)            // assign to struct
 

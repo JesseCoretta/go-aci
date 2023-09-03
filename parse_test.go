@@ -332,22 +332,22 @@ func TestParseBindRule_postANTLR(t *testing.T) {
 				5: {`Sat,Sun`},
 			},
 			/*
-						`targetfilter`: map[int][]string{
-							0: []string{ `(&(objectClass=employee)(cn=Jesse Coretta))` },
-							1: []string{ `(objectClass=account)` },
-							2: []string{ `(&(objectClass=accounting)(terminated=FALSE))` },
-						},
-						`targattrfilters`: map[int][]string{
-			                                0: []string{ `add=homeDirectory:(&(objectClass=employee)(cn=Jesse Coretta)) && gecos:(|(objectClass=contractor)(objectClass=intern))` },
-							1: []string{ `add=homeDirectory:(&(objectClass=employee)(cn=Jesse Coretta)) && gecos:(|(objectClass=contractor)(objectClass=intern)),delete=uidNumber:(&(objectClass=accounting)(terminated=FALSE)) && gidNumber:(objectClass=account)` },
-							2: []string{ `delete=homeDirectory:(&(objectClass=employee)(cn=Jesse Coretta))` },
-						},
+							`targetfilter`: map[int][]string{
+								0: []string{ `(&(objectClass=employee)(cn=Jesse Coretta))` },
+								1: []string{ `(objectClass=account)` },
+								2: []string{ `(&(objectClass=accounting)(terminated=FALSE))` },
+							},
+							`targattrfilters`: map[int][]string{
+				                                0: []string{ `add=homeDirectory:(&(objectClass=employee)(cn=Jesse Coretta)) && gecos:(|(objectClass=contractor)(objectClass=intern))` },
+								1: []string{ `add=homeDirectory:(&(objectClass=employee)(cn=Jesse Coretta)) && gecos:(|(objectClass=contractor)(objectClass=intern)),delete=uidNumber:(&(objectClass=accounting)(terminated=FALSE)) && gidNumber:(objectClass=account)` },
+								2: []string{ `delete=homeDirectory:(&(objectClass=employee)(cn=Jesse Coretta))` },
+							},
 			*/
 		},
 
 		`invalid`: {
 			`authmethod`: {
-				0: {`pimple`},
+				0: {`pimple`, `sample`},
 				1: {`noone`},
 				2: {`sizzle`},
 				3: {`sslssllsll`},
@@ -357,7 +357,8 @@ func TestParseBindRule_postANTLR(t *testing.T) {
 			},
 			`userdn`: {
 				0: {``},
-				1: {`           i   `},
+				1: {},
+				2: {`           i   `},
 			},
 			`groupdn`: {
 				0: {``},
@@ -369,9 +370,11 @@ func TestParseBindRule_postANTLR(t *testing.T) {
 				0: {`11702`},
 				1: {`2500`},
 				2: {`2401`},
-				3: {``},
-				4: {`A`},
-				5: {`:)`},
+				3: {},
+				4: {`A`, ``},
+				5: {``},
+				6: {`A`},
+				7: {`:)`},
 			},
 			`ssf`: {
 				0: {`-1`},
@@ -379,36 +382,42 @@ func TestParseBindRule_postANTLR(t *testing.T) {
 				2: {`^`},
 				3: {`257`},
 				4: {`512`},
-				5: {`100-`},
-				6: {`a`},
-				7: {``},
+				5: {},
+				6: {`100-`},
+				7: {`a`},
+				8: {``},
+				9: {`X`, `:)`},
 			},
 			`dayofweek`: {
 				0: {``},
 				1: {`Toes`},
-				2: {`Sub,Sad`},
+				2: {`Sub,Sad`, `banana`},
 				3: {`Fry`},
 				4: {`          `},
-				5: {`Wad`},
-				6: {`-14`},
-				7: {`8`},
-				8: {`Sal,Sum`},
+				5: {},
+				6: {`Wad`},
+				7: {`-14`},
+				8: {`8`},
+				9: {`Sal,Sum`},
 			},
 			`ip`: {
 				0: {``},
 				1: {`10?8.0`},
 				2: {`.`},
-				3: {`??`},
+				3: {`??`, `10.1.9/24`},
 				4: {`@10.8.`},
 				5: {`(172.16.5`},
 				6: {`z748,`},
 				7: {`10.a.*`},
+				8: {},
 			},
 			`dns`: {
-				0: {``},
+				0: {`___`},
 				1: {`%al;`},
 				2: {`][`},
 				3: {`..*`},
+				4: {`192.168.*`, `10/8`},
+				5: {},
 			},
 		},
 	}
@@ -438,46 +447,148 @@ func TestParseBindRule_postANTLR(t *testing.T) {
 	}
 }
 
-func TestParseBindRule_postANTLRold(t *testing.T) {
-	for k, v := range map[int]*BindRule{
-		0: new(BindRule).SetKeyword(`ssf`).SetOperator(Lt).SetExpression(makeParserRuleExpr(1, []string{
-			`175`,
-		}...)),
-		1: new(BindRule).SetKeyword(`userdn`).SetOperator(Ne).SetExpression(makeParserRuleExpr(0, []string{
-			`ldap:///cn=Jesse Coretta,ou=Contractors,ou=People,dc=example,dc=com`,
-			`ldap:///cn=Courtney Tolana,ou=Contractors,ou=People,dc=example,dc=com`,
-			`ldap:///cn=Dr. Doctor Steve Brule,ou=Contractors,ou=People,dc=example,dc=com`,
-		}...)),
-		2: new(BindRule).SetKeyword(`groupdn`).SetOperator(Ne).SetExpression(makeParserRuleExpr(1, []string{
-			`ldap:///cn=Executives,ou=Groups,dc=example,dc=com`,
-			`ldap:///cn=Engineering,ou=Groups,dc=example,dc=com`,
-			`ldap:///cn=Payroll,ou=Groups,dc=example,dc=com`,
-			`ldap:///cn=Research and Development,ou=Engineering,ou=Groups,dc=example,dc=com`,
-		}...)),
-		3: new(BindRule).SetKeyword(`dns`).SetOperator(Eq).SetExpression(makeParserRuleExpr(1, []string{
-			`*.example.com`,
-		}...)),
-		4: new(BindRule).SetKeyword(`ip`).SetOperator(Eq).SetExpression(makeParserRuleExpr(1, []string{
-			`192.168.,10.,172.16.`,
-		}...)),
-		5: new(BindRule).SetKeyword(`authmethod`).SetOperator(Ne).SetExpression(makeParserRuleExpr(1, []string{
-			`simple`,
-		}...)),
-		6: new(BindRule).SetKeyword(`timeofday`).SetOperator(Le).SetExpression(makeParserRuleExpr(1, []string{
-			`1701`,
-		}...)),
-		7: new(BindRule).SetKeyword(`dayofweek`).SetOperator(Eq).SetExpression(makeParserRuleExpr(1, []string{
-			`Wed,Fri,Sat`,
-		}...)),
-		8: new(BindRule).SetKeyword(`userattr`).SetOperator(Eq).SetExpression(makeParserRuleExpr(1, []string{
-			`manager#SELFDN`,
-		}...)),
-		9: new(BindRule).SetKeyword(`groupattr`).SetOperator(Ne).SetExpression(makeParserRuleExpr(1, []string{
-			`owner#GROUPDN`,
-		}...)),
-	} {
-		if err := v.assertExpressionValue(); err != nil {
-			t.Errorf("%s [%d] failed: %v", t.Name(), k, err)
+func TestParseTargetRule_postANTLR(t *testing.T) {
+	tests := map[string]map[string]map[int][]string{
+		`valid`: {
+			`targetscope`: {
+				0: {`bAse`},
+				1: {`one`},
+				2: {`sUBtree`},
+				3: {`sUBordinaTE`},
+				4: {`sub`},
+				5: {`onelevel`},
+			},
+			`targetattr`: {
+				0: {`cn`, `sn`, `givenName`, `objectClass`, `uidNumber`, `gidNumber`, `uid`, `homeDirectory`, `gecos`, `description`, `loginShell`},
+				1: {`aci`},
+				2: {`cn;lang-jp`},
+				3: {`objectclass`},
+				4: {`objectClass`},
+			},
+			`targetfilter`: {
+				0: {`(&(objectClass=employee)(cn=Jesse Coretta))`},
+				1: {`(objectClass=account)`},
+				2: {`(&(objectClass=accounting)(terminated=FALSE))`},
+			},
+			`targattrfilters`: {
+				0: {`add=homeDirectory:(&(objectClass=employee)(cn=Jesse Coretta)) &&
+					gecos:(|(objectClass=contractor)(objectClass=intern))`},
+				1: {`add=homeDirectory:(&(objectClass=employee)(cn=Jesse Coretta)) &&
+						gecos:(|(objectClass=contractor)(objectClass=intern)),
+					delete=uidNumber:(&(objectClass=accounting)(terminated=FALSE)) 	    &&
+						gidNumber:(objectClass=account)`},
+				2: {`delete=homeDirectory:(&(objectClass=employee)(cn=Jesse Coretta))`},
+			},
+			`targetcontrol`: {
+				0: {`1.3.6.1.4.1.56521.999.5`, `1.3.6.1.4.1.56521.999.100.1`},
+				1: {`1.3.6.1.4.1.56521.999.5`},
+			},
+			`extop`: {
+				0: {`1.3.6.1.4.1.56521.999.5`, `1.3.6.1.4.1.56521.999.100.1`},
+				1: {`1.3.6.1.4.1.56521.999.5`},
+			},
+			`target`: {
+				0: {`ldap:///ou=People,dc=example,dc=com?cn,sn,givenName,objectClass,uid?one?(&(objectClass=employee)(terminated=FALSE))`},
+				1: {`ldap:///cn=*,ou=People,dc=example,dc=com`, `ldap:///self`},
+				2: {`uid=jesse,ou=People,dc=example,dc=com`, `uid=jimmy,ou=People,dc=example,dc=com`},
+				3: {`uid=courtney,ou=People,dc=example,dc=com`},
+				4: {`ldap:///ou=People,dc=example,dc=com??one?(&(objectClass=employee)(terminated=FALSE))`},
+				5: {`ldap:///anyone`, `ldap:///parent`, `ldap:///all`},
+			},
+			`target_to`: {
+				0: {`ldap:///ou=People,dc=example,dc=com?cn,sn,givenName,objectClass,uid?one?(&(objectClass=employee)(terminated=FALSE))`},
+				1: {`ldap:///cn=*,ou=People,dc=example,dc=com`, `ldap:///self`},
+				2: {`uid=jesse,ou=People,dc=example,dc=com`, `uid=jimmy,ou=People,dc=example,dc=com`},
+				3: {`uid=courtney,ou=People,dc=example,dc=com`},
+				4: {`ldap:///ou=People,dc=example,dc=com??one?(&(objectClass=employee)(terminated=FALSE))`},
+				5: {`ldap:///anyone`, `ldap:///parent`, `ldap:///all`},
+			},
+			`target_from`: {
+				0: {`ldap:///ou=People,dc=example,dc=com?cn,sn,givenName,objectClass,uid?one?(&(objectClass=employee)(terminated=FALSE))`},
+				1: {`ldap:///cn=*,ou=People,dc=example,dc=com`, `ldap:///self`},
+				2: {`uid=jesse,ou=People,dc=example,dc=com`, `uid=jimmy,ou=People,dc=example,dc=com`},
+				3: {`uid=courtney,ou=People,dc=example,dc=com`},
+				4: {`ldap:///ou=People,dc=example,dc=com??one?(&(objectClass=employee)(terminated=FALSE))`},
+				5: {`ldap:///anyone`, `ldap:///parent`, `ldap:///all`},
+			},
+		},
+
+		`invalid`: {
+			`target`: {
+				0: {``, ``},
+				1: {``},
+				2: {},
+			},
+			`targetfilter`: {
+				0: {``, ``},
+				1: {``},
+				2: {},
+			},
+			`targattrfilters`: {
+				0: {``, ``},
+				1: {``},
+				2: {},
+				3: {`cn?(objectClass=*)`},
+			},
+			`targetscope`: {
+				0: {``, ``},
+				1: {``},
+				2: {},
+				3: {`subtrap`},
+				4: {`1level`},
+			},
+			`targetcontrol`: {
+				0: {``, ``},
+				1: {``},
+				2: {},
+				3: {`8.b.0.d`},
+			},
+			`extop`: {
+				0: {``, ``},
+				1: {``},
+				2: {},
+				3: {`8.b.0.d`},
+			},
+			`targetattr`: {
+				0: {``, ``},
+				1: {``},
+				2: {},
+				3: {`8cn`, ``, `object Class`, `Uid`},
+			},
+			`target_to`: {
+				0: {``, ``},
+				1: {``},
+				2: {},
+			},
+			`target_from`: {
+				0: {``, ``},
+				1: {``},
+				2: {},
+			},
+		},
+	}
+
+	for typ, kwtests := range tests {
+		for kw, typtests := range kwtests {
+			for idx, value := range typtests {
+				tr := new(TargetRule).SetKeyword(kw)
+				for _, cop := range []ComparisonOperator{
+					Eq, Ne,
+				} {
+					expr := makeParserRuleExpr(1, value...)
+					tr.SetOperator(cop).SetExpression(expr)
+					err := tr.assertExpressionValue()
+
+					if err != nil && typ == `valid` {
+						t.Errorf("%s [%s;%s::%d (%s)] failed: %v [%v]",
+							t.Name(), kw, typ, idx, cop, err, expr)
+
+					} else if err == nil && typ == `invalid` {
+						t.Errorf("%s [%s;%s::%d (%s)] failed: no error for bogus value [%v]",
+							t.Name(), kw, typ, idx, cop, expr)
+					}
+				}
+			}
 		}
 	}
 }
