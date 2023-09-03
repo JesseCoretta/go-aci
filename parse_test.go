@@ -245,3 +245,47 @@ func ExampleParseTargetRules_Contains() {
         // Output: true
 }
 */
+
+func TestParseBindRule_postANTLR(t *testing.T) {
+	for k, v := range map[int]*BindRule{
+		0: new(BindRule).SetKeyword(`ssf`).SetOperator(Lt).SetExpression(makeParserRuleExpr(1, []string{
+			`175`,
+		}...)),
+		1: new(BindRule).SetKeyword(`userdn`).SetOperator(Ne).SetExpression(makeParserRuleExpr(0, []string{
+			`ldap:///cn=Jesse Coretta,ou=Contractors,ou=People,dc=example,dc=com`,
+			`ldap:///cn=Courtney Tolana,ou=Contractors,ou=People,dc=example,dc=com`,
+			`ldap:///cn=Dr. Doctor Steve Brule,ou=Contractors,ou=People,dc=example,dc=com`,
+		}...)),
+		2: new(BindRule).SetKeyword(`groupdn`).SetOperator(Ne).SetExpression(makeParserRuleExpr(1, []string{
+			`ldap:///cn=Executives,ou=Groups,dc=example,dc=com`,
+			`ldap:///cn=Engineering,ou=Groups,dc=example,dc=com`,
+			`ldap:///cn=Payroll,ou=Groups,dc=example,dc=com`,
+			`ldap:///cn=Research and Development,ou=Engineering,ou=Groups,dc=example,dc=com`,
+		}...)),
+		3: new(BindRule).SetKeyword(`dns`).SetOperator(Eq).SetExpression(makeParserRuleExpr(1, []string{
+			`*.example.com`,
+		}...)),
+		4: new(BindRule).SetKeyword(`ip`).SetOperator(Eq).SetExpression(makeParserRuleExpr(1, []string{
+			`192.168.,10.,172.16.`,
+		}...)),
+		5: new(BindRule).SetKeyword(`authmethod`).SetOperator(Ne).SetExpression(makeParserRuleExpr(1, []string{
+			`simple`,
+		}...)),
+		6: new(BindRule).SetKeyword(`timeofday`).SetOperator(Le).SetExpression(makeParserRuleExpr(1, []string{
+			`1701`,
+		}...)),
+		7: new(BindRule).SetKeyword(`dayofweek`).SetOperator(Eq).SetExpression(makeParserRuleExpr(1, []string{
+			`Wed,Fri,Sat`,
+		}...)),
+		8: new(BindRule).SetKeyword(`userattr`).SetOperator(Eq).SetExpression(makeParserRuleExpr(1, []string{
+			`manager#SELFDN`,
+		}...)),
+		9: new(BindRule).SetKeyword(`groupattr`).SetOperator(Ne).SetExpression(makeParserRuleExpr(1, []string{
+			`owner#GROUPDN`,
+		}...)),
+	} {
+		if err := v.assertExpressionValue(); err != nil {
+			t.Errorf("%s [%d] failed: %v", t.Name(), k, err)
+		}
+	}
+}

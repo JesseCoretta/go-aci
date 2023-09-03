@@ -154,6 +154,53 @@ func ExampleBindRules_Traverse() {
 }
 
 /*
+This is an identical scenario to the above Traverse example, except in this scenario we
+will be writing to the slice returned.
+*/
+func ExampleBindRules_Traverse_andWrite() {
+	// And() is the variable for the outermost stack, don't count it as an index.
+	// Rather, begin counting its children instead.
+	rules := And(
+		GDN(`cn=X.500 Administrators,ou=Groups,dc=example,dc=com`).Eq().Paren(),
+		Timeframe(ToD(`1730`), ToD(`2330`)).Paren(),
+
+		// Enter the Or stack by descending within the third element (AND slice #2)
+		Or(
+			UAT(`manager`, `LDAPURL`).Eq().Paren(),
+			GAT(`owner`, SELFDN).Eq().Paren(),
+			URI(UDN(`ou=People,dc=example,dc=com`), Subtree).Eq().Paren(),
+			// OR slice #3
+			And(
+				// Inner AND slice #0
+				SSF(128).Ge(),
+			),
+		),
+	)
+
+	// Call the specific stack/slice we want. Remember,
+	// Traverse returns a BindContext interface, which
+	// will be either BindRule OR BindRules. In this
+	// demonstration, we know what it is, thus we need
+	// not perform type switching in a case statement.
+	raw := rules.Traverse(2, 3, 0)
+	asserted, ok := raw.(BindRule)
+	if !ok {
+		fmt.Printf("Failed to assert %T", asserted)
+		return
+	}
+
+	// Because go-stackage is so heavily pointer-based,
+	// we need not worry about "writing the updated SSF
+	// value back to the stack". Just make the changes
+	// to the condition itself, and be done with it.
+	asserted.SetExpression(SSF(164)) // set to 164 because I'm so arbitrary
+
+	// Do the stack walk again to see if the pointer updated ...
+	fmt.Printf("%s", rules.Traverse(2, 3, 0))
+	// Output: ssf >= "164"
+}
+
+/*
 This example demonstrates the union between a group distinguished name and a timeframe,
 expressed as a BindRules instance. Parenthetical encapsulation is enabled for inner stack
 elements, but not the outer (AND) stack itself.

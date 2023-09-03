@@ -436,7 +436,6 @@ func parseTargetRules(raw string) (TargetRules, error) {
 		if err = trv.assertExpressionValue(); err != nil {
 			return badTargetRules, err
 		}
-		//t.replace(trv,i) // not sure about this
 	}
 
 	return t, err

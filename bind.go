@@ -872,6 +872,27 @@ func (r BindRules) remove(idx int) bool {
 }
 
 /*
+Replace wraps go-stackage's Stack.Replace method.
+*/
+func (r BindRules) Replace(x any, idx int) BindRules {
+	return r.replace(x, idx)
+}
+
+/*
+replace is a private method called by BindRules.Replace
+as well as certain ANTLR->ACI parsing procedures.
+*/
+func (r BindRules) replace(x any, idx int) BindRules {
+	if r.IsZero() {
+		return r
+	}
+
+	_r, _ := castAsStack(r)
+	_r.Replace(x, idx)
+	return r
+}
+
+/*
 Index wraps go-stackage's Stack.Index method.
 */
 func (r BindRules) Index(idx int) BindContext {
