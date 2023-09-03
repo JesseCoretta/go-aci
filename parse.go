@@ -271,8 +271,7 @@ func assertBindUGRDN(expr parser.RuleExpression, key BindKeyword) (ex any, err e
 	// Assign the raw (DN) values to the
 	// return value. If nothing was found,
 	// bail out now.
-	if bdn.setExpressionValues(key, expr.Values...); bdn.Len() == 0 {
-		err = noTBRuleExpressionValues(expr, bindRuleID, key)
+	if err = bdn.setExpressionValues(key, expr.Values...); err != nil {
 		return
 	}
 
@@ -618,8 +617,7 @@ func assertTargetTFDN(expr parser.RuleExpression, key TargetKeyword) (ex any, er
 	// Assign the raw (DN) values to the
 	// return value. If nothing was found,
 	// bail out now.
-	if tdn.setExpressionValues(key, expr.Values...); tdn.Len() == 0 {
-		err = noTBRuleExpressionValues(badTargetDN, targetRuleID, key)
+	if err = tdn.setExpressionValues(key, expr.Values...); err != nil {
 		return
 	}
 

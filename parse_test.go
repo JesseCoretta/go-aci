@@ -8,8 +8,11 @@ import (
 func TestParseBindRule(t *testing.T) {
 	want := `userdn = "ldap:///cn=Jesse Coretta,ou=People,dc=example,dc=com" || "ldap:///anyone"`
 
-	b, err := ParseBindRule(want)
-	if err != nil {
+	var b BindRule
+	var err error
+	_, _ = ParseBindRule(``)
+
+	if b, err = ParseBindRule(want); err != nil {
 		return
 	}
 
@@ -23,6 +26,8 @@ func TestParseBindRules(t *testing.T) {
 
 	var r BindRules
 	var err error
+
+	_, _ = ParseBindRules(``)
 
 	if r, err = ParseBindRules(want); err != nil {
 		return
@@ -247,6 +252,9 @@ func ExampleParseTargetRules_Contains() {
 */
 
 func TestParseBindRule_postANTLR(t *testing.T) {
+	var Br BindRule
+	_ = Br.assertExpressionValue()
+
 	tests := map[string]map[string]map[int][]string{
 		`valid`: {
 			`authmethod`: {
@@ -292,15 +300,17 @@ func TestParseBindRule_postANTLR(t *testing.T) {
 				4: {`parent[0].manager#SELFDN`},
 				5: {`manager#LDAPURL`},
 				6: {`parent[0,1,2,8].manager#USERDN`},
+				7: {`ldap:///ou=People,dc=example,dc=com?manager#USERDN`},
 			},
 			`groupattr`: {
 				0: {`manager#SELFDN`},
 				1: {`owner#GROUPDN`},
 				2: {`parent[0,1,4].manager#LDAPURL`},
-				3: {`parent[1,3].manager#uid=frank,ou=People,dc=example,dc=com`},
-				4: {`parent[0].manager#SELFDN`},
-				5: {`manager#LDAPURL`},
-				6: {`parent[0,1,2,8].manager#USERDN`},
+				3: {`ldap:///ou=People,dc=example,dc=com?manager#USERDN`},
+				4: {`parent[1,3].manager#uid=frank,ou=People,dc=example,dc=com`},
+				5: {`parent[0].manager#SELFDN`},
+				6: {`manager#LDAPURL`},
+				7: {`parent[0,1,2,8].manager#USERDN`},
 			},
 			`userdn`: {
 				0: {`ldap:///ou=People,dc=example,dc=com?cn,sn,givenName,objectClass,uid?one?(&(objectClass=employee)(terminated=FALSE))`},
@@ -331,18 +341,6 @@ func TestParseBindRule_postANTLR(t *testing.T) {
 				4: {`Wed`},
 				5: {`Sat,Sun`},
 			},
-			/*
-							`targetfilter`: map[int][]string{
-								0: []string{ `(&(objectClass=employee)(cn=Jesse Coretta))` },
-								1: []string{ `(objectClass=account)` },
-								2: []string{ `(&(objectClass=accounting)(terminated=FALSE))` },
-							},
-							`targattrfilters`: map[int][]string{
-				                                0: []string{ `add=homeDirectory:(&(objectClass=employee)(cn=Jesse Coretta)) && gecos:(|(objectClass=contractor)(objectClass=intern))` },
-								1: []string{ `add=homeDirectory:(&(objectClass=employee)(cn=Jesse Coretta)) && gecos:(|(objectClass=contractor)(objectClass=intern)),delete=uidNumber:(&(objectClass=accounting)(terminated=FALSE)) && gidNumber:(objectClass=account)` },
-								2: []string{ `delete=homeDirectory:(&(objectClass=employee)(cn=Jesse Coretta))` },
-							},
-			*/
 		},
 
 		`invalid`: {
@@ -365,6 +363,21 @@ func TestParseBindRule_postANTLR(t *testing.T) {
 			},
 			`roledn`: {
 				0: {``},
+			},
+			`userattr`: {
+				0: {``},
+				1: {},
+				2: {`           i   `},
+				3: {``, `ldap:///uid=jesse,ou=People,dc=example,dc=com`},
+				4: {`parent[]].manager#USERDN`},
+				5: {`parent[55555555]].manager#USERDN`},
+			},
+			`groupattr`: {
+				0: {``},
+				1: {},
+				2: {`           i   `},
+				3: {``, `ldap:///uid=jesse,ou=People,dc=example,dc=com`},
+				4: {`parent[75].manager#`},
 			},
 			`timeofday`: {
 				0: {`11702`},
@@ -448,6 +461,8 @@ func TestParseBindRule_postANTLR(t *testing.T) {
 }
 
 func TestParseTargetRule_postANTLR(t *testing.T) {
+	_, _ = ParseTargetRule(``) // codecov
+
 	tests := map[string]map[string]map[int][]string{
 		`valid`: {
 			`targetscope`: {
@@ -478,6 +493,12 @@ func TestParseTargetRule_postANTLR(t *testing.T) {
 					delete=uidNumber:(&(objectClass=accounting)(terminated=FALSE)) 	    &&
 						gidNumber:(objectClass=account)`},
 				2: {`delete=homeDirectory:(&(objectClass=employee)(cn=Jesse Coretta))`},
+
+				// ASCII #59 delim (semi)
+				3: {`add=homeDirectory:(&(objectClass=employee)(cn=Jesse Coretta)) &&
+						gecos:(|(objectClass=contractor)(objectClass=intern));
+					delete=uidNumber:(&(objectClass=accounting)(terminated=FALSE)) 	    &&
+						gidNumber:(objectClass=account)`},
 			},
 			`targetcontrol`: {
 				0: {`1.3.6.1.4.1.56521.999.5`, `1.3.6.1.4.1.56521.999.100.1`},
@@ -571,7 +592,9 @@ func TestParseTargetRule_postANTLR(t *testing.T) {
 	for typ, kwtests := range tests {
 		for kw, typtests := range kwtests {
 			for idx, value := range typtests {
-				tr := new(TargetRule).SetKeyword(kw)
+				var tr *TargetRule
+				tr = new(TargetRule).SetKeyword(kw)
+				_ = tr.assertExpressionValue() // codecov
 				for _, cop := range []ComparisonOperator{
 					Eq, Ne,
 				} {
@@ -591,4 +614,9 @@ func TestParseTargetRule_postANTLR(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestParseTargetRules(t *testing.T) {
+	//var trs TargetRules
+	_, _ = ParseTargetRule(``) // codecov
 }

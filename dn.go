@@ -1050,7 +1050,7 @@ func targetDNToCondition(dest any, op ComparisonOperator) (TargetRule, bool) {
 setExpressionValues is a private method called by assertBindUGRDN for
 DN-based Bind Rules parsing.
 */
-func (r BindDistinguishedNames) setExpressionValues(key Keyword, values ...string) {
+func (r BindDistinguishedNames) setExpressionValues(key Keyword, values ...string) (err error) {
 	// iterate each string-based distinguishedName
 	// in the values sequence ...
 	for i := 0; i < len(values); i++ {
@@ -1062,17 +1062,23 @@ func (r BindDistinguishedNames) setExpressionValues(key Keyword, values ...strin
 		// prefix, we will chop it off as it is not
 		// needed in literal form any longer.
 		D := chopDNPfx(condenseWHSP(values[i]))
+		if len(D) < 3 || !(contains(D, `=`) || !isDNAlias(D)) {
+			err = illegalSyntaxPerTypeErr(D, r.Keyword())
+			return
+		}
 
 		// Push DN into receiver
 		r.Push(BindDistinguishedName{newDistinguishedName(D, key)})
 	}
+
+	return
 }
 
 /*
 setExpressionValues is a private method called by assertTargetTFDN for
 DN-based Target Rules parsing.
 */
-func (r TargetDistinguishedNames) setExpressionValues(key Keyword, values ...string) {
+func (r TargetDistinguishedNames) setExpressionValues(key Keyword, values ...string) (err error) {
 	// iterate each string-based distinguishedName
 	// in the values sequence ...
 	for i := 0; i < len(values); i++ {
@@ -1084,10 +1090,16 @@ func (r TargetDistinguishedNames) setExpressionValues(key Keyword, values ...str
 		// prefix, we will chop it off as it is not
 		// needed in literal form any longer.
 		D := chopDNPfx(condenseWHSP(values[i]))
+		if len(D) < 3 || !(contains(D, `=`) || !isDNAlias(D)) {
+			err = illegalSyntaxPerTypeErr(D, r.Keyword())
+			return
+		}
 
 		// Push DN into receiver
 		r.Push(TargetDistinguishedName{newDistinguishedName(D, key)})
 	}
+
+	return
 }
 
 /*
@@ -1968,6 +1980,18 @@ func chopDNPfx(x string) string {
 		x = x[len(LocalScheme):]
 	}
 	return x
+}
+
+func isDNAlias(x string) bool {
+	for _, dn := range []BindDistinguishedName{
+		AllDN, AnyDN, SelfDN, ParentDN,
+	} {
+		if eq(x, dn.String()) {
+			return true
+		}
+	}
+
+	return false
 }
 
 /*
