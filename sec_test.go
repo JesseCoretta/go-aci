@@ -31,6 +31,7 @@ func TestSecurityStrengthFactor(t *testing.T) {
 
 		// ssf qualifies for all comparison operators
 		// due to its numerical nature.
+		// TODO: decom this in favor of BRM()
 		cops := map[ComparisonOperator]func() BindRule{
 			Eq: got.Eq,
 			Ne: got.Ne,

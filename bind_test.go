@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestParseBindRuleMethods(t *testing.T) {
+func TestBindRuleMethods(t *testing.T) {
 	var brf BindRuleMethods
 	_ = brf.Len()
 	_ = brf.IsZero()
@@ -60,10 +60,13 @@ func TestBindRules_wordToStack(t *testing.T) {
 // aid in identifying panic points.
 func TestBindRule_bogus(t *testing.T) {
 	var br BindRule
+	br.isBindContextQualifier() // just to satisfy codecov.
 	_ = br.ID()
 	_ = br.Category()
 	_ = br.IsZero()
+	_ = br.Paren()
 	_ = br.Len()
+	_ = br.Kind()
 	_ = br.Valid()
 	_ = br.Paren()
 	_ = br.Operator()
@@ -71,6 +74,7 @@ func TestBindRule_bogus(t *testing.T) {
 	_ = br.NoPadding()
 	_ = br.Expression()
 	_ = br.Keyword()
+	_ = br.SetQuoteStyle(1)
 	_ = br.String()
 }
 
@@ -78,6 +82,7 @@ func TestBindRule_bogus(t *testing.T) {
 // aid in identifying panic points.
 func TestBindRules_bogus(t *testing.T) {
 	var br BindRules
+	br.isBindContextQualifier() // just to satisfy codecov.
 	_ = br.ID()
 	_ = br.Category()
 	_ = br.IsNesting()
@@ -94,117 +99,14 @@ func TestBindRules_bogus(t *testing.T) {
 	_ = br.Index(-100)
 	_ = br.Traverse([]int{1, 2, 3, 4}...)
 	br.reset()
-}
 
-func TestParseBindRule(t *testing.T) {
-	want := `userdn = "ldap:///cn=Jesse Coretta,ou=People,dc=example,dc=com" || "ldap:///anyone"`
+	br = And(SSF(128).Eq, UDN("uid=jesse,ou=People,dc=example,dc=com").Eq())
+	_ = br.Kind()
+	_ = br.IsNesting()
+	_ = br.Keyword()
+	_ = br.Pop()
+	_ = br.Push()
 
-	var b BindRule
-	var err error
-	b.isBindContextQualifier() // just to satisfy codecov.
-	_ = b.Kind()
-	_ = b.IsNesting()
-	_ = b.Operator()
-	_ = b.Keyword()
-	_ = b.Expression()
-	_ = b.SetQuoteStyle(1)
-
-	if b, err = ParseBindRule(want); err != nil {
-		return
-	}
-
-	b.isBindContextQualifier()
-	_ = b.Kind()
-	_ = b.IsNesting()
-	_ = b.Operator()
-	_ = b.Keyword()
-	_ = b.Expression()
-
-	if want != b.String() {
-		t.Errorf("%s failed:\nwant '%s'\ngot '%s'", t.Name(), want, b)
-	}
-}
-
-func TestParseBindRules(t *testing.T) {
-	want := `( ( ( userdn = "ldap:///anyone" ) AND ( ssf >= "71" ) ) AND NOT ( dayofweek = "Wed" OR dayofweek = "Fri" ) )`
-
-	var r BindRules
-	var err error
-
-	r.isBindContextQualifier()
-	_ = r.Kind()
-	_ = r.IsNesting()
-	_ = r.Pop()
-	_ = r.Push()
-
-	if r, err = ParseBindRules(want); err != nil {
-		return
-	}
-
-	_ = r.Kind()
-
-	if want != r.String() {
-		t.Errorf("%s failed:\nwant '%s',\ngot  '%s'", t.Name(), want, r)
-	}
-
-	if r.Keyword() == nil {
-		t.Errorf("%s failed: unidentified %T", t.Name(), r.Keyword())
-	}
-
-	if !r.IsNesting() {
-		t.Errorf("%s failed: nesting not detected", t.Name())
-	}
-
-	bl := r.Len()
-	orig := r.String()
-
-	r.Push(BindRules{})
-
-	var ctx BindContext = BindRule{}
-
-	if r.Push(ctx); r.Len() != bl {
-		t.Errorf("%s failed: bogus enveloped content was pushed into %T", t.Name(), r)
-	}
-
-	popped := r.Pop()
-	bl = r.Len()
-	if popped.String() != orig {
-		t.Errorf("%s failed: unexpected element popped; want '%s', got '%s'", t.Name(), orig, popped)
-	}
-
-	r.Push(popped)
-	r.remove(r.Len() - 1)
-	if r.Len() != bl {
-		t.Errorf("%s failed: content not removed from %T", t.Name(), r)
-	}
-
-	r.insert(popped, 0)
-	if r.Len() == bl {
-		t.Errorf("%s failed: content not inserted into %T", t.Name(), r)
-	}
-}
-
-func ExampleParseBindRules_messy() {
-	raw := `( 
-			(
-				( userdn = "ldap:///anyone" ) AND
-				( ssf >= "71" )
-
-			) AND NOT ( 
-				dayofweek = "Wed" OR
-				dayofweek = "Fri"
-			)
-	)`
-
-	br, err := ParseBindRules(raw)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	called := br.Traverse(0, 0, 0)
-	fmt.Printf("%s", called)
-	// Output: ( userdn = "ldap:///anyone" )
 }
 
 /*

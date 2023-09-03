@@ -4,11 +4,6 @@ package aci
 target.go contains target rule(s) types, functions and methods.
 */
 
-import (
-	parser "github.com/JesseCoretta/go-antlraci"
-	"github.com/JesseCoretta/go-stackage"
-)
-
 var (
 	badTargetRule  TargetRule
 	badTargetRules TargetRules
@@ -219,10 +214,6 @@ func newTargetRule(kw, op, ex any) (t TargetRule) {
 	t.SetKeyword(kw)
 	t.SetOperator(op)
 
-	if sc, ok := ex.(SearchScope); ok {
-		ex = sc.Target()
-	}
-
 	t.SetExpression(ex)
 
 	castAsCondition(t).
@@ -238,6 +229,11 @@ func newTargetRule(kw, op, ex any) (t TargetRule) {
 Valid wraps go-stackage's Condition.Valid method.
 */
 func (r TargetRule) Valid() (err error) {
+	if r.IsZero() {
+		err = nilInstanceErr(r)
+		return
+	}
+
 	_t := castAsCondition(r)
 
 	if !keywordAllowsComparisonOperator(_t.Keyword(), _t.Operator()) {
@@ -290,7 +286,23 @@ func (r TargetRule) String() string {
 	if r.IsZero() {
 		return ``
 	}
-	return castAsCondition(r).String()
+
+	tr := castAsCondition(r)
+	if !tr.IsParen() {
+		tr.Paren(true)
+	}
+
+	return tr.String()
+}
+
+func (r TargetRules) replace(x any, idx int) TargetRules {
+	if r.IsZero() {
+		return r
+	}
+
+	_r, _ := castAsStack(r)
+	_r.Replace(x, idx)
+	return r
 }
 
 /*
@@ -397,7 +409,7 @@ func (r *TargetRule) SetOperator(op any) *TargetRule {
 SetExpression wraps go-stackage's Condition.SetExpression method.
 */
 func (r *TargetRule) SetExpression(expr any) *TargetRule {
-	x := castAsCondition(*r)
+	x := castAsCondition(*r).Encap(`"`) // impose default quotation
 	x.SetExpression(expr)
 	*r = TargetRule(*x)
 	return r
@@ -417,8 +429,12 @@ func (r TargetRule) Keyword() Keyword {
 /*
 Operator wraps go-stackage's Condition.Operator method.
 */
-func (r TargetRule) Operator() stackage.Operator {
-	return castAsCondition(r).Operator()
+func (r TargetRule) Operator() ComparisonOperator {
+	if r.IsZero() {
+		return badCop
+	}
+
+	return castCop(castAsCondition(r).Operator())
 }
 
 /*
@@ -735,359 +751,6 @@ func (r TargetRules) contains(x any) bool {
 	}
 
 	return false
-}
-
-/*
-ParseTargetRule processes the raw input string value,
-which should represent a single Target Rule expressive
-statement, into an instance of TargetRule. This, along
-with an error instance, are returned upom completion
-of processing.
-*/
-func ParseTargetRule(raw string) (TargetRule, error) {
-	return parseTargetRule(raw)
-}
-
-/*
-parseTargetRule is a private function which converts the
-stock stackage.Condition instance assembled by go-antlraci
-and casts as a go-aci TargetRule instance, which will be
-returned alongside an error upon completion of processing.
-*/
-func parseTargetRule(raw string) (TargetRule, error) {
-	_t, err := parser.ParseTargetRule(raw)
-	return TargetRule(*_t), err
-}
-
-/*
-ParseTargetRules processes the raw input string value,
-which should represent one (1) or more valid Target Rule
-expressive statements, into an instance of TargetRules.
-This, alongside an error instance, are returned at the
-completion of processing.
-*/
-func ParseTargetRules(raw string) (TargetRules, error) {
-	return parseTargetRules(raw)
-}
-
-/*
-parseTargetRules is a private function which converts the
-stock stackage.Stack instance assembled by go-antlraci and
-coaxes the raw string values into proper value-appropriate
-type instances made available by go-aci.
-*/
-func parseTargetRules(raw string) (TargetRules, error) {
-	// In case the input has bizarre
-	// contiguous whsp, etc., remove
-	// it safely.
-	raw = condenseWHSP(raw)
-
-	// Call our go-antlraci (parser) package's
-	// ParseTargetRules function, and get the
-	// results (or bail if error).
-	var _t stackage.Stack
-	var err error
-	if _t, err = parser.ParseTargetRules(raw); err != nil {
-		return badTargetRules, err
-	}
-
-	// create our (eventual) return object.
-	t := TRs().NoPadding(true)
-
-	// transfer (copy) Target Rule references from _t into _z.
-	_z, _ := castAsStack(_t)
-
-	// transfer raw contents into new TargetRules
-	// instance.
-	for i := 0; i < _z.Len(); i++ {
-		slice, _ := _z.Index(i)
-		switch tv := slice.(type) {
-		case stackage.Condition:
-			t.Push(TargetRule(tv))
-		case *stackage.Condition:
-			t.Push(TargetRule(*tv))
-		}
-	}
-
-	// iterate our (new) target rule slice members,
-	// identifying each by integer index i. Try to
-	// marshal the parser.RuleExpression contents
-	// into the appropriate go-aci type.
-	for i := 0; i < t.Len(); i++ {
-		trv := t.Index(i)
-
-		// Extract individual expression value
-		// from TargetRule (ntv), and recreate it
-		// using the proper type, replacing the
-		// original. For example, a `target_to`
-		// (DN) Target Rule with a RuleExpression
-		// value of:
-		//
-		//   []string{<dn1>,<dn2>,<dn3>}
-		//
-		// ... shall be replaced with:
-		//
-		//   <stack alias type>-idx#------val-
-		//   DistinguishedNames[<N1>] -> <dn1>
-		//                     [<N2>] -> <dn2>
-		//                     [<N3>] -> <dn3>
-		if err = trv.assertExpressionValue(); err != nil {
-			return badTargetRules, err
-		}
-	}
-
-	return t, err
-}
-
-/*
-assertExpressionValue will update the underlying go-antlraci temporary expression type
-with a proper value-appropriate type defined within the go-aci package.
-
-An error is returned upon processing completion.
-*/
-func (r TargetRule) assertExpressionValue() (err error) {
-	// grab the raw value from the receiver. If it is
-	// NOT an instance of parser.RuleExpression, then
-	// bail out.
-	expr, ok := r.Expression().(parser.RuleExpression)
-	if !ok {
-		err = parseBindRuleInvalidExprTypeErr(r, expr, r.Expression())
-		return
-	}
-
-	// our proper type-converted expression
-	// value(s) shall reside as an any, as
-	// stackage.Condition allows this and
-	// will make things simpler.
-	var ex any
-
-	// perform a target keyword switch upon
-	// a resolution attempt of the value.
-	switch key := matchTKW(r.Keyword().String()); key {
-
-	case TargetScope, TargetFilter, TargetAttrFilters:
-		// value is a targetscope, targetfilter or a
-		// targattrfilters expressive statement. We
-		// handle them here because they're strictly
-		// single-valued.
-
-		if key == TargetScope {
-			// value is a target scope
-			ex, err = assertTargetScope(expr)
-
-		} else if key == TargetAttrFilters {
-			// value is a targattrfilters
-			ex, err = assertTargetAttrFilters(expr)
-
-		} else {
-			// value (seems to be) an LDAP Search Filter
-			// TODO - assertion func
-			ex = Filter(expr.Values[0])
-		}
-
-	case TargetAttr:
-		// value is a targetattr expressive statement,
-		// possibly multi-valued.
-		ex = assertTargetAttributes(expr)
-
-	case TargetCtrl, TargetExtOp:
-		// value is a targetcontrol or extop expressive
-		// statement, possibly multi-valued.
-		ex, err = assertTargetOID(expr, key)
-
-	case Target, TargetTo, TargetFrom:
-		// value is a target, target_to or target_from
-		// expressive statement, possibly multi-valued
-		ex, err = assertTargetTFDN(expr, key)
-
-	default:
-		// value is ... bogus
-		err = badPTBRuleKeywordErr(expr, targetRuleID, `TargetKeyword`, key)
-	}
-
-	if err != nil {
-		return
-	}
-
-	r.SetExpression(ex)
-	r.SetQuoteStyle(expr.Style)
-
-	return
-}
-
-/*
-assertTargetScope processes the raw expression value (expr) provided by go-antlraci
-into a proper instance of SearchScope (ex), which is returned alongside an instance of
-error (err).
-*/
-func assertTargetScope(expr parser.RuleExpression) (ex string, err error) {
-	if expr.Len() != 1 {
-		err = unexpectedValueCountErr(TargetScope.String(), 1, expr.Len())
-		return
-	}
-
-	var temp SearchScope
-	// base is a fallback for a bogus scope, so
-	// if the user did not originally request
-	// base, we know they requested something
-	// totally unsupported.
-	if temp = strToScope(expr.Values[0]); temp == noScope {
-		err = bogusValueErr(TargetScope.String(), expr.Values[0])
-		return
-	}
-	ex = temp.Target() // TODO: this is a hack. find something cleaner
-
-	return
-}
-
-/*
-assertTargetOID is handler for all possible OID values used within Target Rule expressive
-statements. In particular, this handles `targetcontrol` and `extop`.
-
-An ObjectIdentifiers instance is returned in the event that the raw value(s) represent one
-(1) or more legal ASN.1 Object Identifiers in "dot notation".
-
-Quotation schemes are supported seamlessly and either scheme shall be honored per the ANTLR4
-parsed content.
-*/
-func assertTargetOID(expr parser.RuleExpression, key TargetKeyword) (ex ObjectIdentifiers, err error) {
-	// Don't waste time if expression values
-	// are nonexistent.
-	if expr.Len() == 0 {
-		err = noValueErr(ex, key.String())
-		return
-	}
-
-	// create an appropriate container based on the
-	// Target Rule keyword.
-	switch key {
-	case TargetExtOp:
-		ex = ExtOps()
-	default:
-		ex = Ctrls()
-	}
-
-	// Honor the established quotation scheme that
-	// was observed during ANTLR4 processing.
-	ex.setQuoteStyle(expr.Style)
-
-	// Assign the raw (DN) values to the
-	// return value. If nothing was found,
-	// bail out now.
-	if ex.setExpressionValues(key, expr.Values...); ex.Len() == 0 {
-		err = noValueErr(ex, `targetcontrol/extop`)
-		return
-	}
-
-	return
-}
-
-/*
-assertTargetTFDN is handler for all possible DN values used within Target Rule expressive
-statements. In particular, this handles `target`, `target_to` and `target_from` keyword
-contexts.
-
-A DistinguishedNames instance is returned in the event that the raw value(s) represent one
-(1) or more legal LDAP Distinguished Name value.
-
-Quotation schemes are supported seamlessly and either scheme shall be honored per the ANTLR4
-parsed content.
-*/
-func assertTargetTFDN(expr parser.RuleExpression, key TargetKeyword) (ex any, err error) {
-	// Don't waste time if expression values
-	// are nonexistent.
-	if expr.Len() == 0 {
-		err = noValueErr(ex, key.String())
-		return
-	}
-
-	// create an appropriate container based on the
-	// Target Rule keyword.
-	var tdn TargetDistinguishedNames
-	switch key {
-	case TargetTo:
-		tdn = TTDNs()
-	case TargetFrom:
-		tdn = TFDNs()
-	default:
-		tdn = TDNs()
-	}
-
-	// Honor the established quotation scheme that
-	// was observed during ANTLR4 processing.
-	tdn.setQuoteStyle(expr.Style)
-
-	// Assign the raw (DN) values to the
-	// return value. If nothing was found,
-	// bail out now.
-	if tdn.setExpressionValues(key, expr.Values...); tdn.Len() == 0 {
-		err = noTBRuleExpressionValues(badTargetDN, targetRuleID, key)
-		return
-	}
-
-	ex = tdn
-
-	return
-}
-
-/*
-assertTargetAttributes is a private functions called during the processing of a TargetRule
-expressive statement bearing the `targetattr` keyword context. An instance of AttributeTypes
-is returned.
-*/
-func assertTargetAttributes(expr parser.RuleExpression) (ex AttributeTypes) {
-	ex = TAs()
-	ex.setQuoteStyle(expr.Style)
-
-	for i := 0; i < expr.Len(); i++ {
-		ex.Push(AT(expr.Values[i]))
-	}
-
-	return
-}
-
-/*
-assertTargetAttrFilters is a private function called during the processing of a TargetRule
-expressive statement bearing the `targattrfilters` keyword context. An instance of the
-AttributeFilterOperations type is returned, alongside an error instance, when processing is
-complete.
-*/
-func assertTargetAttrFilters(expr parser.RuleExpression) (ex AttributeFilterOperations, err error) {
-	if expr.Len() != 1 {
-		err = unexpectedValueCountErr(TargetAttrFilters.String(), 1, expr.Len())
-		return
-	}
-
-	if idx := idxr(expr.Values[0], ','); idx != -1 {
-		// First, try to split on a comma rune (ASCII #44).
-		// This is the default, and is the most common char
-		// for use in delimiting values of this form.
-		ex, err = parseAttributeFilterOperations(expr.Values[0], 0)
-
-	} else if idx = idxr(expr.Values[0], ';'); idx != -1 {
-		// If no comma was found, try semicolon (ASCII #59).
-		ex, err = parseAttributeFilterOperations(expr.Values[0], 1)
-
-	} else if hasAttributeFilterOperationPrefix(expr.Values[0]) {
-		// Still nothing? Try AttributeFilterOperation (whether
-		// multivalued or not).
-		var afo AttributeFilterOperation
-		if afo, err = parseAttributeFilterOperation(expr.Values[0]); err != nil {
-			return
-		}
-		ex = AFOs(afo)
-
-	} else {
-		// The only other thing it could be is a bare AttributeFilter.
-		var af AttributeFilter
-		if af, err = parseAttributeFilter(expr.Values[0]); err != nil {
-			return
-		}
-
-		ex = AFOs(AddOp.AFO(af)) // we have to choose one, 'add' seems safer than 'delete'
-	}
-
-	return
 }
 
 const targetRuleID = `target`

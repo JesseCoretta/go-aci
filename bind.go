@@ -4,10 +4,6 @@ package aci
 bind.go contains bind rule(s) types, functions and methods.
 */
 
-import (
-	parser "github.com/JesseCoretta/go-antlraci"
-)
-
 var (
 	badBindRule  BindRule
 	badBindRules BindRules
@@ -842,6 +838,14 @@ non-nil, can represent any of the following instance types:
 • BindRules
 */
 func (r BindRules) Pop() BindContext {
+	return r.pop()
+}
+
+func (r BindRules) pop() BindContext {
+	if r.IsZero() {
+		return nil
+	}
+
 	_r, _ := castAsStack(r)
 	x, _ := _r.Pop()
 
@@ -849,7 +853,7 @@ func (r BindRules) Pop() BindContext {
 	switch tv := x.(type) {
 	case BindRule:
 		z = tv
-		return z.(*BindRule)
+		return z.(BindRule)
 	case BindRules:
 		z = tv
 		return z.(BindRules)
@@ -1006,324 +1010,6 @@ func (r BindRules) pushPolicy(x any) (err error) {
 		// unsuitable candidate per type
 		err = pushErrorBadType(r, tv, matchBKW(r.Category()))
 	}
-
-	return
-}
-
-/*
-ParseBindRule returns an instance of Condition alongside an error instance.
-
-The returned Condition instance shall contain
-*/
-func ParseBindRule(raw string) (BindRule, error) {
-	return parseBindRule(raw)
-}
-
-func parseBindRule(raw string) (BindRule, error) {
-	_c, err := parser.ParseBindRule(raw)
-	return BindRule(_c), err
-}
-
-/*
-ParseBindRules returns an instance of Rule alongside an error instance.
-
-The returned Rule instance shall contain a complete hierarchical stack
-structure that represents the abstract rule (raw) input by the user.
-*/
-func ParseBindRules(raw string) (BindRules, error) {
-	return parseBindRules(raw)
-}
-
-func parseBindRules(raw string) (BindRules, error) {
-	// In case the input has bizarre
-	// contiguous whsp, etc., remove
-	// it safely.
-	raw = condenseWHSP(raw)
-
-	// send the raw textual bind rules
-	// statement(s) to our sister package
-	// go-antlraci, call ParseBindRules.
-	_b, err := parser.ParseBindRules(raw)
-	if err != nil {
-		return badBindRules, err
-	}
-
-	// Process the hierarchy, converting
-	// Stack to BindRules and Condition
-	// to BindRule. In addition, we'll
-	// replace the parser.ExpressionValue
-	// type with more appropriate types
-	// defined in this package.
-	n, ok := convertBindRulesHierarchy(_b)
-	if !ok {
-		return badBindRules, parseBindRulesHierErr(_b, n)
-	}
-
-	return n, nil
-}
-
-/*
-assertExpressionValue will update the underlying go-antlraci temporary type with a
-proper value-appropriate type defined within the go-aci package. An error is returned
-upon processing completion.
-*/
-func (r BindRule) assertExpressionValue() (err error) {
-
-	// grab the raw value from the receiver. If it is
-	// NOT an instance of parser.RuleExpression, then
-	// bail out.
-	expr, ok := r.Expression().(parser.RuleExpression)
-	if !ok {
-		err = parseBindRuleInvalidExprTypeErr(r, expr, parser.RuleExpression{})
-		return
-	}
-
-	// our proper type-converted expression
-	// value(s) shall reside as an any, as
-	// stackage.Condition allows this and
-	// will make things simpler.
-	var ex any
-
-	// perform a bind keyword switch upon
-	// a resolution attempt of the value.
-	switch key := matchBKW(r.Keyword().String()); key {
-
-	case BindUDN, BindRDN, BindGDN:
-		// value is a userdn, groupdn or roledn
-		// expressive statement. Possible multi
-		// valued expression.
-		ex, err = assertBindUGRDN(expr, key)
-
-	case BindIP, BindDNS:
-		// value is an IP or FQDN.
-		ex, err = assertBindNet(expr, key)
-
-	case BindUAT, BindGAT:
-		// value is a userattr or groupattr
-		// expressive statement.
-		ex, err = assertBindUGAttr(expr, key)
-
-	case BindDoW, BindToD:
-		// value is a dayofweek or timeofday
-		// expressive statement.
-		ex, err = assertBindTimeDay(expr, key)
-
-	case BindAM, BindSSF:
-		// value is an authentication method
-		// or a security factor expressive
-		// statement.
-		ex, err = assertBindSec(expr, key)
-
-	default:
-		err = badPTBRuleKeywordErr(r, bindRuleID, `BindKeyword`, key)
-	}
-
-	if err != nil {
-		return
-	}
-
-	// If we got something, set it and go.
-	r.SetExpression(ex)
-	r.SetQuoteStyle(expr.Style)
-
-	return
-}
-
-func assertBindTimeDay(expr parser.RuleExpression, key BindKeyword) (ex any, err error) {
-	switch key {
-	case BindDoW:
-		// value is a dayOfWeek expressive
-		// statement.
-		ex, err = assertBindDayOfWeek(expr)
-
-	case BindToD:
-		// value is a timeOfDay expressive
-		// statement.
-		ex, err = assertBindTimeOfDay(expr)
-	}
-
-	return
-}
-
-func assertBindSec(expr parser.RuleExpression, key BindKeyword) (ex any, err error) {
-	switch key {
-	case BindSSF:
-		// value is a security strength factor
-		// expressive statement.
-		ex, err = assertBindSecurityStrengthFactor(expr)
-
-	case BindAM:
-		// value is an authentication method
-		// expressive statement.
-		ex, err = assertBindAuthenticationMethod(expr)
-	}
-
-	return
-}
-
-func assertBindUGAttr(expr parser.RuleExpression, key BindKeyword) (ex any, err error) {
-	if err = unexpectedBindConditionValueErr(key, 1, expr.Len()); err != nil {
-		return
-	}
-
-	value := unquote(expr.Values[0])
-
-	if hasPfx(value, LocalScheme) {
-		// value is an LDAP URI
-		ex, err = parseLDAPURI(value, key)
-
-	} else if hasPfx(value, `parent[`) {
-		// value is an inheritance attributeBindTypeOrValue
-		ex, err = parseInheritance(value)
-
-	} else {
-		// value is a standard attributeBindTypeOrValue
-		ex, err = parseATBTV(value, key)
-	}
-
-	return
-}
-
-func assertBindTimeOfDay(expr parser.RuleExpression) (ex TimeOfDay, err error) {
-	if err = unexpectedBindConditionValueErr(BindToD, 1, expr.Len()); err != nil {
-		return
-	}
-
-	// extract clocktime from raw value, remove
-	// quotes and any L/T WHSP
-	unq := unquote(expr.Values[0])
-	ex = ToD(unq)
-	err = badClockTimeErr(unq, ex.String())
-	return
-}
-
-func assertBindDayOfWeek(expr parser.RuleExpression) (ex DayOfWeek, err error) {
-	if err = unexpectedBindConditionValueErr(BindDoW, 1, expr.Len()); err != nil {
-		return
-	}
-
-	// extract auth method from raw value, remove
-	// quotes and any L/T WHSP and analyze
-	unq := unquote(expr.Values[0])
-	ex, err = parseDoW(unq)
-	return
-}
-
-func assertBindAuthenticationMethod(expr parser.RuleExpression) (ex AuthenticationMethod, err error) {
-	if err = unexpectedBindConditionValueErr(BindAM, 1, expr.Len()); err != nil {
-		return
-	}
-
-	// extract auth method from raw value, remove
-	// quotes and any L/T WHSP and analyze
-	unq := unquote(expr.Values[0])
-	ex = matchAuthenticationMethod(unq)
-	err = badAMErr(unq, ex.String())
-	return
-}
-
-func assertBindSecurityStrengthFactor(expr parser.RuleExpression) (ex SecurityStrengthFactor, err error) {
-	if err = unexpectedBindConditionValueErr(BindSSF, 1, expr.Len()); err != nil {
-		return
-	}
-
-	// extract factor from raw value, remove
-	// quotes and any L/T WHSP
-	unq := unquote(expr.Values[0])
-	ex = SSF(unq)
-	err = badSecurityStrengthFactorErr(unq, ex.String())
-	return
-}
-
-func assertBindNet(expr parser.RuleExpression, key BindKeyword) (ex any, err error) {
-	if err = unexpectedBindConditionValueErr(key, 1, expr.Len()); err != nil {
-		return
-	}
-
-	unq := unquote(expr.Values[0])
-
-	if key == BindIP {
-		// extract IP Address(es) from raw value,
-		// remove quotes and any L/T WHSP and then
-		// split for iteration.
-		raw := split(unq, `,`)
-		var addr IPAddr
-		for ipa := 0; ipa < len(raw); ipa++ {
-			addr.Set(raw[ipa])
-		}
-
-		ex = addr
-		err = badIPErr(len(raw), addr.Len())
-		return
-	}
-
-	// extract FQDN from raw value, remove
-	// quotes and any L/T WHSP.
-	fq := DNS(unq)
-	err = badDNSErr(unq, fq.String())
-	ex = fq
-
-	return
-}
-
-/*
-assertBindUGRDN is handler for all possible DN and URI values used within Bind Rule
-expressive statements. In particular, this handles `userdn`, `groupdn` and `roledn`
-keyword contexts.
-
-An any-enveloped DistinguishedNames instance is returned in the event that the raw value(s)
-represent one (1) or more legal LDAP Distinguished Name value.
-
-In the event that a legal LDAP URI is found, it is returned as an instance of (any-enveloped)
-LDAPURI.
-
-Quotation schemes are supported seamlessly and either scheme shall be honored per the ANTLR4
-parsed content.
-*/
-func assertBindUGRDN(expr parser.RuleExpression, key BindKeyword) (ex any, err error) {
-	// Don't waste time if expression values
-	// are nonexistent.
-	if expr.Len() == 0 {
-		err = noTBRuleExpressionValues(expr, bindRuleID, key)
-		return
-	}
-
-	// if the value is an LDAP URI (which merely contains
-	// a DN, and is not one unto itself), handle the parse
-	// here instead of treating it as a DN.
-	var value string = unquote(expr.Values[0])
-	if hasPfx(value, LocalScheme) && contains(value, `?`) {
-		ex, err = parseLDAPURI(value, key)
-		return
-	}
-
-	// create an appropriate container based on the
-	// Bind Rule keyword.
-	var bdn BindDistinguishedNames
-	switch key {
-	case BindRDN:
-		bdn = RDNs()
-	case BindGDN:
-		bdn = GDNs()
-	default:
-		bdn = UDNs()
-	}
-
-	// Honor the established quotation scheme that
-	// was observed during ANTLR4 processing.
-	bdn.setQuoteStyle(expr.Style)
-
-	// Assign the raw (DN) values to the
-	// return value. If nothing was found,
-	// bail out now.
-	if bdn.setExpressionValues(key, expr.Values...); bdn.Len() == 0 {
-		err = noTBRuleExpressionValues(expr, bindRuleID, key)
-		return
-	}
-
-	// Envelope our DN stack within an
-	// 'any' instance, which is returned.
-	ex = bdn
 
 	return
 }

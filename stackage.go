@@ -197,12 +197,50 @@ func castAsCop(x ComparisonOperator) stackage.ComparisonOperator {
 	return stackage.ComparisonOperator(x)
 }
 
+func castCop(x any) (cop ComparisonOperator) {
+	switch tv := x.(type) {
+	case stackage.ComparisonOperator:
+		cop = ComparisonOperator(tv)
+	}
+
+	return
+}
+
+func isStack(stack any) (is bool) {
+	if is = isStackageStack(stack); !is {
+		is = isPkgStack(stack)
+	}
+
+	return
+}
+
 /*
 isStackageStack merely matches the input type as a stackage.Stack
 type and returns the resultant Boolean value.
 */
 func isStackageStack(stack any) (is bool) {
 	_, is = stack.(stackage.Stack)
+	return
+}
+
+func isPkgStack(stack any) (is bool) {
+	switch stack.(type) {
+	case BindRules,
+		TargetRules,
+		Instructions,
+		AttributeTypes,
+		ObjectIdentifier,
+		ObjectIdentifiers,
+		PermissionBindRules,
+		BindDistinguishedName,
+		BindDistinguishedNames,
+		TargetDistinguishedName,
+		TargetDistinguishedNames,
+		AttributeFilterOperation,
+		AttributeFilterOperations:
+		is = true
+	}
+
 	return
 }
 

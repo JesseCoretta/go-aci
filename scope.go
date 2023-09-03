@@ -177,7 +177,7 @@ See the SearchScope.Target method for Target Rule
 related scope names.
 */
 func (r SearchScope) String() string {
-	return r.standard()
+	return r.targetScope()
 }
 
 /*

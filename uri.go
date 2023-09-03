@@ -461,11 +461,23 @@ func (r ldapURI) string() string {
 		} else {
 			param = "?"
 		}
-		param += sprintf("?%s?%s", r.scope, r.filter)
+
+		// Use this opportunity to supplant a misplaced
+		// Subordinate scope with the default BaseObject
+		if r.scope == Subordinate {
+			r.scope = BaseObject
+		}
+
+		// Be sure to call the standard scope here,
+		// since this isn't for a targetscope rule.
+		param += sprintf("?%s?%s",
+			r.scope.standard(), r.filter)
+
 	} else if !r.avbt.IsZero() {
 		param = sprintf("?%s", r.avbt)
 	} else {
-		return sprintf("%s??%s?", r.dn, r.scope)
+		return sprintf("%s??%s?",
+			r.dn, r.scope.standard())
 	}
 
 	return sprintf("%s%s", r.dn, param)

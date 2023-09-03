@@ -373,151 +373,13 @@ func ExampleTR() {
 	// Output: ( targetscope = "onelevel" )
 }
 
-/*
-This example demonstrates the imported ANTLR4-based go-antlraci parser capabilities as
-they pertain to the handling of raw target rule text.
-*/
-func ExampleParseTargetRule() {
-
-	// NOTE: padding manually stripped out, and an
-	// extraneous horizontal tab (ASCII #9) added
-	// for purely demonstrative reasons ...
-	raw := `(target_to=	"ldap:///cn=*,ou=Contractors,ou=People,dc=example,dc=com")`
-	tr, err := ParseTargetRule(raw)
-	if err != nil {
-		fmt.Println(err) // always check your parser errors.
-		return
-	}
-	fmt.Printf("%s", tr)
-	// Output: ( target_to = "ldap:///cn=*,ou=Contractors,ou=People,dc=example,dc=com" )
-}
-
-/*
-This example demonstrates the imported ANTLR4-based go-antlraci parser capabilities as
-they pertain to the handling of raw target rule text that contains multiple values with
-specific delimiters and standard quotation.
-
-Additionally, upon receiving the returned value, we'll disable padding just for fun.
-*/
-func ExampleParseTargetRule_multiValuedWithStandardQuotation() {
-
-	raw := `(target_to="ldap:///cn=*,ou=Contractors,ou=People,dc=example,dc=com"||"ldap:///cn*,ou=X.500 Administrators,ou=People,dc=example,dc=com")`
-	tr, err := ParseTargetRule(raw)
-	if err != nil {
-		fmt.Println(err) // always check your parser errors.
-		return
-	}
-	fmt.Printf("%s", tr.NoPadding(true))
-	// Output: (target_to="ldap:///cn=*,ou=Contractors,ou=People,dc=example,dc=com" || "ldap:///cn*,ou=X.500 Administrators,ou=People,dc=example,dc=com")
-}
-
-/*
-This example demonstrates the imported ANTLR4-based go-antlraci parser capabilities as
-they pertain to the handling of raw target rule text that contains multiple values with
-specific delimiters and alternative quotation.
-*/
-func ExampleParseTargetRule_multiValuedWithAlternativeQuotation() {
-
-	raw := `(target_to="ldap:///cn=*,ou=Contractors,ou=People,dc=example,dc=com||ldap:///cn=*,ou=X.500 Administrators,ou=People,dc=example,dc=com")`
-	tr, err := ParseTargetRule(raw)
-	if err != nil {
-		fmt.Println(err) // always check your parser errors.
-		return
-	}
-	fmt.Printf("%s", tr)
-	// Output: ( target_to = "ldap:///cn=*,ou=Contractors,ou=People,dc=example,dc=com || ldap:///cn=*,ou=X.500 Administrators,ou=People,dc=example,dc=com" )
-}
-
-/*
-This example demonstrates the imported ANTLR4-based go-antlraci parser capabilities as
-they pertain to the handling of a sequence of raw target rule text values. Note in this
-example, we've added awkward spacing mixed-in with fair attempts to make the sequence of
-TargetRule expressions easier to read. This includes newline characters (ASCII #10) to
-really try and mess things up. 😈
-*/
-func ExampleParseTargetRules() {
-
-	omg := `(
-		target_to=
-			"ldap:///cn=*,ou=Contractors,ou=People,dc=example,dc=com"		||
-			"ldap:///cn=*,ou=X.500 Administrators,ou=People,dc=example,dc=com"	||
-			"ldap:///cn=*,ou=Executives,ou=People,dc=example,dc=com"
-		)
-
-		( targetscope="subordinate"  )
-
-		(
-			targattrfilters =
-				"add=nsroleDN:(!(nsroledn=cn=X.500 Administrator)) && employeeStatus:(!(drink=beer)) && telephoneNumber:(telephoneNumber=612*)"
-		)`
-
-	tr, err := ParseTargetRules(omg)
-	if err != nil {
-		fmt.Println(err) // always check your parser errors.
-		return
-	}
-
-	fmt.Printf("%s", tr)
-	// Output: ( target_to = "ldap:///cn=*,ou=Contractors,ou=People,dc=example,dc=com" || "ldap:///cn=*,ou=X.500 Administrators,ou=People,dc=example,dc=com" || "ldap:///cn=*,ou=Executives,ou=People,dc=example,dc=com" )( targetscope = "subordinate" )( targattrfilters = "add=nsroleDN:(!(nsroledn=cn=X.500 Administrator)) && employeeStatus:(!(drink=beer)) && telephoneNumber:(telephoneNumber=612*)" )
-}
-
-func ExampleTargetRules_Contains() {
-
-	omg1 := `(
-                target_to=
-                        "ldap:///cn=*,ou=Contractors,ou=People,dc=example,dc=com"               ||
-                        "ldap:///cn=*,ou=X.500 Administrators,ou=People,dc=example,dc=com"      ||
-                        "ldap:///cn=*,ou=Executives,ou=People,dc=example,dc=com"
-                )
-
-                ( targetscope="subordinate"  )
-
-                (
-                        targattrfilters =
-                                "add=nsroleDN:(!(nsroledn=cn=X.500 Administrator)) && employeeStatus:(!(drink=beer)) && telephoneNumber:(telephoneNumber=612*)"
-                )`
-
-	tr1, err := ParseTargetRules(omg1)
-	if err != nil {
-		fmt.Println(err) // always check your parser errors.
-		return
-	}
-
-	fmt.Printf("%t", tr1.Contains(TargetTo))
-	// Output: true
-}
-
-/*
-This example is the same as the TargetRules example, except with the alternative
-quotation scheme in effect.
-*/
-func ExampleParseTargetRules_alternativeQuotation() {
-
-	omg := `(
-                target_to=
-                        "ldap:///cn=*,ou=Contractors,ou=People,dc=example,dc=com		||
-			 ldap:///cn=*,ou=X.500 Administrators,ou=People,dc=example,dc=com	||
-			 ldap:///cn=*,ou=Executives,ou=People,dc=example,dc=com"
-                )
-
-                ( targetscope=
-				"subordinate"
-		)
-
-                ( targattrfilters =
-                                "add=nsroleDN:(!(nsroledn=cn=X.500 Administrator))	&&
-				 employeeStatus:(!(drink=beer))				&&
-				 telephoneNumber:(telephoneNumber=612*)"
-                )`
-
-	tr, err := ParseTargetRules(omg)
-	if err != nil {
-		fmt.Println(err) // always check your parser errors.
-		return
-	}
-
-	fmt.Printf("%s", tr)
-	// Output: ( target_to = "ldap:///cn=*,ou=Contractors,ou=People,dc=example,dc=com || ldap:///cn=*,ou=X.500 Administrators,ou=People,dc=example,dc=com || ldap:///cn=*,ou=Executives,ou=People,dc=example,dc=com" )( targetscope = "subordinate" )( targattrfilters = "add=nsroleDN:(!(nsroledn=cn=X.500 Administrator)) && employeeStatus:(!(drink=beer)) && telephoneNumber:(telephoneNumber=612*)" )
+func ExampleTargetRules_Contains_alternative() {
+	tdns := TRs(
+		TDN(`uid=jesse,ou=People,dc=example,dc=com`),
+		Subordinate.Eq(),
+	)
+	fmt.Printf("Contains: %t", tdns.Contains(TargetScope))
+	// Output: Contains: true
 }
 
 func ExampleTargetRule_Compare() {
@@ -541,4 +403,142 @@ func ExampleTargetRules_Compare() {
 
 	fmt.Printf("Equal: %t", trs1.Compare(trs2))
 	// Output: Equal: false
+}
+
+func ExampleTargetRule() {
+	var tgt TargetRule = TR(
+		TargetScope,
+		Eq,
+		Subordinate,
+	)
+
+	fmt.Printf("%s", tgt)
+	// Output: ( targetscope = "subordinate" )
+}
+
+func ExampleTargetRule_String_traditional() {
+	var tgt TargetRule = TR(
+		TargetFrom,
+		Ne,
+		TFDN(`uid=*,ou=Contractors,ou=People,dc=example,dc=com`),
+	)
+
+	fmt.Printf("%s", tgt)
+	// Output: ( target_from != "ldap:///uid=*,ou=Contractors,ou=People,dc=example,dc=com" )
+}
+
+func ExampleTargetRule_String_targetScope() {
+
+	fmt.Printf("%s", BaseObject.Eq())
+	// Output: ( targetscope = "base" )
+}
+
+func ExampleTargetRule_String_negatedTargetFilter() {
+
+	fmt.Printf("%s", Filter(`(&(objectClass=*)(employeeStatus=ACTIVE))`).Ne())
+	// Output: ( targetfilter != "(&(objectClass=*)(employeeStatus=ACTIVE))" )
+}
+
+func ExampleTargetRule_NoPadding() {
+	f := `(&(objectClass=*)(employeeStatus=ACTIVE))`
+
+	fmt.Printf("%s", Filter(f).Ne().NoPadding())
+	// Output: (targetfilter!="(&(objectClass=*)(employeeStatus=ACTIVE))")
+}
+
+func ExampleTargetRule_SetKeyword() {
+	var tgt TargetRule
+	tgt.SetKeyword(TargetAttr)
+	tgt.SetOperator(Ne)
+	tgt.SetExpression(AT(`aci`))
+
+	fmt.Printf("%s", tgt)
+	// Output: ( targetattr != "aci" )
+}
+
+func ExampleTargetRule_SetOperator() {
+	var tgt TargetRule
+	tgt.SetKeyword(TargetAttr)
+	tgt.SetOperator(Ne)
+	tgt.SetExpression(AT(`aci`))
+
+	fmt.Printf("%s", tgt)
+	// Output: ( targetattr != "aci" )
+}
+
+func ExampleTargetRule_Operator() {
+	cond := Filter(`(&(objectClass=*)(status=ACTIVE))`).Ne()
+	fmt.Printf("%s", cond.Operator())
+	// Output: !=
+}
+
+func ExampleTargetRule_SetExpression() {
+	var tgt TargetRule
+	tgt.SetKeyword(TargetAttr)
+	tgt.SetOperator(Ne)
+	tgt.SetExpression(AT(`aci`))
+
+	fmt.Printf("%s", tgt)
+	// Output: ( targetattr != "aci" )
+}
+
+func ExampleTargetRule_Category() {
+	fmt.Printf("%s", BaseObject.Eq().Category())
+	// Output: targetscope
+}
+
+func ExampleTargetRule_Keyword() {
+	fmt.Printf("%s", BaseObject.Eq().Keyword())
+	// Output: targetscope
+}
+
+func ExampleTargetRule_Kind() {
+	var tr TargetRule
+	fmt.Printf("%s", tr.Kind())
+	// Output: condition
+}
+
+func ExampleTargetRule_ID() {
+	fmt.Printf("%s", BaseObject.Eq().ID())
+	// Output: target
+}
+
+func ExampleTargetRule_Expression() {
+	tfdn := `uid=*,ou=Contractors,ou=People,dc=example,dc=com`
+	fmt.Printf("%s", TFDN(tfdn).Eq().Expression())
+	// Output: ldap:///uid=*,ou=Contractors,ou=People,dc=example,dc=com
+}
+
+func ExampleTargetRule_IsZero() {
+	var tr TargetRule
+	fmt.Printf("Zero: %t", tr.IsZero())
+	// Output: Zero: true
+}
+
+func ExampleTargetRule_Valid() {
+	var tr TargetRule
+	fmt.Printf("Valid: %t", tr.Valid() == nil)
+	// Output: Valid: false
+}
+
+func ExampleTargetRule_SetQuoteStyle() {
+	var tgt TargetRule
+	tgt.SetKeyword(Target)
+	tgt.SetOperator(Ne)
+	tgt.SetExpression(TDNs(
+		TDN(`ldap:///uid=jesse,ou=People,dc=example,dc=com`),
+		TDN(`ldap:///uid=courtney,ou=People,dc=example,dc=com`),
+		TDN(`ldap:///uid=jimmy,ou=People,dc=example,dc=com`),
+	))
+
+	tgt.SetQuoteStyle(0)
+	style1 := tgt.String()
+
+	tgt.SetQuoteStyle(1)
+	style2 := tgt.String()
+
+	fmt.Printf("\n0: %s\n1: %s", style1, style2)
+	// Output:
+	// 0: ( target != "ldap:///uid=jesse,ou=People,dc=example,dc=com" || "ldap:///uid=courtney,ou=People,dc=example,dc=com" || "ldap:///uid=jimmy,ou=People,dc=example,dc=com" )
+	// 1: ( target != "ldap:///uid=jesse,ou=People,dc=example,dc=com || ldap:///uid=courtney,ou=People,dc=example,dc=com || ldap:///uid=jimmy,ou=People,dc=example,dc=com" )
 }

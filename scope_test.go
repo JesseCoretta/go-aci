@@ -10,11 +10,11 @@ func TestScope(t *testing.T) {
 		`oNe`,
 		`sub`,
 	} {
-		if sc := Scope(raw); sc.String() != lc(raw) {
+		if sc := Scope(raw); sc == noScope {
 			t.Errorf("%s failed; failed to parse scope name '%s'",
 				t.Name(), raw)
 		}
-		if sc := Scope(idx); sc.String() != lc(raw) {
+		if sc := Scope(idx); sc == noScope {
 			t.Errorf("%s failed; failed to parse scope index '%d'",
 				t.Name(), idx)
 		}
