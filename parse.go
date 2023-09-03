@@ -116,7 +116,7 @@ func assertBindUGAttr(expr parser.RuleExpression, key BindKeyword) (ex any, err 
 		return
 	}
 
-	value := unquote(expr.Values[0])
+	value := unquote(condenseWHSP(expr.Values[0]))
 
 	if hasPfx(value, LocalScheme) {
 		// value is an LDAP URI
@@ -141,7 +141,7 @@ func assertBindTimeOfDay(expr parser.RuleExpression) (ex TimeOfDay, err error) {
 
 	// extract clocktime from raw value, remove
 	// quotes and any L/T WHSP
-	unq := unquote(expr.Values[0])
+	unq := unquote(condenseWHSP(expr.Values[0]))
 	ex = ToD(unq)
 	err = badClockTimeErr(unq, ex.String())
 	return
@@ -154,7 +154,7 @@ func assertBindDayOfWeek(expr parser.RuleExpression) (ex DayOfWeek, err error) {
 
 	// extract auth method from raw value, remove
 	// quotes and any L/T WHSP and analyze
-	unq := unquote(expr.Values[0])
+	unq := unquote(condenseWHSP(expr.Values[0]))
 	ex, err = parseDoW(unq)
 	return
 }
@@ -166,7 +166,7 @@ func assertBindAuthenticationMethod(expr parser.RuleExpression) (ex Authenticati
 
 	// extract auth method from raw value, remove
 	// quotes and any L/T WHSP and analyze
-	unq := unquote(expr.Values[0])
+	unq := unquote(condenseWHSP(expr.Values[0]))
 	ex = matchAuthenticationMethod(unq)
 	err = badAMErr(unq, ex.String())
 	return
@@ -179,7 +179,7 @@ func assertBindSecurityStrengthFactor(expr parser.RuleExpression) (ex SecuritySt
 
 	// extract factor from raw value, remove
 	// quotes and any L/T WHSP
-	unq := unquote(expr.Values[0])
+	unq := unquote(condenseWHSP(expr.Values[0]))
 	ex = SSF(unq)
 	err = badSecurityStrengthFactorErr(unq, ex.String())
 	return
@@ -190,7 +190,7 @@ func assertBindNet(expr parser.RuleExpression, key BindKeyword) (ex any, err err
 		return
 	}
 
-	unq := unquote(expr.Values[0])
+	unq := unquote(condenseWHSP(expr.Values[0]))
 
 	if key == BindIP {
 		// extract IP Address(es) from raw value,
@@ -241,7 +241,12 @@ func assertBindUGRDN(expr parser.RuleExpression, key BindKeyword) (ex any, err e
 	// if the value is an LDAP URI (which merely contains
 	// a DN, and is not one unto itself), handle the parse
 	// here instead of treating it as a DN.
-	var value string = unquote(expr.Values[0])
+	var value string = unquote(condenseWHSP(expr.Values[0]))
+	if len(value) < 3 {
+		err = illegalSyntaxPerTypeErr(value, key)
+		return
+	}
+
 	if hasPfx(value, LocalScheme) && contains(value, `?`) {
 		ex, err = parseLDAPURI(value, key)
 		return

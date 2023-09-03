@@ -247,6 +247,198 @@ func ExampleParseTargetRules_Contains() {
 */
 
 func TestParseBindRule_postANTLR(t *testing.T) {
+	tests := map[string]map[string]map[int][]string{
+		`valid`: {
+			`authmethod`: {
+				0: {`simple`},
+				1: {`none`},
+				2: {`sasl`},
+				3: {`ssl`},
+				4: {`sasl DIGEST-MD5`},
+				5: {`sasl GSSAPI`},
+			},
+			`ssf`: {
+				0: {`0`},
+				1: {`1`},
+				2: {`50`},
+				3: {`71`},
+				4: {`128`},
+				5: {`164`},
+				6: {`256`},
+			},
+			`ip`: {
+				0: {`192.168.1.100`},
+				1: {`10.8.0`},
+				2: {`fe80:19da:004a:1212::`},
+				3: {`10.8.*`},
+				4: {`10.8.`},
+				5: {`172.16.5`},
+				6: {`10`},
+				7: {`10.1.*`},
+				8: {`2001:47a:ee4::`},
+				9: {`2001:47a:*`},
+			},
+			`dns`: {
+				0: {`*.example.com`},
+				1: {`www.example.com`},
+				2: {`www.*.example.com`},
+				3: {`www.example.*`},
+			},
+			`userattr`: {
+				0: {`manager#SELFDN`},
+				1: {`owner#GROUPDN`},
+				2: {`parent[0,1,4].manager#LDAPURL`},
+				3: {`parent[1,3].manager#uid=frank,ou=People,dc=example,dc=com`},
+				4: {`parent[0].manager#SELFDN`},
+				5: {`manager#LDAPURL`},
+				6: {`parent[0,1,2,8].manager#USERDN`},
+			},
+			`groupattr`: {
+				0: {`manager#SELFDN`},
+				1: {`owner#GROUPDN`},
+				2: {`parent[0,1,4].manager#LDAPURL`},
+				3: {`parent[1,3].manager#uid=frank,ou=People,dc=example,dc=com`},
+				4: {`parent[0].manager#SELFDN`},
+				5: {`manager#LDAPURL`},
+				6: {`parent[0,1,2,8].manager#USERDN`},
+			},
+			`userdn`: {
+				0: {`ldap:///ou=People,dc=example,dc=com?cn,sn,givenName,objectClass,uid?one?(&(objectClass=employee)(terminated=FALSE))`},
+				1: {`ldap:///dc=example,dc=com??one?(&(objectClass=employee)(cn=*))`},
+				2: {`uid=jesse,ou=People,dc=example,dc=com`},
+			},
+			`groupdn`: {
+				0: {`ldap:///ou=People,dc=example,dc=com?cn,sn,givenName,objectClass,uid?one?(&(objectClass=employee)(terminated=FALSE))`},
+				1: {`ldap:///dc=example,dc=com??one?(&(objectClass=employee)(cn=*))`},
+				2: {`uid=jesse,ou=People,dc=example,dc=com`},
+			},
+			`roledn`: {
+				0: {`ldap:///cn=role,ou=Roles,dc=example,dc=com`},
+			},
+			`timeofday`: {
+				0: {`1702`},
+				1: {`0001`},
+				2: {`0106`},
+				3: {`1301`},
+				4: {`2359`},
+				5: {`0900`},
+			},
+			`dayofweek`: {
+				0: {`Mon,Wed`},
+				1: {`Tues,Wed`},
+				2: {`Sun,Sat`},
+				3: {`Fri`},
+				4: {`Wed`},
+				5: {`Sat,Sun`},
+			},
+			/*
+						`targetfilter`: map[int][]string{
+							0: []string{ `(&(objectClass=employee)(cn=Jesse Coretta))` },
+							1: []string{ `(objectClass=account)` },
+							2: []string{ `(&(objectClass=accounting)(terminated=FALSE))` },
+						},
+						`targattrfilters`: map[int][]string{
+			                                0: []string{ `add=homeDirectory:(&(objectClass=employee)(cn=Jesse Coretta)) && gecos:(|(objectClass=contractor)(objectClass=intern))` },
+							1: []string{ `add=homeDirectory:(&(objectClass=employee)(cn=Jesse Coretta)) && gecos:(|(objectClass=contractor)(objectClass=intern)),delete=uidNumber:(&(objectClass=accounting)(terminated=FALSE)) && gidNumber:(objectClass=account)` },
+							2: []string{ `delete=homeDirectory:(&(objectClass=employee)(cn=Jesse Coretta))` },
+						},
+			*/
+		},
+
+		`invalid`: {
+			`authmethod`: {
+				0: {`pimple`},
+				1: {`noone`},
+				2: {`sizzle`},
+				3: {`sslssllsll`},
+				4: {`sasl INDIGESTION-MD5`},
+				5: {`sasl GASSY`},
+				6: {``},
+			},
+			`userdn`: {
+				0: {``},
+				1: {`           i   `},
+			},
+			`groupdn`: {
+				0: {``},
+			},
+			`roledn`: {
+				0: {``},
+			},
+			`timeofday`: {
+				0: {`11702`},
+				1: {`2500`},
+				2: {`2401`},
+				3: {``},
+				4: {`A`},
+				5: {`:)`},
+			},
+			`ssf`: {
+				0: {`-1`},
+				1: {`farts`},
+				2: {`^`},
+				3: {`257`},
+				4: {`512`},
+				5: {`100-`},
+				6: {`a`},
+				7: {``},
+			},
+			`dayofweek`: {
+				0: {``},
+				1: {`Toes`},
+				2: {`Sub,Sad`},
+				3: {`Fry`},
+				4: {`          `},
+				5: {`Wad`},
+				6: {`-14`},
+				7: {`8`},
+				8: {`Sal,Sum`},
+			},
+			`ip`: {
+				0: {``},
+				1: {`10?8.0`},
+				2: {`.`},
+				3: {`??`},
+				4: {`@10.8.`},
+				5: {`(172.16.5`},
+				6: {`z748,`},
+				7: {`10.a.*`},
+			},
+			`dns`: {
+				0: {``},
+				1: {`%al;`},
+				2: {`][`},
+				3: {`..*`},
+			},
+		},
+	}
+
+	for typ, kwtests := range tests {
+		for kw, typtests := range kwtests {
+			for idx, value := range typtests {
+				br := new(BindRule).SetKeyword(kw)
+				for _, cop := range []ComparisonOperator{
+					Eq, Ne,
+				} {
+					expr := makeParserRuleExpr(1, value...)
+					br.SetOperator(cop).SetExpression(expr)
+					err := br.assertExpressionValue()
+
+					if err != nil && typ == `valid` {
+						t.Errorf("%s [%s;%s::%d (%s)] failed: %v [%v]",
+							t.Name(), kw, typ, idx, cop, err, expr)
+
+					} else if err == nil && typ == `invalid` {
+						t.Errorf("%s [%s;%s::%d (%s)] failed: no error for bogus value [%v]",
+							t.Name(), kw, typ, idx, cop, expr)
+					}
+				}
+			}
+		}
+	}
+}
+
+func TestParseBindRule_postANTLRold(t *testing.T) {
 	for k, v := range map[int]*BindRule{
 		0: new(BindRule).SetKeyword(`ssf`).SetOperator(Lt).SetExpression(makeParserRuleExpr(1, []string{
 			`175`,

@@ -51,6 +51,7 @@ func parseDoW(d string) (D DayOfWeek, err error) {
 	for i := 0; i < len(X); i++ {
 		dw := matchStrDoW(X[i])
 		if dw == noDay {
+			err = dowBadDayErr(X[i])
 			return
 		}
 		D.Shift(dw)

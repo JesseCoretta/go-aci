@@ -173,9 +173,53 @@ func (r *IPAddr) Set(addr ...string) *IPAddr {
 func (r *ipAddrs) set(addr ...string) {
 	for i := 0; i < len(addr); i++ {
 		if len(addr[i]) > 0 && r.unique(addr[i]) {
-			*r = append(*r, ipAddr(addr[i]))
+			if isValidIP(addr[i]) {
+				*r = append(*r, ipAddr(addr[i]))
+			}
 		}
 	}
+}
+
+func isValidIP(x string) bool {
+	return isV4(x) || isV6(x)
+}
+
+func isV4(x string) bool {
+	if len(x) <= 1 {
+		return false
+	}
+
+	for c := 0; c < len(x); c++ {
+		char := rune(byte(lc(string(x[c]))[0]))
+		if !isValidV4Char(char) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func isValidV4Char(char rune) bool {
+	return ('0' <= char && char <= '9') || char == '.' || char == '*' || char == '/'
+}
+
+func isV6(x string) bool {
+	if len(x) <= 1 {
+		return false
+	}
+
+	for c := 0; c < len(x); c++ {
+		char := rune(byte(lc(string(x[c]))[0]))
+		if !isValidV6Char(char) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func isValidV6Char(char rune) bool {
+	return ('0' <= char && char <= '9') || ('a' <= char && char <= 'f') || char == ':' || char == '*' || char == '/'
 }
 
 /*

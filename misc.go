@@ -433,10 +433,3 @@ func condenseWHSP(b string) (a string) {
 	a = trimS(a) //once more
 	return
 }
-
-func chopDNPfx(x string) string {
-	if hasPfx(x, LocalScheme) {
-		x = x[len(LocalScheme):]
-	}
-	return x
-}

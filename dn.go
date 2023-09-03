@@ -185,7 +185,7 @@ func validDistinguishedName(x any) (err error) {
 Keyword returns the Keyword (interface) assigned to the receiver instance. This shall be the keyword that appears in a BindRule bearing the receiver as a condition value.
 */
 func (r BindDistinguishedName) Keyword() Keyword {
-	if err := r.Valid(); err != nil {
+	if r.isZero() {
 		return nil
 	}
 	return r.distinguishedName.Keyword
@@ -397,7 +397,10 @@ func (r *TargetDistinguishedName) Set(x string, kw ...Keyword) TargetDistinguish
 isZero is a private method called by DistinguishedName.IsZero.
 */
 func (r *distinguishedName) isZero() bool {
-	return r == nil
+	if r == nil {
+		return true
+	}
+	return r.string == nil
 }
 
 /*
@@ -1054,18 +1057,14 @@ func (r BindDistinguishedNames) setExpressionValues(key Keyword, values ...strin
 
 		// Identify this distinguished name value
 		// as D, as referenced by index integer i.
-		D := trimS(values[i])
+		//
+		// If the DN has the LocalScheme (ldap:///)
+		// prefix, we will chop it off as it is not
+		// needed in literal form any longer.
+		D := chopDNPfx(condenseWHSP(values[i]))
 
-		// Push DN into receiver. If the DN has
-		// the LocalScheme (ldap:///) prefix, we
-		// will chop it off as it is not needed.
-		if hasPfx(D, LocalScheme) {
-			r.Push(BindDistinguishedName{newDistinguishedName(D[len(LocalScheme):], key)})
-		} else {
-			// this will probably never match when
-			// the data is coming from ANTLR ...
-			r.Push(BindDistinguishedName{newDistinguishedName(D, key)})
-		}
+		// Push DN into receiver
+		r.Push(BindDistinguishedName{newDistinguishedName(D, key)})
 	}
 }
 
@@ -1080,18 +1079,14 @@ func (r TargetDistinguishedNames) setExpressionValues(key Keyword, values ...str
 
 		// Identify this distinguished name value
 		// as D, as referenced by index integer i.
-		D := trimS(values[i])
+		//
+		// If the DN has the LocalScheme (ldap:///)
+		// prefix, we will chop it off as it is not
+		// needed in literal form any longer.
+		D := chopDNPfx(condenseWHSP(values[i]))
 
-		// Push DN into receiver. If the DN has
-		// the LocalScheme (ldap:///) prefix, we
-		// will chop it off as it is not needed.
-		if hasPfx(D, LocalScheme) {
-			r.Push(TargetDistinguishedName{newDistinguishedName(D[len(LocalScheme):], key)})
-		} else {
-			// this will probably never match when
-			// the data is coming from ANTLR ...
-			r.Push(TargetDistinguishedName{newDistinguishedName(D, key)})
-		}
+		// Push DN into receiver
+		r.Push(TargetDistinguishedName{newDistinguishedName(D, key)})
 	}
 }
 
@@ -1966,6 +1961,13 @@ type DistinguishedNameContext interface {
 	Valid() error
 
 	isDistinguishedNameContext()
+}
+
+func chopDNPfx(x string) string {
+	if hasPfx(x, LocalScheme) {
+		x = x[len(LocalScheme):]
+	}
+	return x
 }
 
 /*

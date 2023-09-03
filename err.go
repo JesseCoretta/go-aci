@@ -194,8 +194,13 @@ func levelsNotFoundErr() error {
 }
 
 func dowBadTimeErr() error {
-	emsg := "%T instance describes invalid dayofweek"
+	emsg := "%T instance describes invalid timeofday"
 	return errorf(emsg, TimeOfDay{})
+}
+
+func dowBadDayErr(x any) error {
+	emsg := "%T instance describes invalid dayofweek: %v"
+	return errorf(emsg, DayOfWeek{}, x)
 }
 
 func noPermissionDispErr() error {
