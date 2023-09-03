@@ -375,3 +375,71 @@ func ExampleBindRules_Compare() {
 	fmt.Printf("Equal: %t", tf1.Compare(tf2))
 	// Output: Equal: false
 }
+
+func ExampleBindRule_Category() {
+	fmt.Printf("%s", SSF(71).Eq().Category())
+	// Output: ssf
+}
+
+func ExampleBindRules_Category() {
+	fmt.Printf("%s", And(SSF(71).Eq()).Category())
+	// Output: and
+}
+
+func ExampleBindRule_Keyword() {
+	fmt.Printf("%s", SSF(0).Ne().Keyword())
+	// Output: ssf
+}
+
+func ExampleBindRule_Kind() {
+	var tr BindRule
+	fmt.Printf("%s", tr.Kind())
+	// Output: condition
+}
+
+func ExampleBindRule_ID() {
+	fmt.Printf("%s", IP(`192.168.`).Ne().ID())
+	// Output: bind
+}
+
+func ExampleBindRule_Expression() {
+	dn := `uid=jesse,ou=Contractors,ou=People,dc=example,dc=com`
+	fmt.Printf("%s", UDN(dn).Eq().Expression())
+	// Output: ldap:///uid=jesse,ou=Contractors,ou=People,dc=example,dc=com
+}
+
+func ExampleBindRule_IsZero() {
+	var tr BindRule
+	fmt.Printf("Zero: %t", tr.IsZero())
+	// Output: Zero: true
+}
+
+func ExampleBindRule_Valid() {
+	var tr BindRule
+	fmt.Printf("Valid: %t", tr.Valid() == nil)
+	// Output: Valid: false
+}
+
+func ExampleBindRule_SetQuoteStyle() {
+	var tgt BindRule
+	tgt.SetKeyword(BindUDN)
+	tgt.SetOperator(Ne)
+	tgt.SetExpression(UDNs(
+		UDN(`ldap:///uid=jesse,ou=People,dc=example,dc=com`),
+		UDN(`ldap:///uid=courtney,ou=People,dc=example,dc=com`),
+		UDN(`ldap:///uid=jimmy,ou=People,dc=example,dc=com`),
+	))
+
+	tgt.Paren() // optional
+
+	tgt.SetQuoteStyle(0)
+	style1 := tgt.String()
+
+	tgt.SetQuoteStyle(1)
+	style2 := tgt.String()
+
+	fmt.Printf("\n0: %s\n1: %s", style1, style2)
+	// Output:
+	// 0: ( userdn != "ldap:///uid=jesse,ou=People,dc=example,dc=com" || "ldap:///uid=courtney,ou=People,dc=example,dc=com" || "ldap:///uid=jimmy,ou=People,dc=example,dc=com" )
+	// 1: ( userdn != "ldap:///uid=jesse,ou=People,dc=example,dc=com || ldap:///uid=courtney,ou=People,dc=example,dc=com || ldap:///uid=jimmy,ou=People,dc=example,dc=com" )
+}
