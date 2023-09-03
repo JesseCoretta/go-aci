@@ -34,15 +34,6 @@ func badInhErr(bad string) error {
 	return errorf("Bad Inheritance value '%s'; must conform to 'parent[0-9+].<at>#<bt_or_av>'", bad)
 }
 
-func missingLocalSchemeDNErr(key Keyword, x int, D string) (err error) {
-	if !hasPfx(D, LocalScheme) {
-		err = errorf("Illegal %s distinguishedName slice: [index:%d;value:%s] missing LDAP local scheme (%s)",
-			key, x, D, LocalScheme)
-	}
-
-	return
-}
-
 func badClockTimeErr(raw, thyme string) (err error) {
 	if thyme != raw {
 		err = errorf("Unexpected %s clock time parsing result; want '%s', got '%s' (hint: use military time; 0000 through 2400)",
@@ -84,11 +75,6 @@ func badAMErr(raw, am string) (err error) {
 	if !eq(am, raw) {
 		err = errorf("Unexpected %s auth method parsing result; want '%s', got '%s'", BindAM, raw, am)
 	}
-	return
-}
-
-func badComparisonOperatorErr(cop string) (err error) {
-	err = errorf("Unidentified or misaligned bind rule comparison operator '%s'; aborting", cop)
 	return
 }
 
