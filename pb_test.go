@@ -253,7 +253,7 @@ func ExamplePermissionBindRules_String() {
 }
 
 func TestPermissionBindRule_codecov(t *testing.T) {
-	var pb PermissionBindRule
+	var pb *PermissionBindRule = new(PermissionBindRule)
 	_ = pb.IsZero()
 	_ = pb.Valid()
 	pb.B = And()
@@ -264,10 +264,10 @@ func TestPermissionBindRules_codecov(t *testing.T) {
 	var pbs PermissionBindRules
 	_ = pbs.IsZero()
 	_ = pbs.Valid()
-	_ = pbs.Valid()
 
-	var pb PermissionBindRule
+	var pb *PermissionBindRule = new(PermissionBindRule)
 	pb.B = And()
 	pbs.Push(pb)
 	_ = pbs.Len()
+	_ = pbs.Valid()
 }
