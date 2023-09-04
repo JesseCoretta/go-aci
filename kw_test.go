@@ -17,21 +17,25 @@ func TestKeyword_bogusMatches(t *testing.T) {
 		if bt := matchBT(bogus); bt != BindType(0x0) {
 			t.Errorf("%s failed: '%s' matched bogus %T",
 				t.Name(), bogus, bt)
+			return
 		}
 
 		if tk := matchTKW(bogus); tk != TargetKeyword(0x0) {
 			t.Errorf("%s failed: '%s' matched bogus %T",
 				t.Name(), bogus, tk)
+			return
 		}
 
 		if bk := matchBKW(bogus); bk != BindKeyword(0x0) {
 			t.Errorf("%s failed: '%s' matched bogus %T",
 				t.Name(), bogus, bk)
+			return
 		}
 
 		if key, ok := idKW(bogus); ok || key != nil {
 			t.Errorf("%s failed: '%s' matched %s interface context",
 				t.Name(), bogus, key)
+			return
 		}
 	}
 }

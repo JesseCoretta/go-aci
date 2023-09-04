@@ -51,6 +51,7 @@ func TestACIs(t *testing.T) {
 	want := `( target = "ldap:///uid=*,ou=People,dc=example,dc=com" )(version 3.0; acl "Limit people access to timeframe"; allow(read,search,compare) ( timeofday >= "1730" AND timeofday < "2400" );)`
 	if want != i.String() {
 		t.Errorf("%s failed: want '%s', got '%s'", t.Name(), want, i)
+		return
 	}
 
 	Ins = ACIs()
@@ -62,10 +63,12 @@ func TestACIs(t *testing.T) {
 	Ins.Push(`<3 <3 <3`)
 	if Ins.Len() != 1 {
 		t.Errorf("%s failed to push %T into %T", t.Name(), i, Ins)
+		return
 	}
 
 	if Ins.String() != Ins.Index(0).String() {
 		t.Errorf("%s strcmp fail", t.Name())
+		return
 	}
 }
 

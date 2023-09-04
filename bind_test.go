@@ -23,6 +23,7 @@ func TestBindRuleMethods(t *testing.T) {
 	for i := 0; i < brm.Len(); i++ {
 		if cop, meth := brm.Index(i + 1); meth().String() != fmt.Sprintf("ssf %s %q", cop, `256`) {
 			t.Errorf("%s failed: failed to call index %d [%s] non-nil %T", t.Name(), i, cop.Context(), brm)
+			return
 		}
 	}
 }
@@ -52,6 +53,7 @@ func TestBindRules_wordToStack(t *testing.T) {
 		if _, result := wordToStack(word); expect != result {
 			t.Errorf("%s unexpected result: want %t, got %t",
 				t.Name(), expect, result)
+			return
 		}
 	}
 }
@@ -119,12 +121,14 @@ func TestBindRules_bogus(t *testing.T) {
 	if replacer.String() != replaced.String() {
 		t.Errorf("%s failed: %T.Replace did not replace specified slice value, want '%s', got '%s'",
 			t.Name(), br, replacer, replaced)
+		return
 	}
 
 	ctx := br.Traverse(1)
 	if ctx.String() != replaced.String() {
 		t.Errorf("%s failed: %T.Traverse did not return replaced slice value, want '%s', got '%s'",
 			t.Name(), br, replaced, ctx)
+		return
 	}
 }
 

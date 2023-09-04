@@ -28,15 +28,18 @@ func TestBindDistinguishedName_codecov(t *testing.T) {
 			if err := O.Valid(); err == nil {
 				t.Errorf("%s failed: invalid %T returned no validity error",
 					t.Name(), O)
+				return
 			}
 
 			if !O.IsZero() {
 				t.Errorf("%s failed: non-zero %T", t.Name(), O)
+				return
 			}
 
 			if msg, bad := matchBadDNString(O.String()); !bad {
 				t.Errorf("%s failed: unexpected string result; want '%s', got '%s'",
 					t.Name(), msg, O)
+				return
 			}
 
 			// process DN
@@ -50,6 +53,7 @@ func TestBindDistinguishedName_codecov(t *testing.T) {
 				err := unexpectedStringResult(kw.String(), dnBefore, dnAfter)
 				t.Errorf("%s failed: %v",
 					t.Name(), err)
+				return
 			}
 
 			O.Set(`159`)
@@ -66,6 +70,7 @@ func TestBindDistinguishedName_codecov(t *testing.T) {
 					err := unexpectedStringResult(O.String(), wcop, T.String())
 					t.Errorf("%s [%s] multival failed [%s rule]: %v",
 						t.Name(), O.Keyword(), kw, err)
+					return
 				}
 			}
 		}
@@ -91,15 +96,18 @@ func TestTargetDistinguishedName_codecov(t *testing.T) {
 			if err := O.Valid(); err == nil {
 				t.Errorf("%s failed: invalid %T returned no validity error",
 					t.Name(), O)
+				return
 			}
 
 			if !O.IsZero() {
 				t.Errorf("%s failed: non-zero %T", t.Name(), O)
+				return
 			}
 
 			if msg, bad := matchBadDNString(O.String()); !bad {
 				t.Errorf("%s failed: unexpected string result; want '%s', got '%s'",
 					t.Name(), msg, O)
+				return
 			}
 
 			// process DN
@@ -113,6 +121,7 @@ func TestTargetDistinguishedName_codecov(t *testing.T) {
 				err := unexpectedStringResult(kw.String(), dnBefore, dnAfter)
 				t.Errorf("%s failed: %v",
 					t.Name(), err)
+				return
 			}
 
 			O.Set(`159`)
@@ -137,6 +146,7 @@ func TestTargetDistinguishedName_codecov(t *testing.T) {
 				if T := cops[cop](); T.String() != wcop {
 					err := unexpectedStringResult(kw.String(), wcop, T.String())
 					t.Errorf("%s failed [%s rule]: %v", t.Name(), kw.String(), err)
+					return
 				}
 
 			}
@@ -173,16 +183,19 @@ func TestBindDistinguishedNames_codecov(t *testing.T) {
 			if err := O.Valid(); err == nil {
 				t.Errorf("%s [%s] multival failed: invalid %T returned no validity error",
 					t.Name(), Id, O)
+				return
 			}
 
 			if msg, bad := matchBadDNString(O.String()); !bad {
 				t.Errorf("%s [%s] failed: unexpected string result; want '%s', got '%s'",
 					t.Name(), Id, msg, O)
+				return
 			}
 
 			if Os.Push(O); Os.Len() > Ol {
 				t.Errorf("%s [%s]multival failed: invalid %T instance pushed into %T without error",
 					t.Name(), Id, O, Os)
+				return
 			}
 
 			// process DN
@@ -198,6 +211,7 @@ func TestBindDistinguishedNames_codecov(t *testing.T) {
 			if Os.Len() != Ol+1 {
 				t.Errorf("%s [%s] multival failed: valid %T[%s] instance (%s) not pushed into %T[%s; len:%d]",
 					t.Name(), Id, O, O.Keyword(), O, Os, Kw, Ol)
+				return
 			}
 
 			_ = Os.setQuoteStyle(0)
@@ -221,6 +235,7 @@ func TestBindDistinguishedNames_codecov(t *testing.T) {
 				if B := cops[cop](); B.Paren().String() != wcop {
 					err := unexpectedStringResult(kw.String(), wcop, B.String())
 					t.Errorf("%s [%s] multival failed [%s rule]: %v", t.Name(), Id, kw.String(), err)
+					return
 				}
 
 			}
@@ -257,16 +272,19 @@ func TestTargetDistinguishedNames_codecov(t *testing.T) {
 			if err := O.Valid(); err == nil {
 				t.Errorf("%s [%s] multival failed: invalid %T returned no validity error",
 					t.Name(), Id, O)
+				return
 			}
 
 			if msg, bad := matchBadDNString(O.String()); !bad {
 				t.Errorf("%s [%s] failed: unexpected string result; want '%s', got '%s'",
 					t.Name(), Id, msg, O)
+				return
 			}
 
 			if Os.Push(O); Os.Len() > Ol {
 				t.Errorf("%s [%s] multival failed: invalid %T instance pushed into %T without error",
 					t.Name(), Id, O, Os)
+				return
 			}
 
 			// process DN
@@ -282,6 +300,7 @@ func TestTargetDistinguishedNames_codecov(t *testing.T) {
 			if Os.Len() != Ol+1 {
 				t.Errorf("%s [%s] multival failed: valid %T[%s] instance (%s) not pushed into %T[%s; len:%d]",
 					t.Name(), Id, O, O.Keyword(), O, Os, Kw, Ol)
+				return
 			}
 
 			_ = Os.setQuoteStyle(0)
@@ -305,6 +324,7 @@ func TestTargetDistinguishedNames_codecov(t *testing.T) {
 				if B := cops[cop](); B.String() != wcop {
 					err := unexpectedStringResult(kw.String(), wcop, B.String())
 					t.Errorf("%s [%s] multival failed [%s rule]: %v", t.Name(), Id, kw.String(), err)
+					return
 				}
 
 			}

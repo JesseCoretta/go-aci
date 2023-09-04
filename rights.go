@@ -348,6 +348,9 @@ Disposition returns the string disposition `allow`
 or 'deny', depending on the state of the receiver.
 */
 func (r Permission) Disposition() string {
+	if r.permission == nil {
+		return `<unknown_disposition>`
+	}
 	return r.permission.disposition()
 }
 

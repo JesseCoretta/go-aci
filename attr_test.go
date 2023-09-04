@@ -717,6 +717,7 @@ func TestAttributeTypes(t *testing.T) {
 
 			if err := testEmptyAttrContext(t, keyword, attr, attrs, al); err != nil {
 				t.Errorf(err.Error())
+				return
 			}
 
 			// process attribute
@@ -726,6 +727,7 @@ func TestAttributeTypes(t *testing.T) {
 			if attrs.Push(attr); !attrs.Contains(raw) {
 				t.Errorf("%s [%s] multival failed: valid %T[%s] instance (%s) not pushed into %T[%s; len:%d]",
 					t.Name(), keyword, attr, keyword, attr, attrs, attrs.Keyword(), al)
+				return
 			}
 			popped := attrs.Pop()
 			attrs.Push(popped)
@@ -743,6 +745,7 @@ func TestAttributeTypes(t *testing.T) {
 				if meth == nil {
 					t.Errorf("%s [%s] multival failed: expected %s method (%T), got nil",
 						t.Name(), attrs.Keyword(), cop.Context(), meth)
+					return
 				}
 
 				wcop := sprintf("( %s %s %q )", attrs.Keyword(), cop, actx.String())
@@ -750,6 +753,7 @@ func TestAttributeTypes(t *testing.T) {
 					err := unexpectedStringResult(actx.String(), wcop, T.String())
 					t.Errorf("%s multival failed [%s rule]: %v",
 						t.Name(), attrs.Keyword(), err)
+					return
 				}
 			}
 		}

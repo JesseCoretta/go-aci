@@ -53,6 +53,7 @@ func TestObjectIdentifiers_codecov(t *testing.T) {
 
 			if err := testEmptyOidContext(t, keyword, Oid, Oids, Ol); err != nil {
 				t.Errorf(err.Error())
+				return
 			}
 
 			// process OID
@@ -73,6 +74,7 @@ func TestObjectIdentifiers_codecov(t *testing.T) {
 			if Oids.Push(Oid); !Oids.Contains(oid) {
 				t.Errorf("%s [%s] multival failed: valid %T[%s] instance (%s) not pushed into %T[%s; len:%d]",
 					t.Name(), keyword, Oid, Oid.Keyword(), Oid, Oids, Oids.Keyword(), Ol)
+				return
 			}
 			_ = Oids.Contains('𝝅')
 			_ = Oids.Contains(43785)
@@ -103,6 +105,7 @@ func TestObjectIdentifiers_codecov(t *testing.T) {
 					if meth == nil {
 						t.Errorf("%s [%s] multival failed: expected %s method (%T), got nil",
 							t.Name(), keyword, cop.Context(), meth)
+						return
 					}
 
 					wcop := sprintf("( %s %s %q )", octx.Keyword(), cop, octx.String())
@@ -110,6 +113,7 @@ func TestObjectIdentifiers_codecov(t *testing.T) {
 						err := unexpectedStringResult(octx.String(), wcop, T.String())
 						t.Errorf("%s [%s] multival failed [%s rule]: %v",
 							t.Name(), keyword, octx.Keyword(), err)
+						return
 					}
 				}
 			}

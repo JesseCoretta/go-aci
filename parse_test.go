@@ -18,6 +18,7 @@ func TestParseBindRule(t *testing.T) {
 
 	if want != b.String() {
 		t.Errorf("%s failed:\nwant '%s'\ngot '%s'", t.Name(), want, b)
+		return
 	}
 }
 
@@ -35,14 +36,17 @@ func TestParseBindRules(t *testing.T) {
 
 	if want != r.String() {
 		t.Errorf("%s failed:\nwant '%s',\ngot  '%s'", t.Name(), want, r)
+		return
 	}
 
 	if r.Keyword() == nil {
 		t.Errorf("%s failed: unidentified %T", t.Name(), r.Keyword())
+		return
 	}
 
 	if !r.IsNesting() {
 		t.Errorf("%s failed: nesting not detected", t.Name())
+		return
 	}
 
 	bl := r.Len()
@@ -54,23 +58,27 @@ func TestParseBindRules(t *testing.T) {
 
 	if r.Push(ctx); r.Len() != bl {
 		t.Errorf("%s failed: bogus enveloped content was pushed into %T", t.Name(), r)
+		return
 	}
 
 	popped := r.Pop()
 	bl = r.Len()
 	if popped.String() != orig {
 		t.Errorf("%s failed: unexpected element popped; want '%s', got '%s'", t.Name(), orig, popped)
+		return
 	}
 
 	r.Push(popped)
 	r.remove(r.Len() - 1)
 	if r.Len() != bl {
 		t.Errorf("%s failed: content not removed from %T", t.Name(), r)
+		return
 	}
 
 	r.insert(popped, 0)
 	if r.Len() == bl {
 		t.Errorf("%s failed: content not inserted into %T", t.Name(), r)
+		return
 	}
 }
 
@@ -420,10 +428,12 @@ func TestParseBindRule_postANTLR(t *testing.T) {
 					if err != nil && typ == `valid` {
 						t.Errorf("%s [%s;%s::%d (%s)] failed: %v [%v]",
 							t.Name(), kw, typ, idx, cop, err, expr)
+						return
 
 					} else if err == nil && typ == `invalid` {
 						t.Errorf("%s [%s;%s::%d (%s)] failed: no error for bogus value [%v]",
 							t.Name(), kw, typ, idx, cop, expr)
+						return
 					}
 				}
 			}
@@ -576,10 +586,12 @@ func TestParseTargetRule_postANTLR(t *testing.T) {
 					if err != nil && typ == `valid` {
 						t.Errorf("%s [%s;%s::%d (%s)] failed: %v [%v]",
 							t.Name(), kw, typ, idx, cop, err, expr)
+						return
 
 					} else if err == nil && typ == `invalid` {
 						t.Errorf("%s [%s;%s::%d (%s)] failed: no error for bogus value [%v]",
 							t.Name(), kw, typ, idx, cop, expr)
+						return
 					}
 				}
 			}
@@ -599,16 +611,19 @@ func TestParsePermission(t *testing.T) {
 	if err := perm.Parse(raw); err != nil {
 		t.Errorf("%s failed: %v",
 			t.Name(), illegalSyntaxPerTypeErr(perm, nil))
+		return
 	}
 
 	if !perm.Positive(ReadAccess) {
 		t.Errorf("%s failed; could not parse raw privileges (%s) into valid %T",
 			t.Name(), raw, perm)
+		return
 	}
 
 	if perm.String() != raw {
 		t.Errorf("%s failed; bad result: want '%s', got '%s'",
 			t.Name(), raw, perm)
+		return
 	}
 }
 
@@ -636,6 +651,7 @@ func TestParsePermissionBindRule(t *testing.T) {
 	if pbr.String() != raw {
 		t.Errorf("%s failed; bad result: want '%s', got '%s'",
 			t.Name(), raw, pbr)
+		return
 	}
 }
 

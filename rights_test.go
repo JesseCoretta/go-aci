@@ -11,6 +11,7 @@ func TestAllow(t *testing.T) {
 	got := G.String()
 	if want != got {
 		t.Errorf("%s failed: want '%s', got '%s'", t.Name(), want, got)
+		return
 	}
 }
 
@@ -28,6 +29,7 @@ func TestAllow_all(t *testing.T) {
 	got := G.String()
 	if want != got {
 		t.Errorf("%s failed: want '%s', got '%s'", t.Name(), want, got)
+		return
 	}
 }
 
@@ -50,6 +52,7 @@ func TestDeny(t *testing.T) {
 	got := G.String()
 	if want != got {
 		t.Errorf("%s failed: want '%s', got '%s'", t.Name(), want, got)
+		return
 	}
 }
 
@@ -156,11 +159,13 @@ func TestRights_bogus(t *testing.T) {
 	if err := p.Valid(); err == nil {
 		t.Errorf("%s failed: invalid %T returned no validity error",
 			t.Name(), p)
+		return
 	}
 
 	if p.String() != badPerm {
 		t.Errorf("%s failed: invalid %T returned no bogus string warning",
 			t.Name(), p)
+		return
 	}
 
 	p.Unshift(`all`)
@@ -169,6 +174,7 @@ func TestRights_bogus(t *testing.T) {
 	if !p.IsZero() {
 		t.Errorf("%s failed: overflow or underflow shift value accepted for %T",
 			t.Name(), p)
+		return
 	}
 
 	p.Unshift(-5)     //underflow
@@ -176,6 +182,7 @@ func TestRights_bogus(t *testing.T) {
 	if !p.IsZero() {
 		t.Errorf("%s failed: overflow or underflow unshift value accepted for %T",
 			t.Name(), p)
+		return
 	}
 
 }
@@ -183,8 +190,8 @@ func TestRights_bogus(t *testing.T) {
 func TestRights_lrShift(t *testing.T) {
 	var p Permission = Allow(NoAccess)
 	if !p.Positive(0) || !p.Positive(`none`) {
-		t.Errorf("%s failed: cannot identify 'none' permission",
-			t.Name())
+		t.Errorf("%s failed: cannot identify 'none' permission", t.Name())
+		return
 	}
 
 	// three iterations, one per supported
@@ -211,6 +218,7 @@ func TestRights_lrShift(t *testing.T) {
 				if shifters[j](term); p.Positive(term) != phase {
 					t.Errorf("%s failed: %T %s %s failed [key:%d; term:%v] (value:%v)",
 						t.Name(), p, typ, mode, k, term, p)
+					return
 				}
 			}
 		}
@@ -237,4 +245,28 @@ func testGetRightsTermType(i int, k Right, v string) (term any, typ string) {
 	typ = sprintf("%T", term) // label for err
 
 	return
+}
+
+func TestPermission_codecov(t *testing.T) {
+	if ReadAccess.Compare(WriteAccess) {
+		t.Errorf("%s failed: %s wrongly equal to %s",
+			t.Name(), ReadAccess, WriteAccess)
+		return
+	}
+
+	var p Permission
+	_ = p.Len()
+	_ = p.Parse(`alow(red,rite)`)
+	_ = p.Disposition()
+	_ = p.Positive(ProxyAccess)
+	p = Allow(ReadAccess, WriteAccess)
+	d := Deny(ReadAccess, WriteAccess)
+	if p.Compare(d) {
+		t.Errorf("%s failed: %s wrongly equal to %s",
+			t.Name(), p, d)
+		return
+	}
+
+	p.permission = new(permission)
+	_ = p.Valid()
 }

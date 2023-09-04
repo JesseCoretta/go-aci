@@ -20,6 +20,7 @@ func TestSecurityStrengthFactor(t *testing.T) {
 			err = unexpectedStringResult(typ, want, got.String())
 			t.Errorf("%s failed [%s int]: %v",
 				t.Name(), typ, err)
+			return
 		}
 
 		// reset using string representation of iterated integer
@@ -27,6 +28,7 @@ func TestSecurityStrengthFactor(t *testing.T) {
 			err = unexpectedStringResult(typ, want, got.String())
 			t.Errorf("%s failed [%s str]: %v",
 				t.Name(), typ, err)
+			return
 		}
 
 		// ssf qualifies for all comparison operators
@@ -55,6 +57,7 @@ func TestSecurityStrengthFactor(t *testing.T) {
 
 			if err != nil {
 				t.Errorf("%s failed [%s rule]: %v", t.Name(), typ, err)
+				return
 			}
 		}
 
@@ -72,6 +75,7 @@ func TestSecurityStrengthFactor(t *testing.T) {
 		if got := factor.Set(word); got.String() != value {
 			err = unexpectedStringResult(typ, value, got.String())
 			t.Errorf("%s failed [factor word '%s']: %v", t.Name(), word, err)
+			return
 		}
 	}
 }

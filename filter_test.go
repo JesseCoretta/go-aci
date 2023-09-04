@@ -16,17 +16,20 @@ func TestSearchFilter_setFromVar(t *testing.T) {
 	if empty := f.String(); empty != `` {
 		t.Errorf("%T failed: [%T.String]; should be empty",
 			t.Name(), f)
+		return
 	}
 	// for codecov (zero string set)
 	f.Set(``)
 	if err := f.Eq().Valid(); err != nil {
 		t.Errorf("%T failed: [%T.Eq];\nerror: %v",
 			t.Name(), f, err)
+		return
 	}
 
 	if err := f.Ne().Valid(); err != nil {
 		t.Errorf("%T failed: [%T.Ne];\nerror: %v",
 			t.Name(), f, err)
+		return
 	}
 
 	f.Set(want)
@@ -34,6 +37,7 @@ func TestSearchFilter_setFromVar(t *testing.T) {
 	if want != f.String() {
 		t.Errorf("%T failed [Filter]:\nwant '%s'\ngot  '%s'",
 			t.Name(), want, f)
+		return
 	}
 }
 
@@ -45,6 +49,7 @@ func TestFilter(t *testing.T) {
 	if want != f.String() {
 		t.Errorf("%T failed [Filter]:\nwant '%s'\ngot  '%s'",
 			t.Name(), want, f)
+		return
 	}
 
 	c := f.Eq()
@@ -52,6 +57,7 @@ func TestFilter(t *testing.T) {
 	if want != c.String() {
 		t.Errorf("%T failed [SearchFilter.Eq]:\nwant '%s'\ngot  '%s'",
 			t.Name(), want, f)
+		return
 	}
 
 	c = f.Ne()
@@ -59,6 +65,7 @@ func TestFilter(t *testing.T) {
 	if want != c.String() {
 		t.Errorf("%T failed [SearchFilter.Ne]:\nwant '%s'\ngot  '%s'",
 			t.Name(), want, f)
+		return
 	}
 }
 
@@ -70,6 +77,7 @@ func TestFilter_Set(t *testing.T) {
 	if want != f.String() {
 		t.Errorf("%T failed [SearchFilter.Set]:\nwant '%s'\ngot  '%s'",
 			t.Name(), want, f)
+		return
 	}
 }
 
@@ -84,6 +92,7 @@ func TestAttributeFilter(t *testing.T) {
 	if want != af.String() {
 		t.Errorf("%T failed [AttributeFilter]:\nwant '%s'\ngot  '%s'",
 			t.Name(), want, af)
+		return
 	}
 }
 
@@ -119,6 +128,7 @@ func TestAttributeFilterOperation_byStringParse(t *testing.T) {
 	if afo.String() != want {
 		t.Errorf("%T failed [AttributeFilterOperation.AFO]:\nwant '%s'\ngot  '%s'",
 			t.Name(), want, afo)
+		return
 	}
 }
 
@@ -133,6 +143,7 @@ func TestAttributeFilterOperation_byType(t *testing.T) {
 	if dafo.String() != want {
 		t.Errorf("%T failed [AttributeFilterOperation.AFO]:\nwant '%s'\ngot  '%s'",
 			t.Name(), want, dafo)
+		return
 	}
 }
 
@@ -145,12 +156,14 @@ func TestAttributeFilterOperation_addMultiVal(t *testing.T) {
 	if afo.String() != want {
 		t.Errorf("%T failed [AttributeFilterOperation.AFO(Add)]:\nwant '%s'\ngot  '%s'",
 			t.Name(), want, afo)
+		return
 	}
 
 	af2a := afo.Pop()
 	if af2a.String() != af2 {
 		t.Errorf("%T failed [AttributeFilterOperation.Pop]:\nwant '%s'\ngot  '%s'",
 			t.Name(), af2, af2a)
+		return
 	}
 }
 
@@ -163,6 +176,7 @@ func TestAttributeFilterOperation_delMultiVal(t *testing.T) {
 	if afo.String() != want {
 		t.Errorf("%T failed [AttributeFilterOperation.AFO(Delete)]:\nwant '%s'\ngot  '%s'",
 			t.Name(), want, afo)
+		return
 	}
 }
 
@@ -180,6 +194,7 @@ func TestAttributeFilterOperations_byStringParse(t *testing.T) {
 	if err := afos.Parse(want); err != nil {
 		t.Errorf("%s failed [AttributeFilterOperations.Parse(raw)]: %v",
 			t.Name(), err)
+		return
 	}
 
 	// verify the complete string representation
@@ -187,12 +202,14 @@ func TestAttributeFilterOperations_byStringParse(t *testing.T) {
 	if afos.String() != want {
 		t.Errorf("%s failed [AttributeFilterOperations.Parse(compare)]:\nwant '%s'\ngot  '%s'",
 			t.Name(), want, afos)
+		return
 	}
 
 	// verify the top-level stack's length.
 	if afos.Len() != 2 {
 		t.Errorf("%s failed [AttributeFilterOperations.Parse(chk AFOs len)]: want 'len:%d', got 'len:'%d'",
 			t.Name(), 2, afos.Len())
+		return
 	}
 
 	// scan the sub slices, verify those
@@ -201,6 +218,7 @@ func TestAttributeFilterOperations_byStringParse(t *testing.T) {
 		if afo := afos.Index(i); afo.Len() != 2 {
 			t.Errorf("%s failed [AttributeFilterOperations.Parse(chk AFO len)]: want 'len:%d', got 'len:'%d'",
 				t.Name(), 2, afo.Len())
+			return
 		}
 	}
 
@@ -209,6 +227,7 @@ func TestAttributeFilterOperations_byStringParse(t *testing.T) {
 	if err := afos.Parse(want, AttributeFilterOperationsSemiDelim); err == nil {
 		t.Errorf("%s failed [AttributeFilterOperations.Parse(raw, alt delim)]: incorrect delimiter caused no error (but should have)",
 			t.Name())
+		return
 	}
 }
 
@@ -230,12 +249,14 @@ func TestAttributeFilterOperations_byTypes(t *testing.T) {
 	if afos.String() != want {
 		t.Errorf("%T failed [AttributeFilterOperations.AFOs]:\nwant '%s'\ngot  '%s'",
 			t.Name(), want, afos)
+		return
 	}
 
 	af2a := afos.Pop()
 	if af2a.String() != want2 {
 		t.Errorf("%T failed [AttributeFilterOperations.Pop]:\nwant '%s'\ngot  '%s'",
 			t.Name(), want2, af2a)
+		return
 	}
 }
 
@@ -247,6 +268,7 @@ func TestAttributeFilterOperation_toTargetRule(t *testing.T) {
 	if rule.String() != want {
 		t.Errorf("%T failed [AttributeFilterOperation.Eq]:\nwant '%s'\ngot  '%s'",
 			t.Name(), want, rule)
+		return
 	}
 }
 
@@ -264,6 +286,7 @@ func TestAttributeFilterOperations_toTargetRule(t *testing.T) {
 	if !afos.IsZero() {
 		t.Errorf("%s failed [%T.IsZero]:\nwant 'true'\ngot 'false'",
 			t.Name(), afos)
+		return
 	}
 	_ = afos.Contains('𝝅')
 
@@ -293,6 +316,7 @@ func TestAttributeFilterOperations_toTargetRule(t *testing.T) {
 	if rule.String() != want {
 		t.Errorf("%T failed [AttributeFilterOperations.Eq]:\nwant '%s'\ngot  '%s'",
 			t.Name(), want, rule)
+		return
 	}
 }
 

@@ -11,11 +11,13 @@ func TestLDAPURI_Parse(t *testing.T) {
 	if err := l.Parse(want); err != nil {
 		t.Errorf("%s failed [LDAPURI.Parse()]: %v",
 			t.Name(), err)
+		return
 	}
 
 	if got := l.String(); want != got {
 		t.Errorf("%s failed: [LDAPURI.Parse(compare)]:\nwant: '%s'\ngot:  '%s'",
 			t.Name(), want, got)
+		return
 	}
 }
 
@@ -24,6 +26,7 @@ func TestURI_initParse(t *testing.T) {
 	if got := URI(want); want != got.String() {
 		t.Errorf("%s failed: [LDAPURI.initParse(compare)]:\nwant: '%s'\ngot:  '%s'",
 			t.Name(), want, got)
+		return
 	}
 }
 
@@ -33,8 +36,10 @@ func TestURI_bindRules(t *testing.T) {
 	// codecov
 	if !x.Eq().IsZero() {
 		t.Errorf("%s failed: want 'true', got 'false'", t.Name())
+		return
 	} else if !x.Ne().IsZero() {
 		t.Errorf("%s failed: want 'true', got 'false'", t.Name())
+		return
 	}
 
 	x = URI()
@@ -48,6 +53,7 @@ func TestURI_bindRules(t *testing.T) {
 	if got := x.Eq().String(); got != want {
 		t.Errorf("%s failed: [LDAPURI.piecemeal(compare)]:\nwant: '%s'\ngot:  '%s'",
 			t.Name(), want, got)
+		return
 	}
 
 	// overwrite UserDN with GroupDN
@@ -58,6 +64,7 @@ func TestURI_bindRules(t *testing.T) {
 	if got := x.Ne().Paren().String(); got != want {
 		t.Errorf("%s failed: [LDAPURI.piecemeal(compare)]:\nwant: '%s'\ngot:  '%s'",
 			t.Name(), want, got)
+		return
 	}
 }
 
@@ -73,10 +80,11 @@ func TestURI_piecemeal(t *testing.T) {
 	if got := piecemeal; want != got.String() {
 		t.Errorf("%s failed: [LDAPURI.piecemeal(compare)]:\nwant: '%s'\ngot:  '%s'",
 			t.Name(), want, got)
+		return
 	}
 
 	/*
-		// FIX ME
+		// TODO FIX ME
 			var piecedessert LDAPURI
 			piecedessert.Set(Filter(`(&(objectClass=employee)(employeeStatus=active))`))
 			piecedessert.Set(UDN(`ou=People,dc=example,dc=com`))
@@ -98,13 +106,16 @@ func TestURI_codecov(t *testing.T) {
 	if wat := l.String(); len(wat) != 0 {
 		t.Errorf("%s failed: unexpected value; want '', got '%s'",
 			t.Name(), wat)
+		return
 	}
 
 	if !l.Eq().IsZero() {
 		t.Errorf("%s failed: want 'true', got 'false'", t.Name())
+		return
 
 	} else if !l.Ne().IsZero() {
 		t.Errorf("%s failed: want 'true', got 'false'", t.Name())
+		return
 	}
 
 	// missing scheme pfx
@@ -112,6 +123,7 @@ func TestURI_codecov(t *testing.T) {
 	if err := l.Parse(loser); err == nil {
 		t.Errorf("%s failed [missing URI scheme]: want 'error', got 'nil'",
 			t.Name())
+		return
 	}
 
 	// someone is trying to do a remote URI.
@@ -120,6 +132,7 @@ func TestURI_codecov(t *testing.T) {
 	if err := l.Parse(loser); err == nil {
 		t.Errorf("%s failed [SERIOUS VULNERABILITY]: non-local URI returned no error",
 			t.Name())
+		return
 	}
 
 	// nice try dingus
@@ -127,17 +140,20 @@ func TestURI_codecov(t *testing.T) {
 	if err := l.Parse(loser); err == nil {
 		t.Errorf("%s failed [missing URI scheme]: want 'error', got 'nil'",
 			t.Name())
+		return
 	}
 
 	// atbtv
 	atbtval := `ldap:///ou=People,dc=example,dc=com?owner#GROUPDN`
 	if err := l.Parse(atbtval); err != nil {
 		t.Errorf("%s failed [atbtv URI parse]: %v", t.Name(), err)
+		return
 	}
 
 	if got := l.String(); atbtval != got {
 		t.Errorf("%s failed [atbtv compare]: want '%s', got '%s'",
 			t.Name(), atbtval, got)
+		return
 	}
 
 }
@@ -159,6 +175,7 @@ func ExampleLDAPURI_Parse() {
 	var uri LDAPURI
 	if err := uri.Parse(raw); err != nil {
 		fmt.Println(err)
+		return
 	}
 
 	fmt.Printf("%s", uri)

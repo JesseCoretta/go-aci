@@ -163,6 +163,7 @@ func TestInheritance(t *testing.T) {
 	got := inh.Eq()
 	if want != got.String() {
 		t.Errorf("%s failed: want '%s', got '%s'", t.Name(), want, got)
+		return
 	}
 }
 
@@ -234,26 +235,31 @@ func TestLevels_bogus(t *testing.T) {
 	if err := inh.Valid(); err == nil {
 		t.Errorf("%s failed: invalid %T returned no validity error",
 			t.Name(), inh)
+		return
 	}
 
 	if inh.String() != badInheritance {
 		t.Errorf("%s failed: invalid %T returned no bogus inheritance warning",
 			t.Name(), inh)
+		return
 	}
 
 	if inh.Eq() != badBindRule {
 		t.Errorf("%s failed: invalid %T returned unexpected %T instance during equality bindrule creation",
 			t.Name(), inh, badBindRule)
+		return
 	}
 
 	if inh.Ne() != badBindRule {
 		t.Errorf("%s failed: invalid %T returned unexpected %T instance during negated equality bindrule creation",
 			t.Name(), inh, badBindRule)
+		return
 	}
 
 	if !inh.IsZero() {
 		t.Errorf("%s failed: bogus %T is non-zero",
 			t.Name(), inh)
+		return
 	}
 
 	for _, rawng := range []string{
@@ -271,12 +277,14 @@ func TestLevels_bogus(t *testing.T) {
 		if err == nil {
 			t.Errorf("%s failed: parsing of bogus %T definition returned no error",
 				t.Name(), i)
+			return
 
 		}
 
 		if i.String() != badInheritance {
 			t.Errorf("%s failed: %T parsing attempt failed; want '%s', got '%s'",
 				t.Name(), i, badInheritance, i)
+			return
 		}
 	}
 }
@@ -293,12 +301,14 @@ func TestInheritance_parse(t *testing.T) {
 		if err != nil {
 			t.Errorf("%s failed: %T parsing attempt failed; %v",
 				t.Name(), i, err)
+			return
 
 		}
 
 		if raw != i.String() {
 			t.Errorf("%s failed: %T parsing attempt failed; want '%s', got '%s'",
 				t.Name(), i, raw, i)
+			return
 		}
 
 		want := sprintf("( userattr = %q )", raw)
@@ -307,6 +317,7 @@ func TestInheritance_parse(t *testing.T) {
 		if got := equality.String(); want != got {
 			t.Errorf("%s failed: %T equality creation error; want '%s', got '%s'",
 				t.Name(), i, want, got)
+			return
 		}
 
 		negation := i.Ne().Paren()
@@ -314,6 +325,7 @@ func TestInheritance_parse(t *testing.T) {
 		if got := negation.String(); want != got {
 			t.Errorf("%s failed: %T negated equality creation error; want '%s', got '%s'",
 				t.Name(), i, want, got)
+			return
 		}
 	}
 }

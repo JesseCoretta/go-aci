@@ -216,10 +216,12 @@ func TestToD(t *testing.T) {
 		if got.String() != thyme && want {
 			err = unexpectedStringResult(typ, thyme, got.String())
 			t.Errorf("%s failed: %v", t.Name(), err)
+			return
 		}
 
 		if err = handleToDGoTime(thyme, typ, want); err != nil {
 			t.Errorf("%s failed: %v", t.Name(), err)
+			return
 		}
 
 		times[`2400`] = false
@@ -249,6 +251,7 @@ func TestToD(t *testing.T) {
 
 			if err != nil && want {
 				t.Errorf("%s failed: %v", t.Name(), err)
+				return
 			}
 		}
 	}
@@ -260,14 +263,17 @@ func handleToDGoTime(thyme, typ string, want bool) (err error) {
 	var T time.Time
 	if T, err = time.Parse(`1504`, thyme); err != nil && want {
 		err = generalErr(typ, err)
+		return
 	}
 
 	if got := ToD(T); got.String() != thyme && want {
 		err = unexpectedStringResult(typ, thyme, got.String())
+		return
 	}
 
 	if !(err != nil && want && thyme != `2400`) {
 		err = nil
+		return
 	}
 
 	return
@@ -350,6 +356,7 @@ func TestDoW(t *testing.T) {
 
 		if err != nil {
 			t.Errorf("%s failed [slice:%d]: %v", t.Name(), idx, err)
+			return
 		}
 
 		wantEq := sprintf("%s = %q", got.Keyword(), got)
@@ -363,6 +370,7 @@ func TestDoW(t *testing.T) {
 
 		if err != nil {
 			t.Errorf("%s failed [slice:%d]: %v", t.Name(), idx, err)
+			return
 		}
 	}
 }
@@ -439,12 +447,14 @@ func TestParseDoW(t *testing.T) {
 			if !failOK(idx) {
 				t.Errorf("%s failed to parse %T '%s': %v",
 					t.Name(), d, d, err)
+				return
 			}
 
 		} else if dow.String() == badDoW {
 			if !failOK(idx) {
 				t.Errorf("%s failed: want '%T', got '%s'",
 					t.Name(), d, dow)
+				return
 			}
 		}
 	}
@@ -489,12 +499,14 @@ func TestMatchDoW(t *testing.T) {
 			if !failOK(idx) {
 				t.Errorf("%s failed [match %d]: want '%T', got '%s'",
 					t.Name(), idx, Day(0), dow)
+				return
 			}
 
 		} else if D := DoW(d); D.IsZero() {
 			if !failOK(idx) {
 				t.Errorf("%s failed [make %d]: want '%T', got '%s'",
 					t.Name(), idx, Day(0), D)
+				return
 			}
 		}
 	}

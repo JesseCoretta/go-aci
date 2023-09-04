@@ -17,6 +17,7 @@ func TestErrorf(t *testing.T) {
 		if want != got {
 			t.Errorf("%s failed: unexpected errorf result; want '%t', got '%t'",
 				t.Name(), want, got)
+			return
 		}
 	}
 }

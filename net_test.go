@@ -14,10 +14,12 @@ func TestFQDN(t *testing.T) {
 	if f.len() != 0 {
 		t.Errorf("%s failed: unexpected %T length: want '%d', got '%d'",
 			t.Name(), f, 0, f.len())
+		return
 	}
 
 	if err := f.Valid(); err == nil {
 		t.Errorf("%s failed: empty %T deemed valid", t.Name(), f)
+		return
 	}
 
 	f.Set(`www`, `example`, `com`)
@@ -27,6 +29,7 @@ func TestFQDN(t *testing.T) {
 
 	if want != got {
 		t.Errorf("%s failed; want '%s', got '%s'", t.Name(), want, got)
+		return
 	}
 
 	absurd := `eeeeeeeeeeeeeeeeeeeeeeeee#eee^eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeexample`
@@ -34,17 +37,20 @@ func TestFQDN(t *testing.T) {
 	if validLabel(absurd) {
 		t.Errorf("%s failed: bogus %T label accepted as valid (%s)",
 			t.Name(), absurd, absurd)
+		return
 	}
 
 	var F FQDN
 	if F.String() != badFQDN {
 		t.Errorf("%s failed: unexpected string result; want '%s', got '%s'",
 			t.Name(), badFQDN, F)
+		return
 	}
 
 	F.Set(`www`).Set(`$&^#*(`).Set(absurd).Set(`example`).Set(``).Set(`com`)
 	if llen := F.Len(); llen != 3 {
 		t.Errorf("%s failed; want '%d', got '%d'", t.Name(), 3, llen)
+		return
 	}
 
 	// try every comparison operator supported in
@@ -57,6 +63,7 @@ func TestFQDN(t *testing.T) {
 			err := unexpectedStringResult(F.String(), wcop, T.String())
 			t.Errorf("%s [%s] multival failed [%s rule]; %s, %s: %v",
 				t.Name(), F.Keyword(), cop.Context(), cop.Description(), typ, err)
+			return
 		}
 	}
 }
@@ -67,6 +74,7 @@ func TestDNS_alternativeFQDN(t *testing.T) {
 
 	if want != got.String() {
 		t.Errorf("%s failed; want '%s', got '%s'", t.Name(), want, got)
+		return
 	}
 }
 
@@ -77,11 +85,13 @@ func TestIPAddr_BRM(t *testing.T) {
 
 	if !i.IsZero() {
 		t.Errorf("%s failed: non-zero %T instance", t.Name(), i)
+		return
 	}
 
 	if got := i.String(); got != badAddr {
 		t.Errorf("%s failed: unexpected string result; want '%s', got '%s'",
 			t.Name(), badAddr, got)
+		return
 	}
 
 	var typ string = i.Keyword().String()
@@ -93,10 +103,12 @@ func TestIPAddr_BRM(t *testing.T) {
 
 	if lens := i.Len(); lens != 3 {
 		t.Errorf("%s failed: bad %T length; want '%d', got '%d'", t.Name(), i, 3, lens)
+		return
 	}
 
 	if cond := i.Ne(); cond.IsZero() {
 		t.Errorf("%s failed: nil %T instance!", t.Name(), cond)
+		return
 	}
 
 	// try every comparison operator supported in
@@ -107,6 +119,7 @@ func TestIPAddr_BRM(t *testing.T) {
 		if meth == nil {
 			t.Errorf("%s [%s] multival failed: expected %s method (%T), got nil",
 				t.Name(), i.Keyword(), cop.Context(), meth)
+			return
 		}
 
 		wcop := sprintf("( %s %s %q )", i.Keyword(), cop, i)
@@ -114,6 +127,7 @@ func TestIPAddr_BRM(t *testing.T) {
 			err := unexpectedStringResult(i.String(), wcop, T.String())
 			t.Errorf("%s [%s] multival failed [%s rule]: %v",
 				t.Name(), i.Keyword(), typ, err)
+			return
 		}
 	}
 }

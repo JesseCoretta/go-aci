@@ -22,6 +22,7 @@ func TestTargetRuleMethods(t *testing.T) {
 	trm = attrs.TRM()
 	if trm.Len() != 2 {
 		t.Errorf("%s failed: unexpected %T length: want %d, got %d", t.Name(), trm, 2, trm.Len())
+		return
 	}
 	_, _ = trm.Index(-100)
 	_, _ = trm.Index(100)
@@ -39,12 +40,14 @@ func TestCtrls(t *testing.T) {
 	got := L.String()
 	if want != got {
 		t.Errorf("%s failed [oidORs]:\nwant '%s'\ngot  '%s'", t.Name(), want, got)
+		return
 	}
 
 	c := L.Eq()
 	want = `( targetcontrol = "1.3.6.1.4.1.56521.101.2.1.1 || 1.3.6.1.4.1.56521.101.2.2.2 || 1.3.6.1.4.1.56521.101.3.1" )`
 	if got = c.String(); got != want {
 		t.Errorf("%s failed [makeTargetRule]:\nwant '%s'\ngot  '%s'", t.Name(), want, got)
+		return
 	}
 }
 
@@ -53,6 +56,7 @@ func TestTargetKeyword_Set_targetScope(t *testing.T) {
 	want := `( targetscope = "onelevel" )`
 	if want != got.String() {
 		t.Errorf("%s failed: want '%s', got '%s'", t.Name(), want, got)
+		return
 	}
 }
 
@@ -155,6 +159,7 @@ func TestAttrs_attrList(t *testing.T) {
 
 	if got != want {
 		t.Errorf("%s failed [attrList]:\nwant '%s'\ngot  '%s'", t.Name(), want, got)
+		return
 	}
 }
 

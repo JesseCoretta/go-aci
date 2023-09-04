@@ -85,6 +85,7 @@ func TestStrInSlice(t *testing.T) {
 				if result_expected != result_received {
 					t.Errorf("%s[%d->%d] failed; []byte(%v) in %v: %t (wanted %t)",
 						t.Name(), i, j, []byte(val), values, result_received, result_expected)
+					return
 				}
 			}
 		}
@@ -108,6 +109,7 @@ func TestIsIdentifier(t *testing.T) {
 		if isIdentifier(at) != result {
 			t.Errorf("%s failed: unexpected result for '%s'; expected '%t', got '%t'",
 				t.Name(), at, !result, result)
+			return
 		}
 	}
 }
@@ -137,9 +139,11 @@ func TestHash(t *testing.T) {
 	} {
 		if result, err := Hash(slice); err != nil && !hasPfx(hash, `bogus`) {
 			t.Errorf("%s failed: %v", t.Name(), err)
+			return
 		} else if !eq(hash, result) && !hasPfx(hash, `bogus`) {
 			t.Errorf("%s failed: unexpected result for '%T'; expected '%s', got '%s'",
 				t.Name(), slice, hash, result)
+			return
 		}
 	}
 }
@@ -154,6 +158,7 @@ Also perform various simple checks to satisfy codecov
 func TestOperator_codecov(t *testing.T) {
 	if keywordAllowsComparisonOperator(Target, float64(3.14592)) {
 		t.Errorf("%s failed; resolution error: illegal type permitted", t.Name())
+		return
 	}
 
 	for i := 0; i < len(copMap); i++ {
@@ -163,6 +168,7 @@ func TestOperator_codecov(t *testing.T) {
 		if cop := matchCOP(copMap[i+1]); cop != oper {
 			t.Errorf("%s failed; resolution error: want '%s', got '%s'",
 				t.Name(), oper, cop)
+			return
 		}
 
 		// traverse the above b/t operator tables
@@ -180,6 +186,7 @@ func TestOperator_codecov(t *testing.T) {
 				if want != got[i] {
 					t.Errorf("%s failed; illegal %s operator+keyword [%s + %s @ cop[%d]]: want '%t', got '%t'",
 						t.Name(), typ, k, oper, i, want, got[i])
+					return
 				}
 
 				// retry, using cop STRING instead of actual instance value
@@ -187,6 +194,7 @@ func TestOperator_codecov(t *testing.T) {
 				if want != got[i] {
 					t.Errorf("%s failed; illegal %s operator+keyword [%s + %s]: want '%t', got '%t'",
 						t.Name(), typ, k, oper, want, got[i])
+					return
 				}
 
 				// retry, using keyword STRING instead of actual instance value
@@ -194,6 +202,7 @@ func TestOperator_codecov(t *testing.T) {
 				if want != got[i] {
 					t.Errorf("%s failed; illegal %s operator+keyword [%s + %s]: want '%t', got '%t'",
 						t.Name(), typ, k, oper, want, got[i])
+					return
 				}
 			}
 		}
