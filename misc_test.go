@@ -55,6 +55,31 @@ var strInSliceMap map[int]map[int][]bool = map[int]map[int][]bool{
 	},
 }
 
+func TestBitSize(t *testing.T) {
+	for _, val := range []any{
+		nil,
+		Mon,
+		new(Day),
+		Level7,
+		ReadAccess,
+	} {
+		_ = bitSize(val)
+	}
+}
+
+func TestGetStringer(t *testing.T) {
+	for _, val := range []any{
+		float32(32),
+		nil,
+		Mon,
+		new(Day),
+		Level7,
+		ReadAccess,
+	} {
+		_ = getStringFunc(val)
+	}
+}
+
 func TestStrInSlice(t *testing.T) {
 	for idx, fn := range []func(string, []string) bool{
 		strInSlice,
@@ -115,6 +140,9 @@ func TestIsIdentifier(t *testing.T) {
 }
 
 func TestHash(t *testing.T) {
+	_ = compareHashInstance(nil, `barf`)
+	_ = compareHashInstance(`barf`, nil)
+
 	for hash, slice := range map[string]any{
 		`bogusSlice01`: nil,
 		`bogusSlice02`: float32(123.5),
