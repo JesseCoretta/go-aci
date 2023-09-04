@@ -20,15 +20,15 @@ func TestSearchFilter_setFromVar(t *testing.T) {
 	}
 	// for codecov (zero string set)
 	f.Set(``)
-	if err := f.Eq().Valid(); err != nil {
-		t.Errorf("%T failed: [%T.Eq];\nerror: %v",
-			t.Name(), f, err)
+	if err := f.Eq().Valid(); err == nil {
+		t.Errorf("%T failed: [%T.Eq]; no error",
+			t.Name(), f)
 		return
 	}
 
-	if err := f.Ne().Valid(); err != nil {
-		t.Errorf("%T failed: [%T.Ne];\nerror: %v",
-			t.Name(), f, err)
+	if err := f.Ne().Valid(); err == nil {
+		t.Errorf("%T failed: [%T.Eq]; no error",
+			t.Name(), f)
 		return
 	}
 
@@ -281,6 +281,7 @@ func TestAttributeFilterOperations_toTargetRule(t *testing.T) {
 	var afos AttributeFilterOperations
 	afos.Push()
 	_ = afos.Valid()
+	_ = afos.Eq()
 
 	// for codecov
 	if !afos.IsZero() {
@@ -302,6 +303,10 @@ func TestAttributeFilterOperations_toTargetRule(t *testing.T) {
 	_ = afos.Push(nil)
 	_ = afos.Push(adder)
 	_ = afos.Push(adder.String())
+	_ = afos.Push('𝝅')
+	_ = afos.Push(``)
+	_ = afos.Push(nil)
+	_ = afos.Push(AddOp.AFO())
 	_ = afos.SetDelimiter(1)
 	_ = afos.SetDelimiter(0)
 	_ = afos.SetDelimiter()

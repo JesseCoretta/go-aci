@@ -8,6 +8,7 @@ bear the targattrfilters or targetfilters keyword contexts.
 
 var (
 	badSearchFilter SearchFilter // for failed calls that return a SearchFilter only
+	badFilter       string       = `<invalid_search_filter>`
 )
 
 /*
@@ -29,7 +30,10 @@ type searchFilter struct {
 IsZero returns a Boolean value indicative of whether the receiver is nil, or unset.
 */
 func (r SearchFilter) IsZero() bool {
-	return r.searchFilter == nil
+	if r.searchFilter == nil {
+		return true
+	}
+	return len((*r.searchFilter).string) == 0
 }
 
 /*
@@ -353,6 +357,16 @@ state.
 func (r AttributeFilter) Valid() (err error) {
 	if r.IsZero() {
 		err = nilInstanceErr(r)
+		return
+	} else if r.atf == nil {
+		err = nilInstanceErr(r)
+		return
+	}
+
+	if r.atf.SearchFilter.IsZero() {
+		err = illegalSyntaxPerTypeErr(r, TargetAttrFilters)
+	} else if r.atf.AttributeType.IsZero() {
+		err = illegalSyntaxPerTypeErr(r, TargetAttrFilters)
 	}
 	return
 }
@@ -518,10 +532,7 @@ behavior, but can be set using the AttributeFilterOperationsCommaDelim
 integer constant (0), or when run in niladic fashion.
 */
 func (r AttributeFilterOperations) SetDelimiter(i ...int) AttributeFilterOperations {
-	_r, conv := castAsStack(r)
-	if !conv {
-		return r
-	}
+	_r, _ := castAsStack(r)
 
 	var (
 		// default delimiter is a comma
@@ -572,10 +583,14 @@ func (r AttributeFilterOperations) Push(x ...any) AttributeFilterOperations {
 		switch tv := x[i].(type) {
 		case string:
 			if afo, err := parseAttributeFilterOperation(tv); err == nil {
-				_r.Push(afo)
+				if afo.Len() > 0 {
+					_r.Push(afo)
+				}
 			}
 		case AttributeFilterOperation:
-			_r.Push(tv)
+			if tv.Len() > 0 {
+				_r.Push(tv)
+			}
 		}
 	}
 
@@ -670,12 +685,8 @@ func (r AttributeFilterOperations) Valid() error {
 	// it won't discriminate types.
 	_r, _ := castAsStack(r)
 	for i := 0; i < _r.Len(); i++ {
-		slice, _ := _r.Index(0)
-		assert, ok := slice.(AttributeFilterOperation)
-		if !ok {
-			return illegalSliceTypeErr(r, assert, slice)
-		}
-
+		slice, _ := _r.Index(i)
+		assert, _ := slice.(AttributeFilterOperation)
 		if err := assert.Valid(); err != nil {
 			return err
 		}
@@ -987,7 +998,7 @@ func (r AttributeFilterOperation) Valid() error {
 	// it won't discriminate types.
 	_r, _ := castAsStack(r)
 	for i := 0; i < _r.Len(); i++ {
-		slice, _ := _r.Index(0)
+		slice, _ := _r.Index(i)
 		assert, ok := slice.(AttributeFilter)
 		if !ok {
 			return illegalSliceTypeErr(r, assert, slice)
