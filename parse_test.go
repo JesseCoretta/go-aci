@@ -613,14 +613,24 @@ func TestParsePermission(t *testing.T) {
 }
 
 func TestParsePermissionBindRule(t *testing.T) {
+	var pbr PermissionBindRule
+	_ = pbr.IsZero()
+	_ = pbr.Valid()
+
+	if err := pbr.Parse(``); err == nil {
+		t.Errorf("%s bogus %T attempt returned no error",
+			t.Name(), pbr)
+		return
+	}
+
 	var privs string = `allow(read,write,search,compare)`
 	var rules string = `( ( timeofday >= "0900" AND timeofday < "1830" ) AND ( dayofweek = "Mon,Tues,Wed,Thur,Fri" ) )`
 	var raw string = sprintf("%s %s;", privs, rules)
 
-	var pbr PermissionBindRule
 	if err := pbr.Parse(raw); err != nil {
 		t.Errorf("%s failed: %v",
 			t.Name(), illegalSyntaxPerTypeErr(pbr, nil))
+		return
 	}
 
 	if pbr.String() != raw {

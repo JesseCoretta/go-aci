@@ -115,7 +115,8 @@ func (r PermissionBindRule) valid() (err error) {
 	if err = r.P.Valid(); err != nil {
 		return
 
-	} else if err = r.B.Valid(); err != nil {
+	} else if r.B == nil {
+		err = nilInstanceErr(r.B)
 		return
 	}
 

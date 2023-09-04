@@ -289,4 +289,30 @@ func TestPermissionBindRules_codecov(t *testing.T) {
 	pbs.Push(pb)
 	_ = pbs.Len()
 	_ = pbs.Valid()
+
+	pbs = PBRs()
+
+	rule0 := PermissionBindRule{
+		P: Deny(AllAccess, ProxyAccess),
+	}
+
+	pbs.Push(rule0)
+
+	rule1 := PermissionBindRule{
+		B: GDN(`cn=disgruntled_employees,ou=Groups,dc=example,dc=com`).Eq(),
+	}
+
+	pbs.Push(rule1)
+
+	rule2 := PermissionBindRule{
+		Deny(AllAccess, ProxyAccess),
+		GDN(`cn=disgruntled_employees,ou=Groups,dc=example,dc=com`).Eq(),
+	}
+
+	pbs.Push(rule2)
+	if pbs.Len() != 1 {
+		t.Errorf("%s failed: unexpected slice count, want '%d', got '%d'",
+			t.Name(), 1, pbs.Len())
+		return
+	}
 }
