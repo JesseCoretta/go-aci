@@ -411,6 +411,10 @@ Shift wraps Levels.Shift via the underlying Levels value
 found within the receiver instance.
 */
 func (r Inheritance) Shift(x ...any) Inheritance {
+	if r.IsZero() {
+		r = Inheritance{new(inheritance)}
+	}
+
 	r.inheritance.Levels.shift(x...)
 	return r
 }
@@ -491,6 +495,9 @@ Positive returns a Boolean value indicative of whether
 the receiver instance of Levels includes Level x.
 */
 func (r Inheritance) Positive(x any) bool {
+	if r.IsZero() {
+		r = Inheritance{new(inheritance)}
+	}
 	return r.inheritance.Levels.positive(x)
 }
 
@@ -569,6 +576,10 @@ Unshift wraps Levels.Unshift via the underlying Levels value
 found within the receiver instance.
 */
 func (r Inheritance) Unshift(x ...any) Inheritance {
+	if r.IsZero() {
+		r = Inheritance{new(inheritance)}
+	}
+
 	r.inheritance.Levels.unshift(x...)
 	return r
 }

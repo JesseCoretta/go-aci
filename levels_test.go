@@ -330,6 +330,26 @@ func TestInheritance_parse(t *testing.T) {
 	}
 }
 
+func TestInheritance_codecov(t *testing.T) {
+	var inh Inheritance
+	_ = inh.Levels()
+	_ = inh.Keyword()
+	_ = inh.String()
+	_ = inh.Shift(1370)
+	_ = inh.Shift(`farts`)
+	_ = inh.Shift(-100)
+	_ = inh.Shift(3.14159)
+	_ = inh.Unshift(1370)
+	_ = inh.Unshift(`farts`)
+	_ = inh.Unshift(-100)
+	_ = inh.Unshift(3.14159)
+	_ = inh.Positive(`fart`)
+	_ = inh.Positive(100000)
+	_ = inh.Positive(-1)
+	_ = inh.Positive(Level(^uint16(0)))
+	_ = inh.Positive(3.14159)
+}
+
 /*
 func TestInheritance_lrShift(t *testing.T) {
         var p Inheritance
