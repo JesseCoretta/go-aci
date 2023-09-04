@@ -329,10 +329,12 @@ func TestPermissionBindRules_codecov(t *testing.T) {
 	pbs.Push(rule2b)
 
 	var rule2c PermissionBindRule
+	rule2c.Set(`pspspsppspspsp`)
 	rule2c.Set(badBindDN, `pspspsppspspsp`)
 	_ = rule2c.IsZero()
 	_ = rule2c.Valid()
 	pbs.Push(rule2c)
+	pbs.Push(`pspsppspspspps`)
 
 	rule3 := PBR(
 		Permission{nil},
@@ -369,4 +371,7 @@ func TestPermissionBindRules_codecov(t *testing.T) {
 			t.Name(), pbs)
 		return
 	}
+	pbs.Pop()
+	pbs.Push(rule5)
+	pbs.Push(rule5.String())
 }
