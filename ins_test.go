@@ -42,6 +42,8 @@ func TestACIs(t *testing.T) {
 	_ = i.TRs()
 	_ = i.PBRs()
 	_ = i.ACL()
+	_ = i.Valid()
+	_ = i.String()
 
 	i = ACI(acl, tgt, pbrule)
 	_ = i.TRs()

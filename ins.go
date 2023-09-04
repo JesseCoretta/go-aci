@@ -233,6 +233,11 @@ Valid returns an instance of error that reflects any perceived errors
 or deficiencies within the receiver instance.
 */
 func (r Instruction) Valid() (err error) {
+	if r.IsZero() {
+		err = nilInstanceErr(r)
+		return
+	}
+
 	return r.instruction.valid()
 }
 
@@ -362,10 +367,7 @@ func (r *instruction) assertInstruction(x any) {
 	case TargetRules:
 		r.instructionTargetPush(tv)
 	case TargetRule:
-		// TODO :: uniqueness check
-		if K := matchTKW(tv.Category()); K != TargetKeyword(0x0) {
-			r.TRs.Push(tv)
-		}
+		r.TRs.Push(tv)
 	case PermissionBindRule:
 		r.PBRs.Push(tv)
 	}
