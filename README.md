@@ -6,7 +6,7 @@ Package aci implements the complete ACIv3 syntax in a vendor-agnostic manner wit
 
 ## License
 
-The aci (go-aci) package, from [`go-aci`](http://github.com/JesseCoretta/go-aci), is available under the terms of the MIT license. For further
+The aci (go-aci) package, [`go-aci`](from http://github.com/JesseCoretta/go-aci), is available under the terms of the MIT license. For further
 details, see the LICENSE file within the aforementioned repository. 
 
 Package aci implements the complete ACIv3 syntax in a vendor-agnostic manner with rich features.
@@ -34,13 +34,13 @@ The ACIv3 syntax, though largely the same across the multiple supporting directo
 a few variations in terms of available keywords and features. Though this is not a comprehensive list, a few of these cases
 are listed below:
 
-• TargetRule scoping, through the targetscope keyword
-• BindRule roles, through the roledn keyword
-• Group attribute-based value matching, through the groupattr keyword
-• LDAP Extended Operation OID definitions, through the extop keyword
-• LDAP Control OID definitions, through the targetcontrol keyword
-• Rights definitions, such as Import and Export
-• Permitted 'levels' for inheritance value matching
+- TargetRule scoping, through the targetscope keyword
+- BindRule roles, through the roledn keyword
+- Group attribute-based value matching, through the groupattr keyword
+- LDAP Extended Operation OID definitions, through the extop keyword
+- LDAP Control OID definitions, through the targetcontrol keyword
+- Rights definitions, such as Import and Export
+- Permitted 'levels' for inheritance value matching
 
 This package aims to support *ALL* of the facets of the ACIv3 syntax without exception. Users will need to verify, however,
 that any ACI definitions generated -- in part or in whole as a result of using this package -- are compatible with their
@@ -53,12 +53,12 @@ further details, see the LICENSE file within the aforementioned repository.
 
 # Features
 
-• Intuitive: well-documented with numerous examples
-• Efficient: a package-wide cyclomatic complexity factor limit of nine (9) is imposed; the imported go-stackage and go-objectid
+- Intuitive: well-documented with numerous examples
+- Efficient: a package-wide cyclomatic complexity factor limit of nine (9) is imposed; the imported go-stackage and go-objectid
 packages both exercise similar criteria
-• Compatible: package design encompasses the facets of the ACIv3 specification as a whole, as opposed to catering to any
+- Compatible: package design encompasses the facets of the ACIv3 specification as a whole, as opposed to catering to any
 specific directory product implementation
-• Flexible: ACI composition can be approached in a variety of ways, without enforcing any particular style; for example,
+- Flexible: ACI composition can be approached in a variety of ways, without enforcing any particular style; for example,
 parenthetical encapsulation can be enabled or disabled for select (and eligible) type instances when desired, or set globally
 
 ## Marshaling and Unmarshaling
@@ -75,12 +75,12 @@ preexisting Instruction type instance.
 
 This package could conceivably be used in any of the following scenarios:
 
-• For Directory security audits that pertain to, or include, access control review
-• For Directory personnel in charge of authoring and/or managing rich documentation
-• For Directory personnel who desire a means to author and/or manage sets of ACIs in a more programmatic / automated manner, perhaps
+- For Directory security audits that pertain to, or include, access control review
+- For Directory personnel in charge of authoring and/or managing rich documentation
+- For Directory personnel who desire a means to author and/or manage sets of ACIs in a more programmatic / automated manner, perhaps
 with the aid of a templating system
-• For use as an access control framework within an actual (Go-based) Directory System Agent implementation that honors the ACI syntax
-• For generalized experimentation within the realm of Directory System Agent access control design and even penetration testing
+- For use as an access control framework within an actual (Go-based) Directory System Agent implementation that honors the ACI syntax
+- For generalized experimentation within the realm of Directory System Agent access control design and even penetration testing
 
 ## Limitations
 
@@ -103,10 +103,10 @@ building statements that reference a multi-valued expression:
 
 In particular, these sorts of quotation schemes appear in the following scenarios:
 
-• `targetattr` TargetRules for lists of LDAP attribute types
-• `target`, `target_to` and `target_from` TargetRule distinguished names
-• `userdn` and `groupdn` BindRule distinguished names
-• `extop` and `targetcontrol` TargetRule ASN.1 object identifiers
+- `targetattr` TargetRules for lists of LDAP attribute types
+- `target`, `target_to` and `target_from` TargetRule distinguished names
+- `userdn` and `groupdn` BindRule distinguished names
+- `extop` and `targetcontrol` TargetRule ASN.1 object identifiers
 
 Users are advised to honor the quotation scheme recommended by their vendor or product documentation. This package aims to
 support either of the above schemes with no variance in the end result, but has no official position as to which of these
