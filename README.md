@@ -6,7 +6,7 @@ Package aci implements the complete ACIv3 syntax in a vendor-agnostic manner wit
 
 ## License
 
-The aci (go-aci) package, [`go-aci`](from http://github.com/JesseCoretta/go-aci), is available under the terms of the MIT license. For further
+The aci (go-aci) package, from [`go-aci`](http://github.com/JesseCoretta/go-aci), is available under the terms of the MIT license. For further
 details, see the LICENSE file within the aforementioned repository. 
 
 Package aci implements the complete ACIv3 syntax in a vendor-agnostic manner with rich features.
@@ -97,9 +97,10 @@ of matchingRule and ldapSyntax operations that precede attribute value disclosur
 Another trait of this package's flexibility is the ability to handle either of the following quotation schemes when parsing or
 building statements that reference a multi-valued expression:
 
-        "value" || "value" || "value" ...
-
-        "value || value || value" ...
+```
+"value" || "value" || "value" ...
+"value || value || value" ...
+```
 
 In particular, these sorts of quotation schemes appear in the following scenarios:
 
