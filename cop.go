@@ -143,26 +143,6 @@ func (r ComparisonOperator) Compare(cop any) bool {
 }
 
 /*
-matchCOP reads the *string representation* of a
-ComparisonOperator instance and returns
-the appropriate ComparisonOperator const.
-
-A bogus ComparisonOperator (badCop, 0x0)
-shall be returned if a match was not made.
-
-TODO: DECOM ME
-*/
-func matchCOP(op string) ComparisonOperator {
-	for k, v := range comparisonOperatorMap {
-		if op == k {
-			return v
-		}
-	}
-
-	return badCop
-}
-
-/*
 isValidCopNumeral merely returns the Boolean evaluation result of a check to see
 whether integer x falls within a numerical range of one (1) through six (6).
 
@@ -181,8 +161,6 @@ for use in T/B rule instances.
 
 Certain keywords, such as TargetScope, allow only certain operators,
 while others, such as BindSSF, allow the use of ALL operators.
-
-TODO: DECOM ME
 */
 func keywordAllowsComparisonOperator(kw, op any) bool {
 	// identify the comparison operator,
@@ -193,6 +171,8 @@ func keywordAllowsComparisonOperator(kw, op any) bool {
 		cop = matchCOP(tv)
 	case ComparisonOperator:
 		cop = tv
+	case int:
+		cop = ComparisonOperator(tv)
 	default:
 		return false
 	}
@@ -218,9 +198,29 @@ func keywordAllowsComparisonOperator(kw, op any) bool {
 }
 
 /*
-bindKeywordAllowsComparisonOperator is a private function called by keywordAllowsCompariso9nOperator.
+matchCOP reads the *string representation* of a
+ComparisonOperator instance and returns
+the appropriate ComparisonOperator const.
 
-TODO: DECOM ME
+A bogus ComparisonOperator (badCop, 0x0)
+shall be returned if a match was not made.
+*/
+func matchCOP(op string) ComparisonOperator {
+	for _, v := range comparisonOperatorMap {
+		if strInSliceFold(op, []string{
+			v.String(),
+			v.Context(),
+			v.Description(),
+		}) {
+			return v
+		}
+	}
+
+	return badCop
+}
+
+/*
+bindKeywordAllowsComparisonOperator is a private function called by keywordAllowsCompariso9nOperator.
 */
 func bindKeywordAllowsComparisonOperator(key BindKeyword, cop ComparisonOperator) bool {
 	// look-up the keyword within the permitted cop
@@ -245,8 +245,6 @@ func bindKeywordAllowsComparisonOperator(key BindKeyword, cop ComparisonOperator
 
 /*
 targetKeywordAllowsComparisonOperator is a private function called by keywordAllowsCompariso9nOperator.
-
-TODO: DECOM ME
 */
 func targetKeywordAllowsComparisonOperator(key TargetKeyword, cop ComparisonOperator) bool {
 	// look-up the keyword within the permitted cop
@@ -270,7 +268,6 @@ func targetKeywordAllowsComparisonOperator(key TargetKeyword, cop ComparisonOper
 }
 
 func init() {
-	// TODO: DECOM ME
 	comparisonOperatorMap = map[string]ComparisonOperator{
 		Eq.String(): Eq,
 		Ne.String(): Ne,
@@ -282,7 +279,6 @@ func init() {
 
 	// populate the allowed comparison operator map per each
 	// possible TargetRule keyword
-	// TODO: DECOM ME
 	permittedTargetComparisonOperators = map[TargetKeyword][]ComparisonOperator{
 		Target:            {Eq, Ne},
 		TargetTo:          {Eq, Ne},
@@ -297,7 +293,6 @@ func init() {
 
 	// populate the allowed comparison operator map per each
 	// possible BindRule keyword
-	// TODO: DECOM ME
 	permittedBindComparisonOperators = map[BindKeyword][]ComparisonOperator{
 		BindUDN: {Eq, Ne},
 		BindRDN: {Eq, Ne},
