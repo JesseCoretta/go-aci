@@ -164,6 +164,38 @@ func (r DayOfWeek) Len() int {
 }
 
 /*
+Weekdays is a convenient prefabricator function that returns an instance of BindRule automatically
+assembled to express a sequence of weekdays. The sequence "Mon through Fri" can also be expressed
+via the bit-shifted value of sixty-two (62). See the Day constants for the specific numerals used
+for summation in this manner.
+
+Supplying an invalid or nonapplicable ComparisonOperator to this method shall return a bogus
+BindRule instance.
+*/
+func Weekdays(cop any) BindRule {
+	if c, meth := DoW(Mon, Tues, Wed, Thur, Fri).BRM().index(cop); c.Valid() == nil {
+		return meth()
+	}
+	return badBindRule
+}
+
+/*
+Weekend is a convenient prefabricator function that returns an instance of BindRule automatically
+assembled to express a sequence of Sun and Sat Day instances. This sequence can also be expressed
+via the bit-shifted value of sixty-five (65). See the Day constants for the specific numerals used
+for summation in this manner.
+
+Supplying an invalid or nonapplicable ComparisonOperator to this method shall return a bogus
+BindRule instance.
+*/
+func Weekend(cop any) BindRule {
+	if c, meth := DoW(Sun, Sat).BRM().index(cop); c.Valid() == nil {
+		return meth()
+	}
+	return badBindRule
+}
+
+/*
 Shift shifts the first (1st) byte within the receiver instance of DayOfWeek to
 include Day x, if not already present.
 */

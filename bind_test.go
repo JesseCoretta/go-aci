@@ -100,13 +100,32 @@ func TestBindRules_bogus(t *testing.T) {
 	_ = br.Traverse([]int{1, 2, 3, 4}...)
 	br.reset()
 
-	br = And(SSF(128).Eq, UDN("uid=jesse,ou=People,dc=example,dc=com").Eq())
+	br = And(
+		SSF(128).Ge(),
+		GDN(`cn=Executives,ou=Groups,dc=example,dc=com`).Ne(),
+		UDNs("uid=jesse,ou=People,dc=example,dc=com", "uid=courtney,ou=People,dc=example,dc=com").Eq(),
+	)
 	_ = br.Kind()
 	_ = br.IsNesting()
 	_ = br.Keyword()
 	_ = br.Pop()
 	_ = br.Push()
+	_ = br.insert(`fnord`, 0)
+	_ = br.Index(1)
+	replacer := GDN(`cn=Executive Assistants,ou=Groups,dc=example,dc=com`).Ne()
+	br.Replace(replacer, 1)
 
+	replaced := br.Index(1)
+	if replacer.String() != replaced.String() {
+		t.Errorf("%s failed: %T.Replace did not replace specified slice value, want '%s', got '%s'",
+			t.Name(), br, replacer, replaced)
+	}
+
+	ctx := br.Traverse(1)
+	if ctx.String() != replaced.String() {
+		t.Errorf("%s failed: %T.Traverse did not return replaced slice value, want '%s', got '%s'",
+			t.Name(), br, replaced, ctx)
+	}
 }
 
 /*
@@ -489,4 +508,327 @@ func ExampleBindRule_SetQuoteStyle() {
 	// Output:
 	// 0: ( userdn != "ldap:///uid=jesse,ou=People,dc=example,dc=com" || "ldap:///uid=courtney,ou=People,dc=example,dc=com" || "ldap:///uid=jimmy,ou=People,dc=example,dc=com" )
 	// 1: ( userdn != "ldap:///uid=jesse,ou=People,dc=example,dc=com || ldap:///uid=courtney,ou=People,dc=example,dc=com || ldap:///uid=jimmy,ou=People,dc=example,dc=com" )
+}
+
+/*
+This example demonstrates the various capabilities of a BindRules instance, as well as
+the use of some so-called "prefabricator" functions for additional convenience.
+
+Note that BindRules should always be initialized before use. The reason for this is
+because it may be required to set a logical Boolean operating mode, such as 'AND',
+'OR' and '(AND) NOT'. This governs how the individual slices (which may descend into
+other stacks) are string represented in a Boolean expressive statement.
+*/
+func ExampleBindRules() {
+	// Outer BindRules structure (a.k.a.: the "top")
+	// is a non-parenthetical ORed BindRules stack.
+	var brs BindRules = Or(
+
+		// First ORed condition (slice #0) is a
+		// non-parenthetical ANDed BindRules stack
+		// with operator folding enabled.
+		And(
+			// A single non-parenthetical groupdn
+			// equality assertion BindRule occupies
+			// slice #0 of the current stack. Note
+			// that in this case, calling the needed
+			// operator method is necessary, as GDN
+			// is not a prefab function.
+			//
+			// Result:
+			GDN(`cn=Accounting,ou=Groups,dc=example,dc=com`).Eq(), // groupdn
+
+			// Timeframe is a BindRules prefab function
+			// used to conveniently produce a pair of
+			// `timeofday` conditions within an ANDed
+			// logical context in order to specify a
+			// "time-window" during which access will
+			// be granted or withheld in some manner.
+			//
+			// This expression occupies slice #1 of the
+			// current stack and is parenthetical. There
+			// is no need to execute the operator method
+			// (e.g.: Eq) manually, as this function is
+			// a prefabricator and does this for us 😎.
+			// Additionally, toggle the Fold bit for the
+			// return instance.
+			//
+			// Result: ( timeofday >= "0900" and timeofday < "1830" )
+			Timeframe(
+				ToD(`0900`), // notBefore
+				ToD(`1830`), // notAfter
+			).Paren().Fold(),
+
+			// Weekdays is a BindRule prefab to conveniently
+			// produce a sequence of Day instances expressing
+			// Monday through Friday. See also Weekend for an
+			// inverse of this functionality.
+			//
+			// This expression occupies slice #2 of the current
+			// stack and is parenthetical. There is no need to
+			// execute the operator method (e.g:. Eq) manually,
+			// as this function automatically crafts the BindRule.
+			//
+			// Result: ( dayofweek = "Mon,Tues,Wed,Thur,Fri" )
+			Weekdays(`=`).Paren(), // comparison operator could also be 1, `eq` or `equal to`
+		).Fold(),
+
+		// Second ORed condition (slice #1) is a
+		// parenthetically ANDed BindRules stack.
+		And(
+			// Two (2) individual BindRule instances
+			// circumscribed within a parenthetical
+			// AND context. Note that in this case,
+			// calling the comparison method manually
+			// is required, as RDN and GAT (among
+			// others) are not prefab functions.
+			//
+			// result: ( roledn = "ldap:///cn=Superusers,ou=Groups,dc=example,dc=com`" AND groupattr = "privilegeLevel#GAMMA5" )
+			RDN(`cn=Superusers,ou=Groups,dc=example,dc=com`).Eq(), // roledn
+			GAT(`privilegeLevel`, `GAMMA5`).Eq(),                  // groupattr
+		).Paren(),
+	)
+
+	// Let's make some arbitrary changes ...
+	//
+	// Make the outer stack (OR) parenthetical
+	brs.Paren() // no arg = toggle state, else use true/false for explicit set.
+
+	fmt.Printf("%s", brs)
+	// Output: ( groupdn = "ldap:///cn=Accounting,ou=Groups,dc=example,dc=com" and ( timeofday >= "0900" and timeofday < "1830" ) and ( dayofweek = "Mon,Tues,Wed,Thur,Fri" ) OR ( roledn = "ldap:///cn=Superusers,ou=Groups,dc=example,dc=com" AND groupattr = "privilegeLevel#GAMMA5" ) )
+}
+
+/*
+This example demonstrates the toggling of Boolean WORD operator case-folding
+of a BindRules instance.
+*/
+func ExampleBindRules_Fold() {
+	strong := And(SSF(128).Ge(), EXTERNAL.Eq())
+	strong.Fold() // we want `AND` to be `and`
+
+	fmt.Printf("%s", strong)
+	// Output: ssf >= "128" and authmethod = "SASL EXTERNAL"
+}
+
+func ExampleBindRules_ID() {
+	var brs BindRules
+	fmt.Printf("%s", brs.ID())
+	// Output: bind
+}
+
+func ExampleBindRules_IsZero() {
+	var brs BindRules
+	fmt.Printf("Zero: %t", brs.IsZero())
+	// Output: Zero: true
+}
+
+func ExampleBindRules_Valid() {
+	var brs BindRules
+	fmt.Printf("Valid: %t", brs.Valid() == nil)
+	// Output: Valid: false
+}
+
+func ExampleBindRules_String() {
+	strong := And(SSF(128).Ge(), EXTERNAL.Eq())
+
+	fmt.Printf("%s", strong)
+	// Output: ssf >= "128" AND authmethod = "SASL EXTERNAL"
+}
+
+/*
+This example demonstrates the selective replacement of
+a specific BindRules stack slice.
+*/
+func ExampleBindRules_Replace() {
+	strong := And(
+		SSF(128).Ge(),  // slice #0
+		DIGESTMD5.Eq(), // slice #1
+	)
+
+	// Replace awful Digest-MD5 with the
+	// SASL/EXTERNAL mechanism.
+	strong.Replace(EXTERNAL.Eq(), 1) // <x> replace slice #1
+
+	fmt.Printf("%s", strong)
+	// Output: ssf >= "128" AND authmethod = "SASL EXTERNAL"
+}
+
+/*
+This example demonstrates an attempt to modify a BindRules
+stack instance while its ReadOnly bit is enabled.
+*/
+func ExampleBindRules_ReadOnly() {
+	strong := And(
+		SSF(128).Ge(),  // slice #0
+		DIGESTMD5.Eq(), // slice #1
+	)
+
+	strong.ReadOnly()
+
+	// Try to replace awful Digest-MD5 with
+	// the SASL/EXTERNAL mechanism.
+	strong.Replace(EXTERNAL.Eq(), 1)
+
+	fmt.Printf("%s", strong)
+	// Output: ssf >= "128" AND authmethod = "SASL DIGEST-MD5"
+}
+
+/*
+This example demonstrates the addition of new slice elements
+to a BindRules instance using its Push method.
+*/
+func ExampleBindRules_Push() {
+	// create a single BindRules instance
+	// with only one (1) slice (Timeframe
+	// BindRule) ...
+	brs := And(
+		Timeframe(
+			ToD(`0900`),
+			ToD(`1830`),
+		),
+	)
+
+	// Add a Weekdays BindRule prefab
+	brs.Push(Weekdays(Eq))
+
+	fmt.Printf("%s", brs)
+	// Output: timeofday >= "0900" AND timeofday < "1830" AND dayofweek = "Mon,Tues,Wed,Thur,Fri"
+}
+
+/*
+This example demonstrates the removal of a single slice
+within a BindRules instance in LIFO fashion using its
+Pop method.
+*/
+func ExampleBindRules_Pop() {
+	// create a single BindRules instance
+	// with two (2) slices ...
+	brs := And(
+		Timeframe(
+			ToD(`0900`), // slice #0
+			ToD(`1830`), // slice #1
+		),
+		Weekdays(Eq),
+	)
+
+	// Remove (by Pop) the Weekdays slice (slice #1)
+	popped := brs.Pop()
+
+	fmt.Printf("%s", popped)
+	// Output: dayofweek = "Mon,Tues,Wed,Thur,Fri"
+}
+
+/*
+This example demonstrates the interrogation of a BindRules
+instance to determine whether any of its immediate slice
+members are other stack elements, thereby indicating that
+a "nesting condition" is in effect.
+*/
+func ExampleBindRules_IsNesting() {
+	brs := And(
+		Timeframe(
+			ToD(`0900`),
+			ToD(`1830`),
+		),
+		Weekdays(Eq),
+	)
+
+	fmt.Printf("Contains nesting elements: %t", brs.IsNesting())
+	// Output: Contains nesting elements: true
+}
+
+/*
+This example demonstrates the calling of a specific slice
+member by its numerical index using the BindRules.Index
+method.
+*/
+func ExampleBindRules_Index() {
+	brs := And(
+		Timeframe(
+			ToD(`0900`),
+			ToD(`1830`),
+		),
+		Weekdays(Eq),
+	)
+
+	fmt.Printf("%s", brs.Index(0))
+	// Output: timeofday >= "0900" AND timeofday < "1830"
+}
+
+/*
+This example demonstrates the use of the NoPadding method
+to remove the outer padding of a BindRules instance. Note
+that parentheticals are enabled for visual aid.
+*/
+func ExampleBindRules_NoPadding() {
+	brs := And(
+		Timeframe(
+			ToD(`0900`),
+			ToD(`1830`),
+		),
+		Weekdays(Eq),
+	)
+
+	brs.Paren().NoPadding()
+
+	fmt.Printf("%s", brs)
+	// Output: (timeofday >= "0900" AND timeofday < "1830" AND dayofweek = "Mon,Tues,Wed,Thur,Fri")
+}
+
+/*
+This example demonstrates the interrogation of a BindRules
+instance to determine its integer length using its Len
+method.  The return value describes the number of slice
+elements present within the instance.
+*/
+func ExampleBindRules_Len() {
+	brs := And(
+		Timeframe(
+			ToD(`0900`),
+			ToD(`1830`),
+		),
+		Weekdays(Eq),
+	)
+
+	fmt.Printf("Contains %d elements", brs.Len())
+	// Output: Contains 2 elements
+}
+
+/*
+This example demonstrates the use of the Kind method to
+reveal the underlying type of the receiver. This is for
+use during the handling of a combination of BindRules
+and BindRule instances under the BindContext interface
+context.
+*/
+func ExampleBindRules_Kind() {
+	brs := And(
+		Timeframe(
+			ToD(`0900`),
+			ToD(`1830`),
+		),
+		Weekdays(Eq),
+	)
+
+	fmt.Printf("%s", brs.Kind())
+	// Output: stack
+}
+
+/*
+This example demonstrates the use of the Paren method to
+enable the parenthetical setting for the receiver instance.
+*/
+func ExampleBindRules_Paren() {
+	brs := And(
+		Timeframe(
+			ToD(`0900`),
+			ToD(`1830`),
+		),
+		Weekdays(Eq),
+	)
+
+	brs.Paren()
+
+	fmt.Printf("%s", brs)
+	// Output: ( timeofday >= "0900" AND timeofday < "1830" AND dayofweek = "Mon,Tues,Wed,Thur,Fri" )
 }

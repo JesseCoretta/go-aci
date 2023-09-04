@@ -33,6 +33,7 @@ func TestErrorFNs_codecov(t *testing.T) {
 	_ = aoBadPrefixErr()
 	_ = instructionNoLabelErr()
 	_ = dowBadTimeErr()
+	_ = badCopErr(badCop)
 	_ = noPermissionDispErr()
 	_ = fqdnInvalidLabelErr(domainLabel(`__`))
 	_ = parseBindRulesHierErr(BindDistinguishedNames{}, BindRules{})

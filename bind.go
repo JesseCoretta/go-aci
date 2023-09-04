@@ -94,9 +94,12 @@ func (r BindRuleMethods) index(idx any) (cop ComparisonOperator, meth BindRuleMe
 		// there are only six (6) valid
 		// operators, numbered one (1)
 		// through six (6).
-		if !(1 <= tv && tv <= 6) {
-			return
-		}
+		//
+		// this is an unnecessary cyclomatic
+		// complexity factor.
+		//if !isValidCopNumeral(tv) {
+		//	return
+		//}
 
 		var found bool
 		if meth, found = (*r.bindRuleFuncMap)[ComparisonOperator(tv)]; found {
@@ -128,6 +131,22 @@ func rangeBindRuleFuncMap(candidate string, fm *bindRuleFuncMap) (cop Comparison
 	}
 
 	return
+}
+
+/*
+Contains returns a Boolean value indicative of whether the specified ComparisonOperator,
+which may be expressed as a string, int or native ComparisonOperator, is allowed for use
+by the type instance that created the receiver instance. This method offers a convenient
+alternative to the use of the Index method combined with an assertion value (such as Eq,
+Ne, "=", "Greater Than", et al).
+
+In other words, if one uses the FQDN.BRM method to create an instance of BindRuleMethods,
+feeding Gt (Greater Than) to this method shall return false, as mathematical comparison
+does not apply to instances of the FQDN type.
+*/
+func (r BindRuleMethods) Contains(cop any) bool {
+	c, _ := r.index(cop)
+	return c.Valid() == nil
 }
 
 /*
@@ -270,7 +289,7 @@ ID wraps go-stackage's Stack.ID method.
 */
 func (r BindRule) ID() string {
 	if r.IsZero() {
-		return ``
+		return bindRuleID
 	}
 	return castAsCondition(r).ID()
 }
@@ -761,7 +780,7 @@ ID wraps go-stackage's Stack.ID method.
 */
 func (r BindRules) ID() string {
 	if r.IsZero() {
-		return ``
+		return bindRuleID
 	}
 	_b, _ := castAsStack(r)
 	return _b.ID()
@@ -903,7 +922,7 @@ func (r BindRules) Index(idx int) BindContext {
 	switch tv := y.(type) {
 	case BindRule:
 		z = tv
-		return z.(*BindRule)
+		return z.(BindRule)
 	case BindRules:
 		z = tv
 		return z.(BindRules)

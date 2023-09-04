@@ -103,12 +103,54 @@ func (r ComparisonOperator) Description() string {
 }
 
 /*
+Valid returns an error instance following the process of verifying
+the receiver to be a known ComparisonOperator instance.  This does
+NOT, however, imply feasibility of use with any particular type in
+the creation of BindRule or TargetRule instances.
+*/
+func (r ComparisonOperator) Valid() (err error) {
+	if !isValidCopNumeral(int(r)) {
+		err = badCopErr(r)
+	}
+
+	return
+}
+
+/*
+Compare shall resolve the input ComparisonOperator candidate (cop)
+and, if successful, shall perform an equality assertion between it
+and the receiver instance. The assertion result is returned as a
+bool instance.
+
+In the case of the string representation of a given candidate input
+value, case-folding is not a significant factor.
+*/
+func (r ComparisonOperator) Compare(cop any) bool {
+	switch tv := cop.(type) {
+	case ComparisonOperator:
+		return tv == r
+	case int:
+		return int(tv) == int(r)
+	case string:
+		return strInSliceFold(tv, []string{
+			r.Description(),
+			r.Context(),
+			r.String(),
+		})
+	}
+
+	return false
+}
+
+/*
 matchCOP reads the *string representation* of a
 ComparisonOperator instance and returns
 the appropriate ComparisonOperator const.
 
 A bogus ComparisonOperator (badCop, 0x0)
 shall be returned if a match was not made.
+
+TODO: DECOM ME
 */
 func matchCOP(op string) ComparisonOperator {
 	for k, v := range comparisonOperatorMap {
@@ -121,12 +163,26 @@ func matchCOP(op string) ComparisonOperator {
 }
 
 /*
+isValidCopNumeral merely returns the Boolean evaluation result of a check to see
+whether integer x falls within a numerical range of one (1) through six (6).
+
+This range represents the absolute minimum and maximum numerical values for any
+valid instance of the stackage.ComparisonOperator type (and, by necessity, the
+go-aci ComparisonOperator alias type as well).
+*/
+func isValidCopNumeral(x int) bool {
+	return (1 <= x && x <= 6)
+}
+
+/*
 keywordAllowsComparisonOperator returns a Boolean value indicative of
 whether Keyword input value kw allows ComparisonOperator op
 for use in T/B rule instances.
 
 Certain keywords, such as TargetScope, allow only certain operators,
 while others, such as BindSSF, allow the use of ALL operators.
+
+TODO: DECOM ME
 */
 func keywordAllowsComparisonOperator(kw, op any) bool {
 	// identify the comparison operator,
@@ -163,6 +219,8 @@ func keywordAllowsComparisonOperator(kw, op any) bool {
 
 /*
 bindKeywordAllowsComparisonOperator is a private function called by keywordAllowsCompariso9nOperator.
+
+TODO: DECOM ME
 */
 func bindKeywordAllowsComparisonOperator(key BindKeyword, cop ComparisonOperator) bool {
 	// look-up the keyword within the permitted cop
@@ -187,6 +245,8 @@ func bindKeywordAllowsComparisonOperator(key BindKeyword, cop ComparisonOperator
 
 /*
 targetKeywordAllowsComparisonOperator is a private function called by keywordAllowsCompariso9nOperator.
+
+TODO: DECOM ME
 */
 func targetKeywordAllowsComparisonOperator(key TargetKeyword, cop ComparisonOperator) bool {
 	// look-up the keyword within the permitted cop
@@ -210,6 +270,7 @@ func targetKeywordAllowsComparisonOperator(key TargetKeyword, cop ComparisonOper
 }
 
 func init() {
+	// TODO: DECOM ME
 	comparisonOperatorMap = map[string]ComparisonOperator{
 		Eq.String(): Eq,
 		Ne.String(): Ne,
@@ -221,6 +282,7 @@ func init() {
 
 	// populate the allowed comparison operator map per each
 	// possible TargetRule keyword
+	// TODO: DECOM ME
 	permittedTargetComparisonOperators = map[TargetKeyword][]ComparisonOperator{
 		Target:            {Eq, Ne},
 		TargetTo:          {Eq, Ne},
@@ -235,6 +297,7 @@ func init() {
 
 	// populate the allowed comparison operator map per each
 	// possible BindRule keyword
+	// TODO: DECOM ME
 	permittedBindComparisonOperators = map[BindKeyword][]ComparisonOperator{
 		BindUDN: {Eq, Ne},
 		BindRDN: {Eq, Ne},

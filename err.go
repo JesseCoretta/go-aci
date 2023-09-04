@@ -34,6 +34,10 @@ func badInhErr(bad string) error {
 	return errorf("Bad Inheritance value '%s'; must conform to 'parent[0-9+].<at>#<bt_or_av>'", bad)
 }
 
+func badCopErr(instance any) error {
+	return errorf("%T contains an bogus underlying value", instance)
+}
+
 func badClockTimeErr(raw, thyme string) (err error) {
 	if thyme != raw {
 		err = errorf("Unexpected %s clock time parsing result; want '%s', got '%s' (hint: use military time; 0000 through 2400)",
