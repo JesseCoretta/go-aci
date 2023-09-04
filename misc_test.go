@@ -148,6 +148,33 @@ func TestHash(t *testing.T) {
 	}
 }
 
+func TestStack_identifier(t *testing.T) {
+	nullstack, _ := castAsStack(BindRules{})
+
+	for _, stack := range []any{
+		nullstack,
+		BindRules{},
+		TargetRules{},
+		Instructions{},
+		AttributeTypes{},
+		ObjectIdentifier{},
+		ObjectIdentifiers{},
+		PermissionBindRules{},
+		BindDistinguishedName{},
+		BindDistinguishedNames{},
+		TargetDistinguishedName{},
+		TargetDistinguishedNames{},
+		AttributeFilterOperation{},
+		AttributeFilterOperations{},
+	} {
+		if !isStack(stack) {
+			t.Errorf("%s failed: unable to identify valid stack (%T)",
+				t.Name(), stack)
+			return
+		}
+	}
+}
+
 /*
 TestOperator_codecov shall test every possible permutation of B/T keywords and
 ComparisonOperator. Each permutation result will be compared with the expected
