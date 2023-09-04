@@ -694,3 +694,42 @@ func ExamplePermissionBindRule_Parse() {
 	fmt.Printf("%s", pbr)
 	// Output: allow(read,write,search,compare) ( ( timeofday >= "0900" AND timeofday < "1830" ) AND ( dayofweek = "Mon,Tues,Wed,Thur,Fri" ) );
 }
+
+/*
+This example demonstrates a basic assembly of a PermissionBindRule using
+actual Permission and BindContext instances assigned through the Set
+method.
+*/
+func ExamplePermissionBindRule_Set() {
+	// Prepare the 'container' for our new
+	// PermissionBindRule components.
+	var pbr PermissionBindRule
+	pbr.Set(
+		Allow(NoAccess),
+		UDN(`ldap:///uid=disgruntled_employee,ou=People,dc=example,dc=com`).Eq(),
+	)
+
+	fmt.Printf("%s", pbr)
+	// Output: allow(none) userdn = "ldap:///uid=disgruntled_employee,ou=People,dc=example,dc=com";
+}
+
+/*
+This example demonstrates the same outcome as the PermissionBindRule.Parse
+example, except this time using the Set method on a nil instance.
+*/
+func ExamplePermissionBindRule_Set_withParse() {
+	var privs string = `allow(read,write,search,compare)`
+	var rules string = `( ( timeofday >= "0900" AND timeofday < "1830" ) AND ( dayofweek = "Mon,Tues,Wed,Thur,Fri" ) )`
+
+	// combine the above into one single statement
+	// with proper termination.
+	var raw string = sprintf("%s %s;", privs, rules)
+
+	// Prepare the 'container' for our new
+	// PermissionBindRule components.
+	var pbr PermissionBindRule
+	pbr.Set(raw)
+
+	fmt.Printf("%s", pbr)
+	// Output: allow(read,write,search,compare) ( ( timeofday >= "0900" AND timeofday < "1830" ) AND ( dayofweek = "Mon,Tues,Wed,Thur,Fri" ) );
+}

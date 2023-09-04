@@ -30,14 +30,26 @@ Users may compose instances of this type manually, or using the PB package
 level function, which automatically invokes value checks.
 */
 type PermissionBindRule struct {
+	*permissionBindRule
+}
+
+type permissionBindRule struct {
 	P Permission
 	B BindContext // BindRule -or- BindRules are allowed
+}
+
+func newPBR(P Permission, B BindContext) *permissionBindRule {
+	return &permissionBindRule{
+		P: P,
+		B: B,
+	}
 }
 
 /*
 PBR returns an instance of PermissionBindRule, bearing the Permission P and
 the Bind Rule B. The values P and B shall undergo validity checks per the
-conditions of the PermissionBindRule.Valid method automatically.
+conditions of the PermissionBindRule.Valid method automatically. A bogus
+PermissionBindRule is returned if such checks fail.
 
 Instances of this kind are intended for submission (via Push) into instances
 of PermissionBindRules.
@@ -47,7 +59,10 @@ instances of this type are allowed per the syntax specification honored
 by this package.
 */
 func PBR(P Permission, B BindContext) (r PermissionBindRule) {
-	_r := PermissionBindRule{P, B}
+	_r := PermissionBindRule{
+		newPBR(P, B),
+	}
+
 	if err := _r.Valid(); err == nil {
 		r = _r
 	}
@@ -88,12 +103,55 @@ func (r PermissionBindRule) Valid() (err error) {
 IsZero returns a Boolean value indicative of whether the receiver
 instance is nil, or unset.
 */
-func (r *PermissionBindRule) IsZero() bool {
-	if r == nil {
+func (r PermissionBindRule) IsZero() bool {
+	if r.permissionBindRule == nil {
 		return true
 	}
 
-	return r.P.IsZero() && r.B == nil
+	return r.permissionBindRule.P.IsZero() &&
+		r.permissionBindRule.B == nil
+}
+
+/*
+Set assigns one (1) or more values (x) to the receiver. Valid types
+for input are Permission, BindContext or their string equivalents.
+*/
+func (r *PermissionBindRule) Set(x ...any) PermissionBindRule {
+	if r.IsZero() {
+		r.permissionBindRule = new(permissionBindRule)
+	}
+	r.permissionBindRule.set(x...)
+	return *r
+}
+
+/*
+set is a private method called by PermissionBindRule.Set.
+*/
+func (r *permissionBindRule) set(x ...any) {
+	// Iterate each of the user-specified
+	// input values ...
+	for i := 0; i < len(x); i++ {
+		switch tv := x[i].(type) {
+		case string:
+			_r, err := parsePermissionBindRule(tv)
+			if err != nil {
+				return
+			}
+			*r = (*_r.permissionBindRule)
+
+		case Permission:
+			if err := tv.Valid(); err != nil {
+				return
+			}
+			r.P = tv
+
+		case BindContext:
+			if err := tv.Valid(); err != nil {
+				return
+			}
+			r.B = tv
+		}
+	}
 }
 
 /*
@@ -108,24 +166,18 @@ valid is a private method invoked by PermissionBindRule.Valid.
 */
 func (r PermissionBindRule) valid() (err error) {
 	if r.IsZero() {
-		err = nilInstanceErr(r)
-		return
+		return nilInstanceErr(r)
 	}
 
 	if err = r.P.Valid(); err != nil {
 		return
 
-	} else if r.B == nil {
-		err = nilInstanceErr(r.B)
-		return
 	}
 
-	if r.B.Len() == 0 {
-		err = nilInstanceErr(r.B)
-	} else if r.P.IsZero() {
-		err = nilInstanceErr(r.P)
-	} else if r.B.ID() != bindRuleID {
-		err = badPTBRuleKeywordErr(r.B, bindRuleID, bindRuleID, r.B.ID())
+	if r.B == nil {
+		return nilInstanceErr(r.B)
+	} else if err = r.B.Valid(); err != nil {
+		return
 	}
 
 	return
@@ -153,7 +205,9 @@ string is a private method called by PermissionBindRule.String.
 func (r PermissionBindRule) string() (s string) {
 	s = badPB
 	if err := r.valid(); err == nil {
-		s = sprintf("%s %s;", r.P, r.B)
+		s = sprintf("%s %s;",
+			r.permissionBindRule.P,
+			r.permissionBindRule.B)
 	}
 
 	return
@@ -280,7 +334,6 @@ func (r PermissionBindRules) pushPolicy(x any) (err error) {
 	}
 
 	switch tv := x.(type) {
-
 	case PermissionBindRule:
 		if err = tv.Valid(); err != nil {
 			err = pushErrorNilOrZero(PermissionBindRules{}, tv, nil, err)
@@ -312,24 +365,28 @@ func (r PermissionBindRules) contains(x any) bool {
 		return false
 	}
 
-	var candidate string
+	var candidate PermissionBindRule
 
 	switch tv := x.(type) {
 	case string:
-		candidate = tv
+		pbr, err := parsePermissionBindRule(tv)
+		if err != nil {
+			return false
+		}
+		candidate = pbr
 	case PermissionBindRule:
-		candidate = tv.String()
+		candidate = tv
 	default:
 		return false
 	}
 
-	if len(candidate) == 0 {
+	if len(candidate.String()) == 0 {
 		return false
 	}
 
 	for i := 0; i < r.Len(); i++ {
 		// case is not significant here.
-		if eq(r.Index(i).String(), candidate) {
+		if eq(r.Index(i).String(), candidate.String()) {
 			return true
 		}
 	}

@@ -42,25 +42,25 @@ func ExamplePBR() {
 }
 
 func ExamplePermissionBindRule_String() {
-	pbr := PermissionBindRule{
+	var pbr PermissionBindRule = PBR(
 		Allow(NoAccess),
 		UDN(`uid=disgruntled_employee,ou=People,dc=example,dc=com`).Eq(),
-	}
+	)
 
 	fmt.Printf("%s", pbr)
 	// Output: allow(none) userdn = "ldap:///uid=disgruntled_employee,ou=People,dc=example,dc=com";
 }
 
 func ExamplePermissionBindRule_Compare() {
-	pbr1 := PermissionBindRule{
+	var pbr1 PermissionBindRule = PBR(
 		Allow(NoAccess),
 		UDN(`uid=disgruntled_employees,ou=Group,dc=example,dc=com`).Eq(),
-	}
+	)
 
-	pbr2 := PermissionBindRule{
+	var pbr2 PermissionBindRule = PBR(
 		Allow(NoAccess),
 		UDN(`uid=disgruntled_employee,ou=People,dc=example,dc=com`).Eq(),
-	}
+	)
 
 	fmt.Printf("%t", pbr1.Compare(pbr2))
 	// Output: false
@@ -89,15 +89,15 @@ This example demonstrates the creation of a PermissionBindRules instance using t
 package level function.
 */
 func ExamplePBRs() {
-	rule1 := PermissionBindRule{
+	var rule1 PermissionBindRule = PBR(
 		Deny(AllAccess, ProxyAccess),
 		GDN(`cn=disgruntled_employees,ou=Groups,dc=example,dc=com`).Eq(),
-	}
+	)
 
-	rule2 := PermissionBindRule{
+	var rule2 PermissionBindRule = PBR(
 		Allow(AllAccess),
 		UDN(`cn=Courtney Tolana,ou=Admin,ou=People,dc=example,dc=com`).Eq(),
-	}
+	)
 
 	// Init/Push in one shot
 	pbrs := PBRs(rule1, rule2)
@@ -131,15 +131,15 @@ func ExamplePermissionBindRules_Len() {
 }
 
 func ExamplePermissionBindRules_Push() {
-	rule1 := PermissionBindRule{
+	var rule1 PermissionBindRule = PBR(
 		Deny(AllAccess, ProxyAccess),
 		GDN(`cn=disgruntled_employees,ou=Groups,dc=example,dc=com`).Eq(),
-	}
+	)
 
-	rule2 := PermissionBindRule{
+	var rule2 PermissionBindRule = PBR(
 		Allow(AllAccess),
 		UDN(`cn=Courtney Tolana,ou=Admin,ou=People,dc=example,dc=com`).Eq(),
-	}
+	)
 
 	// Init/Push in one shot
 	pbrs := PBRs()
@@ -151,29 +151,29 @@ func ExamplePermissionBindRules_Push() {
 }
 
 func ExamplePermissionBindRules_Compare() {
-	rule1 := PermissionBindRule{
+	var rule1 PermissionBindRule = PBR(
 		Deny(AllAccess, ProxyAccess),
 		GDN(`cn=disgruntled_employees,ou=Groups,dc=example,dc=com`).Eq(),
-	}
+	)
 
-	rule2 := PermissionBindRule{
+	var rule2 PermissionBindRule = PBR(
 		Allow(AllAccess),
 		UDN(`cn=Courtney Tolana,ou=Admin,ou=People,dc=example,dc=com`).Eq(),
-	}
+	)
 
 	// Init/Push in one shot
 	pbrs1 := PBRs()
 	pbrs1.Push(rule1, rule2)
 
-	rule1 = PermissionBindRule{
+	rule1 = PBR(
 		Deny(AllAccess, ProxyAccess),
 		GDN(`cn=onboard_employees,ou=Groups,dc=example,dc=com`).Eq(),
-	}
+	)
 
-	rule2 = PermissionBindRule{
+	rule2 = PBR(
 		Allow(AllAccess),
 		UDN(`cn=Jesse Coretta,ou=Admin,ou=People,dc=example,dc=com`).Eq(),
-	}
+	)
 
 	pbrs2 := PBRs()
 	pbrs2.Push(rule1, rule2)
@@ -183,15 +183,15 @@ func ExamplePermissionBindRules_Compare() {
 }
 
 func ExamplePermissionBindRules_Index() {
-	rule1 := PermissionBindRule{
+	var rule1 PermissionBindRule = PBR(
 		Deny(AllAccess, ProxyAccess),
 		GDN(`cn=disgruntled_employees,ou=Groups,dc=example,dc=com`).Eq(),
-	}
+	)
 
-	rule2 := PermissionBindRule{
+	var rule2 PermissionBindRule = PBR(
 		Allow(AllAccess),
 		UDN(`cn=Courtney Tolana,ou=Admin,ou=People,dc=example,dc=com`).Eq(),
-	}
+	)
 
 	// Init/Push in one shot
 	pbrs := PBRs()
@@ -208,15 +208,15 @@ func ExamplePermissionBindRules_Index() {
 }
 
 func ExamplePermissionBindRules_Contains() {
-	rule1 := PermissionBindRule{
+	var rule1 PermissionBindRule = PBR(
 		Deny(AllAccess, ProxyAccess),
 		GDN(`cn=disgruntled_employees,ou=Groups,dc=example,dc=com`).Eq(),
-	}
+	)
 
-	rule2 := PermissionBindRule{
+	var rule2 PermissionBindRule = PBR(
 		Allow(AllAccess),
 		UDN(`cn=Courtney Tolana,ou=Admin,ou=People,dc=example,dc=com`).Eq(),
-	}
+	)
 
 	// Init/Push in one shot
 	pbrs := PBRs(rule1, rule2)
@@ -226,15 +226,15 @@ func ExamplePermissionBindRules_Contains() {
 }
 
 func ExamplePermissionBindRules_Pop() {
-	rule1 := PermissionBindRule{
+	var rule1 PermissionBindRule = PBR(
 		Deny(AllAccess, ProxyAccess),
 		GDN(`cn=disgruntled_employees,ou=Groups,dc=example,dc=com`).Eq(),
-	}
+	)
 
-	rule2 := PermissionBindRule{
+	var rule2 PermissionBindRule = PBR(
 		Allow(AllAccess),
 		UDN(`cn=Courtney Tolana,ou=Admin,ou=People,dc=example,dc=com`).Eq(),
-	}
+	)
 
 	// Init/Push in one shot
 	pbrs := PBRs()
@@ -251,15 +251,15 @@ func ExamplePermissionBindRules_Pop() {
 }
 
 func ExamplePermissionBindRules_String() {
-	rule1 := PermissionBindRule{
+	var rule1 PermissionBindRule = PBR(
 		Deny(AllAccess, ProxyAccess),
 		GDN(`cn=disgruntled_employees,ou=Groups,dc=example,dc=com`).Eq(),
-	}
+	)
 
-	rule2 := PermissionBindRule{
+	var rule2 PermissionBindRule = PBR(
 		Allow(AllAccess),
 		UDN(`cn=Courtney Tolana,ou=Admin,ou=People,dc=example,dc=com`).Eq(),
-	}
+	)
 
 	// Init/Push in one shot
 	pbrs := PBRs()
@@ -274,8 +274,10 @@ func TestPermissionBindRule_codecov(t *testing.T) {
 	var pb PermissionBindRule
 	_ = pb.IsZero()
 	_ = pb.Valid()
-	pb.B = And(UDN(``))   // bogus dn
-	pb.P = Allow(`moddn`) // bogus right
+	pb = PBR(
+		Allow(`moddn`), // bogus right
+		And(UDN(``)),   // bogus dn
+	)
 	_ = pb.Valid()
 }
 
@@ -287,42 +289,56 @@ func TestPermissionBindRules_codecov(t *testing.T) {
 	var pb PermissionBindRule
 	_ = pb.IsZero()
 	_ = pb.Valid()
-	pb.B = And()
+	pb = PBR(
+		Permission{nil},
+		And(),
+	)
 	pbs.Push(pb)
 	_ = pbs.Len()
 	_ = pbs.Valid()
 
 	pbs = PBRs()
 
-	rule0 := PermissionBindRule{
-		P: Permission{},
-	}
+	rule0 := PBR(Permission{nil}, nil)
+	_ = rule0.IsZero()
+	_ = rule0.Valid()
+
 	pbs.Push(rule0)
 
-	rule1 := PermissionBindRule{
-		P: Deny(ProxyAccess),
-	}
+	rule1 := PBR(Deny(ProxyAccess), nil)
+	_ = rule1.IsZero()
+	_ = rule1.Valid()
 	pbs.Push(rule1)
 
-	rule2 := PermissionBindRule{
-		B: GDN(`cn=disgruntled_employees,ou=Groups,dc=example,dc=com`).Eq(),
-	}
+	rule2 := PBR(
+		Permission{nil},
+		GDN(`cn=disgruntled_employees,ou=Groups,dc=example,dc=com`).Eq(),
+	)
+	_ = rule2.IsZero()
+	_ = rule2.Valid()
 	pbs.Push(rule2)
 
-	rule3 := PermissionBindRule{
-		B: nil,
-	}
+	rule3 := PBR(
+		Permission{nil},
+		nil,
+	)
+	_ = rule3.IsZero()
+	_ = rule3.Valid()
 	pbs.Push(rule3)
 
-	rule4 := PermissionBindRule{
-		B: BindRules(stackAnd().SetID(`bonedrule`)),
-	}
+	rule4 := PBR(
+		Permission{nil},
+		BindRules(stackAnd().SetID(`bonedrule`)).Push(SSF(128).Eq()),
+	)
+	_ = rule4.IsZero()
+	_ = rule4.Valid()
 	pbs.Push(rule4, float32(1.234))
 
-	rule5 := PermissionBindRule{
+	var rule5 PermissionBindRule
+	rule5.Set(
 		Deny(AllAccess, ProxyAccess),
 		GDN(`cn=disgruntled_employees,ou=Groups,dc=example,dc=com`).Eq(),
-	}
+	)
 	pbs.Push(rule5)
 
 	if pbs.Len() != 1 {

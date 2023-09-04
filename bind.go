@@ -1021,6 +1021,12 @@ Valid wraps go-stackage's Stack.Valid method.
 */
 func (r BindRules) Valid() (err error) {
 	_b, _ := castAsStack(r)
+	if r.ID() != bindRuleID {
+		err = generalErr(bindRuleID, errorf("Unidentified %T instance (ID:%s)",
+			r, r.ID()))
+		return err
+	}
+
 	err = _b.Valid()
 	return
 }

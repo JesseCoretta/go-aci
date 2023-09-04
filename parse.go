@@ -810,8 +810,10 @@ func parsePermissionBindRule(raw string) (PermissionBindRule, error) {
 	}
 
 	return PermissionBindRule{
-		P: Permission{perm},
-		B: rules,
+		&permissionBindRule{
+			P: Permission{perm},
+			B: rules,
+		},
 	}, nil
 
 }
