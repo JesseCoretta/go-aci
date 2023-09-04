@@ -38,6 +38,10 @@ type DayOfWeek struct {
 	*days
 }
 
+/*
+days is the private type for pointer embedding within
+instances of DayOfWeek.
+*/
 type days uint8
 
 /*

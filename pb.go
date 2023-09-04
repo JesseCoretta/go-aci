@@ -84,6 +84,10 @@ func (r PermissionBindRule) Valid() (err error) {
 	return r.valid()
 }
 
+/*
+IsZero returns a Boolean value indicative of whether the receiver
+instance is nil, or unset.
+*/
 func (r *PermissionBindRule) IsZero() bool {
 	if r == nil {
 		return true
@@ -92,6 +96,9 @@ func (r *PermissionBindRule) IsZero() bool {
 	return r.P.IsZero() && r.B == nil
 }
 
+/*
+Kind returns the string literal `pbr`.
+*/
 func (r PermissionBindRule) Kind() string {
 	return pbrRuleID
 }
