@@ -82,10 +82,25 @@ func TestFilter_Set(t *testing.T) {
 }
 
 func TestAttributeFilter(t *testing.T) {
+	afo := AF(AT(`cn`))
+	_ = afo.Valid()
+	_ = afo.IsZero()
+	_ = afo.AttributeType()
+	_ = afo.SearchFilter()
+	_ = afo.String()
+	afo = AF(Filter(`(&(objectClass=employee)(cn=Jesse Coretta))`))
+	_ = afo.Valid()
+	_ = afo.IsZero()
+	_ = afo.AttributeType()
+	_ = afo.SearchFilter()
+	_ = afo.String()
+
 	var af AttributeFilter
 	_ = af.AttributeType()
 	_ = af.SearchFilter()
 	_ = af.String()
+	_ = af.Valid()
+	_ = af.IsZero()
 
 	want := `objectClass:(&(objectClass=employee)(cn=Jesse Coretta))`
 	af = AF(`objectClass`, `(&(objectClass=employee)(cn=Jesse Coretta))`)
