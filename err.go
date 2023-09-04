@@ -183,6 +183,11 @@ func levelsNotFoundErr() error {
 	return errorf(emsg)
 }
 
+func rightNotfound(x string) error {
+	emsg := "Right '%s' unknown"
+	return errorf(emsg, x)
+}
+
 func dowBadTimeErr() error {
 	emsg := "%T instance describes invalid timeofday"
 	return errorf(emsg, TimeOfDay{})

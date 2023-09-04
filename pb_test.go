@@ -271,10 +271,11 @@ func ExamplePermissionBindRules_String() {
 }
 
 func TestPermissionBindRule_codecov(t *testing.T) {
-	var pb *PermissionBindRule = new(PermissionBindRule)
+	var pb PermissionBindRule
 	_ = pb.IsZero()
 	_ = pb.Valid()
-	pb.B = And()
+	pb.B = And(UDN(``))   // bogus dn
+	pb.P = Allow(`moddn`) // bogus right
 	_ = pb.Valid()
 }
 

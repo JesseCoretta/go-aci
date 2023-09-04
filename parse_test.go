@@ -591,3 +591,96 @@ func TestParseTargetRules(t *testing.T) {
 	//var trs TargetRules
 	_, _ = ParseTargetRule(``) // codecov
 }
+
+func TestParsePermission(t *testing.T) {
+	var raw string = `allow(read,write,compare,selfwrite)`
+
+	var perm Permission
+	if err := perm.Parse(raw); err != nil {
+		t.Errorf("%s failed: %v",
+			t.Name(), illegalSyntaxPerTypeErr(perm, nil))
+	}
+
+	if !perm.Positive(ReadAccess) {
+		t.Errorf("%s failed; could not parse raw privileges (%s) into valid %T",
+			t.Name(), raw, perm)
+	}
+
+	if perm.String() != raw {
+		t.Errorf("%s failed; bad result: want '%s', got '%s'",
+			t.Name(), raw, perm)
+	}
+}
+
+func TestParsePermissionBindRule(t *testing.T) {
+	var privs string = `allow(read,write,search,compare)`
+	var rules string = `( ( timeofday >= "0900" AND timeofday < "1830" ) AND ( dayofweek = "Mon,Tues,Wed,Thur,Fri" ) )`
+	var raw string = sprintf("%s %s;", privs, rules)
+
+	var pbr PermissionBindRule
+	if err := pbr.Parse(raw); err != nil {
+		t.Errorf("%s failed: %v",
+			t.Name(), illegalSyntaxPerTypeErr(pbr, nil))
+	}
+
+	if pbr.String() != raw {
+		t.Errorf("%s failed; bad result: want '%s', got '%s'",
+			t.Name(), raw, pbr)
+	}
+}
+
+func ExamplePermission_Parse_granting() {
+	var perm Permission
+
+	raw := `allow(read,write,compare,selfwrite)`
+
+	if err := perm.Parse(raw); err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Printf("Read privileges granted: %t", perm.Positive(ReadAccess) && perm.Disposition() == `allow`)
+	// Output: Read privileges granted: true
+
+}
+
+func ExamplePermission_Parse_withholding() {
+	var perm Permission
+
+	raw := `deny(all,proxy)`
+
+	if err := perm.Parse(raw); err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Printf("Proxy privileges denied: %t", perm.Positive(ProxyAccess) && perm.Disposition() == `deny`)
+	// Output: Proxy privileges denied: true
+
+}
+
+/*
+This example demonstrates the complete parsing of a composite ACIv3
+component: the PermissionBindRule. A PermissionBindRule is a single
+permission statement followed by a BindRule or BindRules statement,
+and terminated by a semicolon (ASCII #59).
+*/
+func ExamplePermissionBindRule_Parse() {
+	var privs string = `allow(read,write,search,compare)`
+	var rules string = `( ( timeofday >= "0900" AND timeofday < "1830" ) AND ( dayofweek = "Mon,Tues,Wed,Thur,Fri" ) )`
+
+	// combine the above into one single statement
+	// with proper termination.
+	var raw string = sprintf("%s %s;", privs, rules)
+
+	// Prepare the 'container' for our new
+	// PermissionBindRule components.
+	var pbr PermissionBindRule
+	if err := pbr.Parse(raw); err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Printf("%s", pbr)
+	// Output: allow(read,write,search,compare) ( ( timeofday >= "0900" AND timeofday < "1830" ) AND ( dayofweek = "Mon,Tues,Wed,Thur,Fri" ) );
+}

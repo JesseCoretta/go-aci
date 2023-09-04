@@ -56,6 +56,21 @@ func PBR(P Permission, B BindContext) (r PermissionBindRule) {
 }
 
 /*
+Parse wraps go-antlraci's ParsePermissionBindRule function, writing
+valid data into the receiver, or returning an error instance should
+processing fail.
+*/
+func (r *PermissionBindRule) Parse(raw string) error {
+	_r, err := parsePermissionBindRule(raw)
+	if err != nil {
+		return err
+	}
+	*r = _r
+
+	return nil
+}
+
+/*
 Valid returns an error instance should any of the following conditions
 evaluate as true:
 
@@ -65,7 +80,7 @@ evaluate as true:
 
 • Rule.Len returns zero (0) for B
 */
-func (r *PermissionBindRule) Valid() (err error) {
+func (r PermissionBindRule) Valid() (err error) {
 	return r.valid()
 }
 
@@ -84,8 +99,8 @@ func (r PermissionBindRule) Kind() string {
 /*
 valid is a private method invoked by PermissionBindRule.Valid.
 */
-func (r *PermissionBindRule) valid() (err error) {
-	if r == nil {
+func (r PermissionBindRule) valid() (err error) {
+	if r.IsZero() {
 		err = nilInstanceErr(r)
 		return
 	}

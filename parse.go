@@ -738,3 +738,80 @@ func assertTargetScope(expr parser.RuleExpression) (ex SearchScope, err error) {
 
 	return
 }
+
+/*
+parsePermission is a private function called by Permission.Parse, et al.
+*/
+func parsePermission(raw string) (*permission, error) {
+	perm, err := parser.ParsePermission(raw)
+	if err != nil {
+		return nil, err
+	}
+
+	return unpackageAntlrPermission(perm)
+}
+
+func unpackageAntlrPermission(perm parser.Permission) (*permission, error) {
+	p := &permission{
+		bool:  new(bool),
+		Right: new(Right),
+	}
+
+	switch x := perm.Allow; x {
+	case true:
+		(*p.bool) = x
+	default:
+		(*p.bool) = false
+	}
+
+	// process each permission one at a time
+	var bits int
+	var err error
+	for i := 0; i < len(perm.Rights); i++ {
+		rite := lc(perm.Rights[i])
+		r, ok := rightsNames[rite]
+		if !ok {
+			err = rightNotfound(rite)
+			return nil, err
+		}
+		bits |= int(r)
+		p.shift(perm.Rights[i])
+	}
+
+	if bits != int(*p.Right) {
+		err = unexpectedValueCountErr(`permission bits`, bits, int(*p.Right))
+		return nil, err
+	}
+
+	return p, nil
+}
+
+func parsePermissionBindRule(raw string) (PermissionBindRule, error) {
+	pbr, err := parser.ParsePermissionBindRule(raw)
+	if err != nil {
+		return badPermissionBindRule, err
+	}
+
+	var (
+		ok    bool
+		perm  *permission
+		rules BindRules
+	)
+
+	if perm, err = unpackageAntlrPermission(pbr.P); err != nil {
+		return badPermissionBindRule, err
+	}
+
+	// traverse the native stackage.Stack instance returned
+	// by antlraci and marshal its contents into proper
+	// BindRule/BindRules instances, etc.
+	if rules, ok = convertBindRulesHierarchy(pbr.B); !ok {
+		return badPermissionBindRule, parseBindRulesHierErr(pbr.B, rules)
+	}
+
+	return PermissionBindRule{
+		P: Permission{perm},
+		B: rules,
+	}, nil
+
+}

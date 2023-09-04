@@ -25,6 +25,7 @@ const (
 
 const badPerm = `<invalid_permission>`
 
+var badPermission Permission
 var rightsMap map[Right]string
 var rightsNames map[string]Right
 
@@ -281,9 +282,17 @@ if the receiver instance has its Read and Delete Right bits enabled,
 this would represent an abstract length of two (2).
 */
 func (r Permission) Len() int {
+	if r.IsZero() {
+		return 0
+	}
+
+	return r.permission.len()
+}
+
+func (r permission) len() int {
 	var D int
 	for i := 0; i < bitSize(NoAccess); i++ {
-		if d := Right(1 << i); r.Positive(d) {
+		if d := Right(1 << i); r.positive(d) {
 			D++
 		}
 	}
@@ -405,6 +414,21 @@ func (r *permission) isZero() bool {
 	}
 
 	return r.bool == nil && r.Right == nil
+}
+
+/*
+Parse wraps go-antlraci's ParsePermission function, writing
+valid data into the receiver, or returning an error instance
+if processing fails.
+*/
+func (r *Permission) Parse(raw string) (err error) {
+	var perm *permission
+	if perm, err = parsePermission(raw); err != nil {
+		return
+	}
+
+	r.permission = perm
+	return
 }
 
 /*
