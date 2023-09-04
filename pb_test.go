@@ -310,13 +310,29 @@ func TestPermissionBindRules_codecov(t *testing.T) {
 	_ = rule1.Valid()
 	pbs.Push(rule1)
 
-	rule2 := PBR(
+	var rule2a PermissionBindRule
+	rule2a.Set(
 		Permission{nil},
 		GDN(`cn=disgruntled_employees,ou=Groups,dc=example,dc=com`).Eq(),
 	)
-	_ = rule2.IsZero()
-	_ = rule2.Valid()
-	pbs.Push(rule2)
+	_ = rule2a.IsZero()
+	_ = rule2a.Valid()
+	pbs.Push(rule2a)
+
+	var rule2b PermissionBindRule
+	rule2b.Set(
+		Allow(`read`, `search`, `compare`),
+		badBindDN,
+	)
+	_ = rule2b.IsZero()
+	_ = rule2b.Valid()
+	pbs.Push(rule2b)
+
+	var rule2c PermissionBindRule
+	rule2c.Set(badBindDN, `pspspsppspspsp`)
+	_ = rule2c.IsZero()
+	_ = rule2c.Valid()
+	pbs.Push(rule2c)
 
 	rule3 := PBR(
 		Permission{nil},
