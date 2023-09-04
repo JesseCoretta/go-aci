@@ -815,6 +815,21 @@ func ExampleBindRules_Kind() {
 }
 
 /*
+This example demonstrates the use of the useless Keyword method
+that returns a bogus keyword in string representation. Keywords
+are only directly applicable to BindRule instances.
+*/
+func ExampleBindRules_Keyword() {
+	tf := Timeframe(
+		ToD(`0900`),
+		ToD(`1830`),
+	)
+
+	fmt.Printf("%s", tf.Keyword())
+	// Output: <invalid_bind_keyword>
+}
+
+/*
 This example demonstrates the use of the Paren method to
 enable the parenthetical setting for the receiver instance.
 */
