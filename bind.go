@@ -279,6 +279,15 @@ func (r BindRule) Paren(state ...bool) BindRule {
 Valid wraps go-stackage's Condition.Valid method.
 */
 func (r BindRule) Valid() (err error) {
+	if r.IsZero() {
+		err = nilInstanceErr(r)
+		return
+	}
+	if r.Keyword() == nil {
+		err = badPTBRuleKeywordErr(r, bindRuleID, `bindkeyword`, `bad keyword`)
+		return
+	}
+
 	_t := castAsCondition(r)
 	err = _t.Valid()
 	return
@@ -1040,16 +1049,30 @@ Stack alias) type instance.
 Only BindContext qualifiers are to be cleared for push.
 */
 func (r BindRules) pushPolicy(x any) (err error) {
+	if x == nil {
+		err = pushErrorNilOrZero(r, x, matchBKW(r.Category()))
+		return
+	}
+
 	// perform type switch upon input value
 	// x to determine suitability for push.
 	switch tv := x.(type) {
+	case BindRules:
+		if err = tv.Valid(); err != nil {
+			err = pushErrorNilOrZero(r, tv, matchBKW(r.Category()), err)
+		}
+	case BindRule:
+		if err = tv.Valid(); err != nil {
+			err = pushErrorNilOrZero(r, tv, matchBKW(r.Category()), err)
+		}
 
-	case BindContext:
-		// BindContext match is qualified
-		// through instances of either
-		// BindRule or BindRules types.
-		if tv.IsZero() {
-			err = pushErrorNilOrZero(r, tv, matchBKW(r.Category()))
+		if tv.Keyword() == nil {
+			err = badPTBRuleKeywordErr(tv, `bind`, `bindkeyword`, tv.Keyword())
+			break
+		}
+
+		if matchBKW(tv.Keyword().String()) == BindKeyword(0x0) {
+			err = badPTBRuleKeywordErr(tv, `bind`, `bindkeyword`, tv.Keyword())
 		}
 
 	default:

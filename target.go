@@ -695,6 +695,14 @@ func (r TargetRules) pushPolicy(x any) (err error) {
 		if tv.IsZero() {
 			err = pushErrorNilOrZero(r, tv, tv.Keyword())
 		}
+		if tv.Keyword() == nil {
+			err = badPTBRuleKeywordErr(tv, `target`, `targetkeyword`, tv.Keyword())
+			break
+		}
+
+		if matchTKW(tv.Keyword().String()) == TargetKeyword(0x0) {
+			err = badPTBRuleKeywordErr(tv, `target`, `targetkeyword`, tv.Keyword())
+		}
 		if r.contains(tv.Keyword()) {
 			err = pushErrorNilOrZero(r, tv, tv.Keyword())
 		}
