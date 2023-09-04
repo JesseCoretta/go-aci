@@ -54,7 +54,7 @@ further details, see the LICENSE file within the aforementioned repository.
 # Features
 
 - Intuitive: well-documented with numerous examples
-- Efficient: a package-wide cyclomatic complexity factor limit of nine (9) is imposed; the imported go-stackage and go-objectid
+- Efficient: a package-wide cyclomatic complexity factor limit of nine (9) is imposed; the imported [`go-stackage`](http://github.com/JesseCoretta/go-stackage) and [`go-objectid`](http://github.com/JesseCoretta/go-objectid)
 packages both exercise similar criteria
 - Compatible: package design encompasses the facets of the ACIv3 specification as a whole, as opposed to catering to any
 specific directory product implementation
