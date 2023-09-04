@@ -234,9 +234,15 @@ func (r PermissionBindRules) Push(x ...any) PermissionBindRules {
 	// iterate variadic input arguments
 	for i := 0; i < len(x); i++ {
 
-		if assert, ok := x[i].(PermissionBindRule); ok {
-			// Push it!
-			_r.Push(assert)
+		switch tv := x[i].(type) {
+		case string:
+			pbr, err := parsePermissionBindRule(tv)
+			if err != nil {
+				return r
+			}
+			_r.Push(pbr)
+		default:
+			_r.Push(tv)
 		}
 	}
 

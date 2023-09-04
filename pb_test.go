@@ -284,7 +284,9 @@ func TestPermissionBindRules_codecov(t *testing.T) {
 	_ = pbs.IsZero()
 	_ = pbs.Valid()
 
-	var pb *PermissionBindRule = new(PermissionBindRule)
+	var pb PermissionBindRule
+	_ = pb.IsZero()
+	_ = pb.Valid()
 	pb.B = And()
 	pbs.Push(pb)
 	_ = pbs.Len()
@@ -293,26 +295,46 @@ func TestPermissionBindRules_codecov(t *testing.T) {
 	pbs = PBRs()
 
 	rule0 := PermissionBindRule{
-		P: Deny(AllAccess, ProxyAccess),
+		P: Permission{},
 	}
-
 	pbs.Push(rule0)
 
 	rule1 := PermissionBindRule{
-		B: GDN(`cn=disgruntled_employees,ou=Groups,dc=example,dc=com`).Eq(),
+		P: Deny(ProxyAccess),
 	}
-
 	pbs.Push(rule1)
 
 	rule2 := PermissionBindRule{
+		B: GDN(`cn=disgruntled_employees,ou=Groups,dc=example,dc=com`).Eq(),
+	}
+	pbs.Push(rule2)
+
+	rule3 := PermissionBindRule{
+		B: nil,
+	}
+	pbs.Push(rule3)
+
+	rule4 := PermissionBindRule{
+		B: BindRules(stackAnd().SetID(`bonedrule`)),
+	}
+	pbs.Push(rule4, float32(1.234))
+
+	rule5 := PermissionBindRule{
 		Deny(AllAccess, ProxyAccess),
 		GDN(`cn=disgruntled_employees,ou=Groups,dc=example,dc=com`).Eq(),
 	}
+	pbs.Push(rule5)
 
-	pbs.Push(rule2)
 	if pbs.Len() != 1 {
 		t.Errorf("%s failed: unexpected slice count, want '%d', got '%d'",
 			t.Name(), 1, pbs.Len())
+		return
+	}
+
+	pbs.Push(rule5.String())
+	if pbs.Len() != 1 {
+		t.Errorf("%s failed: %T allowed duplicate push",
+			t.Name(), pbs)
 		return
 	}
 }
