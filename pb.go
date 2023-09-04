@@ -244,16 +244,17 @@ permissionBindRulesPushPolicy conforms to the PushPolicy interface signature
 defined within the go-stackage package. This private function is called during
 Push attempts to a PermissionBindRules instance.
 */
-func permissionBindRulesPushPolicy(x any) (err error) {
+func (r PermissionBindRules) pushPolicy(x any) (err error) {
+	if r.contains(x) {
+		err = pushErrorNotUnique(r, x, nil)
+		return
+	}
+
 	switch tv := x.(type) {
 
 	case PermissionBindRule:
-		if tv.IsZero() {
-			err = pushErrorNilOrZero(PermissionBindRules{}, tv, nil)
-		} else {
-			if err = tv.Valid(); err != nil {
-				err = pushErrorNilOrZero(PermissionBindRules{}, tv, nil, err)
-			}
+		if err = tv.Valid(); err != nil {
+			err = pushErrorNilOrZero(PermissionBindRules{}, tv, nil, err)
 		}
 
 	default:
@@ -261,6 +262,50 @@ func permissionBindRulesPushPolicy(x any) (err error) {
 	}
 
 	return
+}
+
+/*
+Contains returns a Boolean value indicative of whether value x,
+if a string or PermissionBindRule instance, already resides within
+the receiver instance.
+
+Case is not significant in the matching process.
+*/
+func (r PermissionBindRules) Contains(x any) bool {
+	return r.contains(x)
+}
+
+/*
+contains is a private method called by PermissionBindRules.Contains.
+*/
+func (r PermissionBindRules) contains(x any) bool {
+	if r.Len() == 0 {
+		return false
+	}
+
+	var candidate string
+
+	switch tv := x.(type) {
+	case string:
+		candidate = tv
+	case PermissionBindRule:
+		candidate = tv.String()
+	default:
+		return false
+	}
+
+	if len(candidate) == 0 {
+		return false
+	}
+
+	for i := 0; i < r.Len(); i++ {
+		// case is not significant here.
+		if eq(r.Index(i).String(), candidate) {
+			return true
+		}
+	}
+
+	return false
 }
 
 /*
@@ -273,13 +318,12 @@ assembly.
 func PBRs(x ...any) (pbr PermissionBindRules) {
 	// create a native stackage.Stack
 	// and configure before typecast.
-	_p := PermissionBindRules(stackList().
+	_p := stackList().
 		NoNesting(true).
 		SetID(pbrsRuleID).
 		SetDelimiter(rune(32)).
 		SetCategory(pbrsRuleID).
-		NoPadding(!StackPadding).
-		SetPushPolicy(permissionBindRulesPushPolicy))
+		NoPadding(!StackPadding)
 
 	// cast _p as a proper PermissionBindRules
 	// instance (pbr). We do it this way to gain
@@ -289,6 +333,7 @@ func PBRs(x ...any) (pbr PermissionBindRules) {
 	// occur during push attempts, providing more
 	// helpful and non-generalized feedback.
 	pbr = PermissionBindRules(_p)
+	_p.SetPushPolicy(pbr.pushPolicy)
 
 	// Assuming one (1) or more items were
 	// submitted during the call, (try to)

@@ -112,6 +112,325 @@ func ExampleAttributeType_Ne() {
 	// Output: ( targetattr != "aci" )
 }
 
+/*
+This example demonstrates the creation of an AttributeTypes instance
+suitable for use in the assembly of a TargetRule bearing the `targetattr`
+keyword context.
+*/
+func ExampleAttributeTypes_targetAttributes() {
+
+	// the TAs function allows AttributeType
+	// instances in string representation, or
+	// cast as proper AttributeType instances.
+	//
+	// Ordering is always preserved.
+	attrs := TAs(
+		`cn`,
+		AT(`givenName`),
+		`sn`,
+		`objectClass`,
+		AT(`l`),
+	)
+
+	fmt.Printf("%s", attrs.Eq())
+	// Output: ( targetattr = "cn || givenName || sn || objectClass || l" )
+}
+
+/*
+This example demonstrates the creation of an AttributeTypes
+instance suitable for use in an LDAPURI instance.
+*/
+func ExampleAttributeTypes_uRIAttributes() {
+
+	// the UAs function allows AttributeType
+	// instances in string representation, or
+	// cast as proper AttributeType instances.
+	//
+	//
+	// Ordering is always preserved.
+	attrs := UAs(
+		`cn`,
+		AT(`givenName`),
+		`sn`,
+		`objectClass`,
+		AT(`l`),
+	)
+
+	fmt.Printf("%s", attrs)
+	// Output: cn,givenName,sn,objectClass,l
+}
+
+func ExampleAttributeTypes_Len() {
+	fmt.Printf("%d attributeTypes", TAs(`cn`, `sn`, `uid`).Len())
+	// Output: 3 attributeTypes
+}
+
+func ExampleAttributeTypes_IsZero() {
+	fmt.Printf("Empty stack: %t", TAs(`cn`, `sn`, `uid`).IsZero())
+	// Output: Empty stack: false
+}
+
+func ExampleAttributeTypes_Valid() {
+	fmt.Printf("Empty stack: %t", TAs(`cn`, `sn`, `uid`).Valid() == nil)
+	// Output: Empty stack: true
+}
+
+func ExampleAttributeTypes_Contains() {
+	attrs := TAs(
+		`cn`,
+		AT(`givenName`),
+		`sn`,
+		`objectClass`,
+		AT(`l`),
+	)
+
+	fmt.Printf("Contains 'l': %t", attrs.Contains(`l`))
+	// Output: Contains 'l': true
+}
+
+/*
+This example demonstrates a basic SHA-1 hash comparison between two
+like instances of the receiver's type.
+*/
+func ExampleAttributeTypes_Compare_likeInstances() {
+	attrs1 := TAs(`cn`, `givenName`, `sn`, `objectClass`, `l`)
+	attrs2 := TAs(`cn`, `givenName`, `sn`, `objectClass`, `l`)
+
+	fmt.Printf("%T instances match: %t", attrs1, attrs1.Compare(attrs2))
+	// Output: aci.AttributeTypes instances match: true
+}
+
+/*
+This example demonstrates why two seemingly identical instances, though
+created by separate functions, fail to evaluate as equal when multi-valued.
+The reason for this is due to the nature of the String method behavior for
+each of the instances. Use of the TAs package level function guarantees a
+delimitation scheme using the symbolic OR (||) symbol, while use of the UAs
+package level function uses comma-delimitation.
+*/
+func ExampleAttributeTypes_Compare_multiValueFalse() {
+	attrs1 := TAs(`cn`, `givenName`, `sn`, `objectClass`, `l`) // <x> || <x> || ...
+	attrs2 := UAs(`cn`, `givenName`, `sn`, `objectClass`, `l`) // x,x,x ...
+
+	fmt.Printf("%T instances match: %t", attrs1, attrs1.Compare(attrs2))
+	// Output: aci.AttributeTypes instances match: false
+}
+
+/*
+This example demonstrates the contrary condition to that demonstrated in the
+AttributeTypes CompareMultiValueFalse example. Because the two instances to
+be evaluated are single-valued, no delimiter scheme comes into play. As such,
+the two instances produce identical String output.
+*/
+func ExampleAttributeTypes_Compare_singleValueTrue() {
+	attrs1 := TAs(`cn`)
+	attrs2 := UAs(`cn`)
+
+	fmt.Printf("%T instances match: %t", attrs1, attrs1.Compare(attrs2))
+	// Output: aci.AttributeTypes instances match: true
+}
+
+func ExampleAttributeTypes_Eq() {
+	attrs := TAs(
+		`cn`,
+		AT(`givenName`),
+		`sn`,
+		`objectClass`,
+		AT(`l`),
+	)
+
+	fmt.Printf("%s", attrs.Eq())
+	// Output: ( targetattr = "cn || givenName || sn || objectClass || l" )
+}
+
+func ExampleAttributeTypes_Ne() {
+	fmt.Printf("%s", TAs(AT(`aci`)).Ne())
+	// Output: ( targetattr != "aci" )
+}
+
+func ExampleAttributeTypes_F() {
+	attrs := TAs(
+		`l`,
+		`cn`,
+		`sn`,
+		`givenName`,
+		`objectClass`,
+	)
+
+	attr := attrs.F()(`homeDirectory`) // We've just executed 'AT' function without having to find it.
+	fmt.Printf("attr is %T", attr)
+	// Output: attr is aci.AttributeType
+}
+
+func ExampleAttributeTypes_Index() {
+	attrs := TAs(
+		`cn`,
+		AT(`givenName`),
+		`sn`,
+		`objectClass`,
+		AT(`l`),
+	)
+
+	fmt.Printf("%s", attrs.Index(2))
+	// Output: sn
+}
+
+/*
+This example demonstrates the addition of new slice elements
+to an AttributeTypes instance using its Push method.
+*/
+func ExampleAttributeTypes_Push() {
+	attrs := TAs(
+		`cn`,
+		AT(`givenName`),
+		`sn`,
+		`objectClass`,
+	)
+	attrs.Push(`l`)
+
+	fmt.Printf("%s", attrs)
+	// Output: cn || givenName || sn || objectClass || l
+}
+
+/*
+This example demonstrates the string representation of the
+receiver instance using its String method.
+*/
+func ExampleAttributeTypes_String() {
+	attrs := TAs(
+		`cn`,
+		AT(`givenName`),
+		`sn`,
+		`objectClass`,
+	)
+
+	fmt.Printf("%s", attrs)
+	// Output: cn || givenName || sn || objectClass
+}
+
+/*
+This example demonstrates the use of the receiver's TRM
+method in order to determine available comparison operator
+driven methods available in this context.
+*/
+func ExampleAttributeTypes_TRM_targetAttributes() {
+	attrs := TAs(
+		`cn`,
+		AT(`givenName`),
+		`sn`,
+		`objectClass`,
+	)
+
+	fmt.Printf("%d available comparison operator methods", attrs.TRM().Len())
+	// Output: 2 available comparison operator methods
+}
+
+/*
+This example demonstrates the useless nature of the receiver's
+TRM method in situations where the receiver is intended for use
+within an LDAPURI instance, rather than as a rule condition unto
+itself. As a result, a bogus TargetRuleMethods instance will be
+returned if the receiver was created through any means *OTHER
+THAN* by execution of the TAs package level function.
+*/
+func ExampleAttributeTypes_TRM_uRIAttributes() {
+	attrs := UAs(
+		`cn`,
+		AT(`givenName`),
+		`sn`,
+		`objectClass`,
+	)
+
+	fmt.Printf("%d available comparison operator methods", attrs.TRM().Len())
+	// Output: 0 available comparison operator methods
+}
+
+/*
+This example demonstrates the removal of a single slice element
+from an AttributeTypes instance in LIFO fashion using its Pop
+method.
+*/
+func ExampleAttributeTypes_Pop() {
+	attrs := TAs(
+		`cn`,
+		AT(`givenName`),
+		`sn`,
+		`objectClass`,
+		`l`,
+	)
+	popped := attrs.Pop()
+
+	fmt.Printf("%s", popped)
+	// Output: l
+}
+
+func ExampleAttributeTypes_Keyword_targetAttributes() {
+	attrs := TAs(
+		`l`,
+		`cn`,
+		`sn`,
+		`givenName`,
+		`objectClass`,
+	)
+
+	fmt.Printf("%s", attrs.Keyword())
+	// Output: targetattr
+}
+
+func ExampleAttributeTypes_Kind_targetAttributes() {
+	attrs := TAs(
+		`l`,
+		`cn`,
+		`sn`,
+		`givenName`,
+		`objectClass`,
+	)
+
+	fmt.Printf("%s", attrs.Kind())
+	// Output: targetattr
+}
+
+func ExampleAttributeTypes_Kind_uRIAttributes() {
+	attrs := UAs(
+		`l`,
+		`cn`,
+		`sn`,
+		`givenName`,
+		`objectClass`,
+	)
+
+	fmt.Printf("%s", attrs.Kind())
+	// Output: <uri_search_attributes>
+}
+
+func ExampleAttributeTypes_Kind_uninitialized() {
+	var attrs AttributeTypes
+	fmt.Printf("%s", attrs.Kind())
+	// Output: <uninitialized>
+}
+
+/*
+This example demonstrates the incompatibility with an
+AttributeTypes stack intended for use within an LDAPURI
+instance. Because this incarnation of AttributeTypes has
+no direct application within a BindRule or a TargetRule
+(rather it resides WITHIN another type eligible for such
+use),  the Keyword cannot be inferred and returns a nil
+instance. This is expected behavior.
+*/
+func ExampleAttributeTypes_Keyword_uRIAttributes() {
+	attrs := UAs(
+		`l`,
+		`cn`,
+		`sn`,
+		`givenName`,
+		`objectClass`,
+	)
+
+	fmt.Printf("Keyword is nil: %t", attrs.Keyword() == nil)
+	// Output: Keyword is nil: true
+}
+
 func ExampleABTV() {
 	var atb AttributeBindTypeOrValue = ABTV(BindUAT)
 	atb.Set(AT(`owner`), GROUPDN)
@@ -315,10 +634,52 @@ func ExampleAttributeBindTypeOrValue_BRM() {
 	// Output: 2 available aci.BindRuleMethod instances
 }
 
+func ExampleAV() {
+	attr := AT(`homeDirectory`)
+	value := AV(`/home/jesse`)
+
+	fmt.Printf("My %s is '%s'", attr, value)
+	// Output: My homeDirectory is '/home/jesse'
+}
+
+func ExampleAttributeValue() {
+	attr := AT(`homeDirectory`)
+	value := AV(`/home/jesse`)
+
+	fmt.Printf("My %s is '%s'", attr, value)
+	// Output: My homeDirectory is '/home/jesse'
+}
+
+func ExampleAttributeValue_String() {
+	attr := AT(`homeDirectory`)
+	value := AV(`/home/jesse`)
+
+	fmt.Printf("My %s is '%s'", attr, value)
+	// Output: My homeDirectory is '/home/jesse'
+}
+
+/*
+This example demonstrates a SHA-1 hash comparison between the receiver and
+a test value. Note that the SHA-1 comparison is driven by the type instance's
+stringer output for simplicity in this package.
+*/
+func ExampleAttributeValue_Compare() {
+
+	var (
+		// granted, password values aren't an ACIv3 thing in
+		// this context, but its still a fair example ...
+		myPassword    AttributeValue = AV(`ALAA¢<ý²áßNß%a.)_ÿ3÷`)
+		notMyPassword AttributeValue = AV(`ALAA¢<ýªáßNß%a.)_ÿ3÷`)
+	)
+
+	fmt.Printf("These passwords match: %t", myPassword.Compare(notMyPassword))
+	// Output: These passwords match: false
+}
+
 func TestAttributeTypes(t *testing.T) {
 
 	for keyword, atfn := range map[Keyword]func(...any) AttributeTypes{
-		BindUDN:    UAs,
+		//BindUDN:    UAs,	/// TODO clean this up
 		TargetAttr: TAs,
 	} {
 		var attrs AttributeTypes = atfn()

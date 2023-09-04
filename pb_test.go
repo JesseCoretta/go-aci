@@ -207,6 +207,24 @@ func ExamplePermissionBindRules_Index() {
 	// allow(all) userdn = "ldap:///cn=Courtney Tolana,ou=Admin,ou=People,dc=example,dc=com";
 }
 
+func ExamplePermissionBindRules_Contains() {
+	rule1 := PermissionBindRule{
+		Deny(AllAccess, ProxyAccess),
+		GDN(`cn=disgruntled_employees,ou=Groups,dc=example,dc=com`).Eq(),
+	}
+
+	rule2 := PermissionBindRule{
+		Allow(AllAccess),
+		UDN(`cn=Courtney Tolana,ou=Admin,ou=People,dc=example,dc=com`).Eq(),
+	}
+
+	// Init/Push in one shot
+	pbrs := PBRs(rule1, rule2)
+
+	fmt.Printf("%T contains rule2: %t", pbrs, pbrs.Contains(rule2))
+	// Output: aci.PermissionBindRules contains rule2: true
+}
+
 func ExamplePermissionBindRules_Pop() {
 	rule1 := PermissionBindRule{
 		Deny(AllAccess, ProxyAccess),

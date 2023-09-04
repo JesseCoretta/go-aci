@@ -732,10 +732,14 @@ testing, the end user must only execute this method IF and WHEN the receiver
 has been properly populated and prepared for such activity.
 */
 func (r AttributeTypes) TRM() TargetRuleMethods {
-	return newTargetRuleMethods(targetRuleFuncMap{
-		Eq: r.Eq,
-		Ne: r.Ne,
-	})
+	if r.Keyword() == TargetAttr {
+		return newTargetRuleMethods(targetRuleFuncMap{
+			Eq: r.Eq,
+			Ne: r.Ne,
+		})
+	}
+
+	return TargetRuleMethods{nil}
 }
 
 /*
@@ -833,11 +837,11 @@ TargetAttr or TargetFilter.
 func (r AttributeTypes) Keyword() Keyword {
 	kw, _ := idKW(r.Kind())
 	switch kw {
-	case TargetFilter:
+	case TargetAttr:
 		return kw
 	}
 
-	return TargetAttr
+	return nil
 }
 
 /*
@@ -1009,7 +1013,7 @@ func TAs(x ...any) (a AttributeTypes) {
 	// Note that any failed push(es) will
 	// have no impact on the validity of
 	// the return instance.
-	_a.Push(x...)
+	a.Push(x...)
 
 	return
 }
@@ -1035,7 +1039,7 @@ func UAs(x ...any) (a AttributeTypes) {
 		SetID(bindRuleID).
 		SetDelimiter(rune(44)).
 		NoPadding(true).
-		SetCategory(`uri_search_attributes`)
+		SetCategory(`<uri_search_attributes>`) // URIs qualify for a few different KWs.
 
 	// cast _a as a proper AttributeTypes
 	// instance (a). We do it this way to
@@ -1054,7 +1058,7 @@ func UAs(x ...any) (a AttributeTypes) {
 	// Note that any failed push(es) will
 	// have no impact on the validity of
 	// the return instance.
-	_a.Push(x...)
+	a.Push(x...)
 
 	return
 }
