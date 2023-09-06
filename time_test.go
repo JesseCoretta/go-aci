@@ -11,6 +11,12 @@ func ExampleDay_String() {
 	// Output: Sat
 }
 
+func ExampleDayOfWeek_BRM() {
+	var dow DayOfWeek
+	fmt.Printf("%d available comparison operator methods", dow.BRM().Len())
+	// 2 available comparison operator methods
+}
+
 func ExampleDayOfWeek_Eq() {
 	var d DayOfWeek
 	d.Shift(Sat)
@@ -90,6 +96,12 @@ func ExampleDayOfWeek_Valid() {
 	var d DayOfWeek
 	fmt.Printf("Valid: %t", d.Valid() == nil)
 	// Output: Valid: false
+}
+
+func ExampleTimeOfDay_BRM() {
+	var tod TimeOfDay
+	fmt.Printf("%d available comparison operator methods", tod.BRM().Len())
+	// 6 available comparison operator methods
 }
 
 func ExampleTimeOfDay_Eq() {

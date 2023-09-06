@@ -25,6 +25,69 @@ func ExampleComparisonOperator_stringers() {
 	// [6] Greater Than Or Equal (Ge)[>=]
 }
 
+func ExampleComparisonOperator_Valid() {
+	var unknown ComparisonOperator = ComparisonOperator(12)
+	fmt.Printf("Is a known %T: %t", unknown, unknown.Valid() == nil)
+	// Output: Is a known aci.ComparisonOperator: false
+}
+
+/*
+This example demonstrates the string representation for all
+known ComparisonOperator constants.
+*/
+func ExampleComparisonOperator_String() {
+	for _, cop := range []ComparisonOperator{
+		Eq, Ne, Lt, Gt, Le, Ge,
+	} {
+		fmt.Printf("%s\n", cop)
+	}
+	// Output:
+	// =
+	// !=
+	// <
+	// >
+	// <=
+	// >=
+}
+
+/*
+This example demonstrates the use of the Context method to show
+all the context name for all ComparisonOperator constants.
+*/
+func ExampleComparisonOperator_Context() {
+	for _, cop := range []ComparisonOperator{
+		Eq, Ne, Lt, Gt, Le, Ge,
+	} {
+		fmt.Printf("%s\n", cop.Context())
+	}
+	// Output:
+	// Eq
+	// Ne
+	// Lt
+	// Gt
+	// Le
+	// Ge
+}
+
+/*
+This example demonstrates the use of the Description method to
+show all descriptive text for all ComparisonOperator constants.
+*/
+func ExampleComparisonOperator_Description() {
+	for _, cop := range []ComparisonOperator{
+		Eq, Ne, Lt, Gt, Le, Ge,
+	} {
+		fmt.Printf("%s\n", cop.Description())
+	}
+	// Output:
+	// Equal To
+	// Not Equal To
+	// Less Than
+	// Greater Than
+	// Less Than Or Equal
+	// Greater Than Or Equal
+}
+
 func TestComparisonOperator_codecov(t *testing.T) {
 	var lousyCop ComparisonOperator = ComparisonOperator(7)
 	_ = lousyCop.String()

@@ -202,6 +202,22 @@ func (r TargetDistinguishedName) Keyword() Keyword {
 }
 
 /*
+Valid wraps go-stackage's Stack.Valid method.
+*/
+func (r BindDistinguishedNames) Valid() error {
+	_r, _ := castAsStack(r)
+	return _r.Valid()
+}
+
+/*
+Valid wraps go-stackage's Stack.Valid method.
+*/
+func (r TargetDistinguishedNames) Valid() error {
+	_r, _ := castAsStack(r)
+	return _r.Valid()
+}
+
+/*
 Kind returns the string name `bind`.
 */
 func (r BindDistinguishedName) Kind() string {
@@ -1359,7 +1375,8 @@ func (r BindDistinguishedNames) contains(x any) bool {
 
 	switch tv := x.(type) {
 	case string:
-		candidate = tv
+		dn := r.F()(tv)
+		candidate = dn.String()
 	case BindDistinguishedName:
 		candidate = tv.String()
 	case LDAPURI:
@@ -1437,7 +1454,8 @@ func (r TargetDistinguishedNames) contains(x any) bool {
 
 	switch tv := x.(type) {
 	case string:
-		candidate = tv
+		dn := r.F()(tv)
+		candidate = dn.String()
 	case TargetDistinguishedName:
 		candidate = tv.String()
 	default:
@@ -1642,7 +1660,7 @@ func (r TargetDistinguishedNames) tDNPushPolicy(x any) error {
 /*
 distinguishedNamesPushPolicy is the backend worker called by all of
 the keyword-specific DN pushPolicy functions above. This function
-handles any type of DN value and DN stack.
+handles any type of DN/URI.
 */
 func distinguishedNamesPushPolicy(r, x any, kw Keyword) (err error) {
 	switch tv := x.(type) {

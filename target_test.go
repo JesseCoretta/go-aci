@@ -80,7 +80,6 @@ func TestTargetRule_bogus(t *testing.T) {
 // aid in identifying panic points.
 func TestTargetRules_bogus(t *testing.T) {
 	var tr TargetRules
-	_ = tr.ID()
 	_ = tr.Category()
 	_ = tr.IsZero()
 	_ = tr.Len()
@@ -112,32 +111,6 @@ func ExampleExtOps_alternativeQuotationScheme() {
 
 	fmt.Printf("%s", ext.Eq().SetQuoteStyle(0)) // see MultivalSliceQuotes const for details
 	// Output: ( extop = "1.3.6.1.4.1.56521.999.5" || "1.3.6.1.4.1.56521.999.6" || "1.3.6.1.4.1.56521.999.7" )
-}
-
-/*
-This example demonstrates how to use a single Target DN to craft a Target Rule Equality
-Condition.
-*/
-func ExampleTargetDistinguishedName_Eq_target() {
-	dn := TDN(`uid=jesse,ou=People,dc=example,dc=com`)
-	fmt.Printf("%s", dn.Eq())
-	// Output: ( target = "ldap:///uid=jesse,ou=People,dc=example,dc=com" )
-}
-
-/*
-This example demonstrates how a list of Target DNs can be used to create a single Target
-Rule. First, create a Rule using TDNs().Parens(), then push N desired TDN (Target DN)
-values into the Rule.
-*/
-func ExampleTargetDistinguishedNames_Eq() {
-	tdns := TDNs().Push(
-		TDN(`uid=jesse,ou=People,dc=example,dc=com`),
-		TDN(`uid=courtney,ou=People,dc=example,dc=com`),
-	)
-
-	// Craft an equality Condition
-	fmt.Printf("%s", tdns.Eq())
-	// Output: ( target = "ldap:///uid=jesse,ou=People,dc=example,dc=com || ldap:///uid=courtney,ou=People,dc=example,dc=com" )
 }
 
 func TestAttrs_attrList(t *testing.T) {
@@ -218,7 +191,7 @@ func ExampleTRs() {
 		ExtOp(`1.3.6.1.4.1.56521.999.5`).Eq(),
 	)
 	fmt.Printf("%s", t)
-	// Output: ( target = "ldap:///uid=jesse,ou=People,dc=example,dc=com" ) ( targetfilter = "(&(uid=jesse)(objectClass=*))" ) ( extop = "1.3.6.1.4.1.56521.999.5" )
+	// Output: ( target = "ldap:///uid=jesse,ou=People,dc=example,dc=com" )( targetfilter = "(&(uid=jesse)(objectClass=*))" )( extop = "1.3.6.1.4.1.56521.999.5" )
 }
 
 /*
@@ -378,13 +351,144 @@ func ExampleTR() {
 	// Output: ( targetscope = "onelevel" )
 }
 
-func ExampleTargetRules_Contains_alternative() {
+/*
+This example demonstrates the assembly and interrogation of a TargetRules
+instance using the TRs function's variadic expression to submit two (2)
+components for storage within the receiver. The `target` context value as
+well as the `targetscope` context value are pushed successfully, at which
+point we conduct a check to determine whether a `targetscope` rule was in
+fact written to the underlying stack.
+*/
+func ExampleTargetRules_Contains() {
 	tdns := TRs(
-		TDN(`uid=jesse,ou=People,dc=example,dc=com`),
+		TDN(`uid=jesse,ou=People,dc=example,dc=com`).Eq(),
 		Subordinate.Eq(),
 	)
 	fmt.Printf("Contains: %t", tdns.Contains(TargetScope))
 	// Output: Contains: true
+}
+
+func ExampleTargetRules_Category() {
+	var trs TargetRules
+	fmt.Printf("%s", trs.Category())
+	// Output: target
+}
+
+func ExampleTargetRules_IsZero() {
+	var trs TargetRules
+	fmt.Printf("Zero: %t", trs.IsZero())
+	// Output: Zero: true
+}
+
+func ExampleTargetRules_Valid() {
+	var trs TargetRules
+	fmt.Printf("Valid: %t", trs.Valid() == nil)
+	// Output: Valid: false
+}
+
+func ExampleTargetRules_Index() {
+	trs := TRs(
+		TDN(`uid=jesse,ou=People,dc=example,dc=com`).Eq(),
+		TFDN(`ou=People,dc=example,dc=com`).Eq(),
+		Filter(`(objectClass=*`).Ne(),
+		SingleLevel.Eq(),
+	)
+
+	fmt.Printf("%s", trs.Index(2).Operator())
+	// Output: !=
+}
+
+func ExampleTargetRules_Push() {
+	var trs TargetRules = TRs()
+
+	trs.Push(
+		TDN(`uid=jesse,ou=People,dc=example,dc=com`).Eq(),
+		TFDN(`ou=People,dc=example,dc=com`).Eq(),
+		Filter(`(objectClass=*`).Ne(),
+		SingleLevel.Eq(),
+	)
+
+	fmt.Printf("%s", trs.Index(3).Keyword())
+	// Output: targetscope
+}
+
+func ExampleTargetRules_Kind() {
+	var trs TargetRules
+	fmt.Printf("%s", trs.Kind())
+	// Output: stack
+}
+
+func ExampleTargetRules_Len() {
+	var trs TargetRules = TRs()
+
+	trs.Push(
+		TDN(`uid=jesse,ou=People,dc=example,dc=com`).Eq(),
+		TFDN(`ou=People,dc=example,dc=com`).Eq(),
+		Filter(`(objectClass=*`).Ne(),
+		TAs(`cn`, `sn`, `givenName`, `objectClass`, `uid`, `uidNumber`, `homeDirectory`, `gecos`).Eq(),
+		SingleLevel.Eq(),
+	)
+
+	fmt.Printf("%d %T stack members", trs.Len(), trs)
+	// Output: 5 aci.TargetRules stack members
+}
+
+func ExampleTargetRules_ReadOnly() {
+	var trs TargetRules = TRs(
+		TDN(`uid=jesse,ou=People,dc=example,dc=com`).Eq(),
+		TFDN(`ou=People,dc=example,dc=com`).Eq(),
+		Filter(`(objectClass=*`).Ne(),
+	)
+
+	trs.ReadOnly()
+
+	trs.Push(
+		TAs(`cn`, `sn`, `givenName`, `objectClass`, `uid`, `uidNumber`, `homeDirectory`, `gecos`).Eq(),
+		SingleLevel.Eq(),
+	)
+
+	fmt.Printf("%d %T stack members", trs.Len(), trs)
+	// Output: 3 aci.TargetRules stack members
+}
+
+func ExampleTargetRules_Pop() {
+	trs := TRs(
+		TDN(`uid=jesse,ou=People,dc=example,dc=com`).Eq(),
+		TFDN(`ou=People,dc=example,dc=com`).Eq(),
+		Filter(`(objectClass=*`).Ne(),
+		SingleLevel.Eq(), // this will be removed
+	)
+
+	was := trs.Len()
+	popped := trs.Pop()
+	cur := trs.Len()
+
+	fmt.Printf("Stack length was %d, is now %d: popped element: %s", was, cur, popped)
+	// Output: Stack length was 4, is now 3: popped element: ( targetscope = "onelevel" )
+}
+
+func ExampleTargetRules_String() {
+	trs := TRs(
+		TDN(`uid=jesse,ou=People,dc=example,dc=com`).Eq(),
+		TFDN(`ou=People,dc=example,dc=com`).Eq(),
+		Filter(`(&(objectClass=restricted)(roleSuffix=executive))`).Ne(),
+		SingleLevel.Eq(),
+	)
+
+	fmt.Printf("%s", trs)
+	// Output: ( target = "ldap:///uid=jesse,ou=People,dc=example,dc=com" )( target_from = "ldap:///ou=People,dc=example,dc=com" )( targetfilter != "(&(objectClass=restricted)(roleSuffix=executive))" )( targetscope = "onelevel" )
+}
+
+func ExampleTargetRules_NoPadding() {
+	trs := TRs(
+		TDN(`uid=jesse,ou=People,dc=example,dc=com`).Eq(),
+		TFDN(`ou=People,dc=example,dc=com`).Eq(),
+		Filter(`(&(objectClass=restricted)(roleSuffix=executive))`).Ne(),
+		SingleLevel.Eq(),
+	)
+
+	fmt.Printf("%s", trs.NoPadding(false))
+	// Output: ( target = "ldap:///uid=jesse,ou=People,dc=example,dc=com" ) ( target_from = "ldap:///ou=People,dc=example,dc=com" ) ( targetfilter != "(&(objectClass=restricted)(roleSuffix=executive))" ) ( targetscope = "onelevel" )
 }
 
 func ExampleTargetRule_Compare() {

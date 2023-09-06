@@ -524,6 +524,10 @@ TargetRules instance.
 Instances of this design generally are assigned to top-level instances of
 Instruction, and never allow nesting elements (e.g.: other stackage.Stack
 derived type aliases).
+
+Padding is disabled by default, meaning there shall be no whitespace residing
+between individual TargetRule instances. This behavior can be altered using
+the NoPadding method.
 */
 func TRs(x ...any) (t TargetRules) {
 	// create a native stackage.Stack
@@ -531,8 +535,7 @@ func TRs(x ...any) (t TargetRules) {
 	_t := stackList(9).
 		NoNesting(true).
 		SetDelimiter(``).
-		SetID(targetRuleID).
-		NoPadding(!StackPadding).
+		NoPadding(true).
 		SetCategory(targetRuleID)
 
 	// cast _t as a proper TargetRules instance
@@ -552,7 +555,7 @@ func TRs(x ...any) (t TargetRules) {
 	// Note that any failed push(es) will
 	// have no impact on the validity of
 	// the return instance.
-	_t.Push(x...)
+	t.Push(x...)
 
 	return
 }
@@ -590,27 +593,10 @@ func (r TargetRules) reset() {
 }
 
 /*
-ID wraps go-stackage's Stack.ID method.
-*/
-func (r TargetRules) ID() string {
-	if r.IsZero() {
-		return ``
-	}
-
-	_t, _ := castAsStack(r)
-	return _t.ID()
-}
-
-/*
-Category wraps go-stackage's Stack.Category method.
+Category returns the string literal `target`.
 */
 func (r TargetRules) Category() string {
-	if r.IsZero() {
-		return ``
-	}
-
-	_t, _ := castAsStack(r)
-	return _t.Category()
+	return `target`
 }
 
 /*
@@ -624,7 +610,7 @@ func (r TargetRules) Len() int {
 /*
 Push wraps go-stackage's Stack.Push method.
 */
-func (r TargetRules) Push(x ...TargetRule) TargetRules {
+func (r TargetRules) Push(x ...any) TargetRules {
 	_r, _ := castAsStack(r)
 	// iterate variadic input arguments
 	for i := 0; i < len(x); i++ {
@@ -725,6 +711,7 @@ func (r TargetRules) pushPolicy(x any) (err error) {
 	default:
 		err = pushErrorBadType(r, x, nil)
 	}
+
 	return
 }
 

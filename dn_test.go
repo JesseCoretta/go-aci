@@ -362,6 +362,245 @@ func TestDistinguishedName_codecov(t *testing.T) {
 }
 */
 
+func ExampleBindDistinguishedNames_Contains() {
+	dn := GDNs(
+		`cn=Executives,ou=Groups,dc=example,dc=com`,
+		`cn=Executive Assistants,ou=Groups,dc=example,dc=com`,
+	)
+
+	execs := `cn=Executives,ou=Groups,dc=example,dc=com`
+
+	fmt.Printf("Found: %t", dn.Contains(execs))
+	// Output: Found: true
+}
+
+func ExampleTargetDistinguishedNames_Contains() {
+	dn := TFDNs(
+		`cn=*,ou=Profiles,dc=example,dc=com`,
+		`cn=*,ou=People,dc=example,dc=com`,
+	)
+
+	groups := `cn=*,ou=Groups,dc=example,dc=com`
+
+	fmt.Printf("Found: %t", dn.Contains(groups))
+	// Output: Found: false
+}
+
+func ExampleBindDistinguishedNames_Push() {
+	var odns BindDistinguishedNames = UDNs()
+	odns.Push(
+		`uid=jesse,ou=People,dc=example,dc=com`,
+		`uid=jimmy,ou=People,dc=example,dc=com`,
+	)
+
+	fmt.Printf("Length: %d", odns.Len())
+	// Output: Length: 2
+}
+
+func ExampleTargetDistinguishedNames_Push() {
+	var odns TargetDistinguishedNames = TDNs()
+	odns.Push(
+		`uid=jesse,ou=People,dc=example,dc=com`,
+		`uid=jimmy,ou=People,dc=example,dc=com`,
+	)
+
+	fmt.Printf("Length: %d", odns.Len())
+	// Output: Length: 2
+}
+
+func ExampleBindDistinguishedNames_Pop() {
+	var odns BindDistinguishedNames = UDNs()
+	odns.Push(
+		`uid=jesse,ou=People,dc=example,dc=com`,
+		`uid=jimmy,ou=People,dc=example,dc=com`,
+	)
+
+	popped := odns.Pop()
+
+	fmt.Printf("%s", popped)
+	// Output: ldap:///uid=jimmy,ou=People,dc=example,dc=com
+}
+
+func ExampleTargetDistinguishedNames_Pop() {
+	var odns TargetDistinguishedNames = TDNs()
+	odns.Push(
+		`uid=jesse,ou=People,dc=example,dc=com`,
+		`uid=jimmy,ou=People,dc=example,dc=com`,
+	)
+
+	popped := odns.Pop()
+
+	fmt.Printf("%s", popped)
+	// Output: ldap:///uid=jimmy,ou=People,dc=example,dc=com
+}
+
+func ExampleBindDistinguishedNames_String() {
+	var odns BindDistinguishedNames = UDNs()
+	odns.Push(
+		`uid=jesse,ou=People,dc=example,dc=com`,
+		`uid=jimmy,ou=People,dc=example,dc=com`,
+	)
+
+	fmt.Printf("%s", odns)
+	// Output: ldap:///uid=jesse,ou=People,dc=example,dc=com || ldap:///uid=jimmy,ou=People,dc=example,dc=com
+}
+
+func ExampleTargetDistinguishedNames_String() {
+	var odns TargetDistinguishedNames = TDNs()
+	odns.Push(
+		`uid=jesse,ou=People,dc=example,dc=com`,
+		`uid=jimmy,ou=People,dc=example,dc=com`,
+	)
+
+	fmt.Printf("%s", odns)
+	// Output: ldap:///uid=jesse,ou=People,dc=example,dc=com || ldap:///uid=jimmy,ou=People,dc=example,dc=com
+}
+
+func ExampleBindDistinguishedNames_F() {
+	var odns BindDistinguishedNames = UDNs()
+	funk := odns.F()
+	odns.Push(funk(`uid=jesse,ou=People,dc=example,dc=com`))
+
+	fmt.Printf("%s", odns)
+	// Output: ldap:///uid=jesse,ou=People,dc=example,dc=com
+}
+
+func ExampleTargetDistinguishedNames_F() {
+	var odns TargetDistinguishedNames = TDNs()
+	funk := odns.F()
+	odns.Push(funk(`uid=jesse,ou=People,dc=example,dc=com`))
+
+	fmt.Printf("%s", odns)
+	// Output: ldap:///uid=jesse,ou=People,dc=example,dc=com
+}
+
+func ExampleBindDistinguishedNames_Len() {
+	var odns BindDistinguishedNames = UDNs()
+	funk := odns.F()
+	odns.Push(funk(`uid=jesse,ou=People,dc=example,dc=com`))
+
+	fmt.Printf("Length: %d", odns.Len())
+	// Output: Length: 1
+}
+
+func ExampleTargetDistinguishedNames_Len() {
+	var odns TargetDistinguishedNames = TDNs()
+	funk := odns.F()
+	odns.Push(funk(`uid=jesse,ou=People,dc=example,dc=com`))
+
+	fmt.Printf("Length: %d", odns.Len())
+	// Output: Length: 1
+}
+
+func ExampleBindDistinguishedNames_Eq() {
+	var dn BindDistinguishedNames = UDNs(`uid=jesse,ou=People,dc=example,dc=com`)
+	fmt.Printf("%s", dn.Eq())
+	// Output: userdn = "ldap:///uid=jesse,ou=People,dc=example,dc=com"
+}
+
+func ExampleBindDistinguishedNames_Ne() {
+	var dn BindDistinguishedNames = UDNs(`uid=jesse,ou=People,dc=example,dc=com`)
+	fmt.Printf("%s", dn.Ne())
+	// Output: userdn != "ldap:///uid=jesse,ou=People,dc=example,dc=com"
+}
+
+func ExampleTargetDistinguishedNames_Eq() {
+	var dn TargetDistinguishedNames = TDNs(`uid=jesse,ou=People,dc=example,dc=com`)
+	fmt.Printf("%s", dn.Eq())
+	// Output: ( target = "ldap:///uid=jesse,ou=People,dc=example,dc=com" )
+}
+
+func ExampleTargetDistinguishedNames_Ne() {
+	var dn TargetDistinguishedNames = TDNs(`uid=jesse,ou=People,dc=example,dc=com`)
+	fmt.Printf("%s", dn.Ne())
+	// Output: ( target != "ldap:///uid=jesse,ou=People,dc=example,dc=com" )
+}
+
+func ExampleBindDistinguishedNames_Keyword() {
+	var dn BindDistinguishedNames = UDNs(`uid=jesse,ou=People,dc=example,dc=com`)
+	fmt.Printf("Keyword: %s", dn.Keyword())
+	// Output: Keyword: userdn
+}
+
+func ExampleTargetDistinguishedNames_Keyword() {
+	var dn TargetDistinguishedNames = TDNs(`uid=jesse,ou=People,dc=example,dc=com`)
+	fmt.Printf("Keyword: %s", dn.Keyword())
+	// Output: Keyword: target
+}
+
+func ExampleTargetDistinguishedNames_IsZero() {
+	var odns TargetDistinguishedNames
+	fmt.Printf("Zero: %t", odns.IsZero())
+	// Output: Zero: true
+}
+
+func ExampleBindDistinguishedNames_IsZero() {
+	var odns BindDistinguishedNames
+	fmt.Printf("Zero: %t", odns.IsZero())
+	// Output: Zero: true
+}
+
+func ExampleBindDistinguishedNames_Valid() {
+	var odns BindDistinguishedNames
+	fmt.Printf("Valid: %t", odns.Valid() == nil)
+	// Output: Valid: false
+}
+
+func ExampleTargetDistinguishedNames_Valid() {
+	var odns TargetDistinguishedNames
+	fmt.Printf("Valid: %t", odns.Valid() == nil)
+	// Output: Valid: false
+}
+
+func ExampleUDNs() {
+	udns := UDNs(
+		`uid=jesse,ou=People,dc=example,dc=com`,
+		`uid=courtney,ou=People,dc=example,dc=com`,
+	)
+	fmt.Printf("%s", udns)
+	// Output: ldap:///uid=jesse,ou=People,dc=example,dc=com || ldap:///uid=courtney,ou=People,dc=example,dc=com
+}
+
+func ExampleRDNs() {
+	rdns := RDNs(
+		`cn=Default,ou=Profiles,dc=example,dc=com`,
+		`cn=Administrative,ou=Profiles,dc=example,dc=com`,
+	)
+	fmt.Printf("%d", rdns.Len())
+	// Output: 2
+}
+
+func ExampleGDNs() {
+	gdns := GDNs(
+		`uid=Executives,ou=Groups,dc=example,dc=com`,
+		`uid=Executive Assistants,ou=Groups,dc=example,dc=com`,
+	)
+	fmt.Printf("%s", gdns)
+	// Output: ldap:///uid=Executives,ou=Groups,dc=example,dc=com || ldap:///uid=Executive Assistants,ou=Groups,dc=example,dc=com
+}
+
+/*
+This example demonstrates the call of a select slice
+member from the receiver using the Index method.
+*/
+func ExampleBindDistinguishedNames_Index() {
+	odns := UDNs(`uid=jesse,ou=People,dc=example,dc=com`, `uid=courtney,ou=People,dc=example,dc=com`)
+
+	fmt.Printf("%s", odns.Index(0))
+	// Output: ldap:///uid=jesse,ou=People,dc=example,dc=com
+}
+
+/*
+This example demonstrates the call of a select slice
+member from the receiver using the Index method.
+*/
+func ExampleTargetDistinguishedNames_Index() {
+	odns := TFDNs(`uid=jesse,ou=People,dc=example,dc=com`, `uid=courtney,ou=People,dc=example,dc=com`)
+
+	fmt.Printf("%s", odns.Index(0))
+	// Output: ldap:///uid=jesse,ou=People,dc=example,dc=com
+}
+
 /*
 This example demonstrates the SHA-1 hash comparison between two (2) instances of
 BindDistinguishedName using the Compare method.
@@ -481,8 +720,8 @@ func ExampleTargetDistinguishedName_Len() {
 
 func ExampleBindDistinguishedName_String() {
 	var dn BindDistinguishedName = UDN(`uid=jesse,ou=People,dc=example,dc=com`)
-	fmt.Printf("Length %d", dn.Len())
-	// Output: Length 1
+	fmt.Printf("%s", dn)
+	// Output: ldap:///uid=jesse,ou=People,dc=example,dc=com
 }
 
 func ExampleTargetDistinguishedName_String() {
@@ -521,8 +760,20 @@ func ExampleBindDistinguishedName_BRM() {
 	// Output: 2 available comparison operator methods
 }
 
+func ExampleBindDistinguishedNames_BRM() {
+	var dn BindDistinguishedNames
+	fmt.Printf("%d available comparison operator methods", dn.BRM().Len())
+	// Output: 2 available comparison operator methods
+}
+
 func ExampleTargetDistinguishedName_TRM() {
 	var dn TargetDistinguishedName
+	fmt.Printf("%d available comparison operator methods", dn.TRM().Len())
+	// Output: 2 available comparison operator methods
+}
+
+func ExampleTargetDistinguishedNames_TRM() {
+	var dn TargetDistinguishedNames
 	fmt.Printf("%d available comparison operator methods", dn.TRM().Len())
 	// Output: 2 available comparison operator methods
 }
