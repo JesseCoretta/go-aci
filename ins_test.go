@@ -19,7 +19,7 @@ func TestACIs(t *testing.T) {
 
 	// push into a new instance of Rule automatically
 	// configured to store Target Rule Condition instances.
-	tgt := TRs().Push(C)
+	tgt := TRs(C)
 
 	// define a timeframe for our PermissionBindRule
 	// using two Condition instances
@@ -64,7 +64,7 @@ func TestACIs(t *testing.T) {
 	Ins.Push(popped.String())
 	Ins.Push(`<3 <3 <3`)
 	if Ins.Len() != 1 {
-		t.Errorf("%s failed to push %T into %T", t.Name(), i, Ins)
+		t.Errorf("%s failed to push %T into %T, len:%d, want:%d\n%s", t.Name(), i, Ins, Ins.Len(), 1, Ins)
 		return
 	}
 
@@ -165,4 +165,49 @@ func ExampleInstruction_buildNested() {
 
 	fmt.Printf("%s", i)
 	// Output: ( target = "ldap:///uid=*,ou=People,dc=example,dc=com" )(version 3.0; acl "Limit people access to timeframe"; allow(read,search,compare) ( ( timeofday >= "1730" AND timeofday < "2400" ) AND ( userdn = "ldap:///uid=jesse,ou=admin,dc=example,dc=com" OR userdn = "ldap:///uid=courtney,ou=admin,dc=example,dc=com" ) AND NOT ( userattr = "ninja#FALSE" ) );)
+}
+
+/*
+This example demonstrates doing a literal search for an ACI within a stack of ACIs
+using its Contains method. Case is not significant in the matching process.
+*/
+func ExampleInstructions_Contains() {
+	raw1 := `( target = "ldap:///uid=*,ou=People,dc=example,dc=com" )(version 3.0; acl "Limit people access to timeframe for those ninjas"; allow(read,search,compare) ( ( timeofday >= "1730" AND timeofday < "2400" ) AND ( userdn = "ldap:///uid=jesse,ou=admin,dc=example,dc=com" OR userdn = "ldap:///uid=courtney,ou=admin,dc=example,dc=com" ) AND NOT ( userattr = "ninja#FALSE" ) );)`
+	raw2 := `( target = "ldap:///uid=*,ou=People,dc=example,dc=com" )(version 3.0; acl "Limit people access to timeframe"; allow(read,search,compare) ( timeofday >= "1730" AND timeofday < "2400" );)`
+
+	acis := ACIs(
+		raw1,
+		raw2,
+	)
+
+	fmt.Printf("%T contains raw1: %t", acis, acis.Contains(raw1))
+	// Output: aci.Instructions contains raw1: true
+}
+
+/*
+This example demonstrates use of the F method to obtain the
+package-level function appropriate for the creation of new
+stack elements.
+*/
+func ExampleInstructions_F() {
+	var acis Instructions
+	funk := acis.F()
+
+	ins := funk() // normally you'd want to supply some type instances
+	fmt.Printf("%T", ins)
+	// Output: aci.Instruction
+
+}
+
+func ExampleACIs() {
+	raw1 := `( target = "ldap:///uid=*,ou=People,dc=example,dc=com" )(version 3.0; acl "Limit people access to timeframe for those ninjas"; allow(read,search,compare) ( ( timeofday >= "1730" AND timeofday < "2400" ) AND ( userdn = "ldap:///uid=jesse,ou=admin,dc=example,dc=com" OR userdn = "ldap:///uid=courtney,ou=admin,dc=example,dc=com" ) AND NOT ( userattr = "ninja#FALSE" ) );)`
+	raw2 := `( target = "ldap:///uid=*,ou=People,dc=example,dc=com" )(version 3.0; acl "Limit people access to timeframe"; allow(read,search,compare) ( timeofday >= "1730" AND timeofday < "2400" );)`
+
+	acis := ACIs(
+		raw1,
+		raw2,
+	)
+
+	fmt.Printf("%T contains %d Instruction instances", acis, acis.Len())
+	// Output: aci.Instructions contains 2 Instruction instances
 }

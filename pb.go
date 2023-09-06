@@ -71,21 +71,6 @@ func PBR(P Permission, B BindContext) (r PermissionBindRule) {
 }
 
 /*
-Parse wraps go-antlraci's ParsePermissionBindRule function, writing
-valid data into the receiver, or returning an error instance should
-processing fail.
-*/
-func (r *PermissionBindRule) Parse(raw string) error {
-	_r, err := parsePermissionBindRule(raw)
-	if err != nil {
-		return err
-	}
-	*r = _r
-
-	return nil
-}
-
-/*
 Valid returns an error instance should any of the following conditions
 evaluate as true:
 
@@ -430,21 +415,6 @@ func PBRs(x ...any) (pbr PermissionBindRules) {
 	_p.Push(x...)
 
 	return
-}
-
-/*
-Parse wraps go-antlraci's ParsePermissionBindRules function, writing
-valid data into the receiver, or returning an error instance should
-processing fail.
-*/
-func (r *PermissionBindRules) Parse(raw string) error {
-	_r, err := parsePermissionBindRules(raw)
-	if err != nil {
-		return err
-	}
-	*r = _r
-
-	return nil
 }
 
 const pbrRuleID = `pbr`

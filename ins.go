@@ -33,11 +33,25 @@ func ACIs(x ...any) (i Instructions) {
 		SetID(`instructions`).
 		SetDelimiter(rune(10)).
 		NoPadding(!StackPadding).
-		SetCategory(`instructions`).
-		SetPushPolicy(instructionsPushPolicy)
+		SetCategory(`instructions`)
 
-	_i.Push(x...)
+		// cast _i as a proper Instructions instance
+		// (i). We do it this way to gain access to
+	// the method for the *specific instance*
+	// being created (o), thus allowing things
+	// like uniqueness checks, etc., to occur
+	// during push attempts, providing more
+	// helpful and non-generalized feedback.
 	i = Instructions(_i)
+	_i.SetPushPolicy(i.pushPolicy)
+
+	// Assuming one (1) or more items were
+	// submitted during the call, (try to)
+	// push them into our initialized stack.
+	// Note that any failed push(es) will
+	// have no impact on the validity of
+	// the return instance.
+	i.Push(x...)
 
 	return
 }
@@ -69,8 +83,17 @@ const (
 	badACI = `<invalid_aci>`
 )
 
-func instructionsPushPolicy(x any) (err error) {
+func (r Instructions) pushPolicy(x any) (err error) {
+	if r.contains(x) {
+		err = pushErrorNotUnique(r, x, nil)
+		return
+	}
+
 	switch tv := x.(type) {
+	case string:
+		if len(tv) == 0 {
+			err = nilInstanceErr(tv)
+		}
 	case Instruction:
 		if tv.IsZero() {
 			err = nilInstanceErr(tv)
@@ -88,6 +111,52 @@ Len wraps go-stackage's Stack.Len method.
 func (r Instructions) Len() int {
 	_r, _ := castAsStack(r)
 	return _r.Len()
+}
+
+/*
+Contains returns a Boolean value indicative of whether value x,
+if a string or Instruction instance, already resides
+within the receiver instance.
+
+Case is not significant in the matching process.
+*/
+func (r Instructions) Contains(x any) bool {
+	return r.contains(x)
+}
+
+/*
+contains is a private method called by Instructions.Contains.
+*/
+func (r Instructions) contains(x any) bool {
+	if r.Len() == 0 {
+		return false
+	}
+
+	var candidate string
+
+	switch tv := x.(type) {
+	case string:
+		candidate = tv
+	case Instruction:
+		candidate = tv.String()
+	default:
+		return false
+	}
+
+	candidate = condenseWHSP(candidate)
+
+	if len(candidate) == 0 {
+		return false
+	}
+
+	for i := 0; i < r.Len(); i++ {
+		// case is not significant here.
+		if eq(r.Index(i).String(), candidate) {
+			return true
+		}
+	}
+
+	return false
 }
 
 /*
@@ -138,11 +207,18 @@ func (r Instructions) Push(x ...any) Instructions {
 
 	// iterate variadic input arguments
 	for i := 0; i < len(x); i++ {
-		// Push it!
-		_r.Push(x[i])
+		switch tv := x[i].(type) {
+		case string:
+			var ins Instruction
+			if err := ins.Parse(tv); err == nil {
+				_r.Push(ins)
+			}
+		case Instruction:
+			_r.Push(tv)
+		}
 	}
 
-	return Instructions(_r)
+	return r
 }
 
 /*
@@ -365,11 +441,13 @@ func (r *instruction) assertInstruction(x any) {
 	case string:
 		r.setLabel(tv)
 	case TargetRules:
-		r.instructionTargetPush(tv)
+		r.targetPush(tv)
 	case TargetRule:
 		r.TRs.Push(tv)
 	case PermissionBindRule:
 		r.PBRs.Push(tv)
+	case PermissionBindRules:
+		r.permissionBindRulesPush(tv)
 	}
 }
 
@@ -381,13 +459,18 @@ func (r *instruction) setLabel(x string) {
 	}
 }
 
-func (r *instruction) instructionTargetPush(x TargetRules) {
+func (r *instruction) targetPush(x TargetRules) {
 	for i := 0; i < x.Len(); i++ {
 		tgt := x.Index(i)
-		// TODO :: uniqueness check
 		if K := matchTKW(tgt.Keyword().String()); K != TargetKeyword(0x0) {
 			r.TRs.Push(tgt)
 		}
+	}
+}
+
+func (r *instruction) permissionBindRulesPush(x PermissionBindRules) {
+	for i := 0; i < x.Len(); i++ {
+		r.PBRs.Push(x.Index(i))
 	}
 }
 

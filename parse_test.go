@@ -796,3 +796,22 @@ func ExamplePermissionBindRule_Set_withParse() {
 	fmt.Printf("%s", pbr)
 	// Output: allow(read,write,search,compare) ( ( timeofday >= "0900" AND timeofday < "1830" ) AND ( dayofweek = "Mon,Tues,Wed,Thur,Fri" ) );
 }
+
+/*
+This example demonstrates a basic parse of an ACIv3 instruction in string representation into
+a proper instance of Instruction using the Parse method.
+*/
+func ExampleInstruction_Parse() {
+	raw := `( target = "ldap:///uid=*,ou=People,dc=example,dc=com" )(version 3.0; acl "Limit people access to timeframe"; allow(read,search,compare) ( timeofday >= "1730" AND timeofday < "2400" ); )`
+
+	// define a variable into which the
+	// parser shall deposit data
+	var ins Instruction
+	if err := ins.Parse(raw); err != nil {
+		fmt.Println(err) // always check your parser errors
+		return
+	}
+
+	fmt.Printf("%s", ins)
+	// Output: ( target = "ldap:///uid=*,ou=People,dc=example,dc=com" )(version 3.0; acl "Limit people access to timeframe"; allow(read,search,compare) ( timeofday >= "1730" AND timeofday < "2400" );)
+}

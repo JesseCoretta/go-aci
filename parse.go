@@ -397,11 +397,20 @@ func parseTargetRules(raw string) (TargetRules, error) {
 		return badTargetRules, err
 	}
 
+	return processTargetRules(_t)
+}
+
+func processTargetRules(stack any) (TargetRules, error) {
+	var err error
+
+	_z, ok := castAsStack(stack)
+	if !ok {
+		err = errorf("Invalid input type %T; expecting stackage.Stack", stack)
+		return badTargetRules, err
+	}
+
 	// create our (eventual) return object.
 	t := TRs().NoPadding(true)
-
-	// transfer (copy) Target Rule references from _t into _z.
-	_z, _ := castAsStack(_t)
 
 	// transfer raw contents into new TargetRules
 	// instance.
@@ -857,9 +866,12 @@ func processPermissionBindRule(pbr parser.PermissionBindRule) (PermissionBindRul
 	}, nil
 }
 
-func parsePermissionBindRules(raw string) (PermissionBindRules, error) {
-	_pbrs, err := parser.ParsePermissionBindRules(raw)
-	if err != nil {
+func processPermissionBindRules(stack any) (PermissionBindRules, error) {
+	var err error
+
+	_pbrs, ok := castAsStack(stack)
+	if !ok {
+		err = errorf("Invalid input type %T; expecting stackage.Stack", stack)
 		return badPermissionBindRules, err
 	}
 
@@ -879,4 +891,100 @@ func parsePermissionBindRules(raw string) (PermissionBindRules, error) {
 	}
 
 	return pbrs, nil
+}
+
+/*
+Parse wraps go-antlraci's ParsePermissionBindRule function, writing
+valid data into the receiver, or returning an error instance should
+processing fail.
+*/
+func (r *PermissionBindRule) Parse(raw string) error {
+	_r, err := parsePermissionBindRule(raw)
+	if err != nil {
+		return err
+	}
+	*r = _r
+
+	return nil
+}
+
+/*
+Parse wraps go-antlraci's ParsePermissionBindRules function, writing
+valid data into the receiver, or returning an error instance should
+processing fail.
+*/
+func (r *PermissionBindRules) Parse(raw string) error {
+	_pbrs, err := parser.ParsePermissionBindRules(raw)
+	if err != nil {
+		return err
+	}
+
+	var _r PermissionBindRules
+	if _r, err = processPermissionBindRules(_pbrs); err != nil {
+		return err
+	}
+	*r = _r
+
+	return err
+}
+
+/*
+Parse wraps go-antlraci's ParseInstruction package-level function,
+writing data into the receiver, or returning a non-nil instance of
+error if processing should fail.
+
+WARNING: Note that the act of successfully parsing an ACIv3 instruction
+statement will clobber (overwrite) all of the contents present within the
+receiver, if any.
+*/
+func (r *Instruction) Parse(raw string) (err error) {
+	raw = condenseWHSP(raw) // get rid of leading/trailing/contiguous whitespace, newlines, et al.
+
+	var (
+		_r parser.Instruction  // instance returned by antlraci
+		_i Instruction         // temporary container for assembly
+		t  TargetRules         // stack for zero (0) or more TargetRule instances
+		a  string              // Access Control Label (unique string label)
+		p  PermissionBindRules // stack for one (1) or more PermissionBindRule instances
+	)
+
+	// hand the raw content to go-antlraci, where
+	// the top-level instruction parser shall be
+	// invoked, returning a struct containing the
+	// three (2+) critical components for our new
+	// ACIv3 instruction expression.
+	if _r, err = parser.ParseInstruction(raw); err != nil {
+		return
+	}
+
+	// obtain the ACL (string) value; if not
+	// defined, fail the entire process.
+	if a = _r.L.String(); len(a) == 0 {
+		err = nilInstanceErr(_r.L)
+		return
+	}
+
+	// process zero (0) or more TargetRules
+	if t, err = processTargetRules(_r.T); err != nil {
+		return
+	}
+
+	// process one (1) or more PermissionBindRules
+	if p, err = processPermissionBindRules(_r.PB); err != nil {
+		return
+	}
+
+	// set the target rules, acl and
+	// pbr(s) within the temporary
+	// Instruction instance.
+	_i.Set(
+		t,
+		a,
+		p,
+	)
+
+	// clobber receiver
+	*r = _i
+
+	return
 }
