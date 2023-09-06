@@ -424,3 +424,141 @@ func ExampleTargetDistinguishedName_Compare() {
 	fmt.Printf("Hashes are equal: %t", dn1.Compare(dn2))
 	// Output: Hashes are equal: false
 }
+
+func ExampleTargetDistinguishedName_Valid() {
+	var dn TargetDistinguishedName
+	fmt.Printf("Valid: %t", dn.Valid() == nil)
+	// Output: Valid: false
+}
+
+func ExampleBindDistinguishedName_Valid() {
+	var dn BindDistinguishedName
+	fmt.Printf("Valid: %t", dn.Valid() == nil)
+	// Output: Valid: false
+}
+
+func ExampleBindDistinguishedName_IsZero() {
+	var dn BindDistinguishedName
+	fmt.Printf("Zero: %t", dn.IsZero())
+	// Output: Zero: true
+}
+
+func ExampleTargetDistinguishedName_IsZero() {
+	var dn TargetDistinguishedName
+	fmt.Printf("Zero: %t", dn.IsZero())
+	// Output: Zero: true
+}
+
+func ExampleBindDistinguishedName_Keyword() {
+	var dn BindDistinguishedName = UDN(`uid=jesse,ou=People,dc=example,dc=com`)
+	fmt.Printf("Keyword: %s", dn.Keyword())
+	// Output: Keyword: userdn
+}
+
+func ExampleBindDistinguishedName_Kind() {
+	var dn BindDistinguishedName = UDN(`uid=jesse,ou=People,dc=example,dc=com`)
+	fmt.Printf("Kind: %s", dn.Kind())
+	// Output: Kind: bind
+}
+
+func ExampleTargetDistinguishedName_Kind() {
+	var dn TargetDistinguishedName = TFDN(`uid=*,ou=People,dc=example,dc=com`)
+	fmt.Printf("Kind: %s", dn.Kind())
+	// Output: Kind: target
+}
+
+func ExampleBindDistinguishedName_Len() {
+	var dn BindDistinguishedName = UDN(`uid=jesse,ou=People,dc=example,dc=com`)
+	fmt.Printf("Length %d", dn.Len())
+	// Output: Length 1
+}
+
+func ExampleTargetDistinguishedName_Len() {
+	var dn TargetDistinguishedName = TFDN(`uid=*,ou=People,dc=example,dc=com`)
+	fmt.Printf("Length %d", dn.Len())
+	// Output: Length 1
+}
+
+func ExampleBindDistinguishedName_String() {
+	var dn BindDistinguishedName = UDN(`uid=jesse,ou=People,dc=example,dc=com`)
+	fmt.Printf("Length %d", dn.Len())
+	// Output: Length 1
+}
+
+func ExampleTargetDistinguishedName_String() {
+	var dn TargetDistinguishedName = TDN(`cn=Executives,ou=Groups,dc=example,dc=com`)
+	fmt.Printf("%s", dn)
+	// Output: ldap:///cn=Executives,ou=Groups,dc=example,dc=com
+}
+
+func ExampleBindDistinguishedName_Eq() {
+	var dn BindDistinguishedName = UDN(`uid=jesse,ou=People,dc=example,dc=com`)
+	fmt.Printf("%s", dn.Eq())
+	// Output: userdn = "ldap:///uid=jesse,ou=People,dc=example,dc=com"
+}
+
+func ExampleBindDistinguishedName_Ne() {
+	var dn BindDistinguishedName = UDN(`uid=courtney,ou=People,dc=example,dc=com`)
+	fmt.Printf("%s", dn.Ne())
+	// Output: userdn != "ldap:///uid=courtney,ou=People,dc=example,dc=com"
+}
+
+func ExampleTargetDistinguishedName_Ne() {
+	var dn TargetDistinguishedName = TFDN(`uid=courtney,ou=People,dc=example,dc=com`)
+	fmt.Printf("%s", dn.Ne())
+	// Output: ( target_from != "ldap:///uid=courtney,ou=People,dc=example,dc=com" )
+}
+
+func ExampleTargetDistinguishedName_Keyword() {
+	var dn TargetDistinguishedName = TFDN(`uid=*,ou=People,dc=example,dc=com`)
+	fmt.Printf("Keyword: %s", dn.Keyword())
+	// Output: Keyword: target_from
+}
+
+func ExampleBindDistinguishedName_BRM() {
+	var dn BindDistinguishedName
+	fmt.Printf("%d available comparison operator methods", dn.BRM().Len())
+	// Output: 2 available comparison operator methods
+}
+
+func ExampleTargetDistinguishedName_TRM() {
+	var dn TargetDistinguishedName
+	fmt.Printf("%d available comparison operator methods", dn.TRM().Len())
+	// Output: 2 available comparison operator methods
+}
+
+func ExampleTDN() {
+	dn := TDN(`cn=Executives,ou=Groups,dc=example,dc=com`)
+	fmt.Printf("%s", dn)
+	// Output: ldap:///cn=Executives,ou=Groups,dc=example,dc=com
+}
+
+func ExampleTTDN() {
+	dn := TTDN(`cn=Executives,ou=Groups,dc=example,dc=com`)
+	fmt.Printf("%s", dn)
+	// Output: ldap:///cn=Executives,ou=Groups,dc=example,dc=com
+}
+
+func ExampleTFDN() {
+	dn := TFDN(`cn=Executives,ou=Groups,dc=example,dc=com`)
+	fmt.Printf("%s", dn)
+	// Output: ldap:///cn=Executives,ou=Groups,dc=example,dc=com
+}
+
+func ExampleUDN() {
+	dn := UDN(`cn=Jesse Coretta,ou=People,dc=example,dc=com`)
+	fmt.Printf("%s", dn)
+	// Output: ldap:///cn=Jesse Coretta,ou=People,dc=example,dc=com
+}
+
+func ExampleGDN() {
+	dn := GDN(`cn=Executives,ou=Groups,dc=example,dc=com`)
+	fmt.Printf("%s", dn)
+	// Output: ldap:///cn=Executives,ou=Groups,dc=example,dc=com
+}
+
+func ExampleRDN() {
+	dn := RDN(`cn=Role Profile,ou=Roles,dc=example,dc=com`)
+	fmt.Printf("%s", dn)
+	// Output: ldap:///cn=Role Profile,ou=Roles,dc=example,dc=com
+}
