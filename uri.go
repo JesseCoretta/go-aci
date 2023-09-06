@@ -82,6 +82,18 @@ func newLDAPURI(x ...any) (l *ldapURI) {
 }
 
 /*
+Len performs no useful task, as the concept of integer length
+does not apply to the LDAPURI type in this context. Execution
+of this method shall always return zero (0).
+
+This method exists solely to allow the receiver to qualify for
+the DistinguishedNameContext interface signature.
+*/
+func (r LDAPURI) Len() int {
+	return 0
+}
+
+/*
 Parse is a convenient alternative to building the receiver instance using individual
 instances of the needed types. This method does not use go-antlraci.
 
@@ -430,20 +442,52 @@ func (r LDAPURI) String() string {
 
 /*
 Keyword returns the Keyword associated with the receiver instance. In
-the context of this type instance, the Keyword returned will be either
-BindUAT or BindGAT.
+the context of this type instance, the Keyword returned will be one
+of the following:
+
+• BindUDN
+
+• BindGDN
+
+• BindRDN
+
+• BindUAT
+
+• BindGAT
+
+Which Keyword is actually used is determined by the underlying type
+instances that were used to assemble the receiver.
 */
-func (r LDAPURI) Keyword() Keyword {
+func (r LDAPURI) Keyword() (k Keyword) {
 	if err := r.Valid(); err != nil {
-		return nil
+		return
 	}
 
-	switch kw := r.ldapURI.dn.Keyword(); kw {
-	case BindGDN, BindRDN, BindUDN:
-		return kw
+	if !r.ldapURI.avbt.isZero() {
+		switch kw := r.ldapURI.avbt.BindKeyword; kw {
+		case BindUAT, BindGAT:
+			k = kw
+		}
+	} else {
+		switch kw := r.ldapURI.dn.Keyword(); kw {
+		case BindGDN, BindRDN, BindUDN:
+			k = kw
+		}
 	}
 
-	return nil
+	return k
+}
+
+/*
+Kind returns the string form of the receiver's Keyword, if the instance
+is valid.
+*/
+func (r LDAPURI) Kind() (k string) {
+	kw := r.Keyword()
+	if kw != nil {
+		k = kw.String()
+	}
+	return
 }
 
 /*
@@ -602,3 +646,5 @@ between the receiver (r) and input value x.
 func (r LDAPURI) Compare(x any) bool {
 	return compareHashInstance(r, x)
 }
+
+func (r LDAPURI) isDistinguishedNameContext() {}

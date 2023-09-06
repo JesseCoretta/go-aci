@@ -253,3 +253,294 @@ func ExampleOID() {
 	fmt.Printf("OID:%s, Type:%s", o, o.Keyword())
 	// Output: OID:1.3.6.1.4.1.56521.999.5, Type:extop
 }
+
+/*
+This example demonstrates the creation of a multi-valued extop (LDAP Extended
+Operation) equality TargetRule expression. Push is used to submit the instances
+of ObjectIdentifier to the stack.
+*/
+func ExampleObjectIdentifiers_Push() {
+	// note: these are phony OIDs
+	o1 := ExtOp(`1.3.6.1.4.1.56521.999.5`)
+	o2 := ExtOp(`1.3.6.1.4.1.56521.999.7`)
+
+	// Initialize the stack (Ctrls) and
+	// immediately push o1 and o2.
+	exop := ExtOps().Push(o1, o2)
+
+	fmt.Printf("%s", exop.Eq())
+	// Output: ( extop = "1.3.6.1.4.1.56521.999.5 || 1.3.6.1.4.1.56521.999.7" )
+}
+
+/*
+This is an example of a LIFO stack slice removal using the Pop method.
+*/
+func ExampleObjectIdentifiers_Pop() {
+	// note: these are phony OIDs
+	o1 := ExtOp(`1.3.6.1.4.1.56521.999.5`)
+	o2 := ExtOp(`1.3.6.1.4.1.56521.999.7`)
+	o3 := ExtOp(`1.3.6.1.4.1.56521.999.9`)
+
+	// Initialize the stack (Ctrls) and
+	// immediately push o1 and o2.
+	exop := ExtOps().Push(o1, o2, o3)
+	popped := exop.Pop()
+
+	fmt.Printf("Removed %T (%s), stack length now %d", popped, popped, exop.Len())
+	// Output: Removed aci.ObjectIdentifier (1.3.6.1.4.1.56521.999.9), stack length now 2
+}
+
+/*
+This example demonstrates the creation of a multi-valued extop (LDAP Extended
+Operation) equality TargetRule expression.
+*/
+func ExampleObjectIdentifiers_Eq() {
+	// note: these are phony OIDs
+	o1 := ExtOp(`1.3.6.1.4.1.56521.999.5`)
+	o2 := ExtOp(`1.3.6.1.4.1.56521.999.7`)
+
+	// Initialize the stack (Ctrls) and
+	// immediately push o1 and o2.
+	exop := ExtOps().Push(o1, o2)
+
+	fmt.Printf("%s", exop.Eq())
+	// Output: ( extop = "1.3.6.1.4.1.56521.999.5 || 1.3.6.1.4.1.56521.999.7" )
+}
+
+/*
+This example demonstrates the creation of a multi-valued extop (LDAP Extended
+Operation) equality TargetRule expression.
+*/
+func ExampleObjectIdentifier_Eq() {
+	fmt.Printf("%s", ExtOp(`1.3.6.1.4.1.56521.999.5`).Eq())
+	// Output: ( extop = "1.3.6.1.4.1.56521.999.5" )
+}
+
+/*
+This example demonstrates the creation of a multi-valued targetcontrol (LDAP Controls)
+negated equality TargetRule expression.
+*/
+func ExampleObjectIdentifiers_Ne() {
+	// note: these are phony OIDs
+	o1 := Ctrl(`1.3.6.1.4.1.56521.999.5`)
+	o2 := Ctrl(`1.3.6.1.4.1.56521.999.7`)
+
+	// Initialize the stack (Ctrls) and
+	// immediately push o1 and o2.
+	ctrls := Ctrls().Push(o1, o2)
+
+	fmt.Printf("%s", ctrls.Ne())
+	// Output: ( targetcontrol != "1.3.6.1.4.1.56521.999.5 || 1.3.6.1.4.1.56521.999.7" )
+}
+
+/*
+This example demonstrates the creation of a multi-valued extop (LDAP Extended
+Operation) negated equality TargetRule expression.
+*/
+func ExampleObjectIdentifier_Ne() {
+	fmt.Printf("%s", ExtOp(`1.3.6.1.4.1.56521.999.5`).Ne())
+	// Output: ( extop != "1.3.6.1.4.1.56521.999.5" )
+}
+
+/*
+This example demonstrates the string representation of the receiver.
+*/
+func ExampleObjectIdentifier_String() {
+	fmt.Printf("%s", ExtOp(`1.3.6.1.4.1.56521.999.5`))
+	// Output: 1.3.6.1.4.1.56521.999.5
+}
+
+/*
+This example demonstrates the (mostly) useless nature of the Len method,
+which only exists to satisfy Go's interface signature requirements.
+*/
+func ExampleObjectIdentifier_Len() {
+	fmt.Printf("%d", ExtOp(`1.3.6.1.4.1.56521.999.5`).Len())
+	// Output: 1
+}
+
+/*
+This example demonstrates use of the Len method to return the number
+of slices present within the receiver as an integer.
+*/
+func ExampleObjectIdentifiers_Len() {
+	ctrls := Ctrls().Push(
+		// note: these are phony OIDs
+		Ctrl(`1.3.6.1.4.1.56521.999.5`),
+		Ctrl(`1.3.6.1.4.1.56521.999.7`),
+	)
+	fmt.Printf("%d", ctrls.Len())
+	// Output: 2
+}
+
+/*
+This example demonstrates use of the Keyword method to obtain the
+current Keyword context from the receiver.
+*/
+func ExampleObjectIdentifiers_Keyword() {
+	ctrls := Ctrls().Push(
+		// note: these are phony OIDs
+		Ctrl(`1.3.6.1.4.1.56521.999.5`),
+		Ctrl(`1.3.6.1.4.1.56521.999.7`),
+	)
+	fmt.Printf("%s", ctrls.Keyword())
+	// Output: targetcontrol
+}
+
+/*
+This example demonstrates use of the Kind method to obtain the
+string form of the current Keyword context from the receiver.
+*/
+func ExampleObjectIdentifiers_Kind() {
+	ctrls := Ctrls().Push(
+		// note: these are phony OIDs
+		Ctrl(`1.3.6.1.4.1.56521.999.5`),
+		Ctrl(`1.3.6.1.4.1.56521.999.7`),
+	)
+	fmt.Printf("%s", ctrls.Kind())
+	// Output: targetcontrol
+}
+
+/*
+This example demonstrates use of the Keyword method to obtain the
+current Keyword context from the receiver.
+*/
+func ExampleObjectIdentifier_Keyword() {
+	fmt.Printf("%s", ExtOp(`1.3.6.1.4.1.56521.999.5`).Keyword())
+	// Output: extop
+}
+
+/*
+This example demonstrates use of the Kind method to obtain the
+string form of the current Keyword context from the receiver.
+*/
+func ExampleObjectIdentifier_Kind() {
+	fmt.Printf("%s", ExtOp(`1.3.6.1.4.1.56521.999.5`).Kind())
+	// Output: extop
+}
+
+/*
+This example demonstrates the string representation of the receiver.
+*/
+func ExampleObjectIdentifiers_String() {
+	// Initialize the stack (Ctrls) and
+	// immediately push into it.
+	ctrls := Ctrls().Push(
+		// note: these are phony OIDs
+		Ctrl(`1.3.6.1.4.1.56521.999.5`),
+		Ctrl(`1.3.6.1.4.1.56521.999.7`),
+	)
+
+	fmt.Printf("%s", ctrls)
+	// Output: 1.3.6.1.4.1.56521.999.5 || 1.3.6.1.4.1.56521.999.7
+}
+
+/*
+This example demonstrates the use of the IsZero method upon a nil receiver.
+*/
+func ExampleObjectIdentifier_IsZero() {
+	var oid ObjectIdentifier
+	fmt.Printf("Zero: %t", oid.IsZero())
+	// Output: Zero: true
+}
+
+/*
+This example demonstrates the use of the IsZero method upon a nil receiver.
+*/
+func ExampleObjectIdentifiers_IsZero() {
+	var oids ObjectIdentifiers
+	fmt.Printf("Zero: %t", oids.IsZero())
+	// Output: Zero: true
+}
+
+/*
+This example demonstrates the use of the ID method.
+*/
+func ExampleObjectIdentifiers_ID() {
+	var oids ObjectIdentifiers = ExtOps() // must be initialized, as there are two (2) types of OIDs here
+	fmt.Printf("ID: %s", oids.ID())
+	// Output: ID: target
+}
+
+/*
+This example demonstrates the use of the Valid method upon a nil receiver.
+*/
+func ExampleObjectIdentifier_Valid() {
+	var oid ObjectIdentifier
+	fmt.Printf("Valid: %t", oid.Valid() == nil)
+	// Output: Valid: false
+}
+
+/*
+This example demonstrates the use of the Valid method upon a nil receiver.
+*/
+func ExampleObjectIdentifiers_Valid() {
+	var oids ObjectIdentifiers
+	fmt.Printf("Valid: %t", oids.Valid() == nil)
+	// Output: Valid: false
+}
+
+/*
+This example demonstrates the population of an object identifier stack
+and a subsequent presence check of one of its members.
+*/
+func ExampleObjectIdentifiers_Contains() {
+	ctrls := Ctrls(
+		`1.3.6.1.4.1.56521.999.5`,
+		`1.3.6.1.4.1.56521.999.6`,
+		`1.3.6.1.4.1.56521.999.7`,
+	)
+
+	fmt.Printf("Contains OID: %t", ctrls.Contains(`1.3.6.1.4.1.56521.999.5`))
+	// Output: Contains OID: true
+}
+
+/*
+This example demonstrates the use of the Index method to obtain a single
+slice and print its Keyword value.
+*/
+func ExampleObjectIdentifiers_Index() {
+	ctrls := Ctrls(
+		`1.3.6.1.4.1.56521.999.5`,
+		`1.3.6.1.4.1.56521.999.6`,
+		`1.3.6.1.4.1.56521.999.7`,
+	)
+
+	fmt.Printf("Slice keyword: %s", ctrls.Index(1).Keyword())
+	// Output: Slice keyword: targetcontrol
+}
+
+/*
+This example demonstrates the use of the TRM method to obtain a list of available
+comparison operator identifiers and methods, and a subsequent call of Contains
+to determine whether Greater Than (Gt) is among them.
+*/
+func ExampleObjectIdentifiers_TRM() {
+	var oids ObjectIdentifiers
+	fmt.Printf("Allows greater-than: %t", oids.TRM().Contains(Gt))
+	// Output: Allows greater-than: false
+}
+
+/*
+This example demonstrates the use of the F method to obtain the appropriate
+package level function to be used to craft additional slices for push into
+the receiver.
+*/
+func ExampleObjectIdentifiers_F() {
+	var oids ObjectIdentifiers = Ctrls()
+	funk := oids.F()
+	newval := funk(`1.3.6.1.4.1.56521.999.5`)
+	fmt.Printf("New %T: %s", newval, newval)
+	// Output: New aci.ObjectIdentifier: 1.3.6.1.4.1.56521.999.5
+}
+
+/*
+This example demonstrates the use of the TRM method to obtain a list of available
+comparison operator identifiers and methods, and a subsequent call of Contains
+to determine whether Greater Than (Gt) is among them.
+*/
+func ExampleObjectIdentifier_TRM() {
+	var oid ObjectIdentifier
+	fmt.Printf("Allows greater-than: %t", oid.TRM().Contains(Gt))
+	// Output: Allows greater-than: false
+}

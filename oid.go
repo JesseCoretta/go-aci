@@ -403,8 +403,17 @@ Push wraps go-stackage's Stack.Push method.
 */
 func (r ObjectIdentifiers) Push(x ...any) ObjectIdentifiers {
 	_r, _ := castAsStack(r)
-	_r.Push(x...)
-	return ObjectIdentifiers(_r)
+
+	for i := 0; i < len(x); i++ {
+		switch tv := x[i].(type) {
+		case string:
+			_r.Push(r.F()(tv))
+		case ObjectIdentifier:
+			_r.Push(tv)
+		}
+	}
+
+	return r
 }
 
 func (r ObjectIdentifiers) Keyword() Keyword {
@@ -687,7 +696,7 @@ func ExtOps(x ...any) (o ObjectIdentifiers) {
 	// Note that any failed push(es) will
 	// have no impact on the validity of
 	// the return instance.
-	_o.Push(x...)
+	o.Push(x...)
 
 	return
 }
@@ -727,7 +736,7 @@ func Ctrls(x ...any) (o ObjectIdentifiers) {
 	// Note that any failed push(es) will
 	// have no impact on the validity of
 	// the return instance.
-	_o.Push(x...)
+	o.Push(x...)
 
 	return
 }

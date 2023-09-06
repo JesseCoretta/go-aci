@@ -199,7 +199,7 @@ func dowBadDayErr(x any) error {
 }
 
 func noPermissionDispErr() error {
-	emsg := "%T has no disposition (allow/deny)"
+	emsg := "%T has no disposition (allow/deny), or is ambiguous (nil)"
 	return errorf(emsg, Permission{})
 }
 

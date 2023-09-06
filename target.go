@@ -134,6 +134,22 @@ func rangeTargetRuleFuncMap(candidate string, fm *targetRuleFuncMap) (cop Compar
 }
 
 /*
+Contains returns a Boolean value indicative of whether the specified ComparisonOperator,
+which may be expressed as a string, int or native ComparisonOperator, is allowed for use
+by the type instance that created the receiver instance. This method offers a convenient
+alternative to the use of the Index method combined with an assertion value (such as Eq,
+Ne, "=", "Greater Than", et al).
+
+In other words, if one uses the TargetDistinguishedName.TRM method to create an instance
+of TargetRuleMethods, feeding Gt (Greater Than) to this method shall return false, as no
+TargetRule context allows mathematical comparison.
+*/
+func (r TargetRuleMethods) Contains(cop any) bool {
+	c, _ := r.index(cop)
+	return c.Valid() == nil
+}
+
+/*
 IsZero returns a Boolean value indicative of whether the receiver is
 nil, or unset.
 */

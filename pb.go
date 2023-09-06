@@ -432,5 +432,20 @@ func PBRs(x ...any) (pbr PermissionBindRules) {
 	return
 }
 
+/*
+Parse wraps go-antlraci's ParsePermissionBindRules function, writing
+valid data into the receiver, or returning an error instance should
+processing fail.
+*/
+func (r *PermissionBindRules) Parse(raw string) error {
+	_r, err := parsePermissionBindRules(raw)
+	if err != nil {
+		return err
+	}
+	*r = _r
+
+	return nil
+}
+
 const pbrRuleID = `pbr`
 const pbrsRuleID = `pbrs`

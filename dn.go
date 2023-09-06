@@ -1058,11 +1058,24 @@ func (r BindDistinguishedNames) setExpressionValues(key Keyword, values ...strin
 		// Identify this distinguished name value
 		// as D, as referenced by index integer i.
 		//
+		// First, let's see if this is a URI, which
+		// is initially similar to a DN in the ACIv3
+		// syntax. If positive, push it and skip ahead.
+		if hasPfx(values[i], LocalScheme) && contains(values[i], `?`) {
+			var U LDAPURI
+			if U, err = parseLDAPURI(values[i], key.(BindKeyword)); err != nil {
+				return
+			}
+			r.Push(U)
+			continue
+		}
+
+		//
 		// If the DN has the LocalScheme (ldap:///)
 		// prefix, we will chop it off as it is not
 		// needed in literal form any longer.
 		D := chopDNPfx(condenseWHSP(values[i]))
-		if len(D) < 3 || !(contains(D, `=`) || !isDNAlias(D)) {
+		if len(D) < 3 || !(contains(D, `=`) || contains(D, `?`) || !isDNAlias(D)) {
 			err = illegalSyntaxPerTypeErr(D, r.Keyword())
 			return
 		}
@@ -1139,9 +1152,13 @@ Index wraps go-stackage's Stack.Index method. Note that the
 Boolean OK value returned by go-stackage's Stack.Index method
 by default will be shadowed and not obtainable by the caller.
 */
-func (r BindDistinguishedNames) Index(idx int) BindDistinguishedName {
-	if assert, ok := distinguishedNameIndex(r, idx).(BindDistinguishedName); ok {
-		return assert
+func (r BindDistinguishedNames) Index(idx int) DistinguishedNameContext {
+	var assert any
+	var ok bool
+	if assert, ok = distinguishedNameIndex(r, idx).(BindDistinguishedName); ok {
+		return assert.(BindDistinguishedName)
+	} else if assert, ok = distinguishedNameIndex(r, idx).(LDAPURI); ok {
+		return assert.(LDAPURI)
 	}
 
 	return badBindDN
@@ -1171,6 +1188,8 @@ func distinguishedNameIndex(r any, idx int) any {
 		return assert
 	} else if assert2, ok2 := y.(TargetDistinguishedName); ok2 {
 		return assert2
+	} else if assert3, ok3 := y.(LDAPURI); ok3 {
+		return assert3
 	}
 
 	return nil
@@ -1304,14 +1323,13 @@ func (r BindDistinguishedNames) Push(x ...any) BindDistinguishedNames {
 
 	// iterate variadic input arguments
 	for i := 0; i < len(x); i++ {
-		// verify DN value and (possibly) cast from
-		// string->dn automatically.
+		// verify DN or URI value and (possibly) cast
+		// from string->type automatically.
 		dn, ok := pushBindDistinguishedNames(kw, x[i])
 		if !ok {
 			return r
 		}
 
-		// Push it!
 		_r.Push(dn)
 	}
 
@@ -1343,6 +1361,8 @@ func (r BindDistinguishedNames) contains(x any) bool {
 	case string:
 		candidate = tv
 	case BindDistinguishedName:
+		candidate = tv.String()
+	case LDAPURI:
 		candidate = tv.String()
 	default:
 		return false
@@ -1438,7 +1458,7 @@ func (r TargetDistinguishedNames) contains(x any) bool {
 	return false
 }
 
-func pushBindDistinguishedNames(kw Keyword, x any) (BindDistinguishedName, bool) {
+func pushBindDistinguishedNames(kw Keyword, x any) (DistinguishedNameContext, bool) {
 	// perform an input type switch,
 	// allowing evaluation of the
 	// value.
@@ -1470,6 +1490,9 @@ func pushBindDistinguishedNames(kw Keyword, x any) (BindDistinguishedName, bool)
 			return badBindDN, false
 		}
 
+		return tv, true
+
+	case LDAPURI:
 		return tv, true
 	}
 
@@ -1632,12 +1655,20 @@ func distinguishedNamesPushPolicy(r, x any, kw Keyword) (err error) {
 	case Keyword:
 		distinguishedNamesPushPolicyKeywordHandler(r, kw)
 
+	case LDAPURI:
+		if kw.Kind() != bindRuleID {
+			err = errorf("Only DN or value-matching %s rule conditions may contain %T instances",
+				kw.Kind(), tv)
+		} else {
+			err = tv.Valid()
+		}
+
 	case DistinguishedNameContext:
 		if tv.IsZero() {
 			err = pushErrorNilOrZero(r, tv, kw)
 
 		} else if tv.Keyword() != kw {
-			err = badPTBRuleKeywordErr(tv, targetRuleID, kw, tv.Keyword())
+			err = badPTBRuleKeywordErr(tv, kw.Kind(), kw, tv.Keyword())
 		}
 
 	default:
@@ -1701,7 +1732,7 @@ func UDNs(x ...any) (d BindDistinguishedNames) {
 	// Note that any failed push(es) will
 	// have no impact on the validity of
 	// the return instance.
-	_d.Push(x...)
+	d.Push(x...)
 
 	return
 }
@@ -1749,7 +1780,7 @@ func RDNs(x ...any) (d BindDistinguishedNames) {
 	// Note that any failed push(es) will
 	// have no impact on the validity of
 	// the return instance.
-	_d.Push(x...)
+	d.Push(x...)
 
 	return
 }
@@ -1797,7 +1828,7 @@ func GDNs(x ...any) (d BindDistinguishedNames) {
 	// Note that any failed push(es) will
 	// have no impact on the validity of
 	// the return instance.
-	_d.Push(x...)
+	d.Push(x...)
 
 	return
 }
@@ -1845,7 +1876,7 @@ func TDNs(x ...any) (d TargetDistinguishedNames) {
 	// Note that any failed push(es) will
 	// have no impact on the validity of
 	// the return instance.
-	_d.Push(x...)
+	d.Push(x...)
 
 	return
 }
@@ -1893,7 +1924,7 @@ func TTDNs(x ...any) (d TargetDistinguishedNames) {
 	// Note that any failed push(es) will
 	// have no impact on the validity of
 	// the return instance.
-	_d.Push(x...)
+	d.Push(x...)
 
 	return
 }
@@ -1941,7 +1972,7 @@ func TFDNs(x ...any) (d TargetDistinguishedNames) {
 	// Note that any failed push(es) will
 	// have no impact on the validity of
 	// the return instance.
-	_d.Push(x...)
+	d.Push(x...)
 
 	return
 }
@@ -1950,6 +1981,8 @@ func TFDNs(x ...any) (d TargetDistinguishedNames) {
 DistinguishedNameContext is a convenient interface type that is
 qualified by the following types:
 
+• LDAPURI (as its only required parameter is a BindDistinguishedName)
+
 • BindDistinguishedName
 
 • TargetDistinguishedName
@@ -1957,7 +1990,9 @@ qualified by the following types:
 The qualifying methods shown below are intended to make the
 generalized handling of distinguished names slightly easier
 without an absolute need for type assertion at every step.
-These methods are inherently read-only in nature.
+These methods are inherently read-only in nature and may not
+always return meaningful values depending on the underlying
+type.
 
 To alter the underlying value, or to gain access to all of a
 given type's methods, type assertion of qualifying instances
@@ -1967,7 +2002,7 @@ type DistinguishedNameContext interface {
 	Len() int
 	String() string
 	Kind() string
-	Compare() bool
+	Compare(any) bool
 	Keyword() Keyword
 	IsZero() bool
 	Valid() error

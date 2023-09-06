@@ -655,6 +655,53 @@ func TestParsePermissionBindRule(t *testing.T) {
 	}
 }
 
+func TestParsePermissionBindRules(t *testing.T) {
+	var pbrs PermissionBindRules
+	_ = pbrs.IsZero()
+	_ = pbrs.Valid()
+
+	if err := pbrs.Parse(``); err == nil {
+		t.Errorf("%s bogus %T attempt returned no error",
+			t.Name(), pbrs)
+		return
+	}
+
+	// yeah
+	var raw string = `allow(read,write) ( groupdn = "ldap:///cn=Human Resources,dc=example,dc=com" ); allow(read,write,delete,search,compare) ( userdn = "ldap:///all" ); deny(all) ( userdn = "ldap:///anyone" ) AND ( ip != "192.0.2." ); deny(proxy,export) ( userdn = "ldap:///self" ); deny(all,proxy) ( userdn = "ldap:///uid=user,ou=People,dc=example,dc=com" ); allow(read,search,compare,selfwrite) ( userdn = "ldap:///uid=user,ou=People,dc=example,dc=com" ) AND ( timeofday >= "1800" AND timeofday < "2400" ); deny(write,selfwrite,import) groupdn = "ldap:///cn=DomainAdmins,ou=Groups,[$dn],dc=example,dc=com"; allow(all,proxy) groupdn = "ldap:///cn=example,ou=groups,dc=example,dc=com"; deny(none) userattr = "owner#USERDN"; allow(none) userattr = "parent[1].manager#USERDN"; deny(all,proxy) userdn = "ldap:///anyone" || "ldap:///self" || "ldap:///cn=Admin"; deny(add,delete,selfwrite) ( ( ( userdn = "ldap:///anyone" ) AND ( ssf >= "71" ) ) AND NOT ( dayofweek = "Wed" ) ); deny(delete,compare,export) ( authmethod = "NONE" OR authmethod = "SIMPLE" ); allow(write,compare) groupdn = "ldap:///cn=Administrators,ou=Groups,dc=example,com" AND groupdn = "ldap:///cn=Operators,ou=Groups,dc=example,com"; allow(write,search) userattr = "manager#USERDN"; allow(proxy,import,export) userdn = "ldap:///anyone" AND ssf >= "128" AND NOT dayofweek = "Fri"; allow(search,compare) userdn = "ldap:///cn=Courtney Tolana,dc=example,dc=com"; deny(read) userdn = "ldap:///ou=People,dc=example,dc=com??sub?(department=Human Resources)"; deny(write,import) ( userdn = "ldap:///anyone" ) AND ( dns != "client.example.com" ); allow(selfwrite,proxy) ( userdn = "ldap:///anyone" ) AND NOT ( dns != "client.example.com" );`
+
+	if err := pbrs.Parse(raw); err != nil {
+		t.Errorf("%s failed: %v",
+			t.Name(), illegalSyntaxPerTypeErr(pbrs, nil))
+		return
+	}
+
+	if pbrs.String() != raw {
+		t.Errorf("%s failed; bad result:\nwant '%s'\ngot  '%s'",
+			t.Name(), raw, pbrs)
+		return
+	}
+}
+
+/*
+This example demonstrates the acts of parsing a sequence of multiple PermissionBindRule
+expressive statements. Each individual PermissionBindRule must be valid unto itself, and
+in particular, must be terminated with ASCII #59 (;).
+*/
+func ExamplePermissionBindRules_Parse() {
+	var pbrs PermissionBindRules
+	// this is a sequence of three (3) PermissionBindRule
+	// expressions in raw text format.
+	var raw string = `allow(read,write) ( groupdn = "ldap:///cn=Human Resources,dc=example,dc=com" ); allow(read,write,delete,search,compare) ( userdn = "ldap:///all" ); deny(all) ( userdn = "ldap:///anyone" ) AND ( ip != "192.0.2." );`
+
+	if err := pbrs.Parse(raw); err != nil {
+		fmt.Println(err) // always check your parser errors
+		return
+	}
+
+	fmt.Printf("%T instance contains %d slices", pbrs, pbrs.Len())
+	// Output: aci.PermissionBindRules instance contains 3 slices
+}
+
 func ExamplePermission_Parse_granting() {
 	var perm Permission
 

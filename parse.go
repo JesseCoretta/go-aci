@@ -247,11 +247,6 @@ func assertBindUGRDN(expr parser.RuleExpression, key BindKeyword) (ex any, err e
 		return
 	}
 
-	if hasPfx(value, LocalScheme) && contains(value, `?`) {
-		ex, err = parseLDAPURI(value, key)
-		return
-	}
-
 	// create an appropriate container based on the
 	// Bind Rule keyword.
 	var bdn BindDistinguishedNames
@@ -753,19 +748,55 @@ func parsePermission(raw string) (*permission, error) {
 
 func unpackageAntlrPermission(perm parser.Permission) (*permission, error) {
 	p := &permission{
-		bool:  new(bool),
-		Right: new(Right),
+		bool:  new(bool),  // disposition (ptr to bool)
+		Right: new(Right), // rights specifiers (ptr to uint8 alias)
 	}
 
+	// !! WARNING - EXTREME SECURITY RISK !!
+	//
+	// A disposition has two (2) official settings and, thus,
+	// is considered to be a MuTeX:
+	//
+	// - allow, which is expressed through a bool value of true
+	// - deny, which is expressed through a bool value of false
+	//
+	// Ones initial thinking might lead to the conclusion that
+	// a default of false is perfectly fine. But it shouldn't
+	// take long for them to rethink that position, given the
+	// following expression (or similar):
+	//
+	//   deny(none)
+	//
+	// Given the right (or wrong?) context, this could be bad.
+	// Really, really bad. The above expression could return
+	// as a result of parsing an instruction if a bogus, or
+	// outright absent disposition was perceived and (as a
+	// result of this failure) the default "Rights" specifiers
+	// default to "none", which is only logical, right?
+	//
+	// BUT, because Golang (and most languages) defines implicit
+	// defaults for certain types -- such as 0 for int and false
+	// for bool -- any default is a bad idea here.
+	//
+	// Therefore a POINTER to a bool is used, both here in go-aci
+	// AND within its sister package go-antlraci. go-antlraci will
+	// evaluate/set the pointer using a double MuTeX case statement,
+	// which allows only specific mutual-exclusion permutations that
+	// are certain to avoid the above scenario.
+	//
+	// The ultimate disposition decision made by go-antlraci in this
+	// case can be trusted, so long as the imported build is not some
+	// fork from a source you don't know and trust.
 	switch x := perm.Allow; x {
-	case true:
-		(*p.bool) = x
+	case nil:
+		// ambiguous result = fatal error
+		return nil, noPermissionDispErr()
 	default:
-		(*p.bool) = false
+		(*p.bool) = *x
 	}
 
 	// process each permission one at a time
-	var bits int
+	var bits int // temporary storage for verification of bitshifted permission values
 	var err error
 	for i := 0; i < len(perm.Rights); i++ {
 		rite := lc(perm.Rights[i])
@@ -778,6 +809,15 @@ func unpackageAntlrPermission(perm parser.Permission) (*permission, error) {
 		p.shift(perm.Rights[i])
 	}
 
+	// The result of the above shifts MUST match the
+	// same resulting bit value that would occur if
+	// parsing was not involved. This accounts for
+	// special values like 'none' and 'all' -- not
+	// by simply looking for their presence as the
+	// string literals that go-antlraci returns, but
+	// rather through bit summation of the underlying
+	// values defined in go-aci as part of its attempt
+	// to be memory efficient.
 	if bits != int(*p.Right) {
 		err = unexpectedValueCountErr(`permission bits`, bits, int(*p.Right))
 		return nil, err
@@ -792,20 +832,20 @@ func parsePermissionBindRule(raw string) (PermissionBindRule, error) {
 		return badPermissionBindRule, err
 	}
 
-	var (
-		ok    bool
-		perm  *permission
-		rules BindRules
-	)
+	return processPermissionBindRule(pbr)
+}
 
-	if perm, err = unpackageAntlrPermission(pbr.P); err != nil {
+func processPermissionBindRule(pbr parser.PermissionBindRule) (PermissionBindRule, error) {
+	perm, err := unpackageAntlrPermission(pbr.P)
+	if err != nil {
 		return badPermissionBindRule, err
 	}
 
 	// traverse the native stackage.Stack instance returned
 	// by antlraci and marshal its contents into proper
 	// BindRule/BindRules instances, etc.
-	if rules, ok = convertBindRulesHierarchy(pbr.B); !ok {
+	rules, ok := convertBindRulesHierarchy(pbr.B)
+	if !ok {
 		return badPermissionBindRule, parseBindRulesHierErr(pbr.B, rules)
 	}
 
@@ -815,5 +855,28 @@ func parsePermissionBindRule(raw string) (PermissionBindRule, error) {
 			B: rules,
 		},
 	}, nil
+}
 
+func parsePermissionBindRules(raw string) (PermissionBindRules, error) {
+	_pbrs, err := parser.ParsePermissionBindRules(raw)
+	if err != nil {
+		return badPermissionBindRules, err
+	}
+
+	var pbrs PermissionBindRules = PBRs()
+	for i := 0; i < _pbrs.Len(); i++ {
+		slice, _ := _pbrs.Index(i)
+		_pbr, asserted := slice.(parser.PermissionBindRule)
+		if !asserted {
+			err = illegalSliceTypeErr(PermissionBindRules{}, `pbrs`, nil)
+			return badPermissionBindRules, err
+		}
+		var pbr PermissionBindRule
+		if pbr, err = processPermissionBindRule(_pbr); err != nil {
+			return badPermissionBindRules, err
+		}
+		pbrs.Push(pbr)
+	}
+
+	return pbrs, nil
 }
