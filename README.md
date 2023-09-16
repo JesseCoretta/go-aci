@@ -142,6 +142,40 @@ end user. If users wish to approach this concept, they are advised to leverage t
 implementing evaluatory capabilities, such as attribute value assertion checks and the like.  This would conceivably allow the use
 of matchingRule and ldapSyntax operations that precede attribute value disclosure/withholding.
 
+## Comparison Operators
+
+Thanks to the import of the [`go-stackage`](https://github.com/JesseCoretta/go-stackage) package, this package gains access to all
+of the necessary comparison operators for use in the crafting of ACIv3 compliant BindRule and TargetRule expressions.
+
+Below are two (2) tables containing all of the comparison operators available, as well all of the applicable (and non-applicable)
+scenarios for their use.
+
+| Bind Keyword | Eq  | Ne  | Lt  | Le  | Gt  | Ge  |
+| ------------- | :---: | :---: | :---: | :---: | :---: | :---: |
+| `ip`          |  ✔  |  ✔  |  ❌ |  ❌ |  ❌ |  ❌ |
+| `dns`         |  ✔  |  ✔  |  ❌ |  ❌ |  ❌ |  ❌ |
+| `userdn`      |  ✔  |  ✔  |  ❌ |  ❌ |  ❌ |  ❌ |
+| `groupdn`     |  ✔  |  ✔  |  ❌ |  ❌ |  ❌ |  ❌ |
+| `roledn`      |  ✔  |  ✔  |  ❌ |  ❌ |  ❌ |  ❌ |
+| `userattr`    |  ✔  |  ✔  |  ❌ |  ❌ |  ❌ |  ❌ |
+| `groupattr`   |  ✔  |  ✔  |  ❌ |  ❌ |  ❌ |  ❌ |
+| `authmethod`  |  ✔  |  ✔  |  ❌ |  ❌ |  ❌ |  ❌ |
+| `dayofweek`   |  ✔  |  ✔  |  ❌ |  ❌ |  ❌ |  ❌ |
+| `ssf`         |  ✔  |  ✔  |  ✔  |  ✔  |  ✔  |  ✔  |
+| `timeofday`   |  ✔  |  ✔  |  ✔  |  ✔  |  ✔  |  ✔  |
+
+| Target Keyword | Eq  | Ne  | Lt  | Le  | Gt  | Ge  |
+| --------------- | :---: | :---: | :---: | :---: | :---: | :---: |
+| `target`          |  ✔  |  ✔  |  ❌ |  ❌ |  ❌ |  ❌ |
+| `target_to`       |  ✔  |  ✔  |  ❌ |  ❌ |  ❌ |  ❌ |
+| `target_from`     |  ✔  |  ✔  |  ❌ |  ❌ |  ❌ |  ❌ |
+| `targetattr`      |  ✔  |  ✔  |  ❌ |  ❌ |  ❌ |  ❌ |
+| `targetfilter`    |  ✔  |  ✔  |  ❌ |  ❌ |  ❌ |  ❌ |
+| `targattrfilters` |  ✔  |  ❌ |  ❌ |  ❌ |  ❌ |  ❌ |
+| `targetscope`     |  ✔  |  ❌ |  ❌ |  ❌ |  ❌ |  ❌ |
+| `targetcontrol`   |  ✔  |  ✔  |  ❌ |  ❌ |  ❌ |  ❌ |
+| `extop`           |  ✔  |  ✔  |  ❌ |  ❌ |  ❌ |  ❌ |
+
 ## Quotation Schemes
 
 Another trait of this package's flexibility is the ability to handle either of the following quotation schemes when parsing or
@@ -174,7 +208,10 @@ behavioral trait of the package to be suboptimal or incomplete in some manner.
 See [issuers](https://github.com/JesseCoretta/go-aci/issues) for all bug reports -- past and present -- as well as a means to file
 new ones.
 
-## Words of Warning
+
+[!WARNING]
+
+Some words of warning ...
 
 The concept of access control -- whether related to the security of databases or not -- is an extremely critical component of effective
 cybersecurity design as a whole. Permissions, such as ACIs, should never be implemented in an untested or cavalier fashion. Breaches
