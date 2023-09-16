@@ -199,5 +199,5 @@ values unintentionally. This particular case is well-documented in vendor manual
 reasons). Users are advised to LEARN the syntax well enough to know when to take such risks.
 
 [^10]: (LDAP) Directory Information Tree
-[^11:] Cover Your ~~_REDACTED_~~ **Gluteus Maximus**
+[^11]: Cover Your ~~_REDACTED_~~ **Gluteus Maximus**
 
