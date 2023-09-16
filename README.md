@@ -75,14 +75,14 @@ license. For further details, see the LICENSE file within the aforementioned rep
     - All-or-nothing `Instruction` parsing is **not required**
     - Users may opt to parse only a _single_ TargetRule or an entire (nested!) BindRules hierarchical expression!
     - All major components allow compartmentalized parsing:
-      - TargetRule
-      - TargetRules
-      - BindRule
-      - BindRules
-      - PermissionBindRule
-      - PermissionBindRules
-      - Instruction
-      - Instructions
+      - `TargetRule`
+      - `TargetRules`
+      - `BindRule`
+      - `BindRules`
+      - `PermissionBindRule`
+      - `PermissionBindRules`
+      - `Instruction`
+      - `Instructions`
   - Memory usage was given particular consideration during the initial design phase
     - Certain values, such as an SSF[^6] level, were designed to fit (_completely!_) inside a single byte instance, regardless of the effective value
     - All numerical types utilize only the smallest possible primitive numeral type (e.g.: `uint8`, `uint16`) to suit its needs; never too much, and never too little!
