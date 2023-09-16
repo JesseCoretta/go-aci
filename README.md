@@ -9,7 +9,28 @@ Package aci implements the complete ACIv3 syntax in a vendor-agnostic manner wit
 The aci (go-aci) package, from [`go-aci`](http://github.com/JesseCoretta/go-aci), is available under the terms of the MIT license. For further
 details, see the LICENSE file within the aforementioned repository. 
 
-Package aci implements the complete ACIv3 syntax in a vendor-agnostic manner with rich features.
+## Dependencies
+
+This package depends upon the following official (built-in) Go packages:
+
+  - [`crypto/sha1`](https://pkg.go.dev/crypto/sha1)
+  - [`encoding/binary`](https://pkg.go.dev/encoding/binary)
+  - [`fmt`](https://pkg.go.dev/fmt)
+  - [`errors`](https://pkg.go.dev/errors)
+  - [`reflect`](https://pkg.go.dev/reflect)
+  - [`strconv`](https://pkg.go.dev/strconv)
+  - [`strings`](https://pkg.go.dev/strings)
+  - [`testing`](https://pkg.go.dev/testing)
+  - [`time`](https://pkg.go.dev/time)
+  - [`unicode`](https://pkg.go.dev/unicode)
+
+This package depends upon the following third party packages:
+
+  - [`go-antlraci`](https://github.com/JesseCoretta/go-antlraci)\*
+  - [`go-objectid`](https://github.com/JesseCoretta/go-objectid)\*
+  - [`go-stackage`](https://github.com/JesseCoretta/go-stackage)\*
+
+_\* Conceived and maintained by same author_
 
 ## Status and Production Roadmap
 
