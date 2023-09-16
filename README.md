@@ -205,13 +205,10 @@ The ACIv3 syntax is fairly complex, rendering its innate flexibility akin to a d
 concepts overlooked by the author within this package. Users are STRONGLY ENCOURAGED TO SPEAK UP if they perceive a feature or some
 behavioral trait of the package to be suboptimal or incomplete in some manner.
 
-See [issuers](https://github.com/JesseCoretta/go-aci/issues) for all bug reports -- past and present -- as well as a means to file
+See [issues](https://github.com/JesseCoretta/go-aci/issues) for all bug reports -- past and present -- as well as a means to file
 new ones.
 
-
-[!WARNING]
-
-Some words of warning ...
+## Some Words of Warning
 
 The concept of access control -- whether related to the security of databases or not -- is an extremely critical component of effective
 cybersecurity design as a whole. Permissions, such as ACIs, should never be implemented in an untested or cavalier fashion. Breaches
