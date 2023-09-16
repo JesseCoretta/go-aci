@@ -83,13 +83,20 @@ const (
 	badACI = `<invalid_aci>`
 )
 
-func (r Instructions) pushPolicy(x any) (err error) {
-	if r.contains(x) {
-		err = pushErrorNotUnique(r, x, nil)
+func (r Instructions) pushPolicy(x ...any) (err error) {
+	if len(x) == 0 {
+		return
+	} else if x[0] == nil {
+		err = nilInstanceErr(x[0])
 		return
 	}
 
-	switch tv := x.(type) {
+	if r.contains(x[0]) {
+		err = pushErrorNotUnique(r, x[0], nil)
+		return
+	}
+
+	switch tv := x[0].(type) {
 	case string:
 		if len(tv) == 0 {
 			err = nilInstanceErr(tv)

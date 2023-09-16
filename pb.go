@@ -312,13 +312,20 @@ permissionBindRulesPushPolicy conforms to the PushPolicy interface signature
 defined within the go-stackage package. This private function is called during
 Push attempts to a PermissionBindRules instance.
 */
-func (r PermissionBindRules) pushPolicy(x any) (err error) {
-	if r.contains(x) {
-		err = pushErrorNotUnique(r, x, nil)
+func (r PermissionBindRules) pushPolicy(x ...any) (err error) {
+	if len(x) == 0 {
+		return
+	} else if x[0] == nil {
+		err = nilInstanceErr(x[0])
 		return
 	}
 
-	switch tv := x.(type) {
+	if r.contains(x[0]) {
+		err = pushErrorNotUnique(r, x[0], nil)
+		return
+	}
+
+	switch tv := x[0].(type) {
 	case PermissionBindRule:
 		if err = tv.Valid(); err != nil {
 			err = pushErrorNilOrZero(PermissionBindRules{}, tv, nil, err)

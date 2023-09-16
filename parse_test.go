@@ -25,7 +25,7 @@ func TestParseBindRule(t *testing.T) {
 func TestParseBindRules(t *testing.T) {
 	want := `( ( ( userdn = "ldap:///anyone" ) AND ( ssf >= "71" ) ) AND NOT ( dayofweek = "Wed" OR dayofweek = "Fri" ) )`
 
-	var r BindRules
+	var r BindContext
 	var err error
 
 	_, _ = ParseBindRules(``)
@@ -52,37 +52,39 @@ func TestParseBindRules(t *testing.T) {
 	bl := r.Len()
 	orig := r.String()
 
-	r.Push(BindRules{})
+	R, _ := r.(BindRules)
+
+	//r.Push(BindRules{})
 
 	var ctx BindContext = BindRule{}
 
-	if r.Push(ctx); r.Len() != bl {
+	if R.Push(ctx); r.Len() != bl {
 		t.Errorf("%s failed: bogus enveloped content was pushed into %T", t.Name(), r)
 		return
 	}
 
-	popped := r.Pop()
+	popped := R.Pop()
 	bl = r.Len()
 	if popped.String() != orig {
 		t.Errorf("%s failed: unexpected element popped; want '%s', got '%s'", t.Name(), orig, popped)
 		return
 	}
 
-	r.Push(popped)
-	r.remove(r.Len() - 1)
+	R.Push(popped)
+	R.remove(r.Len() - 1)
 	if r.Len() != bl {
 		t.Errorf("%s failed: content not removed from %T", t.Name(), r)
 		return
 	}
 
-	r.insert(popped, 0)
+	R.insert(popped, 0)
 	if r.Len() == bl {
 		t.Errorf("%s failed: content not inserted into %T", t.Name(), r)
 		return
 	}
 }
 
-func ExampleParseBindRules_messy() {
+func ExampleBindRules_Parse_messy() {
 	raw := `(
                         (
                                 ( userdn = "ldap:///anyone" ) AND
@@ -96,13 +98,40 @@ func ExampleParseBindRules_messy() {
 
 	br, err := ParseBindRules(raw)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(err) // always check your parser errors
 		return
 	}
 
 	called := br.Traverse(0, 0, 0)
 	fmt.Printf("%s", called)
 	// Output: ( userdn = "ldap:///anyone" )
+}
+
+func ExampleBindRules_Parse() {
+	raw := `( ssf >= "128" AND ( authmethod = "SASL" OR authmethod = "SSL" ) )`
+	var brs BindRules
+	if err := brs.Parse(raw); err != nil {
+		fmt.Println(err) // always check your parser errors
+		return
+	}
+
+	fmt.Printf("%s", brs.Traverse(0, 1, 0))
+	// Output: authmethod = "SASL"
+}
+
+func ExampleBindRule_Parse() {
+	raw := `ssf >= "128"`
+	var br BindRule
+	if err := br.Parse(raw); err != nil {
+		fmt.Println(err) // always check your parser errors
+		return
+	}
+
+	br.NoPadding(true)
+	br.Paren(true)
+
+	fmt.Printf("%s", br)
+	// Output: (ssf>="128")
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -417,7 +446,9 @@ func TestParseBindRule_postANTLR(t *testing.T) {
 	for typ, kwtests := range tests {
 		for kw, typtests := range kwtests {
 			for idx, value := range typtests {
-				br := new(BindRule).SetKeyword(kw)
+				var br BindRule
+				br.Init()
+				br.SetKeyword(kw)
 				for _, cop := range []ComparisonOperator{
 					Eq, Ne,
 				} {
@@ -573,9 +604,11 @@ func TestParseTargetRule_postANTLR(t *testing.T) {
 	for typ, kwtests := range tests {
 		for kw, typtests := range kwtests {
 			for idx, value := range typtests {
-				var tr *TargetRule
-				tr = new(TargetRule).SetKeyword(kw)
+				var tr TargetRule
+				tr.Init()
+				tr.SetKeyword(kw)
 				_ = tr.assertExpressionValue() // codecov
+				// TODO: replace with TRM
 				for _, cop := range []ComparisonOperator{
 					Eq, Ne,
 				} {

@@ -59,7 +59,7 @@ func TestScope_targetRules(t *testing.T) {
 		// are able to generate all others.
 		oper = `!` + oper
 		want = sprintf("( targetscope %s %q )", oper, lc(raw))
-		if sNe := tscope.Ne(); !sNe.IsZero() {
+		if sNe := tscope.Ne(); sNe != badTargetRule {
 			t.Errorf("%s failed; created illegal targetscope rule '%s' (%s)",
 				t.Name(), sNe, want)
 			return

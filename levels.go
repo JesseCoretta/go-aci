@@ -158,19 +158,7 @@ func (r Inheritance) Eq() BindRule {
 	if err := r.Valid(); err != nil {
 		return badBindRule
 	}
-
-	var b BindRule
-	b.SetKeyword(r.inheritance.AttributeBindTypeOrValue.BindKeyword)
-	b.SetOperator(Eq)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(r.inheritance.AttributeBindTypeOrValue.BindKeyword.String())
-
-	return b
+	return BR(r.inheritance.AttributeBindTypeOrValue.BindKeyword, Eq, r)
 }
 
 /*
@@ -182,19 +170,7 @@ func (r Inheritance) Ne() BindRule {
 	if err := r.Valid(); err != nil {
 		return badBindRule
 	}
-
-	var b BindRule
-	b.SetKeyword(r.inheritance.AttributeBindTypeOrValue.BindKeyword)
-	b.SetOperator(Ne)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(r.inheritance.AttributeBindTypeOrValue.BindKeyword.String())
-
-	return b
+	return BR(r.inheritance.AttributeBindTypeOrValue.BindKeyword, Ne, r)
 }
 
 /*

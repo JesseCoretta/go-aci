@@ -359,8 +359,6 @@ func (r LDAPURI) makeBindRule(negate ...bool) BindRule {
 		return badBindRule
 	}
 
-	var b BindRule
-
 	// Use the desired comparison operator,
 	// which can be one of Eq (Equal-To), or
 	// Ne (Not-Equal-To).
@@ -396,19 +394,19 @@ func (r LDAPURI) makeBindRule(negate ...bool) BindRule {
 	}
 
 	// assemble our BindRule instance ...
-	b.SetKeyword(kw)
-	b.SetOperator(oper)
-	b.SetExpression(r)
+	var b BindRule = BR(kw, oper, r)
 
 	// temporarily cast as a stackage.Condition
 	// so we can apply some additional changes
 	// using methods we didn't wrap because it
 	// wouldn't be necessary otherwise.
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(kw.String())
+	/*
+		castAsCondition(b).
+			Encap(`"`).
+			SetID(bindRuleID).
+			NoPadding(!RulePadding).
+			SetCategory(kw.String())
+	*/
 
 	return b
 }

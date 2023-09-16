@@ -306,19 +306,7 @@ func (r DayOfWeek) Eq() BindRule {
 	if err := r.Valid(); err != nil {
 		return badBindRule
 	}
-
-	var b BindRule
-	b.SetKeyword(BindDoW)
-	b.SetOperator(Eq)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(r.Keyword().String())
-
-	return b
+	return BR(BindDoW, Eq, r)
 }
 
 /*
@@ -332,19 +320,7 @@ func (r DayOfWeek) Ne() BindRule {
 	if err := r.Valid(); err != nil {
 		return badBindRule
 	}
-
-	var b BindRule
-	b.SetKeyword(BindDoW)
-	b.SetOperator(Ne)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(r.Keyword().String())
-
-	return b
+	return BR(BindDoW, Ne, r)
 }
 
 /*
@@ -474,19 +450,7 @@ func (r TimeOfDay) Eq() BindRule {
 	if err := r.Valid(); err != nil {
 		return badBindRule
 	}
-
-	var b BindRule
-	b.SetKeyword(BindToD)
-	b.SetOperator(Eq)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(r.Keyword().String())
-
-	return b
+	return BR(BindToD, Eq, r)
 }
 
 /*
@@ -500,19 +464,7 @@ func (r TimeOfDay) Ne() BindRule {
 	if err := r.Valid(); err != nil {
 		return badBindRule
 	}
-
-	var b BindRule
-	b.SetKeyword(BindToD)
-	b.SetOperator(Ne)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(r.Keyword().String())
-
-	return b
+	return BR(BindToD, Ne, r)
 }
 
 /*
@@ -524,19 +476,7 @@ func (r TimeOfDay) Lt() BindRule {
 	if err := r.Valid(); err != nil {
 		return badBindRule
 	}
-
-	var b BindRule
-	b.SetKeyword(BindToD)
-	b.SetOperator(Lt)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(BindToD.String())
-
-	return b
+	return BR(BindToD, Lt, r)
 }
 
 /*
@@ -548,19 +488,7 @@ func (r TimeOfDay) Le() BindRule {
 	if err := r.Valid(); err != nil {
 		return badBindRule
 	}
-
-	var b BindRule
-	b.SetKeyword(BindToD)
-	b.SetOperator(Le)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(BindToD.String())
-
-	return b
+	return BR(BindToD, Le, r)
 }
 
 /*
@@ -572,19 +500,7 @@ func (r TimeOfDay) Gt() BindRule {
 	if err := r.Valid(); err != nil {
 		return badBindRule
 	}
-
-	var b BindRule
-	b.SetKeyword(BindToD)
-	b.SetOperator(Gt)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(BindToD.String())
-
-	return b
+	return BR(BindToD, Gt, r)
 }
 
 /*
@@ -596,19 +512,7 @@ func (r TimeOfDay) Ge() BindRule {
 	if err := r.Valid(); err != nil {
 		return badBindRule
 	}
-
-	var b BindRule
-	b.SetKeyword(BindToD)
-	b.SetOperator(Ge)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(BindToD.String())
-
-	return b
+	return BR(BindToD, Ge, r)
 }
 
 /*

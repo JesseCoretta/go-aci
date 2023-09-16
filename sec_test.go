@@ -31,27 +31,14 @@ func TestSecurityStrengthFactor(t *testing.T) {
 			return
 		}
 
-		// ssf qualifies for all comparison operators
-		// due to its numerical nature.
-		// TODO: decom this in favor of BRM()
-		cops := map[ComparisonOperator]func() BindRule{
-			Eq: got.Eq,
-			Ne: got.Ne,
-			Lt: got.Lt,
-			Le: got.Le,
-			Gt: got.Gt,
-			Ge: got.Ge,
-		}
-
-		// try every comparison operator supported in
-		// this context ...
-		for c := 1; c < len(cops)+1; c++ {
-			cop := ComparisonOperator(c)
+		brm := factor.BRM()
+		for c := 0; c < brm.Len(); c++ {
+			cop, meth := brm.Index(c + 1)
 			wcop := sprintf("%s %s %q", got.Keyword(), cop, got)
 
 			// create bindrule B using comparison
 			// operator (cop).
-			if B := cops[cop](); B.String() != wcop {
+			if B := meth(); B.String() != wcop {
 				err = unexpectedStringResult(typ, wcop, B.String())
 			}
 
@@ -146,8 +133,8 @@ func ExampleSecurityStrengthFactor_String() {
 
 func ExampleSecurityStrengthFactor_Valid() {
 	var s SecurityStrengthFactor
-	fmt.Printf("Valid: %t", s.Valid() == nil)
-	// Output: Valid: false
+	fmt.Printf("Valid: %t", s.Valid() == nil) // zero IS valid, technically speaking!
+	// Output: Valid: true
 }
 
 func ExampleSecurityStrengthFactor_IsZero() {

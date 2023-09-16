@@ -60,19 +60,10 @@ Eq initializes and returns a new BindRule instance configured to express the
 evaluation of the receiver value as Equal-To the `ip` Bind keyword context.
 */
 func (r IPAddr) Eq() BindRule {
-
-	var b BindRule
-	b.SetKeyword(BindIP)
-	b.SetOperator(Eq)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(BindIP.String())
-
-	return b
+	if err := r.Valid(); err != nil {
+		return badBindRule
+	}
+	return BR(BindIP, Eq, r)
 }
 
 /*
@@ -80,19 +71,10 @@ Ne initializes and returns a new BindRule instance configured to express the
 evaluation of the receiver value as Not-Equal-To the `ip` Bind keyword context.
 */
 func (r IPAddr) Ne() BindRule {
-
-	var b BindRule
-	b.SetKeyword(BindIP)
-	b.SetOperator(Ne)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(BindIP.String())
-
-	return b
+	if err := r.Valid(); err != nil {
+		return badBindRule
+	}
+	return BR(BindIP, Ne, r)
 }
 
 /*
@@ -478,19 +460,7 @@ func (r FQDN) Eq() BindRule {
 	if err := r.Valid(); err != nil {
 		return badBindRule
 	}
-
-	var b BindRule
-	b.SetKeyword(BindDNS)
-	b.SetOperator(Eq)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(BindDNS.String())
-
-	return b
+	return BR(BindDNS, Eq, r)
 }
 
 /*
@@ -501,19 +471,7 @@ func (r FQDN) Ne() BindRule {
 	if err := r.Valid(); err != nil {
 		return badBindRule
 	}
-
-	var b BindRule
-	b.SetKeyword(BindDNS)
-	b.SetOperator(Ne)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(BindDNS.String())
-
-	return b
+	return BR(BindDNS, Ne, r)
 }
 
 /*

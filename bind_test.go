@@ -22,7 +22,7 @@ func TestBindRuleMethods(t *testing.T) {
 
 	for i := 0; i < brm.Len(); i++ {
 		if cop, meth := brm.Index(i + 1); meth().String() != fmt.Sprintf("ssf %s %q", cop, `256`) {
-			t.Errorf("%s failed: failed to call index %d [%s] non-nil %T", t.Name(), i, cop.Context(), brm)
+			t.Errorf("%s failed: failed to call index %d [%s] non-nil %T (got %s)", t.Name(), i, cop.Context(), brm, meth())
 			return
 		}
 	}
@@ -107,6 +107,7 @@ func TestBindRules_bogus(t *testing.T) {
 		GDN(`cn=Executives,ou=Groups,dc=example,dc=com`).Ne(),
 		UDNs("uid=jesse,ou=People,dc=example,dc=com", "uid=courtney,ou=People,dc=example,dc=com").Eq(),
 	)
+
 	_ = br.Kind()
 	_ = br.IsNesting()
 	_ = br.Keyword()
@@ -118,6 +119,7 @@ func TestBindRules_bogus(t *testing.T) {
 	br.Replace(replacer, 1)
 
 	replaced := br.Index(1)
+
 	if replacer.String() != replaced.String() {
 		t.Errorf("%s failed: %T.Replace did not replace specified slice value, want '%s', got '%s'",
 			t.Name(), br, replacer, replaced)
@@ -163,7 +165,11 @@ func ExampleBindRules_Traverse() {
 			UAT(`manager`, `LDAPURL`).Eq().Paren(),
 			GAT(`owner`, SELFDN).Eq().Paren(),
 			URI(UDN(`ou=People,dc=example,dc=com`), Subtree).Eq().Paren(),
-			// OR slice #3
+			// OR slice #3. This is ILLOGICAL because
+			// there's no benefit to placing an AND in
+			// this rule, as it does not produce what
+			// would be viewed as a "sensible" statement
+			// of evaluation.
 			And(
 				// Inner AND slice #0
 				SSF(128).Ge(),
@@ -492,6 +498,8 @@ func ExampleBindRule_Valid() {
 
 func ExampleBindRule_SetQuoteStyle() {
 	var tgt BindRule
+	tgt.Init()
+
 	tgt.SetKeyword(BindUDN)
 	tgt.SetOperator(Ne)
 	tgt.SetExpression(UDNs(

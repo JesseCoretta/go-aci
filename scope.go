@@ -106,20 +106,7 @@ func (r SearchScope) Eq() TargetRule {
 	if r == noScope {
 		return badTargetRule
 	}
-
-	var t TargetRule
-	t.SetKeyword(TargetScope)
-	t.SetOperator(Eq)
-	t.SetExpression(r) // don't use main stringer here
-
-	castAsCondition(t).
-		Encap(`"`).
-		Paren(true).
-		SetID(targetRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(TargetScope.String())
-
-	return t
+	return TR(TargetScope, Eq, r)
 }
 
 /*

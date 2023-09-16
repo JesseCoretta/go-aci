@@ -217,26 +217,70 @@ type targetRuleFuncMap map[ComparisonOperator]TargetRuleMethod
 TR returns a populated instance of TargetRule.  Note there are far more
 convenient (and safer!) ways of crafting instances of this type.
 
-Generally speaking, this function is not needed by the end user.
+Generally speaking, this function is not needed by the end user unless
+they're manually testing the assembly of TargetRule instances, OR if
+they want a fast means to create said instance and they have all of the
+pieces of information ready for input.
 */
 func TR(kw, op, ex any) TargetRule {
 	return newTargetRule(kw, op, ex)
 }
 
 /*
-newTargetRule is a private function called by the TR function.
+Init wraps stackage.Condition's Init method. This is a required method
+for situations involving the piecemeal (step-by-step) assembly of an
+instance of TargetRule as opposed to a one-shot creation using the TR
+package-level function. It is also an ideal means for the creation of
+a TargetRule instance when one does not immediately possess all of the
+needed pieces of information (i.e.: uncertain which keyword to use, or
+when an expression value has not yet been determined, etc).
+
+Call this method after a variable declaration but before your first
+change, e.g.:
+
+	var tr TargetRule
+	... do other things ...
+	... we're ready to set something now ...
+	tr.Init()
+	tr.SetKeyword("blarg")
+	tr.SetSomethingElse(...)
+	...
+
+Init need only be executed once within the lifespan of a TargetRule
+instance. Its execution shall result in a completely new embedded
+pointer instance supplanting the previous one.
+
+One may choose, however, to re-execute this method IF this instance
+shall be reused (perhaps in a repetative or looped manner), and if
+it would be desirable to 'wipe the slate clean' for some reason.
+*/
+func (r *TargetRule) Init() TargetRule {
+	_r := castAsCondition(*r)
+	if _r.IsZero() || !_r.IsInit() {
+		_r.Init()
+	}
+	*r = TargetRule(_r)
+	return *r
+}
+
+/*
+newTargetRule is a private function called by the TR function. It
+auto-executes -- among other things -- the stackage.Condition.Init
+method.
 */
 func newTargetRule(kw, op, ex any) (t TargetRule) {
-	t.SetKeyword(kw)
-	t.SetOperator(op)
 
-	t.SetExpression(ex)
-
-	castAsCondition(t).
-		Encap(`"`).
+	c := castAsCondition(t)
+	c.Init()
+	c.Encap(`"`).
 		Paren(true).
 		SetID(targetRuleID).
 		NoPadding(!RulePadding)
+
+	t = TargetRule(c)
+	t.SetKeyword(kw)
+	t.SetOperator(op)
+	t.SetExpression(ex)
 
 	return
 }
@@ -279,7 +323,10 @@ func (r TargetRule) Compare(x any) bool {
 Category wraps go-stackage's Condition.Category method.
 */
 func (r TargetRule) Category() string {
-	return castAsCondition(r).Category()
+	if r.IsZero() {
+		return ``
+	}
+	return r.Keyword().String()
 }
 
 /*
@@ -382,10 +429,8 @@ func (r TargetRule) SetQuoteStyle(style int) TargetRule {
 /*
 SetKeyword wraps go-stackage's Condition.SetKeyword method.
 */
-func (r *TargetRule) SetKeyword(kw any) *TargetRule {
-	x := castAsCondition(*r)
-	x.SetKeyword(kw)
-	*r = TargetRule(*x)
+func (r TargetRule) SetKeyword(kw any) TargetRule {
+	castAsCondition(r).SetKeyword(kw)
 	return r
 }
 
@@ -394,7 +439,7 @@ SetOperator wraps go-stackage's Condition.SetOperator method.
 Valid input types are ComparisonOperator or its string value
 equivalent (e.g.: `>=` for Ge).
 */
-func (r *TargetRule) SetOperator(op any) *TargetRule {
+func (r TargetRule) SetOperator(op any) TargetRule {
 	if !keywordAllowsComparisonOperator(r.Keyword(), op) {
 		return r
 	}
@@ -415,19 +460,20 @@ func (r *TargetRule) SetOperator(op any) *TargetRule {
 		return r
 	}
 
-	x := castAsCondition(*r)
-	x.SetOperator(castAsCop(cop))
-	*r = TargetRule(*x)
+	castAsCondition(r).
+		SetOperator(castAsCop(cop))
+
 	return r
 }
 
 /*
 SetExpression wraps go-stackage's Condition.SetExpression method.
 */
-func (r *TargetRule) SetExpression(expr any) *TargetRule {
-	x := castAsCondition(*r).Encap(`"`) // impose default quotation
-	x.SetExpression(expr)
-	*r = TargetRule(*x)
+func (r TargetRule) SetExpression(expr any) TargetRule {
+	castAsCondition(r).
+		Encap(`"`).
+		SetExpression(expr)
+
 	return r
 }
 
@@ -446,10 +492,6 @@ func (r TargetRule) Keyword() Keyword {
 Operator wraps go-stackage's Condition.Operator method.
 */
 func (r TargetRule) Operator() ComparisonOperator {
-	if r.IsZero() {
-		return badCop
-	}
-
 	return castCop(castAsCondition(r).Operator())
 }
 
@@ -535,7 +577,7 @@ func TRs(x ...any) (t TargetRules) {
 	_t := stackList(9).
 		NoNesting(true).
 		SetDelimiter(``).
-		NoPadding(true).
+		NoPadding(!RulePadding).
 		SetCategory(targetRuleID)
 
 	// cast _t as a proper TargetRules instance
@@ -669,7 +711,20 @@ NoPadding wraps go-stackage's Stack.NoPadding method.
 */
 func (r TargetRules) NoPadding(state ...bool) TargetRules {
 	_t, _ := castAsStack(r)
-	_t.NoPadding(state...)
+	if !_t.IsInit() {
+		return badTargetRules
+	}
+	var st bool = false
+	if len(state) == 0 {
+		if len(_t.Delimiter()) != 0 {
+			st = true
+		}
+	}
+	if st {
+		_t.SetDelimiter(``)
+	} else {
+		_t.SetDelimiter(string(rune(32)))
+	}
 
 	return r
 }
@@ -691,8 +746,15 @@ stackage.Stack (or alias) type instance.
 
 Only TargetRule instances are to be cleared for push executions.
 */
-func (r TargetRules) pushPolicy(x any) (err error) {
-	switch tv := x.(type) {
+func (r TargetRules) pushPolicy(x ...any) (err error) {
+	if len(x) == 0 {
+		return
+	} else if x[0] == nil {
+		err = nilInstanceErr(x[0])
+		return
+	}
+
+	switch tv := x[0].(type) {
 	case TargetRule:
 		if tv.IsZero() {
 			err = pushErrorNilOrZero(r, tv, tv.Keyword())
@@ -709,7 +771,7 @@ func (r TargetRules) pushPolicy(x any) (err error) {
 			err = pushErrorNilOrZero(r, tv, tv.Keyword())
 		}
 	default:
-		err = pushErrorBadType(r, x, nil)
+		err = pushErrorBadType(r, tv, nil)
 	}
 
 	return

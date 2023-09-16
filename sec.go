@@ -80,19 +80,7 @@ func (r AuthenticationMethod) Eq() BindRule {
 	if r == noAuth {
 		return badBindRule
 	}
-
-	var b BindRule
-	b.SetKeyword(BindAM)
-	b.SetOperator(Eq)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(BindAM.String())
-
-	return b
+	return BR(BindAM, Eq, r)
 }
 
 /*
@@ -104,19 +92,7 @@ func (r AuthenticationMethod) Ne() BindRule {
 	if r == noAuth {
 		return badBindRule
 	}
-
-	var b BindRule
-	b.SetKeyword(BindAM)
-	b.SetOperator(Ne)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(BindAM.String())
-
-	return b
+	return BR(BindAM, Ne, r)
 }
 
 /*
@@ -210,19 +186,11 @@ Eq initializes and returns a new BindRule instance configured to express the
 evaluation of the receiver value as Equal-To the `ssf` Bind keyword context.
 */
 func (r SecurityStrengthFactor) Eq() BindRule {
-
-	var b BindRule
-	b.SetKeyword(BindSSF)
-	b.SetOperator(Eq)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(BindSSF.String())
-
-	return b
+	if err := r.Valid(); err != nil {
+		printf("BADDDDD\n")
+		return badBindRule
+	}
+	return BR(BindSSF, Eq, r)
 }
 
 /*
@@ -233,19 +201,10 @@ context.
 Negated equality BindRule instances should be used with caution.
 */
 func (r SecurityStrengthFactor) Ne() BindRule {
-
-	var b BindRule
-	b.SetKeyword(BindSSF)
-	b.SetOperator(Ne)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(BindSSF.String())
-
-	return b
+	if err := r.Valid(); err != nil {
+		return badBindRule
+	}
+	return BR(BindSSF, Ne, r)
 }
 
 /*
@@ -253,19 +212,10 @@ Lt initializes and returns a new BindRule instance configured to express the
 evaluation of the receiver value as Less-Than the `ssf` Bind keyword context.
 */
 func (r SecurityStrengthFactor) Lt() BindRule {
-
-	var b BindRule
-	b.SetKeyword(BindSSF)
-	b.SetOperator(Lt)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(BindSSF.String())
-
-	return b
+	if err := r.Valid(); err != nil {
+		return badBindRule
+	}
+	return BR(BindSSF, Lt, r)
 }
 
 /*
@@ -274,19 +224,10 @@ evaluation of the receiver value as Less-Than-Or-Equal to the `ssf` Bind
 keyword context.
 */
 func (r SecurityStrengthFactor) Le() BindRule {
-
-	var b BindRule
-	b.SetKeyword(BindSSF)
-	b.SetOperator(Le)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(BindSSF.String())
-
-	return b
+	if err := r.Valid(); err != nil {
+		return badBindRule
+	}
+	return BR(BindSSF, Le, r)
 }
 
 /*
@@ -295,19 +236,10 @@ evaluation of the receiver value as Greater-Than the `ssf` Bind keyword
 context.
 */
 func (r SecurityStrengthFactor) Gt() BindRule {
-
-	var b BindRule
-	b.SetKeyword(BindSSF)
-	b.SetOperator(Gt)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(BindSSF.String())
-
-	return b
+	if err := r.Valid(); err != nil {
+		return badBindRule
+	}
+	return BR(BindSSF, Gt, r)
 }
 
 /*
@@ -316,20 +248,10 @@ evaluation of the receiver value as Greater-Than-Or-Equal to the `ssf` Bind
 keyword context.
 */
 func (r SecurityStrengthFactor) Ge() BindRule {
-
-	var b BindRule
-
-	b.SetKeyword(BindSSF)
-	b.SetOperator(Ge)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(BindSSF.String())
-
-	return b
+	if err := r.Valid(); err != nil {
+		return badBindRule
+	}
+	return BR(BindSSF, Ge, r)
 }
 
 /*
@@ -381,16 +303,8 @@ func (r SecurityStrengthFactor) Compare(x any) bool {
 	return compareHashInstance(r, x)
 }
 
-/*
-Valid returns a Boolean value indicative of whether the receiver represents
-a security strength factor greater than zero (0).
-*/
 func (r SecurityStrengthFactor) Valid() (err error) {
-	if r.value() == 0 {
-		err = nilInstanceErr(r)
-	}
-
-	return
+	return // TODO: Is USELESS ... make sure it can't be improved
 }
 
 func (r SecurityStrengthFactor) clear() {

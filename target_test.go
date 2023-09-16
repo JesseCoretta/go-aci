@@ -557,6 +557,7 @@ func ExampleTargetRule_NoPadding() {
 
 func ExampleTargetRule_SetKeyword() {
 	var tgt TargetRule
+	tgt.Init()
 	tgt.SetKeyword(TargetAttr)
 	tgt.SetOperator(Ne)
 	tgt.SetExpression(AT(`aci`))
@@ -567,6 +568,7 @@ func ExampleTargetRule_SetKeyword() {
 
 func ExampleTargetRule_SetOperator() {
 	var tgt TargetRule
+	tgt.Init()
 	tgt.SetKeyword(TargetAttr)
 	tgt.SetOperator(Ne)
 	tgt.SetExpression(AT(`aci`))
@@ -583,6 +585,7 @@ func ExampleTargetRule_Operator() {
 
 func ExampleTargetRule_SetExpression() {
 	var tgt TargetRule
+	tgt.Init()
 	tgt.SetKeyword(TargetAttr)
 	tgt.SetOperator(Ne)
 	tgt.SetExpression(AT(`aci`))
@@ -632,6 +635,8 @@ func ExampleTargetRule_Valid() {
 
 func ExampleTargetRule_SetQuoteStyle() {
 	var tgt TargetRule
+	tgt.Init()
+
 	tgt.SetKeyword(Target)
 	tgt.SetOperator(Ne)
 	tgt.SetExpression(TDNs(

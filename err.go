@@ -218,7 +218,7 @@ func parseBindRuleInvalidExprTypeErr(receiver, want, got any) error {
 	return errorf(emsg, got, receiver, want)
 }
 
-func parseBindRulesHierErr(stk any, b BindRules) error {
+func parseBindRulesHierErr(stk any, b BindContext) error {
 	emsg := "Unable to cast %T hierarchy into %T; aborting"
 	return errorf(emsg, stk, b)
 }

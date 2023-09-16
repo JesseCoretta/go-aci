@@ -17,22 +17,49 @@ func ParseBindRule(raw string) (BindRule, error) {
 	return parseBindRule(raw)
 }
 
+func (r *BindRule) Parse(raw string) error {
+	_r, err := parseBindRule(raw)
+	if err != nil {
+		return err
+	}
+	*r = _r
+
+	return nil
+}
+
 func parseBindRule(raw string) (BindRule, error) {
-	_c, err := parser.ParseBindRule(raw)
-	return BindRule(_c), err
+	_r, err := parser.ParseBindRule(raw)
+	return BindRule(_r), err
 }
 
 /*
-ParseBindRules returns an instance of Rule alongside an error instance.
+ParseBindRules returns an instance of BindRules alongside an error
+instance.
 
-The returned Rule instance shall contain a complete hierarchical stack
+The returned instance shall contain a complete hierarchical stack
 structure that represents the abstract rule (raw) input by the user.
 */
-func ParseBindRules(raw string) (BindRules, error) {
+func ParseBindRules(raw string) (BindContext, error) {
 	return parseBindRules(raw)
 }
 
-func parseBindRules(raw string) (BindRules, error) {
+func (r *BindRules) Parse(raw string) error {
+	_r, err := parseBindRules(raw)
+	if err != nil {
+		return err
+	}
+	switch tv := _r.(type) {
+	case BindRule:
+		r.reset()
+		r.Push(tv)
+	case BindRules:
+		*r = tv
+	}
+
+	return nil
+}
+
+func parseBindRules(raw string) (BindContext, error) {
 	// In case the input has bizarre
 	// contiguous whsp, etc., remove
 	// it safely.
@@ -410,7 +437,7 @@ func processTargetRules(stack any) (TargetRules, error) {
 	}
 
 	// create our (eventual) return object.
-	t := TRs().NoPadding(true)
+	t := TRs()
 
 	// transfer raw contents into new TargetRules
 	// instance.

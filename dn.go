@@ -968,13 +968,7 @@ func bindDNToCondition(dest any, op ComparisonOperator) (BindRule, bool) {
 		if tv.Keyword() == BindKeyword(0x0) {
 			return badBindRule, false
 		}
-
-		// initialize our BindRule condition
-		// with the needed keyword, operator
-		// and DN value
-		b.SetKeyword(tv.Keyword().String())
-		b.SetOperator(op)
-		b.SetExpression(tv)
+		b = BR(tv.Keyword(), op, tv)
 
 	case BindDistinguishedNames:
 		if tv.IsZero() {
@@ -984,29 +978,13 @@ func bindDNToCondition(dest any, op ComparisonOperator) (BindRule, bool) {
 		if tv.Keyword() == BindKeyword(0x0) {
 			return badBindRule, false
 		}
-
-		// initialize our BindRule condition
-		// with the needed keyword, operator
-		// and DN values
-		b.SetKeyword(tv.Keyword().String())
-		b.SetOperator(op)
-		b.SetExpression(tv)
+		b = BR(tv.Keyword(), op, tv)
 
 	default:
 		return badBindRule, false
 	}
 
-	// Cast to a stackage.Condition momentarily
-	// just so we can run some needed methods
-	// that are not exported due to a desire for
-	// pkg simplicity.
-	_b := castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(b.Category())
-
-	return BindRule(*_b), true
+	return b, true
 }
 
 func targetDNToCondition(dest any, op ComparisonOperator) (TargetRule, bool) {
@@ -1020,13 +998,7 @@ func targetDNToCondition(dest any, op ComparisonOperator) (TargetRule, bool) {
 		if matchTKW(tv.Keyword().String()) == TargetKeyword(0x0) {
 			return badTargetRule, false
 		}
-
-		// initialize our BindRule condition
-		// with the needed keyword, operator
-		// and DN value
-		t.SetKeyword(tv.Keyword().String())
-		t.SetOperator(op)
-		t.SetExpression(tv)
+		t = TR(tv.Keyword(), op, tv)
 
 	case TargetDistinguishedNames:
 		if tv.IsZero() {
@@ -1036,30 +1008,13 @@ func targetDNToCondition(dest any, op ComparisonOperator) (TargetRule, bool) {
 		if matchTKW(tv.Keyword().String()) == TargetKeyword(0x0) {
 			return badTargetRule, false
 		}
-
-		// initialize our BindRule condition
-		// with the needed keyword, operator
-		// and DN values
-		t.SetKeyword(tv.Keyword().String())
-		t.SetOperator(op)
-		t.SetExpression(tv)
+		t = TR(tv.Keyword(), op, tv)
 
 	default:
 		return badTargetRule, false
 	}
 
-	// Cast to a stackage.Condition momentarily
-	// just so we can run some needed methods
-	// that are not exported due to a desire for
-	// pkg simplicity.
-	_t := castAsCondition(t).
-		Encap(`"`).
-		Paren(true).
-		SetID(targetRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(t.Category())
-
-	return TargetRule(*_t), true
+	return t, true
 }
 
 /*
@@ -1590,11 +1545,15 @@ uDNPushPolicy is a private function that conforms to go-stackage's
 PushPolicy interface signature. This is called during Push attempts
 to a stack containing BindRule userdn distinguished name instances.
 */
-func (r BindDistinguishedNames) uDNPushPolicy(x any) error {
-	if r.contains(x) {
-		return pushErrorNotUnique(r, x, r.Keyword())
+func (r BindDistinguishedNames) uDNPushPolicy(x ...any) error {
+	if len(x) == 0 {
+		return nil
 	}
-	return distinguishedNamesPushPolicy(r, x, BindUDN)
+
+	if r.contains(x[0]) {
+		return pushErrorNotUnique(r, x[0], r.Keyword())
+	}
+	return distinguishedNamesPushPolicy(r, x[0], BindUDN)
 }
 
 /*
@@ -1602,11 +1561,15 @@ gDNPushPolicy is a private function that conforms to go-stackage's
 PushPolicy interface signature. This is called during Push attempts
 to a stack containing BindRule groupdn distinguished name instances.
 */
-func (r BindDistinguishedNames) gDNPushPolicy(x any) error {
-	if r.contains(x) {
-		return pushErrorNotUnique(r, x, r.Keyword())
+func (r BindDistinguishedNames) gDNPushPolicy(x ...any) error {
+	if len(x) == 0 {
+		return nil
 	}
-	return distinguishedNamesPushPolicy(r, x, BindGDN)
+
+	if r.contains(x[0]) {
+		return pushErrorNotUnique(r, x[0], r.Keyword())
+	}
+	return distinguishedNamesPushPolicy(r, x[0], BindGDN)
 }
 
 /*
@@ -1614,11 +1577,15 @@ rDNPushPolicy is a private function that conforms to go-stackage's
 PushPolicy interface signature. This is called during Push attempts
 to a stack containing BindRule roledn distinguished name instances.
 */
-func (r BindDistinguishedNames) rDNPushPolicy(x any) error {
-	if r.contains(x) {
-		return pushErrorNotUnique(r, x, r.Keyword())
+func (r BindDistinguishedNames) rDNPushPolicy(x ...any) error {
+	if len(x) == 0 {
+		return nil
 	}
-	return distinguishedNamesPushPolicy(r, x, BindRDN)
+
+	if r.contains(x[0]) {
+		return pushErrorNotUnique(r, x[0], r.Keyword())
+	}
+	return distinguishedNamesPushPolicy(r, x[0], BindRDN)
 }
 
 /*
@@ -1626,11 +1593,15 @@ tToDNPushPolicy is a private function that conforms to go-stackage's
 PushPolicy interface signature. This is called during Push attempts
 to a stack containing TargetRule target_to distinguished name instances.
 */
-func (r TargetDistinguishedNames) tToDNPushPolicy(x any) error {
-	if r.contains(x) {
-		return pushErrorNotUnique(r, x, r.Keyword())
+func (r TargetDistinguishedNames) tToDNPushPolicy(x ...any) error {
+	if len(x) == 0 {
+		return nil
 	}
-	return distinguishedNamesPushPolicy(r, x, TargetTo)
+
+	if r.contains(x[0]) {
+		return pushErrorNotUnique(r, x[0], r.Keyword())
+	}
+	return distinguishedNamesPushPolicy(r, x[0], TargetTo)
 }
 
 /*
@@ -1638,11 +1609,15 @@ tFromDNPushPolicy is a private function that conforms to go-stackage's
 PushPolicy interface signature. This is called during Push attempts to
 a stack containing TargetRule target_from distinguished name instances.
 */
-func (r TargetDistinguishedNames) tFromDNPushPolicy(x any) error {
-	if r.contains(x) {
-		return pushErrorNotUnique(r, x, r.Keyword())
+func (r TargetDistinguishedNames) tFromDNPushPolicy(x ...any) error {
+	if len(x) == 0 {
+		return nil
 	}
-	return distinguishedNamesPushPolicy(r, x, TargetFrom)
+
+	if r.contains(x[0]) {
+		return pushErrorNotUnique(r, x[0], r.Keyword())
+	}
+	return distinguishedNamesPushPolicy(r, x[0], TargetFrom)
 }
 
 /*
@@ -1650,11 +1625,15 @@ tDNPushPolicy is a private function that conforms to go-stackage's PushPolicy
 interface signature. This is called during Push attempts to a stack containing
 TargetRule target distinguished name instances.
 */
-func (r TargetDistinguishedNames) tDNPushPolicy(x any) error {
-	if r.contains(x) {
-		return pushErrorNotUnique(r, x, r.Keyword())
+func (r TargetDistinguishedNames) tDNPushPolicy(x ...any) error {
+	if len(x) == 0 {
+		return nil
 	}
-	return distinguishedNamesPushPolicy(r, x, Target)
+
+	if r.contains(x[0]) {
+		return pushErrorNotUnique(r, x[0], r.Keyword())
+	}
+	return distinguishedNamesPushPolicy(r, x[0], Target)
 }
 
 /*
