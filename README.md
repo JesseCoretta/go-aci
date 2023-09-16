@@ -79,11 +79,6 @@ particular X.500/LDAP DSA[^6] implementation; check the docs and always listen t
 [^5]: (ASN.1) Object Identifier
 [^6]: Directory System Agent, i.e.: your LDAP server(s)
 
-## License
-
-The aci (go-aci) package, from [`go-aci`](http://github.com/JesseCoretta/go-aci), is available under the terms of the MIT
-license. For further details, see the LICENSE file within the aforementioned repository.
-
 # Features
 
 - Intuitive
