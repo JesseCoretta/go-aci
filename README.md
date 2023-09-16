@@ -17,8 +17,7 @@ Package aci implements the complete ACIv3 syntax in a vendor-agnostic manner wit
 Current state is EXPERIMENTAL!
 
 This package is in its early stages, and is undergoing active development. It should NOT be used in any production capacity at this time.
-capacity at this time. At the moment, this package is primarily intended for R&D, PoCs and other scenarios in which risk
-is minimal or nonexistent.
+At the moment, this package is primarily intended for R&D, PoCs and other scenarios in which risk is minimal or nonexistent.
 
 If and when the version reaches 1.0.0, it shall no longer be considered experimental.
 
