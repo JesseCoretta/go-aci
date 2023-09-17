@@ -153,16 +153,6 @@ func (r SecurityStrengthFactor) Keyword() Keyword {
 }
 
 /*
-value is a private method that returns uint8 + 1, or 0 if uint8 is nil.
-*/
-func (r SecurityStrengthFactor) value() int {
-	if r.isZero() {
-		return 0
-	}
-	return int(*(r.ssf.uint8)) + 1 // offset for 256 max.
-}
-
-/*
 IsZero returns a Boolean value indicative of whether the receiver is
 nil, or unset.
 */
@@ -186,10 +176,6 @@ Eq initializes and returns a new BindRule instance configured to express the
 evaluation of the receiver value as Equal-To the `ssf` Bind keyword context.
 */
 func (r SecurityStrengthFactor) Eq() BindRule {
-	if err := r.Valid(); err != nil {
-		printf("BADDDDD\n")
-		return badBindRule
-	}
 	return BR(BindSSF, Eq, r)
 }
 
@@ -201,9 +187,6 @@ context.
 Negated equality BindRule instances should be used with caution.
 */
 func (r SecurityStrengthFactor) Ne() BindRule {
-	if err := r.Valid(); err != nil {
-		return badBindRule
-	}
 	return BR(BindSSF, Ne, r)
 }
 
@@ -212,9 +195,6 @@ Lt initializes and returns a new BindRule instance configured to express the
 evaluation of the receiver value as Less-Than the `ssf` Bind keyword context.
 */
 func (r SecurityStrengthFactor) Lt() BindRule {
-	if err := r.Valid(); err != nil {
-		return badBindRule
-	}
 	return BR(BindSSF, Lt, r)
 }
 
@@ -224,9 +204,6 @@ evaluation of the receiver value as Less-Than-Or-Equal to the `ssf` Bind
 keyword context.
 */
 func (r SecurityStrengthFactor) Le() BindRule {
-	if err := r.Valid(); err != nil {
-		return badBindRule
-	}
 	return BR(BindSSF, Le, r)
 }
 
@@ -236,9 +213,6 @@ evaluation of the receiver value as Greater-Than the `ssf` Bind keyword
 context.
 */
 func (r SecurityStrengthFactor) Gt() BindRule {
-	if err := r.Valid(); err != nil {
-		return badBindRule
-	}
 	return BR(BindSSF, Gt, r)
 }
 
@@ -248,9 +222,6 @@ evaluation of the receiver value as Greater-Than-Or-Equal to the `ssf` Bind
 keyword context.
 */
 func (r SecurityStrengthFactor) Ge() BindRule {
-	if err := r.Valid(); err != nil {
-		return badBindRule
-	}
 	return BR(BindSSF, Ge, r)
 }
 
@@ -303,9 +274,17 @@ func (r SecurityStrengthFactor) Compare(x any) bool {
 	return compareHashInstance(r, x)
 }
 
-func (r SecurityStrengthFactor) Valid() (err error) {
-	return // TODO: Is USELESS ... make sure it can't be improved
-}
+/*
+Valid returns nil and, at present, does nothing else. Based on the efficient
+design of the receiver type, there is no possible state that is technically
+invalid at ALL times. A nil instance may, in fact, be correct in particular
+situations.
+
+Thus as there is no room for unforeseen errors with regards to this type
+specifically, this method has been gutted but remains present merely for
+the purpose of signature consistency throughout the package.
+*/
+func (r SecurityStrengthFactor) Valid() error { return nil }
 
 func (r SecurityStrengthFactor) clear() {
 	if r.ssf.isZero() {

@@ -47,6 +47,7 @@ func TestSecurityStrengthFactor(t *testing.T) {
 				return
 			}
 		}
+		factor.clear() // codecov
 
 	}
 
@@ -62,6 +63,24 @@ func TestSecurityStrengthFactor(t *testing.T) {
 		if got := factor.Set(word); got.String() != value {
 			err = unexpectedStringResult(typ, value, got.String())
 			t.Errorf("%s failed [factor word '%s']: %v", t.Name(), word, err)
+			return
+		}
+	}
+}
+
+func TestAuthenticationMethod(t *testing.T) {
+	// codecov
+	_ = noAuth.Eq()
+	_ = noAuth.Ne()
+
+	for idx, auth := range authMap {
+		if matchAuthenticationMethod(idx) == noAuth {
+			t.Errorf("%s failed: unable to match auth method by index (%d)",
+				t.Name(), idx)
+			return
+		} else if matchAuthenticationMethod(auth.String()) == noAuth {
+			t.Errorf("%s failed: unable to match auth method by string (%s)",
+				t.Name(), auth.String())
 			return
 		}
 	}
