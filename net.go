@@ -1,7 +1,5 @@
 package aci
 
-//import "fmt"
-
 /*
 net.go contains types, methods and constants that relate to the
 use of IP addresses and DNS names within Bind Rules.
