@@ -65,6 +65,7 @@ func TestTargetKeyword_Set_targetScope(t *testing.T) {
 func TestTargetRule_bogus(t *testing.T) {
 	var tr TargetRule
 	_ = tr.ID()
+	_ = tr.Len()
 	_ = tr.Kind()
 	_ = tr.NoPadding()
 	_ = tr.Category()
@@ -74,6 +75,21 @@ func TestTargetRule_bogus(t *testing.T) {
 	_ = tr.Expression()
 	_ = tr.Keyword()
 	_ = tr.String()
+	_ = tr.SetExpression(`hello`)
+	_ = tr.SetExpression(nil)
+
+	tr.Init()
+	tr.SetKeyword(BindUDN) // wrong class of kw
+
+	if err := tr.Valid(); err == nil {
+		t.Errorf("%s failed: no error where one should be (bogus kw set for TR)",
+			t.Name())
+		return
+	}
+
+	tr.SetOperator('𝝅')
+	tr.SetOperator(`hello`)
+	tr.SetOperator(`=`)
 }
 
 // mainly this exists to satisfy codecov, but also
@@ -90,6 +106,13 @@ func TestTargetRules_bogus(t *testing.T) {
 	_ = tr.Pop()
 	_ = tr.Index(100)
 	_ = tr.remove(14)
+	tr = TRs()
+	tr.NoPadding()
+	_ = tr.Push()
+	_ = tr.Push(nil, nil)
+	_ = tr.Push(TargetRule{})
+	_ = tr.Push('𝝅')
+	tr.Push(TDN(`uid=jesse,ou=People,dc=example,dc=com`).Eq())
 	tr.reset()
 }
 

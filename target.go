@@ -307,6 +307,9 @@ func (r TargetRule) Valid() (err error) {
 	_t := castAsCondition(r)
 
 	if !keywordAllowsComparisonOperator(_t.Keyword(), _t.Operator()) {
+		err = badPTBRuleKeywordErr(
+			_t, `target`, `target_keyword`,
+			_t.Keyword())
 		return
 	}
 	err = _t.Valid()
@@ -435,25 +438,16 @@ func (r TargetRule) SetQuoteStyle(style int) TargetRule {
 		switch key {
 		case Target, TargetTo, TargetFrom:
 			tv.setQuoteStyle(style)
-		default:
-			castAsCondition(r).Encap(`"`)
-			return r
 		}
 	case AttributeTypes:
 		switch key {
 		case TargetAttr:
 			tv.setQuoteStyle(style)
-		default:
-			castAsCondition(r).Encap(`"`)
-			return r
 		}
 	case ObjectIdentifiers:
 		switch key {
 		case TargetExtOp, TargetCtrl:
 			tv.setQuoteStyle(style)
-		default:
-			castAsCondition(r).Encap(`"`)
-			return r
 		}
 	default:
 		castAsCondition(r).Encap(`"`)
