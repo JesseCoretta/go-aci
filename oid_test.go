@@ -15,6 +15,15 @@ func TestObjectIdentifiers_codecov(t *testing.T) {
 		TargetExtOp: ExtOps,
 	} {
 		var Oids ObjectIdentifiers
+		_ = Oids.Ne()
+		_ = Oids.Eq()
+
+		_ = objectIdentifiersPushPolicy(Oids, ``, keyword)
+		_ = objectIdentifiersPushPolicy(Oids, nil, keyword)
+		_ = objectIdentifiersPushPolicy(Oids, float64(1), keyword)
+		_ = objectIdentifiersPushPolicy(Oids, BindUDN, keyword)
+		_ = objectIdentifiersPushPolicy(Oids, keyword, keyword)
+		_ = objectIdentifiersPushPolicy(Oids, `hello`, keyword)
 
 		_ = Oids.Len()
 		Oids.reset()
@@ -36,6 +45,13 @@ func TestObjectIdentifiers_codecov(t *testing.T) {
 
 		Oids = Oidsfn() // init
 		_ = Oids.Len()
+		_ = objectIdentifiersPushPolicy(Oids, ``, keyword)
+		_ = objectIdentifiersPushPolicy(Oids, nil, keyword)
+		_ = objectIdentifiersPushPolicy(Oids, BindUDN, keyword)
+		_ = objectIdentifiersPushPolicy(Oids, keyword, keyword)
+		_ = objectIdentifiersPushPolicy(Oids, float64(1), keyword)
+		_ = objectIdentifiersPushPolicy(Oids, `hello`, keyword)
+
 		Oids.reset()
 		Oids.resetKeyword(keyword)
 		Oids.resetKeyword(keyword.String())
