@@ -25,7 +25,7 @@ This package depends upon the following official (built-in) Go packages:
   - [`time`](https://pkg.go.dev/time)
   - [`unicode`](https://pkg.go.dev/unicode)
 
-This package depends upon the following third party packages:
+This package depends upon the following third-party packages:
 
   - [`go-antlraci`](https://github.com/JesseCoretta/go-antlraci)\*
   - [`go-objectid`](https://github.com/JesseCoretta/go-objectid)\*
@@ -102,7 +102,7 @@ particular X.500/LDAP DSA[^6] implementation; check the docs and always listen t
       - `Instruction`
       - `Instructions`
   - Memory usage was given particular consideration during the initial design phase
-    - Certain values, such as an SSF[^7] level, were designed to fit (_completely!_) inside a single byte instance, regardless of the effective value
+    - Certain values, such as an [**SSF**](## "Security Strength Factor") level, were designed to fit (_completely!_) inside a single byte instance, regardless of the effective value
     - All numerical types utilize only the smallest possible primitive numeral type (e.g.: `uint8`, `uint16`) to suit its needs; never too much, and never too little!
     - Embedded pointer references are leveraged __centrally__ throughout this package; storage of unneeded string literals is avoided wherever possible
   - A package-wide cyclomatic complexity factor limit of nine (9) is imposed
@@ -122,24 +122,54 @@ particular X.500/LDAP DSA[^6] implementation; check the docs and always listen t
   - Fluent-style "method chaining" is supported, but not required
   - Most values can be assigned and set 'piecemeal', or in an 'all-in-one-shot' context
 
-[^7]: Security Strength Factor, which represents a numerical abstract (0-256) based upon the perceived level of confidentiality
-employed by the request in question
+## Parsing vs. Assembly
 
-## Marshaling and Unmarshaling
+This package imports an ANTLR4[^7] parsing subsystem to facilitate the "conversion" of ACI textual definitions into proper type instances.
+This functionality is provided by the [`go-antlraci`](https://github.com/JesseCoretta/go-antlraci) package.
 
-This package (internally) implements an ANTLR4[^8] parsing subsystem to facilitate the marshaling of ACI textual definitions, but
-also allows all value types to be built or assembled _without_ the use of textual ACIv3 syntax expression.
+The parser reads the user-provided textual expression, processes the components and generates a proper instance of the package-provided type.
 
-Within the terms of this package, marshaling (parsing) is defined through a process that reads the user-provided textual expression,
-parses the components and generates a proper instance of the package-provided type.
+For example, this is a basic parse operation in which an abstract SSF context is evaluated as greater than or equal to an SSF value of 128.
+This expression is to be converted into an instance of BindRule.
 
-Conversely, unmarshaling (or "string representation") is defined through a process that generates a textual ACI definition based upon
-the contents of a preexisting type instance, usually a receiver. This type instance may have been created through parsing, or it may
-have been assembled manually by the user.
+```
+// raw textual expression
+raw := `ssf >= "128"`
 
-When combined, these two complementary -- yet opposite -- contexts offer a reliable, fully bidirectional solution.
+// create variable for our
+// new BindRule
+var br BindRule
 
-[^8]: ANother Tool for Language Recognition, Version 4 (www.antlr.org)
+// Parse the above raw variable using
+// your BindRule instance's Parse
+// method ...
+if err := br.Parse(raw); err != nil {
+	fmt.Println(err) // always check your parser errors
+	return
+}
+```
+
+On the other hand, one need not limit their activities to "parsing of textual expressions"; one can also assemble various expressive object
+instances and input only the specific values needed.
+
+For example, this is a basic assembly operation that mirrors the outcome of the above:
+
+```
+// Create our SSF instance
+obj := SSF(128)
+
+// Use object's Ge (Greater Than Or Equal)
+// method to create a new BindRule instance
+
+br := obj.Ge()
+```
+
+Which technique is "better" depends on the use-case. For individuals writing ACIs themselves, the "assembly" option may seem more appropriate.
+
+Then again, the same sentiment may not apply to situations in which there are no individuals, and the process is wholly automated: the "parsing"
+option may be far more appealing.
+
+[^7]: ANother Tool for Language Recognition, Version 4 (www.antlr.org)
 
 ## Potential Use Cases
 
@@ -150,9 +180,9 @@ This package could conceivably be used in any of the following scenarios:
 - For Directory personnel who desire a means to author and/or manage sets of ACIs in a more programmatic / automated manner, perhaps
 with the aid of a templating system
 - For use as an access control framework within an actual (Go-based) Directory System Agent implementation that honors the ACI syntax
-- For generalized experimentation within the realm of DSA access control design and even PEN[^9] testing
+- For generalized experimentation within the realm of DSA access control design and even PEN[^8] testing
 
-[^9]: PENetration Testing
+[^8]: PENetration Testing
 
 ## Limitations
 
@@ -210,7 +240,7 @@ building statements that reference a multi-valued expression:
 
 In particular, these sorts of quotation schemes appear in the following scenarios:
 
-- `targetattr` TargetRules for lists of LDAP ATs[^10]
+- `targetattr` TargetRules for lists of LDAP ATs[^9]
 - `target`, `target_to` and `target_from` TargetRule DNs
 - `userdn` and `groupdn` BindRule DNs
 - `extop` and `targetcontrol` TargetRule OIDs
@@ -219,7 +249,7 @@ Users are advised to honor the quotation scheme recommended by their vendor or p
 support either of the above schemes with no variance in the end result, but has no official position as to which of these
 schemes should be honored by the user except that quotation should always be used _in some form_.
 
-[^10]: (LDAP) AttributeTypes
+[^9]: (LDAP) AttributeTypes
 
 ## Contribution Encouraged
 
@@ -251,8 +281,8 @@ By now, it is likely obvious this package aims to provide everything one could p
 not discriminate ACIs that may be overtly "broad" in their influence or entry-matching potential.
 
 One such example of this is careless use of the negated equality operator (`!=`), which (when used improperly) can disclose myriad attribute
-values unintentionally. This particular case is well-documented in vendor manuals for supporting directory products (likely for legal CYA[^11]
+values unintentionally. This particular case is well-documented in vendor manuals for supporting directory products (likely for legal CYA[^10]
 reasons). Users are advised to LEARN the syntax well enough to know when to take such risks.
 
-[^11]: Cover Your ~~_REDACTED_~~ **Gluteus Maximus**
+[^10]: Cover Your ~~_REDACTED_~~ **Gluteus Maximus**
 
