@@ -313,23 +313,30 @@ func compareHashInstance(r, x any) bool {
 hashInstance is a private function called by the Hash package
 level function. It uses crypto/sha1 to compute a hash value
 derived from the string representation of input value x, (in
-the event it possesses its own String method)
+the event it possesses its own String method, or if the value
+itself is a string).
 
 A string representation of the hash value alongside an error
 instance are returned.
 */
 func hashInstance(x any) (s string, err error) {
-	meth := getStringFunc(x)
-	if meth == nil {
-		err = errorf("%T instance has no String method; cannot compute hash", x)
-		return
+	var _s string
+	switch tv := x.(type) {
+	case string:
+		_s = tv
+	default:
+		meth := getStringFunc(x)
+		if meth == nil {
+			err = errorf("%T instance has no String method; cannot compute hash", x)
+			return
+		}
+
+		if _s = meth(); len(_s) == 0 {
+			err = errorf("%T instance produced a zero length string, cannot compute hash", x)
+			return
+		}
 	}
 
-	_s := meth()
-	if len(_s) == 0 {
-		err = errorf("%T instance produced a zero length string, cannot compute hash", x)
-		return
-	}
 	s = uc(sprintf("%x", sha1.Sum([]byte(_s))))
 
 	return
