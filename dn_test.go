@@ -58,6 +58,7 @@ func TestBindDistinguishedName_codecov(t *testing.T) {
 
 			O.Set(`159`)
 			O.Set(``)
+			_ = O.Valid()
 			O.Set(`uid=jesse,ou=People,dc=example,dc=com`, kw)
 
 			// try every comparison operator supported in
@@ -126,6 +127,7 @@ func TestTargetDistinguishedName_codecov(t *testing.T) {
 
 			O.Set(`159`)
 			O.Set(``)
+			_ = O.Valid()
 			O.Set(`#barf`, kw)
 
 			// DNs qualify for equality and negated equality
