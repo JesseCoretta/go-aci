@@ -848,3 +848,53 @@ func ExampleInstruction_Parse() {
 	fmt.Printf("%s", ins)
 	// Output: ( target = "ldap:///uid=*,ou=People,dc=example,dc=com" )(version 3.0; acl "Limit people access to timeframe"; allow(read,search,compare) ( timeofday >= "1730" AND timeofday < "2400" );)
 }
+
+/*
+This example demonstrates the parsing of a single BindRule condition.
+
+A textual Bind Keyword, an appropriate ComparisonOperator as well as
+an appropriate expression value are submitted through the ParseBindRule
+package-level function, which in turn calls a similarly named antlraci
+function through which parsing is delegated.
+*/
+func ExampleParseBindRule() {
+	raw := `( userdn = "ldap:///cn=Jesse Coretta,ou=People,dc=example,dc=com" || "ldap:///cn=Courtney Tolana,ou=People,dc=example,dc=com" )`
+	br, err := ParseBindRule(raw)
+	if err != nil {
+		fmt.Println(err) // always check your parser errors
+		return
+	}
+	fmt.Printf("%T is parenthetical: %t", br, br.IsParen())
+	// Output: aci.BindRule is parenthetical: true
+}
+
+/*
+This example demonstrates the parsing of a TargetRules expressive statement
+containing multiple TargetRule conditions.
+*/
+func ExampleTargetRules_Parse() {
+	raw := `( targetscope="base" )(targetfilter="(&(objectClass=employee)(status=terminated))")(targetattr != "aci")"`
+	var trs TargetRules
+	if err := trs.Parse(raw); err != nil {
+		fmt.Println(err) // always check your parser errors
+		return
+	}
+
+	fmt.Printf("%s", trs.Index(1))
+	// Output: ( targetfilter = "(&(objectClass=employee)(status=terminated))" )
+}
+
+/*
+This example demonstrates the parsing of a single TargetRule condition.
+*/
+func ExampleTargetRule_Parse() {
+	raw := `(targetattr != "aci")"`
+	var tr TargetRule
+	if err := tr.Parse(raw); err != nil {
+		fmt.Println(err) // always check your parser errors
+		return
+	}
+
+	fmt.Printf("%s", tr.Expression())
+	// Output: aci
+}

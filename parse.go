@@ -9,9 +9,10 @@ import (
 )
 
 /*
-ParseBindRule returns an instance of Condition alongside an error instance.
+ParseBindRule returns an instance of BindRule alongside an error instance.
 
-The returned Condition instance shall contain
+This function calls the imported antlraci.ParseBindRule function, delegating
+parsing responsibilities there.
 */
 func ParseBindRule(raw string) (BindRule, error) {
 	return parseBindRule(raw)
@@ -33,16 +34,25 @@ func parseBindRule(raw string) (BindRule, error) {
 }
 
 /*
-ParseBindRules returns an instance of BindRules alongside an error
-instance.
-
-The returned instance shall contain a complete hierarchical stack
-structure that represents the abstract rule (raw) input by the user.
+ParseBindRules returns an instance of BindContext alongside an error
+instance. BindContext may represent either a BindRule or BindRules
+instance, depending on that which was parsed.
 */
 func ParseBindRules(raw string) (BindContext, error) {
 	return parseBindRules(raw)
 }
 
+/*
+Parse returns an error based upon an attempt to parse the raw input
+value into the receiver instance. If successful, any contents within
+the receiver instance would be obliterated, replaced irrevocably by
+the freshly parsed values.
+
+Both this method, and the package-level ParseBindRule function, call
+antlraci's ParseBindRule function in similar fashion. The only real
+difference here is the process of writing to a receiver, versus writing
+to an uninitialized variable declaration.
+*/
 func (r *BindRules) Parse(raw string) error {
 	_r, err := parseBindRules(raw)
 	if err != nil {
@@ -59,6 +69,11 @@ func (r *BindRules) Parse(raw string) error {
 	return nil
 }
 
+/*
+parseBindRules communicates with the backend parser (antlraci)
+package for the purpose of parsing an instance of BindRules,
+which is returned alongside an error.
+*/
 func parseBindRules(raw string) (BindContext, error) {
 	// In case the input has bizarre
 	// contiguous whsp, etc., remove
@@ -390,7 +405,51 @@ returned alongside an error upon completion of processing.
 */
 func parseTargetRule(raw string) (TargetRule, error) {
 	_t, err := parser.ParseTargetRule(raw)
-	return TargetRule(_t), err
+	t := TargetRule(_t)
+	t.assertExpressionValue()
+	return t, err
+}
+
+/*
+Parse returns an error based upon an attempt to parse the raw input
+value into the receiver instance. If successful, any contents within
+the receiver instance would be obliterated, replaced irrevocably by
+the freshly parsed values.
+
+Both this method, and the package-level ParseTargetRule function,
+call antlraci's ParseTargetRule function in similar fashion. The only
+real difference here is the process of writing to a receiver, versus
+writing to an uninitialized variable declaration.
+*/
+func (r *TargetRule) Parse(raw string) error {
+	_r, err := parseTargetRule(raw)
+	if err != nil {
+		return err
+	}
+	*r = _r
+
+	return nil
+}
+
+/*
+Parse returns an error based upon an attempt to parse the raw input
+value into the receiver instance. If successful, any contents within
+the receiver instance would be obliterated, replaced irrevocably by
+the freshly parsed values.
+
+Both this method, and the package-level ParseTargetRules function,
+call antlraci's ParseTargetRules function in similar fashion. The only
+real difference here is the process of writing to a receiver, versus
+writing to an uninitialized variable declaration.
+*/
+func (r *TargetRules) Parse(raw string) error {
+	_r, err := parseTargetRules(raw)
+	if err != nil {
+		return err
+	}
+	*r = _r
+
+	return nil
 }
 
 /*
@@ -482,7 +541,7 @@ with a proper value-appropriate type defined within the go-aci package.
 
 An error is returned upon processing completion.
 */
-func (r TargetRule) assertExpressionValue() (err error) {
+func (r *TargetRule) assertExpressionValue() (err error) {
 	// grab the raw value from the receiver. If it is
 	// NOT an instance of parser.RuleExpression, then
 	// bail out.

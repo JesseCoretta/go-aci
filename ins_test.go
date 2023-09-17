@@ -211,3 +211,260 @@ func ExampleACIs() {
 	fmt.Printf("%T contains %d Instruction instances", acis, acis.Len())
 	// Output: aci.Instructions contains 2 Instruction instances
 }
+
+/*
+This example demonstrates use of the ACI package-level function. An instance
+of Instruction is created using manually assembled type instances.
+*/
+func ExampleACI() {
+	t := TDN(`uid=*,ou=People,dc=example,dc=com`).Eq()
+	tgt := TRs().Push(t)
+
+	userat := UAT(
+		AT(`ninja`),
+		AV(`FALSE`),
+	)
+
+	ors := Or().Paren().Push(
+		UDN(`uid=jesse,ou=admin,dc=example,dc=com`).Eq(),
+		UDN(`uid=courtney,ou=admin,dc=example,dc=com`).Eq(),
+	)
+
+	nots := Not().Paren().Push(userat.Eq())
+	brule := And().Paren().Push(
+		Timeframe(
+			ToD(`1730`),
+			ToD(`2400`),
+		).Paren(),
+		ors,
+		nots,
+	)
+
+	perms := Allow(
+		ReadAccess,
+		SearchAccess,
+		CompareAccess,
+	)
+
+	pbr := PBR(perms, brule)
+	acl := `Limit people access to timeframe`
+
+	var i Instruction
+	i.Set(acl, tgt, pbr)
+
+	fmt.Printf("%s", i)
+	// Output: ( target = "ldap:///uid=*,ou=People,dc=example,dc=com" )(version 3.0; acl "Limit people access to timeframe"; allow(read,search,compare) ( ( timeofday >= "1730" AND timeofday < "2400" ) AND ( userdn = "ldap:///uid=jesse,ou=admin,dc=example,dc=com" OR userdn = "ldap:///uid=courtney,ou=admin,dc=example,dc=com" ) AND NOT ( userattr = "ninja#FALSE" ) );)
+}
+
+func ExampleInstruction_String() {
+	t := TDN(`uid=*,ou=People,dc=example,dc=com`).Eq()
+	tgt := TRs().Push(t)
+
+	userat := UAT(AT(`ninja`), AV(`FALSE`))
+	ors := Or().Paren().Push(
+		UDN(`uid=jesse,ou=admin,dc=example,dc=com`).Eq(),
+		UDN(`uid=courtney,ou=admin,dc=example,dc=com`).Eq(),
+	)
+	nots := Not().Paren().Push(userat.Eq())
+	brule := And().Paren().Push(
+		Timeframe(
+			ToD(`1730`),
+			ToD(`2400`),
+		).Paren(),
+		ors,
+		nots,
+	)
+
+	perms := Allow(
+		ReadAccess,
+		SearchAccess,
+		CompareAccess,
+	)
+
+	pbr := PBR(perms, brule)
+	acl := `Limit people access to timeframe`
+
+	var i Instruction
+	i.Set(acl, tgt, pbr)
+
+	fmt.Printf("%s", i)
+	// Output: ( target = "ldap:///uid=*,ou=People,dc=example,dc=com" )(version 3.0; acl "Limit people access to timeframe"; allow(read,search,compare) ( ( timeofday >= "1730" AND timeofday < "2400" ) AND ( userdn = "ldap:///uid=jesse,ou=admin,dc=example,dc=com" OR userdn = "ldap:///uid=courtney,ou=admin,dc=example,dc=com" ) AND NOT ( userattr = "ninja#FALSE" ) );)
+}
+
+func ExampleInstruction_TRs() {
+	t := TDN(`uid=*,ou=People,dc=example,dc=com`).Eq()
+	tgt := TRs().Push(t)
+
+	userat := UAT(AT(`ninja`), AV(`FALSE`))
+	ors := Or().Paren().Push(
+		UDN(`uid=jesse,ou=admin,dc=example,dc=com`).Eq(),
+		UDN(`uid=courtney,ou=admin,dc=example,dc=com`).Eq(),
+	)
+	nots := Not().Paren().Push(userat.Eq())
+	brule := And().Paren().Push(
+		Timeframe(
+			ToD(`1730`),
+			ToD(`2400`),
+		).Paren(),
+		ors,
+		nots,
+	)
+
+	perms := Allow(
+		ReadAccess,
+		SearchAccess,
+		CompareAccess,
+	)
+
+	pbr := PBR(perms, brule)
+	acl := `Limit people access to timeframe`
+
+	var i Instruction
+	i.Set(acl, tgt, pbr)
+
+	fmt.Printf("%s", i.TRs())
+	// Output: ( target = "ldap:///uid=*,ou=People,dc=example,dc=com" )
+}
+
+func ExampleInstruction_PBRs() {
+	t := TDN(`uid=*,ou=People,dc=example,dc=com`).Eq()
+	tgt := TRs().Push(t)
+
+	userat := UAT(AT(`ninja`), AV(`FALSE`))
+	ors := Or().Paren().Push(
+		UDN(`uid=jesse,ou=admin,dc=example,dc=com`).Eq(),
+		UDN(`uid=courtney,ou=admin,dc=example,dc=com`).Eq(),
+	)
+	nots := Not().Paren().Push(userat.Eq())
+	brule := And().Paren().Push(
+		Timeframe(
+			ToD(`1730`),
+			ToD(`2400`),
+		).Paren(),
+		ors,
+		nots,
+	)
+
+	perms := Allow(
+		ReadAccess,
+		SearchAccess,
+		CompareAccess,
+	)
+
+	pbr := PBR(perms, brule)
+	acl := `Limit people access to timeframe`
+
+	var i Instruction
+	i.Set(acl, tgt, pbr)
+
+	fmt.Printf("%s", i.PBRs())
+	// Output: allow(read,search,compare) ( ( timeofday >= "1730" AND timeofday < "2400" ) AND ( userdn = "ldap:///uid=jesse,ou=admin,dc=example,dc=com" OR userdn = "ldap:///uid=courtney,ou=admin,dc=example,dc=com" ) AND NOT ( userattr = "ninja#FALSE" ) );
+}
+
+func ExampleInstruction_ACL() {
+	var i Instruction
+	acl := `This is an access control label`
+	i.Set(acl)
+	fmt.Printf("%s", i.ACL())
+	// Output: This is an access control label
+}
+
+func ExampleInstruction_IsZero() {
+	var i Instruction
+	fmt.Printf("Zero: %t", i.IsZero())
+	// Output: Zero: true
+}
+
+func ExampleInstruction_Valid() {
+	var i Instruction
+	fmt.Printf("Valid: %t", i.Valid() == nil)
+	// Output: Valid: false
+}
+
+func ExampleInstruction_Set() {
+	var i Instruction
+	acl := `This is an access control label`
+	i.Set(acl)
+	fmt.Printf("%s", i.ACL())
+	// Output: This is an access control label
+}
+
+func ExampleInstructions_IsZero() {
+	var i Instructions
+	fmt.Printf("Zero: %t", i.IsZero())
+	// Output: Zero: true
+}
+
+func ExampleInstructions_Len() {
+	var i Instructions
+	fmt.Printf("Length: %d", i.Len())
+	// Output: Length: 0
+}
+
+func ExampleInstructions_Valid() {
+	var i Instructions
+	fmt.Printf("Valid: %t", i.Valid() == nil)
+	// Output: Valid: false
+}
+
+func ExampleInstructions_Pop() {
+	raw := []string{
+		`( target = "ldap:///uid=*,ou=People,dc=example,dc=com" )(version 3.0; acl "Limit people access to timeframe"; allow(read,search,compare) ( timeofday >= "1730" AND timeofday < "2400" );)`,
+		`( targetfilter = "(&(objectClass=employee)(objectClass=engineering))" )( targetcontrol = "1.2.3.4" || "5.6.7.8" )( targetscope = "onelevel" )(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF - extra nesting"; allow(read,write) ( ( ( userdn = "ldap:///anyone" ) AND ( ssf >= "71" ) ) AND NOT ( dayofweek = "Wed" OR dayofweek = "Fri" ) ); deny(proxy,selfwrite) ( userdn = "ldap:///all" );)`,
+	}
+
+	ins := ACIs()
+	for i := 0; i < len(raw); i++ {
+		ins.Push(raw[i])
+	}
+
+	popped := ins.Pop()
+	fmt.Printf("%s", popped)
+	// Output: ( targetfilter = "(&(objectClass=employee)(objectClass=engineering))" )( targetcontrol = "1.2.3.4" || "5.6.7.8" )( targetscope = "onelevel" )(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF - extra nesting"; allow(read,write) ( ( ( userdn = "ldap:///anyone" ) AND ( ssf >= "71" ) ) AND NOT ( dayofweek = "Wed" OR dayofweek = "Fri" ) ); deny(selfwrite,proxy) ( userdn = "ldap:///all" );)
+}
+
+func ExampleInstructions_Push() {
+	raw := []string{
+		`( target = "ldap:///uid=*,ou=People,dc=example,dc=com" )(version 3.0; acl "Limit people access to timeframe"; allow(read,search,compare) ( timeofday >= "1730" AND timeofday < "2400" ); )`,
+		`( targetfilter = "(&(objectClass=employee)(objectClass=engineering))" )( targetcontrol = "1.2.3.4" || "5.6.7.8" )( targetscope = "onelevel" )(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF - extra nesting"; allow(read,write) ( ( ( userdn = "ldap:///anyone" ) AND ( ssf >= "71" ) ) AND NOT ( dayofweek = "Wed" OR dayofweek = "Fri" ) ); deny(proxy,selfwrite) ( userdn = "ldap:///all" ); )`,
+	}
+
+	ins := ACIs()
+	for i := 0; i < len(raw); i++ {
+		ins.Push(raw[i])
+	}
+	fmt.Printf("Length: %d", ins.Len())
+	// Output: Length: 2
+}
+
+func ExampleInstructions_Index() {
+	raw := []string{
+		`( target = "ldap:///uid=*,ou=People,dc=example,dc=com" )(version 3.0; acl "Limit people access to timeframe"; allow(read,search,compare) ( timeofday >= "1730" AND timeofday < "2400" );)`,
+		`( targetfilter = "(&(objectClass=employee)(objectClass=engineering))" )( targetcontrol = "1.2.3.4" || "5.6.7.8" )( targetscope = "onelevel" )(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF - extra nesting"; allow(read,write) ( ( ( userdn = "ldap:///anyone" ) AND ( ssf >= "71" ) ) AND NOT ( dayofweek = "Wed" OR dayofweek = "Fri" ) ); deny(selfwrite,proxy) ( userdn = "ldap:///all" );)`,
+	}
+
+	ins := ACIs()
+	for i := 0; i < len(raw); i++ {
+		ins.Push(raw[i])
+	}
+
+	fmt.Printf("%s", ins.Index(1))
+	// Output: ( targetfilter = "(&(objectClass=employee)(objectClass=engineering))" )( targetcontrol = "1.2.3.4" || "5.6.7.8" )( targetscope = "onelevel" )(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF - extra nesting"; allow(read,write) ( ( ( userdn = "ldap:///anyone" ) AND ( ssf >= "71" ) ) AND NOT ( dayofweek = "Wed" OR dayofweek = "Fri" ) ); deny(selfwrite,proxy) ( userdn = "ldap:///all" );)
+}
+
+func ExampleInstructions_String() {
+	raw := []string{
+		`( target = "ldap:///uid=*,ou=People,dc=example,dc=com" )(version 3.0; acl "Limit people access to timeframe"; allow(read,search,compare) ( timeofday >= "1730" AND timeofday < "2400" ); )`,
+		`( targetfilter = "(&(objectClass=employee)(objectClass=engineering))" )( targetcontrol = "1.2.3.4" || "5.6.7.8" )( targetscope = "onelevel" )(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF - extra nesting"; allow(read,write) ( ( ( userdn = "ldap:///anyone" ) AND ( ssf >= "71" ) ) AND NOT ( dayofweek = "Wed" OR dayofweek = "Fri" ) ); deny(proxy,selfwrite) ( userdn = "ldap:///all" ); )`,
+	}
+
+	ins := ACIs()
+	for i := 0; i < len(raw); i++ {
+		ins.Push(raw[i])
+	}
+
+	fmt.Printf("%s", ins)
+	// Output:
+	// ( target = "ldap:///uid=*,ou=People,dc=example,dc=com" )(version 3.0; acl "Limit people access to timeframe"; allow(read,search,compare) ( timeofday >= "1730" AND timeofday < "2400" );)
+	// ( targetfilter = "(&(objectClass=employee)(objectClass=engineering))" )( targetcontrol = "1.2.3.4" || "5.6.7.8" )( targetscope = "onelevel" )(version 3.0; acl "Allow read and write for anyone using greater than or equal 128 SSF - extra nesting"; allow(read,write) ( ( ( userdn = "ldap:///anyone" ) AND ( ssf >= "71" ) ) AND NOT ( dayofweek = "Wed" OR dayofweek = "Fri" ) ); deny(selfwrite,proxy) ( userdn = "ldap:///all" );)
+}

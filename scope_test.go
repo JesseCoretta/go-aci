@@ -1,6 +1,7 @@
 package aci
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -65,4 +66,34 @@ func TestScope_targetRules(t *testing.T) {
 			return
 		}
 	}
+}
+
+func ExampleSearchScope_Compare() {
+	fmt.Printf("%s == %s: %t", SingleLevel, BaseObject, SingleLevel.Compare(BaseObject))
+	// Output: onelevel == base: false
+}
+
+func ExampleSearchScope_Keyword() {
+	fmt.Printf("%s", SingleLevel.Keyword())
+	// Output: targetscope
+}
+
+func ExampleSearchScope_String() {
+	fmt.Printf("%s", SingleLevel)
+	// Output: onelevel
+}
+
+func ExampleSearchScope_Target() {
+	fmt.Printf("%s", Subordinate) // only valid for target rule scenarios, never URIs!
+	// Output: subordinate
+}
+
+func ExampleSearchScope_TRM() {
+	fmt.Printf("Allows Ne: %t", SingleLevel.TRM().Contains(Ne))
+	// Output: Allows Ne: false
+}
+
+func ExampleSearchScope_Ne() {
+	fmt.Printf("%s", SingleLevel.Ne()) // ILLEGAL!!!!
+	// Output:
 }

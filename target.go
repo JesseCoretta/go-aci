@@ -214,13 +214,22 @@ instances of TargetRuleMethods.
 type targetRuleFuncMap map[ComparisonOperator]TargetRuleMethod
 
 /*
-TR returns a populated instance of TargetRule.  Note there are far more
-convenient (and safer!) ways of crafting instances of this type.
+TR wraps go-stackage's Cond package-level function. In this context,
+it is wrapped here to assemble and return a TargetRule instance using
+the so-called "one-shot" procedure. This is an option only when ALL
+information necessary for the process is in-hand and ready for user
+input: the keyword, comparison operator and the appropriate value(s)
+expression.
 
-Generally speaking, this function is not needed by the end user unless
-they're manually testing the assembly of TargetRule instances, OR if
-they want a fast means to create said instance and they have all of the
-pieces of information ready for input.
+Use of this function shall not require a subsequent call of TargetRule's
+Init method, which is needed only for so-called "piecemeal" TargetRule
+assembly.
+
+Use of this function is totally optional. Users may, instead, opt to
+populate the specific value instance(s) needed and execute the type's
+own Eq, Ne, Ge, Gt, Le and Lt methods (when applicable) to produce an
+identical return instance. Generally speaking, those methods may prove
+to be more convenient -- and far safer -- than use of this function.
 */
 func TR(kw, op, ex any) TargetRule {
 	return newTargetRule(kw, op, ex)
@@ -259,6 +268,7 @@ func (r *TargetRule) Init() TargetRule {
 	if _r.IsZero() || !_r.IsInit() {
 		_r.Init()
 	}
+
 	*r = TargetRule(_r)
 	return *r
 }
@@ -301,6 +311,21 @@ func (r TargetRule) Valid() (err error) {
 	}
 	err = _t.Valid()
 	return
+}
+
+/*
+Len performs no significantly useful task. This method exists to
+satisfy Go's interface signature requirements.
+
+When executed on a nil instance, an abstract length of zero (0) is
+returned. When executed on a non-nil instance, an abstract length
+of one (1) is returned.
+*/
+func (r TargetRule) Len() int {
+	if r.IsZero() {
+		return 0
+	}
+	return 1
 }
 
 /*
@@ -383,43 +408,74 @@ func (r TargetRule) NoPadding(state ...bool) TargetRule {
 /*
 SetQuoteStyle allows the election of a particular multivalued
 quotation style offered by the various adopters of the ACIv3
-syntax.
+syntax. In the context of a TargetRule, this will only have a
+meaningful impact if the keyword for the receiver is one (1)
+of the following:
+
+  - Target (target)
+  - TargetTo (target_to)
+  - TargetFrom (target_from)
+  - TargetAttr (targetattr)
+  - TargetCtrl (targetcontrol)
+  - TargetExtOp (extop)
+
+The underlying expression type must be a TargetDistinguishedNames
+instance for Target-related keywords, an ObjectIdentifiers instance
+for OID-related keywords, or simply an AttributeTypes instance for
+the TargetAttr keyword.
 
 See the const definitions for MultivalOuterQuotes (default)
 and MultivalSliceQuotes for details.
 */
 func (r TargetRule) SetQuoteStyle(style int) TargetRule {
-	_r := castAsCondition(r)
+	key := r.Keyword()
 
-	switch key := r.Keyword(); key {
-	case Target, TargetTo, TargetFrom,
-		TargetExtOp, TargetCtrl, TargetAttr:
-		if isStackageStack(_r.Expression()) {
-			tv, _ := castAsStack(_r.Expression())
-
-			if key == TargetAttr {
-				AttributeTypes(tv).setQuoteStyle(style)
-			} else if key == TargetExtOp || key == TargetCtrl {
-				ObjectIdentifiers(tv).setQuoteStyle(style)
-			} else {
-				TargetDistinguishedNames(tv).setQuoteStyle(style)
-			}
-
-			// Toggle the individual value quotation scheme
-			// to the INVERSE of the Stack quotation scheme
-			// set above
-			if style == MultivalSliceQuotes {
-				_r.Encap()
-			} else {
-				_r.Encap(`"`)
-			}
+	switch tv := r.Expression().(type) {
+	case TargetDistinguishedNames:
+		switch key {
+		case Target, TargetTo, TargetFrom:
+			tv.setQuoteStyle(style)
+		default:
+			castAsCondition(r).Encap(`"`)
+			return r
+		}
+	case AttributeTypes:
+		switch key {
+		case TargetAttr:
+			tv.setQuoteStyle(style)
+		default:
+			castAsCondition(r).Encap(`"`)
+			return r
+		}
+	case ObjectIdentifiers:
+		switch key {
+		case TargetExtOp, TargetCtrl:
+			tv.setQuoteStyle(style)
+		default:
+			castAsCondition(r).Encap(`"`)
+			return r
 		}
 	default:
-		if style == MultivalSliceQuotes {
-			_r.Encap()
-		} else {
-			_r.Encap(`"`)
-		}
+		castAsCondition(r).Encap(`"`)
+		return r
+	}
+
+	// Toggle the individual value quotation scheme
+	// to the INVERSE of the Stack quotation scheme
+	// set above.
+	//
+	// If MultivalSliceQuotes equals the style set
+	// by the user, this implies that that no outer
+	// encapsulation shall be used, thus _r.Encap()
+	// is called for the receiver.
+	//
+	// But the above type instances (TDNs, OIDs, ATs)
+	// will have the opposite setting imposed, which
+	// enables quotation for the individual values.
+	if style == MultivalSliceQuotes {
+		castAsCondition(r).Encap()
+	} else {
+		castAsCondition(r).Encap(`"`)
 	}
 
 	return r
@@ -440,10 +496,6 @@ Valid input types are ComparisonOperator or its string value
 equivalent (e.g.: `>=` for Ge).
 */
 func (r TargetRule) SetOperator(op any) TargetRule {
-	if !keywordAllowsComparisonOperator(r.Keyword(), op) {
-		return r
-	}
-
 	var cop ComparisonOperator
 	switch tv := op.(type) {
 	case string:
@@ -455,13 +507,28 @@ func (r TargetRule) SetOperator(op any) TargetRule {
 		return r
 	}
 
+	// ALL Target and Bind rules accept Eq,
+	// so only scrutinize the operator if
+	// it is something *other than* that.
+	if cop != Eq {
+		if !keywordAllowsComparisonOperator(r.Keyword(), op) {
+			return r
+		}
+	}
+
 	// operator not known? bail out
 	if cop == ComparisonOperator(0) {
 		return r
 	}
 
-	castAsCondition(r).
-		SetOperator(castAsCop(cop))
+	// not initialized? bail out
+	if !castAsCondition(r).IsInit() {
+		return r
+	}
+
+	// cast to stackage.Condition and
+	// set operator value.
+	castAsCondition(r).SetOperator(cop)
 
 	return r
 }
@@ -470,9 +537,12 @@ func (r TargetRule) SetOperator(op any) TargetRule {
 SetExpression wraps go-stackage's Condition.SetExpression method.
 */
 func (r TargetRule) SetExpression(expr any) TargetRule {
-	castAsCondition(r).
-		Encap(`"`).
-		SetExpression(expr)
+	cac := castAsCondition(r)
+	if !cac.IsInit() {
+		cac.Init()
+	}
+	cac.SetExpression(expr)
+	r = TargetRule(cac.Encap(`"`))
 
 	return r
 }

@@ -264,7 +264,12 @@ func (r BindDistinguishedName) String() string {
 /*
 Len returns 0 or 1 to describe an abstract length of
 the receiver. This method exists only to satisfy Go's
-interface signature requirements and need not be used.
+interface signature requirements and need not be used
+for any legitimate operation.
+
+A length of zero (0) is returned if the receiver is
+uninitialized or invalid in some way. A length of one
+(1) is returned otherwise.
 */
 func (r BindDistinguishedName) Len() int {
 	if err := r.Valid(); err != nil {
@@ -708,25 +713,17 @@ func (r TargetDistinguishedNames) TRM() TargetRuleMethods {
 }
 
 /*
-ID wraps go-stackage's Stack.ID method.
+ID returns the string literal `bind`.
 */
 func (r BindDistinguishedNames) ID() string {
-	if r.IsZero() {
-		return ``
-	}
-	x, _ := castAsStack(r)
-	return x.ID()
+	return `bind`
 }
 
 /*
-ID wraps go-stackage's Stack.ID method.
+ID returns the string literal `target`.
 */
 func (r TargetDistinguishedNames) ID() string {
-	if r.IsZero() {
-		return ``
-	}
-	x, _ := castAsStack(r)
-	return x.ID()
+	return `target`
 }
 
 /*

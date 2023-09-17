@@ -401,7 +401,7 @@ func PBRs(x ...any) (pbr PermissionBindRules) {
 		SetID(pbrsRuleID).
 		SetDelimiter(rune(32)).
 		SetCategory(pbrsRuleID).
-		NoPadding(!StackPadding)
+		NoPadding(true)
 
 	// cast _p as a proper PermissionBindRules
 	// instance (pbr). We do it this way to gain

@@ -32,7 +32,7 @@ func ACIs(x ...any) (i Instructions) {
 		NoNesting(true).
 		SetID(`instructions`).
 		SetDelimiter(rune(10)).
-		NoPadding(!StackPadding).
+		NoPadding(true).
 		SetCategory(`instructions`)
 
 		// cast _i as a proper Instructions instance

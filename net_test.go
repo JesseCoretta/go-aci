@@ -340,3 +340,30 @@ func ExampleFQDN_Compare() {
 	fmt.Printf("Hashes are equal: %t", addr1.Compare(addr2))
 	// Output: Hashes are equal: true
 }
+
+func ExampleFQDN_BRM() {
+	var host FQDN
+	host.Set(`www.example.com`)
+	cops := host.BRM()
+	fmt.Printf("%T allows Eq: %t", host, cops.Contains(`=`))
+	// Output: aci.FQDN allows Eq: true
+}
+
+func ExampleFQDN_Len() {
+	var host FQDN
+	host.Set(`www`)
+	host.Set(`example`)
+	host.Set(`com`)
+	//host.Set(`www.example.com`)	// same!
+
+	fmt.Printf("%T contains %d DNS labels", host, host.Len())
+	// Output: aci.FQDN contains 3 DNS labels
+}
+
+func ExampleIPAddr_BRM() {
+	var address IPAddr
+	address.Set(`192.168.0`)
+	cops := address.BRM()
+	fmt.Printf("%T allows Eq: %t", address, cops.Contains(`=`))
+	// Output: aci.IPAddr allows Eq: true
+}

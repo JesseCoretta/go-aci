@@ -742,6 +742,12 @@ func ExampleBindDistinguishedName_Ne() {
 	// Output: userdn != "ldap:///uid=courtney,ou=People,dc=example,dc=com"
 }
 
+func ExampleTargetDistinguishedName_Eq() {
+	var dn TargetDistinguishedName = TTDN(`cn=Distribution List,ou=Groups,dc=example,dc=com`)
+	fmt.Printf("%s", dn.Eq())
+	// Output: ( target_to = "ldap:///cn=Distribution List,ou=Groups,dc=example,dc=com" )
+}
+
 func ExampleTargetDistinguishedName_Ne() {
 	var dn TargetDistinguishedName = TFDN(`uid=courtney,ou=People,dc=example,dc=com`)
 	fmt.Printf("%s", dn.Ne())
@@ -812,4 +818,57 @@ func ExampleRDN() {
 	dn := RDN(`cn=Role Profile,ou=Roles,dc=example,dc=com`)
 	fmt.Printf("%s", dn)
 	// Output: ldap:///cn=Role Profile,ou=Roles,dc=example,dc=com
+}
+
+func ExampleBindDistinguishedName_Set() {
+	var dn BindDistinguishedName
+	dn.Set(`cn=Role Profile,ou=Roles,dc=example,dc=com`, BindRDN)
+	fmt.Printf("%s", dn.Eq())
+	// Output: roledn = "ldap:///cn=Role Profile,ou=Roles,dc=example,dc=com"
+}
+
+func ExampleTargetDistinguishedName_Set() {
+	var dn TargetDistinguishedName
+	dn.Set(`cn=*,($attr.ou),dc=example,dc=com`, Target)
+	fmt.Printf("%s", dn.Ne())
+	// Output: ( target != "ldap:///cn=*,($attr.ou),dc=example,dc=com" )
+}
+
+func ExampleBindDistinguishedNames_ID() {
+	var dn BindDistinguishedNames
+	fmt.Printf("%s", dn.ID())
+	// Output: bind
+}
+
+func ExampleTargetDistinguishedNames_ID() {
+	var dn TargetDistinguishedNames
+	fmt.Printf("%s", dn.ID())
+	// Output: target
+}
+
+func ExampleTDNs() {
+	tdns := TDNs(
+		`uid=jesse,ou=People,dc=example,dc=com`,
+		`uid=courtney,ou=People,dc=example,dc=com`,
+	)
+	fmt.Printf("%s contains %d DNs", tdns.Keyword(), tdns.Len())
+	// Output: target contains 2 DNs
+}
+
+func ExampleTTDNs() {
+	tdns := TTDNs(
+		`uid=jesse,ou=People,dc=example,dc=com`,
+		`uid=courtney,ou=People,dc=example,dc=com`,
+	)
+	fmt.Printf("%s contains %d DNs", tdns.Keyword(), tdns.Len())
+	// Output: target_to contains 2 DNs
+}
+
+func ExampleTFDNs() {
+	tdns := TFDNs(
+		`uid=jesse,ou=People,dc=example,dc=com`,
+		`uid=courtney,ou=People,dc=example,dc=com`,
+	)
+	fmt.Printf("%s contains %d DNs", tdns.Keyword(), tdns.Len())
+	// Output: target_from contains 2 DNs
 }

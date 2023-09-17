@@ -133,10 +133,32 @@ func rangeBindRuleFuncMap(candidate string, fm *bindRuleFuncMap) (cop Comparison
 	return
 }
 
+/*
+BR wraps go-stackage's Cond package-level function. In this context,
+it is wrapped here to assemble and return a BindRule instance using
+the so-called "one-shot" procedure. This is an option only when ALL
+information necessary for the process is in-hand and ready for user
+input: the keyword, comparison operator and the appropriate value(s)
+expression.
+
+Use of this function shall not require a subsequent call of BindRule's
+Init method, which is needed only for so-called "piecemeal" BindRule
+assembly.
+
+Use of this function is totally optional. Users may, instead, opt to
+populate the specific value instance(s) needed and execute the type's
+own Eq, Ne, Ge, Gt, Le and Lt methods (when applicable) to produce an
+identical return instance. Generally speaking, those methods may prove
+to be more convenient -- and far safer -- than use of this function.
+*/
 func BR(kw, op, ex any) BindRule {
 	return newBindRule(kw, op, ex)
 }
 
+/*
+newBindRule is a private package-level function called by the BR
+package-level function.
+*/
 func newBindRule(kw, op, ex any) (b BindRule) {
 	c := castAsCondition(b)
 	c.Init()
@@ -319,6 +341,9 @@ interface signature requirements and to convey this message.
 An integer value of one (1) is returned in any scenario.
 */
 func (r BindRule) Len() int {
+	if r.IsZero() {
+		return 0
+	}
 	return 1
 }
 
@@ -416,10 +441,6 @@ resolves the raw value into a BindKeyword. Failure to do
 so will return a bogus Keyword.
 */
 func (r BindRule) Keyword() Keyword {
-	if r.IsZero() {
-		return nil
-	}
-
 	k := castAsCondition(r).Keyword()
 	var kw any = matchBKW(k)
 	return kw.(BindKeyword)
@@ -431,34 +452,13 @@ and casts the stackage.ComparisonOperator to the local
 aci.ComparisonOperator.
 */
 func (r BindRule) Operator() ComparisonOperator {
-	if r.IsZero() {
-		return badCop
-	}
-
-	sc := castAsCondition(r)
-	if BindRule(sc) == badBindRule {
-		return badCop
-	}
-
-	if sc.Operator() == nil {
-		return badCop
-	}
-
-	cop, ok := sc.Operator().(ComparisonOperator)
-	if !ok {
-		return badCop
-	}
-
-	return cop
+	return castCop(castAsCondition(r).Operator())
 }
 
 /*
 Expression wraps go-stackage's Condition.Expression method.
 */
 func (r BindRule) Expression() any {
-	if r.IsZero() {
-		return nil
-	}
 	return castAsCondition(r).Expression()
 }
 
@@ -713,6 +713,7 @@ func convertBindRulesHierarchy(stack any) (BindContext, bool) {
 			}
 			if _, ok := sub.(BindRules); ok {
 				sub.(BindRules).Paren(paren)
+				uncloakBindRules(sub.(BindRules))
 			}
 			clean.Push(sub)
 
@@ -800,7 +801,7 @@ SetKeyword wraps go-stackage's Condition.SetKeyword method.
 func (r BindRule) SetKeyword(kw any) BindRule {
 	cac := castAsCondition(r)
 	if !cac.IsInit() {
-		cac.Init()
+		r.Init()
 	}
 	cac.SetKeyword(kw)
 	return r
@@ -810,10 +811,6 @@ func (r BindRule) SetKeyword(kw any) BindRule {
 SetOperator wraps go-stackage's Condition.SetOperator method.
 */
 func (r BindRule) SetOperator(op any) BindRule {
-	if !keywordAllowsComparisonOperator(r.Keyword(), op) {
-		return r
-	}
-
 	var cop ComparisonOperator
 	switch tv := op.(type) {
 	case string:
@@ -822,18 +819,28 @@ func (r BindRule) SetOperator(op any) BindRule {
 		cop = tv
 	}
 
+	// ALL Target and Bind rules accept Eq,
+	// so only scrutinize the operator if
+	// it is something *other than* that.
+	if cop != Eq {
+		if !keywordAllowsComparisonOperator(r.Keyword(), op) {
+			return r
+		}
+	}
+
 	// operator not known? bail out
 	if cop == ComparisonOperator(0) {
 		return r
 	}
 
-	cac := castAsCondition(r)
-	if !cac.IsInit() {
-		cac.Init()
+	// not initialized? bail out
+	if !castAsCondition(r).IsInit() {
+		return r
 	}
 
-	castAsCondition(r).
-		SetOperator(castAsCop(cop))
+	// cast to stackage.Condition and
+	// set operator value.
+	castAsCondition(r).SetOperator(cop)
 
 	return r
 }
@@ -853,43 +860,58 @@ func (r BindRule) SetExpression(expr any) BindRule {
 /*
 SetQuoteStyle allows the election of a particular multivalued
 quotation style offered by the various adopters of the ACIv3
-syntax.
+syntax. In the context of a BindRule, this will only have a
+meaningful impact if the keyword for the receiver is one (1)
+of the following:
+
+  - BindUDN (userdn)
+  - BindRDN (roledn)
+  - BindGDN (groupdn)
+
+Additionally, the underlying type set as the expression value
+within the receiver MUST be a BindDistinguishedNames instance
+with two (2) or more distinguished names within.
 
 See the const definitions for MultivalOuterQuotes (default)
 and MultivalSliceQuotes for details.
-
-Note that this will only have an effect on BindRule instances
-that bear the userdn, roledn or groupdn keyword contexts AND
-contain a stack-based expression containing more than one (1)
-slice elements.
 */
 func (r BindRule) SetQuoteStyle(style int) BindRule {
-	_r := castAsCondition(r)
+	key := r.Keyword()
 
-	switch key := r.Keyword(); key {
-	case BindUDN, BindGDN, BindRDN:
-		if isStackageStack(_r.Expression()) {
-			tv, _ := castAsStack(_r.Expression())
-			BindDistinguishedNames(tv).setQuoteStyle(style)
-
-			// Toggle the individual value quotation scheme
-			// to the INVERSE of the Stack quotation scheme
-			// set above
-			if style == MultivalSliceQuotes {
-				_r.Encap()
-			} else {
-				_r.Encap(`"`)
-			}
+	switch tv := r.Expression().(type) {
+	case BindDistinguishedNames:
+		switch key {
+		case BindUDN, BindGDN, BindRDN:
+			tv.setQuoteStyle(style)
+		default:
+			castAsCondition(r).Encap(`"`)
+			return r
 		}
 	default:
-		if style == MultivalSliceQuotes {
-			_r.Encap()
-		} else {
-			_r.Encap(`"`)
-		}
+		castAsCondition(r).Encap(`"`)
+		return r
+	}
+
+	// Toggle the individual value quotation scheme
+	// to the INVERSE of the Stack quotation scheme
+	// set above.
+	//
+	// If MultivalSliceQuotes equals the style set
+	// by the user, this implies that that no outer
+	// encapsulation shall be used, thus _r.Encap()
+	// is called for the receiver.
+	//
+	// But the above type instances (TDNs, OIDs, ATs)
+	// will have the opposite setting imposed, which
+	// enables quotation for the individual values.
+	if style == MultivalSliceQuotes {
+		castAsCondition(r).Encap()
+	} else {
+		castAsCondition(r).Encap(`"`)
 	}
 
 	return r
+
 }
 
 /*

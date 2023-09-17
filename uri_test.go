@@ -210,6 +210,24 @@ func ExampleLDAPURI_Keyword() {
 	// Output: Keyword: groupdn
 }
 
+func ExampleLDAPURI_Kind() {
+	dn := GDN(`ou=Groups,dc=example,dc=com`)
+	filter := Filter(`(&(objectClass=distributionList)(status=active))`)
+	uri := URI(dn, filter)
+
+	fmt.Printf("Keyword: %s", uri.Keyword())
+	// Output: Keyword: groupdn
+}
+
+func ExampleLDAPURI_Len() {
+	dn := GDN(`ou=Groups,dc=example,dc=com`)
+	filter := Filter(`(&(objectClass=distributionList)(status=active))`)
+	uri := URI(dn, filter)
+
+	fmt.Printf("Len: %d", uri.Len())
+	// Output: Len: 0
+}
+
 func ExampleLDAPURI_String() {
 	var uri LDAPURI
 	uri.Set(`ldap:///ou=People,dc=example,dc=com?cn,sn,givenName,objectClass,uid?one?(&(objectClass=employee)(terminated=FALSE))`)

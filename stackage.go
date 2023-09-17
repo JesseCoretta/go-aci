@@ -233,6 +233,8 @@ func castCop(x any) (cop ComparisonOperator) {
 	switch tv := x.(type) {
 	case stackage.ComparisonOperator:
 		cop = ComparisonOperator(tv)
+	case ComparisonOperator:
+		cop = tv
 	}
 
 	return

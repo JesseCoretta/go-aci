@@ -5,6 +5,11 @@ import (
 	"testing"
 )
 
+func ExampleComparisonOperator_Compare() {
+	fmt.Printf("%Ts are identical: %t", Ne, Ne.Compare(Eq))
+	// Output: aci.ComparisonOperators are identical: false
+}
+
 func ExampleComparisonOperator_stringers() {
 	for _, cop := range []ComparisonOperator{
 		Eq, Ne, Lt, Gt, Le, Ge,

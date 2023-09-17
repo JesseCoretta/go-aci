@@ -1,5 +1,11 @@
 package aci
 
+/*
+misc.go contains fundamental "worker functions" used elsewhere in
+this package, as well as certain constants and variables unsuitable
+for placement anywhere else.
+*/
+
 import (
 	"crypto/sha1"
 	"encoding/binary"
@@ -10,61 +16,81 @@ import (
 	"unicode"
 )
 
-// AttributeFilterOperationsCommaDelim represents the default
-// delimitation scheme offered by this package. In cases where
-// the AttributeFilterOperations type is used to represent any
-// TargetRule bearing the targattrfilters keyword context, two
-// (2) different delimitation characters may be permitted for
-// use (depending on the product in question).
-//
-// Use of this constant allows the use of a comma (ASCII #44) to
-// delimit the slices in an AttributeFilterOperations instance as
-// opposed to the alternative delimiter (semicolon, ASCII #59).
-//
-// This constant may be fed to the SetDelimiter method that is
-// extended through the AttributeFilterOperations type.
+/*
+AttributeFilterOperationsCommaDelim shall invoke the default
+delimitation character offered by this package for use within
+instances of the AttributeFilterOperations type.
+
+In cases where the AttributeFilterOperations type is used to
+represent any TargetRule bearing the targattrfilters keyword
+context, one (1) of two (2) different delimiter characters
+MAY be permitted for use, depending on which directory product
+is in use.
+
+Use of this constant allows the use of a comma (ASCII #44) to
+delimit the slices in an AttributeFilterOperations instance as
+opposed to the alternative delimiter (semicolon, ASCII #59).
+
+This constant may be fed to the SetDelimiter method that is
+extended through the AttributeFilterOperations type.
+
+This is the default setting for the above scenario, and likely
+need to be specified manually unless reverting back from the
+alternative character.
+*/
 const AttributeFilterOperationsCommaDelim = 0
 
-// AttributeFilterOperationsSemiDelim represents an alternative
-// delimitation scheme offered by this package. In cases where
-// the AttributeFilterOperations type is used to represent any
-// TargetRule bearing the targattrfilters keyword context, two
-// (2) different delimitation characters may be permitted for
-// use (depending on the product in question).
-//
-// Use of this constant allows the use of a semicolon (ASCII #59)
-// to delimit the slices in an AttributeFilterOperations instance
-// as opposed to the default delimiter (comma, ASCII #44).
-//
-// This constant may be fed to the SetDelimiter method that is
-// extended through the AttributeFilterOperations type.
+/*
+AttributeFilterOperationsSemiDelim invokes the alternative
+delimitation character offered by this package for use within
+instances of the AttributeFilterOperations type.
+
+In cases where the AttributeFilterOperations type is used
+to represent any TargetRule bearing the targattrfilters
+keyword context, one (1) of two (2) different delimiter
+characters MAY be permitted for use, depending on which
+directory product is in use.
+
+Use of this constant allows the use of a semicolon (ASCII
+#59) to delimit the slices in an AttributeFilterOperations
+instance as opposed to the default delimiter (comma, ASCII
+#44).
+
+This constant may be fed to the SetDelimiter method that is
+extended through the AttributeFilterOperations type.
+*/
 const AttributeFilterOperationsSemiDelim = 1
 
-// MultivalOuterQuotes represents the default quotation style
-// used by this package. In cases where a multi-valued BindRule
-// or TargetRule expression involving LDAP distinguished names,
-// ASN.1 Object Identifiers (in dot notation) and LDAP Attribute
-// Type names is being created, this constant will enforce only
-// outer-most double-quotation of the whole sequence of values.
-//
-// Example: keyword = "<val> || <val> || <val>"
-//
-// This constant may be fed to the SetQuoteStyle method that is
-// extended through eligible types.
+/*
+MultivalOuterQuotes represents the alternate quotation style
+used by this package. In cases where a multi-valued BindRule
+or TargetRule expression involving LDAP distinguished names,
+ASN.1 Object Identifiers (in dot notation) and LDAP Attribute
+Type names is being created, this constant will enforce only
+outer-most double-quotation of the whole sequence of values,
+including the delimiters.
+
+	Example: keyword = "<val> || <val> || <val>"
+
+This constant may be fed to the SetQuoteStyle method that is
+extended through eligible types.
+*/
 const MultivalOuterQuotes = 1
 
-// MultivalSliceQuotes represents an alternative quotation scheme
-// offered by this package. In cases where a multi-valued BindRule
-// or TargetRule expression involving LDAP distinguished names,
-// ASN.1 Object Identifiers (in dot notation) and LDAP Attribute
-// Type names is being created, this constant shall disable outer
-// most quotation and will, instead, quote individual values. This
-// will NOT enclose symbolic OR (||) delimiters within quotations.
-//
-// Example: keyword = "<val>" || "<val>" || "<val>"
-//
-// This constant may be fed to the SetQuoteStyle method that is
-// extended through eligible types.
+/*
+MultivalSliceQuotes represents the standard quotation scheme
+offered by this package. In cases where a multi-valued BindRule
+or TargetRule expression involving LDAP distinguished names,
+ASN.1 Object Identifiers (in dot notation) and LDAP Attribute
+Type names is being created, this constant shall disable outermost
+quotation and will, instead, quote individual values. This will
+NOT enclose symbolic OR (||) delimiters within quotations.
+
+	Example: keyword = "<val>" || "<val>" || "<val>"
+
+This constant may be fed to the SetQuoteStyle method that is
+extended through eligible types.
+*/
 const MultivalSliceQuotes = 0
 
 /*
@@ -128,6 +154,15 @@ var (
 	typOf    func(x any) reflect.Type            = reflect.TypeOf
 )
 
+/*
+isAlnum returns a Boolean value indicative of whether rune r represents
+an alphanumeric character. Specifically, one (1) of the following ranges
+must evaluate as true:
+
+  - 0-9 (ASCII characters 48 through 57)
+  - A-Z (ASCII characters 65 through 90)
+  - a-z (ASCII characters 97 through 122)
+*/
 func isAlnum(r rune) bool {
 	return isLower(r) || isUpper(r) || isDigit(r)
 }
@@ -228,18 +263,34 @@ func unquote(str string) string {
 	return str
 }
 
+/*
+isPowerOfTwo returns a Boolean value indicative of whether int x
+represents a value that is a power of two (2). Mostly used in the
+act of bitshifting certain (eligible) composite values.
+*/
 func isPowerOfTwo(x int) bool {
 	return x&(x-1) == 0
 }
 
 /*
 Hash computes a SHA-1 hash value, derived from the String
-method output of input value x. The hash, if generated, is
-cast as a string prior to being returned alongside an error.
+method output of input value x.
+
+The hash, if generated, is cast as a string prior to being
+returned alongside an error.
 
 If input value x lacks a String method, or if no string
 value was returned as a result of its execution, the error
-instance returned shall be non nil.
+instance returned shall be non-nil.
+
+Neither this function, nor any of the many 'Compare' methods
+extended through eligible types which make use of this very
+function, should be used to gauge "validity", "nilness" or
+"initialization status". In certain cases, two (2) dissimilar
+(and invalid!) instances of the same type shall evaluate as
+"equal". When the process of string representation yields the
+same effective value for two (2) type instances, this is both
+guaranteed and expected behavior.
 */
 func Hash(x any) (string, error) {
 	return hashInstance(x)
@@ -259,14 +310,13 @@ func compareHashInstance(r, x any) bool {
 }
 
 /*
-hashInstance is a private function called by the Hash
-package level function. It uses crypto/sha1 to compute
-a hash value derived from the string representation
-of input value x, assuming it possesses its own String
-method.
+hashInstance is a private function called by the Hash package
+level function. It uses crypto/sha1 to compute a hash value
+derived from the string representation of input value x, (in
+the event it possesses its own String method)
 
-A string representation of the hash value alongside an
-error instance are returned.
+A string representation of the hash value alongside an error
+instance are returned.
 */
 func hashInstance(x any) (s string, err error) {
 	meth := getStringFunc(x)

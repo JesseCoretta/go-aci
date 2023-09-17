@@ -120,7 +120,7 @@ func TestAttrs_attrList(t *testing.T) {
 		AT(`givenName`),
 		AT(`homeDirectory`),
 		AT(`uid`),
-	) //.SetQuoteStyle(0)
+	)
 
 	// Style #0 (MultivalOuterQuotes)
 	//want := `( targetattr = "cn || sn || givenName || homeDirectory || uid" )`
@@ -655,4 +655,34 @@ func ExampleTargetRule_SetQuoteStyle() {
 	// Output:
 	// 0: ( target != "ldap:///uid=jesse,ou=People,dc=example,dc=com" || "ldap:///uid=courtney,ou=People,dc=example,dc=com" || "ldap:///uid=jimmy,ou=People,dc=example,dc=com" )
 	// 1: ( target != "ldap:///uid=jesse,ou=People,dc=example,dc=com || ldap:///uid=courtney,ou=People,dc=example,dc=com || ldap:///uid=jimmy,ou=People,dc=example,dc=com" )
+}
+
+func ExampleTargetRule_Init() {
+	var tr TargetRule
+	tr.Init() // required when assembly through "piecemeal"
+
+	// ... later in your code ...
+
+	tr.SetKeyword(Target) // set keyword ...
+	tr.SetOperator(Ne)    // ... so operator can be evaluated
+	fmt.Printf("Operator: %s", tr.Operator().Description())
+	// Output: Operator: Not Equal To
+}
+
+/*
+This example demonstrates the (mostly) useless execution of the Len
+method, as singular TargetRule instances are generally not judged in
+terms of length, whether value-based or through some other abstraction.
+
+As such, the execution of this method shall always return one (1)
+when executed on a non-nil instance, and zero (0) otherwise.
+*/
+func ExampleTargetRule_Len() {
+	var tr TargetRule
+	if err := tr.Parse(`( targetscope="onelevel")`); err != nil {
+		fmt.Println(err) // always check your parser errors
+		return
+	}
+	fmt.Printf("%T.Len: %d", tr, tr.Len())
+	// Output: aci.TargetRule.Len: 1
 }
