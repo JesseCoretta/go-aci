@@ -23,6 +23,9 @@ func TestBindDistinguishedName_codecov(t *testing.T) {
 			O.isDistinguishedNameContext()
 			_ = O.Eq()
 			_ = O.Ne()
+			_ = O.Keyword()
+			_ = O.Valid()
+			_ = O.IsZero()
 			_ = O.Len()
 
 			if err := O.Valid(); err == nil {
@@ -92,6 +95,9 @@ func TestTargetDistinguishedName_codecov(t *testing.T) {
 			O.isDistinguishedNameContext()
 			_ = O.Eq()
 			_ = O.Ne()
+			_ = O.Keyword()
+			_ = O.Valid()
+			_ = O.IsZero()
 			_ = O.Len()
 
 			if err := O.Valid(); err == nil {
