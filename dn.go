@@ -167,14 +167,10 @@ func validDistinguishedName(x any) (err error) {
 	case BindDistinguishedName:
 		if tv.IsZero() {
 			err = nilInstanceErr(tv)
-		} else if len(*tv.distinguishedName.string) < 3 {
-			err = illegalSyntaxPerTypeErr(*tv.distinguishedName, tv.Keyword())
 		}
 	case TargetDistinguishedName:
 		if tv.IsZero() {
 			err = nilInstanceErr(tv)
-		} else if len(*tv.distinguishedName.string) < 3 {
-			err = illegalSyntaxPerTypeErr(*tv.distinguishedName, tv.Keyword())
 		}
 	}
 

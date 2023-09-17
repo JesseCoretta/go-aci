@@ -184,6 +184,7 @@ func TestBindDistinguishedNames_codecov(t *testing.T) {
 		for _, dn := range []string{
 			`uid=jesse,ou=People,dc=example,dc=com`,
 			`cn=Courtney Tolana,ou=Contractors,ou=People,dc=example,dc=com`,
+			`ldap:///ou=People,dc=example,dc=com?cn,sn,objectClass?one?(objectClass=employee)`,
 		} {
 			var O BindDistinguishedName
 			var Ol int = Os.Len()
