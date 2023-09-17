@@ -1180,8 +1180,6 @@ func (r BindRules) Traverse(indices ...int) (B BindContext) {
 				B = castAsBindRules(tv)
 			} else if isStackageCondition(tv) {
 				B = castAsBindRule(tv)
-			} else {
-				printf("!!!!! MISSED %T\n", tv)
 			}
 		}
 	}

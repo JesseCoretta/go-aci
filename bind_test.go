@@ -78,6 +78,11 @@ func TestBindRule_bogus(t *testing.T) {
 	_ = br.Keyword()
 	_ = br.SetQuoteStyle(1)
 	_ = br.String()
+	_ = badCond(nil)
+	_ = castAsBindRule(nil)
+	_ = castAsBindRules(nil)
+	_ = castAsBindRule(float64(0))
+	_ = castAsBindRules(float64(0))
 }
 
 // mainly this exists to satisfy codecov, but also

@@ -171,20 +171,19 @@ been altered to one's satisfaction, can be sent off as intended and
 this "Condition Counterpart" can be discarded, or left for GC.
 */
 func castAsCondition(x any) (c stackage.Condition) {
+	c = badCond(errorf("Unsupported cast type %T for %T", x, c))
 	switch tv := x.(type) {
 
 	// case match is a single BindRule instance
 	case BindRule:
 		c = stackage.Condition(tv)
-		return
 
 	// case match is a single TargetRule instance
 	case TargetRule:
 		c = stackage.Condition(tv)
-		return
 	}
 
-	return badCond(errorf("Unsupported cast type %T for %T", x, c))
+	return
 }
 
 func castAsBindRule(x any) BindRule {
@@ -201,22 +200,6 @@ func castAsBindRules(x any) BindRules {
 		return badBindRules
 	}
 	return BindRules(assert)
-}
-
-func castAsTargetRule(x any) TargetRule {
-	assert, ok := x.(stackage.Condition)
-	if !ok {
-		return badTargetRule
-	}
-	return TargetRule(assert)
-}
-
-func castAsTargetRules(x any) TargetRules {
-	assert, ok := x.(stackage.Stack)
-	if !ok {
-		return badTargetRules
-	}
-	return TargetRules(assert)
 }
 
 /*
@@ -293,8 +276,6 @@ func isStackageCondition(stack any) (is bool) {
 
 func derefC(cond any) (c stackage.Condition) {
 	switch tv := cond.(type) {
-	case *stackage.Condition:
-		c = *tv
 	case stackage.Condition:
 		c = tv
 	}
