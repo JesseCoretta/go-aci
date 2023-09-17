@@ -188,16 +188,18 @@ func (r ObjectIdentifier) Valid() (err error) {
 		return
 	}
 
-	raw := r.objectIdentifier.DotNotation.String()
-	if !isDotNot(raw) {
-		err = badObjectIdentifierErr(raw)
-		return
-	}
+	/*
+		raw := r.objectIdentifier.DotNotation.String()
+		if !isDotNot(raw) {
+			err = badObjectIdentifierErr(raw)
+			return
+		}
 
-	if !(r.objectIdentifier.DotNotation.Len() > 0 &&
-		r.objectIdentifier.TargetKeyword != TargetKeyword(0x0)) {
-		err = badObjectIdentifierKeywordErr(r.objectIdentifier.TargetKeyword)
-	}
+		if !(r.objectIdentifier.DotNotation.Len() > 0 &&
+			r.objectIdentifier.TargetKeyword != TargetKeyword(0x0)) {
+			err = badObjectIdentifierKeywordErr(r.objectIdentifier.TargetKeyword)
+		}
+	*/
 
 	return
 }
