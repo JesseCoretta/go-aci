@@ -239,14 +239,14 @@ unique scans the receiver to verify whether the addr input
 value is not already present within the receiver.
 */
 func (r IPAddr) unique(addr string) bool {
+	if r.IsZero() {
+		return true
+	}
+
 	return r.ipAddrs.unique(addr)
 }
 
 func (r ipAddrs) unique(addr string) bool {
-	if r.isZero() {
-		return true
-	}
-
 	var addrs []string
 	for i := 0; i < len(r); i++ {
 		addrs = append(addrs, string(r[i]))

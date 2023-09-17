@@ -6,9 +6,13 @@ import (
 )
 
 func TestFQDN(t *testing.T) {
-	var f FQDN = DNS()
+	var f FQDN
 	_ = f.Len()
 	_ = f.Keyword()
+	_ = f.Eq()
+	_ = f.Ne()
+	_ = f.Valid()
+	f = DNS()
 	var typ string = f.Keyword().String()
 
 	if f.len() != 0 {
@@ -22,6 +26,8 @@ func TestFQDN(t *testing.T) {
 		return
 	}
 
+	f.Set()
+	f.Set(``)
 	f.Set(`www`, `example`, `com`)
 
 	want := `www.example.com`
@@ -81,6 +87,7 @@ func TestDNS_alternativeFQDN(t *testing.T) {
 func TestIPAddr_BRM(t *testing.T) {
 	var i IPAddr
 	_ = i.Len()
+	_ = i.Valid()
 	_ = i.Keyword()
 
 	if !i.IsZero() {
@@ -96,6 +103,11 @@ func TestIPAddr_BRM(t *testing.T) {
 
 	var typ string = i.Keyword().String()
 
+	if !i.unique(`192.168.0`) {
+		t.Errorf("%s failed; uniqueness check returned bogus result",
+			t.Name())
+		return
+	}
 	i.Set(`192.168.0`)
 	i.Set(`12.3.45.*`)
 	i.Set(`12.3.45.*`) // duplicate
