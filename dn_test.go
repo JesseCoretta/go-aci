@@ -173,6 +173,12 @@ func TestBindDistinguishedNames_codecov(t *testing.T) {
 	_ = Os.setQuoteStyle(0)
 	_ = Os.setQuoteStyle(1)
 
+	Os.setExpressionValues(Target, []string{}...)
+	Os.setExpressionValues(BindUDN, []string{}...)
+	Os.setExpressionValues(BindSSF, []string{`1`}...)
+	Os.setExpressionValues(BindSSF, []string{`ldap:///ou=People,dc=example,dc=com?cn,sn,givenName?one?(&(objectClass=contractor)(status=active))`}...)
+	Os.setExpressionValues(BindUDN, []string{`325Ga_`}...)
+
 	for kw, fn := range map[BindKeyword]func(...any) BindDistinguishedNames{
 		BindUDN: UDNs,
 		BindGDN: GDNs,
@@ -262,6 +268,12 @@ func TestTargetDistinguishedNames_codecov(t *testing.T) {
 	Os.reset()
 	_ = Os.setQuoteStyle(0)
 	_ = Os.setQuoteStyle(1)
+
+	Os.setExpressionValues(BindGDN, []string{}...)
+	Os.setExpressionValues(Target, []string{}...)
+	Os.setExpressionValues(BindSSF, []string{`1`}...)
+	Os.setExpressionValues(BindSSF, []string{`ldap:///ou=People,dc=example,dc=com?cn,sn,givenName?one?(&(objectClass=contractor)(status=active))`}...)
+	Os.setExpressionValues(TargetTo, []string{`325Ga_`}...)
 
 	for kw, fn := range map[TargetKeyword]func(...any) TargetDistinguishedNames{
 		Target:     TDNs,

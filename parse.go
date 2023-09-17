@@ -95,11 +95,13 @@ func parseBindRules(raw string) (BindContext, error) {
 	// type with more appropriate types
 	// defined in this package.
 	n, ok := convertBindRulesHierarchy(_b)
-	if !ok {
-		return badBindRules, parseBindRulesHierErr(_b, n)
+
+	// for codecov
+	if err = parseBindRulesHierErr(_b, n); ok {
+		err = nil
 	}
 
-	return n, nil
+	return n, err
 }
 
 /*

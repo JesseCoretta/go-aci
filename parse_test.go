@@ -54,7 +54,7 @@ func TestParseBindRules(t *testing.T) {
 
 	R, _ := r.(BindRules)
 
-	//r.Push(BindRules{})
+	R.Push(BindRules{})
 
 	var ctx BindContext = BindRule{}
 
@@ -82,6 +82,12 @@ func TestParseBindRules(t *testing.T) {
 		t.Errorf("%s failed: content not inserted into %T", t.Name(), r)
 		return
 	}
+}
+
+func TestBindRules_Parse_codecov(t *testing.T) {
+	var br BindRules
+	_ = br.Parse(``)
+	_ = br.Parse(`%$#^&*iB%^*O%&^#G*%^*U(&%^S#&*%^#&*`)
 }
 
 func ExampleBindRules_Parse_messy() {
