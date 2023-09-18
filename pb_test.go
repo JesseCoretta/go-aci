@@ -285,6 +285,19 @@ func TestPermissionBindRules_codecov(t *testing.T) {
 	var pbs PermissionBindRules
 	_ = pbs.IsZero()
 	_ = pbs.Valid()
+	pbs.Push()
+	pbs.Contains(``)
+	pbs.Contains(nil)
+	pbs.Contains('a')
+	pbs.Push(nil, nil)
+	pbs.Push(``)
+	pbs.Contains(PermissionBindRule{})
+	pbs.Push(PermissionBindRule{})
+	pbs.Push(`fartknocker`)
+	_ = pbs.pushPolicy()
+	_ = pbs.pushPolicy('a')
+	_ = pbs.pushPolicy(`baljfg`)
+	_ = pbs.pushPolicy(nil, nil)
 
 	var pb PermissionBindRule
 	_ = pb.IsZero()
@@ -331,9 +344,10 @@ func TestPermissionBindRules_codecov(t *testing.T) {
 	pbs.Push(rule2a)
 
 	var rule2b PermissionBindRule
+	badbind = RDN(``).Ne()
 	rule2b.Set(
 		Allow(`read`, `search`, `compare`),
-		badBindDN,
+		badbind,
 	)
 	_ = rule2b.IsZero()
 	_ = rule2b.Valid()
