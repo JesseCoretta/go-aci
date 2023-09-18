@@ -146,16 +146,9 @@ func (r Instructions) contains(x any) bool {
 		candidate = tv
 	case Instruction:
 		candidate = tv.String()
-	default:
-		return false
 	}
 
 	candidate = condenseWHSP(candidate)
-
-	if len(candidate) == 0 {
-		return false
-	}
-
 	for i := 0; i < r.Len(); i++ {
 		// case is not significant here.
 		if eq(r.Index(i).String(), candidate) {

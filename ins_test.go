@@ -5,9 +5,42 @@ import (
 	"testing"
 )
 
+func TestInstruction(t *testing.T) {
+	var Ins Instruction
+	_ = Ins.Valid()
+	_ = Ins.IsZero()
+	_ = Ins.String()
+
+	// define a timeframe for our PermissionBindRule
+	// using two Condition instances
+	notBefore := ToD(`1730`).Ge()                    // Condition: greater than or equal to time
+	notAfter := ToD(`2400`).Lt()                     // Condition: less than time
+	brule := And().Paren().Push(notBefore, notAfter) // our actual bind rule expression
+
+	// Define the permission (rights).
+	perms := Allow(ReadAccess, CompareAccess, SearchAccess)
+
+	// Make our PermissionBindRule instance, which defines the
+	// granting of access within a particular timeframe.
+	pbrule := PBR(perms, brule)
+
+	// Make a target rule that encompasses any account
+	// with a DN syntax of "uid=<userid>,ou=People,dc=example,dc=com"
+	Tar := TDN(`uid=*,ou=People,dc=example,dc=com`).Eq()
+
+	badACL := ``
+
+	ACI(badACL, Tar, pbrule)
+}
+
 func TestACIs(t *testing.T) {
 	var Ins Instructions
 	_ = Ins.Valid()
+	_ = Ins.Push()
+	_ = Ins.Push(nil)
+	_ = Ins.Push(Instruction{})
+	_ = Ins.Push(``)
+	_ = Ins.Push('a')
 	_ = Ins.IsZero()
 	_ = Ins.String()
 	_ = Ins.Len()
@@ -46,6 +79,7 @@ func TestACIs(t *testing.T) {
 	_ = i.String()
 
 	i = ACI(acl, tgt, pbrule)
+	i.Set(tgt)
 	_ = i.TRs()
 	_ = i.PBRs()
 	_ = i.ACL()
