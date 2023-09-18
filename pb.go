@@ -359,22 +359,10 @@ func (r PermissionBindRules) contains(x any) bool {
 
 	switch tv := x.(type) {
 	case string:
-		pbr, err := parsePermissionBindRule(tv)
-		if err != nil {
-			return false
-		}
+		pbr, _ := parsePermissionBindRule(tv)
 		candidate = pbr
 	case PermissionBindRule:
-		if err := tv.Valid(); err != nil {
-			return false
-		}
 		candidate = tv
-	default:
-		return false
-	}
-
-	if len(candidate.String()) == 0 {
-		return false
 	}
 
 	for i := 0; i < r.Len(); i++ {

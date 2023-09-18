@@ -200,7 +200,8 @@ Thanks to the import of the [`go-stackage`](https://github.com/JesseCoretta/go-s
 of the necessary comparison operators for use in the crafting of ACIv3 compliant BindRule and TargetRule expressions.
 
 Below are two (2) tables containing all of the comparison operators available, as well all of the applicable (and non-applicable)
-scenarios for their use.
+scenarios for their use. These tables are based upon vendor documentation for multiple adopters of the ACIv3 syntax, therefore it
+may not reflect the offerings of every product identically.
 
 | Bind Keyword | Eq  | Ne  | Lt  | Le  | Gt  | Ge  |
 | ------------- | :---: | :---: | :---: | :---: | :---: | :---: |
