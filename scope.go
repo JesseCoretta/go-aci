@@ -86,9 +86,8 @@ search scope. Generally, these are used in fully-qualified LDAP
 Search URL statements.
 */
 func (r SearchScope) standard() (s string) {
+	s = `base`
 	switch r {
-	case BaseObject:
-		s = `base`
 	case SingleLevel:
 		s = `one`
 	case Subtree:

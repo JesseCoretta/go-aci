@@ -6,6 +6,9 @@ import (
 )
 
 func TestScope(t *testing.T) {
+	var sc SearchScope
+	_ = sc.Eq()
+
 	for idx, raw := range []string{
 		`baSe`,
 		`oNe`,
