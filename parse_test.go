@@ -11,6 +11,7 @@ func TestParseBindRule(t *testing.T) {
 	var b BindRule
 	var err error
 	_, _ = ParseBindRule(``)
+	_ = b.Parse(``)
 
 	if b, err = ParseBindRule(want); err != nil {
 		return
@@ -18,6 +19,29 @@ func TestParseBindRule(t *testing.T) {
 
 	if want != b.String() {
 		t.Errorf("%s failed:\nwant '%s'\ngot '%s'", t.Name(), want, b)
+		return
+	}
+
+	if err = b.Parse(want); err != nil {
+		return
+	}
+
+	if want != b.String() {
+		t.Errorf("%s failed:\nwant '%s'\ngot '%s'", t.Name(), want, b)
+		return
+	}
+}
+
+func TestParseBindRules_codecov(t *testing.T) {
+	single := `userdn = "ldap:///anyone"`
+	var b BindRules
+	var err error
+	if err = b.Parse(single); err != nil {
+		return
+	}
+
+	if b.String() != single {
+		t.Errorf("%s failed:\nwant '%s',\ngot  '%s'", t.Name(), single, b)
 		return
 	}
 }
@@ -478,8 +502,35 @@ func TestParseBindRule_postANTLR(t *testing.T) {
 	}
 }
 
-func TestParseTargetRule_postANTLR(t *testing.T) {
-	_, _ = ParseTargetRule(``) // codecov
+func TestParseTargetRule_postANTLR_codecov(t *testing.T) {
+	_, _ = ParseTargetRule(``)
+	want := `( target_to = "ldap:///ou=People,dc=example,dc=com" )`
+
+	var _t TargetRule
+	var err error
+	_, _ = ParseBindRule(``)
+	_ = _t.Parse(``)
+
+	if _t, err = ParseTargetRule(want); err != nil {
+		return
+	}
+
+	if want != _t.String() {
+		t.Errorf("%s failed:\nwant '%s'\ngot '%s'", t.Name(), want, _t)
+		return
+	}
+
+	if err = _t.Parse(want); err != nil {
+		return
+	}
+
+	if want != _t.String() {
+		t.Errorf("%s failed:\nwant '%s'\ngot '%s'", t.Name(), want, _t)
+		return
+	}
+}
+
+func TestParseTargetRule_postANTLR_extended(t *testing.T) {
 
 	tests := map[string]map[string]map[int][]string{
 		`valid`: {
@@ -640,7 +691,26 @@ func TestParseTargetRule_postANTLR(t *testing.T) {
 
 func TestParseTargetRules(t *testing.T) {
 	//var trs TargetRules
-	_, _ = ParseTargetRule(``) // codecov
+	_, _ = ParseTargetRules(``) // codecov
+	bad_single := `target = "ldap:///uid=jesse,ou=People,dc=example,dc=com"`
+	single := `( target = "ldap:///uid=jesse,ou=People,dc=example,dc=com" )`
+	var b TargetRules
+	var err error
+	if err = b.Parse(bad_single); err == nil {
+		t.Errorf("%s failed: no error where one was expected",
+			t.Name())
+		return
+	}
+
+	if err = b.Parse(single); err != nil {
+		t.Errorf("%s failed: %v", t.Name(), err)
+		return
+	}
+
+	if b.String() != single {
+		t.Errorf("%s failed:\nwant '%s',\ngot  '%s'", t.Name(), single, b)
+		return
+	}
 }
 
 func TestParsePermission(t *testing.T) {

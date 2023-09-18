@@ -343,6 +343,10 @@ func (r BindRule) assertExpressionValue() (err error) {
 	// will make things simpler.
 	var ex any
 
+	// prepare this error ahead of time to
+	// avoid untestable codecov gaps.
+	err = badPTBRuleKeywordErr(r, bindRuleID, `BindKeyword`, r.Keyword())
+
 	// perform a bind keyword switch upon
 	// a resolution attempt of the value.
 	switch key := matchBKW(r.Keyword().String()); key {
@@ -372,9 +376,6 @@ func (r BindRule) assertExpressionValue() (err error) {
 		// or a security factor expressive
 		// statement.
 		ex, err = assertBindSec(expr, key)
-
-	default:
-		err = badPTBRuleKeywordErr(r, bindRuleID, `BindKeyword`, key)
 	}
 
 	if err != nil {
@@ -484,6 +485,10 @@ func parseTargetRules(raw string) (TargetRules, error) {
 	if err != nil {
 		return badTargetRules, err
 	}
+	if _t.String() == `` {
+		err = noValueErr(TargetRules{}, `targetrules`)
+		return badTargetRules, err
+	}
 
 	return processTargetRules(_t)
 }
@@ -559,6 +564,10 @@ func (r *TargetRule) assertExpressionValue() (err error) {
 	// will make things simpler.
 	var ex any
 
+	// prepare this error ahead of time to
+	// avoid untestable codecov gaps.
+	err = badPTBRuleKeywordErr(expr, targetRuleID, `TargetKeyword`, r.Keyword())
+
 	// perform a target keyword switch upon
 	// a resolution attempt of the value.
 	switch key := matchTKW(r.Keyword().String()); key {
@@ -597,10 +606,6 @@ func (r *TargetRule) assertExpressionValue() (err error) {
 		// value is a target, target_to or target_from
 		// expressive statement, possibly multi-valued
 		ex, err = assertTargetTFDN(expr, key)
-
-	default:
-		// value is ... bogus
-		err = badPTBRuleKeywordErr(expr, targetRuleID, `TargetKeyword`, key)
 	}
 
 	if err != nil {
