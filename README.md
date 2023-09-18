@@ -2,7 +2,7 @@
 
 ## Overview
 
-Package aci implements the complete ACIv3 syntax in a vendor-agnostic manner with rich features.
+Package aci implements the complete ACIv3 syntax as an SDK in a vendor-agnostic manner with rich features and a flexible design.
 
 ## License
 
@@ -39,19 +39,25 @@ Per the badge in the header, this package is to be regarded as highly experiment
 
 Design for this package began during June of 2023. As such, it is quite infantile and has not been subjected to any known use in the wild.
 
-Because of this, it should NOT be used in any production or mission-critical context. The only appropriate applications for this package, at
-the time of this writing, are those confined to R&D, PoC, testing and other low-or-no-risk scenarios.
+Because of this, it should NOT be used in any production or mission-critical context without extreme scrutiny.
 
-However, should the [code coverage](https://app.codecov.io/gh/JesseCoretta/go-aci) factor reach __95% or higher__, the package shall be bumped
-up to a production release number (e.g.: `v1.0.0`+) and no longer regarded nor advertised as "experimental". The experimental badge within
-the header of this document shall also be removed.
+The only "safe" applications for this package -- at the time of this writing -- are those confined to R&D, PoC, testing and other low-or-no-risk
+scenarios.
+
+Adoption of this package is NOT a substitute for a comprehensive ACI review process. It is intended to reduce tedium, _not_ assume full responsibility
+for ACI authorship and management.
+
+If you want to try and tie some A.I into this, thats your business -- but don't complain to me when some emerging intelligence locks you out of your
+DIT because it considers you a threat. 🤓
 
 ## About ACIs
 
-An ACI[^1] is a directive that is used to disclose or withhold information based on a predefined set of conditions, as well
-as control the abilities of users with varying levels of granularity. Within the spirit of this package, the ACI syntax is
-a means for securing information within an X.500/LDAP[^2] DIT[^3], and is supported by multiple directory products on the market
-today.
+Within the context of ACIv3, An ACI[^1] is an expressive statement or "policy" that is used to define the disclosing or withholding of information
+for an X.500/LDAP[^2] DIT[^3] as it pertains to its userbase.
+
+In layperson's terms, ACIs are a specific and (largely) non-proprietary form of "LDAP permissions" that govern who can read, write, search, etc.
+
+Not all LDAP server implementations support the ACIv3 syntax, but several do. Check your vendor or reference material for compatibility information.
 
 [^1]: Access Control Instruction
 [^2]: ITU-T X-Series 500 / Lightweight Directory Access Protocol ([`X.500`](https://www.itu.int/rec/T-REC-X.500) and [RFC4510](https://datatracker.ietf.org/doc/html/rfc4510), et al)
@@ -60,16 +66,17 @@ today.
 ## Implementation Compatibility Notice
 
 The ACIv3 syntax, though largely the same across the multiple supporting directory products that have adopted it, does have
-a few variations in terms of available keywords and features. Though this is not a comprehensive list, a few of these cases
-are listed below:
+a few variations in terms of available keywords and features.
 
-- TargetRule scoping, through the targetscope keyword
-- BindRule DN[^4] roles, through the roledn keyword
-- Group attribute-based value matching, through the groupattr keyword
-- LDAP Extended Operation OID[^5] definitions, through the extop keyword
-- LDAP Control OID definitions, through the targetcontrol keyword
-- Rights definitions, such as Import and Export
-- Permitted 'levels' for inheritance value matching
+Though this is not a comprehensive list, a few of these cases are listed below:
+
+- TargetRule scoping, through the `targetscope` keyword
+- BindRule DN[^4] roles, through the `roledn` keyword
+- Group attribute-based value matching, through the `groupattr` keyword
+- LDAP Extended Operation OID[^5] definitions, through the `extop` keyword
+- LDAP Control OID definitions, through the `targetcontrol` keyword
+- Rights definitions, such as `import` and `export`
+- Number of supported 'levels' for inheritance value matching
 
 This package aims to support *ALL* of the facets of the ACIv3 syntax without exception. Users will need to verify, however,
 that any ACI definitions generated -- in part or in whole as a result of using this package -- are compatible with their
@@ -114,10 +121,10 @@ particular X.500/LDAP DSA[^6] implementation; check the docs and always listen t
   - Overall package design is meant to honor all of the facets of the ACIv3 specification **_in its entirety_**
   - No single vendor implementation is catered-to exclusively
   - So-called "Happy Mediums" were chosen at all possible points, favoring the exclusion of _no one_ over any vendor-partisan implementation
-  - Quite simply, the chances are good that this package supports **_more_** of the ACIv3 syntax than your actual LDAP product does
+  - Quite simply: chances are good that this package supports **_more_** of the ACIv3 syntax than your actual LDAP product does
 - Flexible
   - ACI composition can be approached in a variety of ways, without enforcing any particular "style"
-  - Parenthetical encapsulation can be enabled or disabled for select (and eligible) type instances when desired, or set globally
+  - Parenthetical encapsulation, padding and other attributes can be enabled or disabled for select (and eligible) type instances when desired, or even set globally in certain cases
   - Two (2) distinct quotation styles are supported for multi-valued DNs, OIDs and ATs present within eligible BindRule and/or TargetRule instances; see [here](#quotation-schemes) for details
   - Fluent-style "method chaining" is supported, but not required
   - Most values can be assigned and set 'piecemeal', or in an 'all-in-one-shot' context
@@ -144,8 +151,8 @@ var br BindRule
 // your BindRule instance's Parse
 // method ...
 if err := br.Parse(raw); err != nil {
-	fmt.Println(err) // always check your parser errors
-	return
+        fmt.Println(err) // always check your parser errors
+        return
 }
 ```
 
@@ -177,8 +184,7 @@ This package could conceivably be used in any of the following scenarios:
 
 - For Directory security audits that pertain to, or include, access control review
 - For Directory personnel in charge of authoring and/or managing rich documentation
-- For Directory personnel who desire a means to author and/or manage sets of ACIs in a more programmatic / automated manner, perhaps
-with the aid of a templating system
+- For Directory personnel who desire a means to author and/or manage sets of ACIs in a more programmatic / automated manner, perhaps with the aid of a templating system
 - For use as an access control framework within an actual (Go-based) Directory System Agent implementation that honors the ACI syntax
 - For generalized experimentation within the realm of DSA access control design and even PEN[^8] testing
 
@@ -189,10 +195,11 @@ with the aid of a templating system
 The go-aci package (straight out of the box, so to speak) is not an access control decision-making framework unto itself -- that
 particular functionality would reside in the X.500/LDAP server to be protected *through the use of ACIs*.
 
-However this package could be leveraged to CRAFT such a framework, given all of the syntax-defined types are made available to the
+However this package could be leveraged to craft such a framework, given all of the syntax-defined types are made available to the
 end user. If users wish to approach this concept, they are advised to leverage the underlying [`go-stackage`](https://github.com/JesseCoretta/go-stackage)
 Stack type's methods for implementing evaluatory capabilities, such as attribute value assertion checks and the like. This would
-conceivably allow the use of matchingRule and ldapSyntax operations that precede attribute value disclosure/withholding.
+conceivably allow the use of `matchingRule` and `ldapSyntax` operations that precede attribute value disclosure/withholding (hint:
+take a look at [`go-schemax`](https://github.com/JesseCoretta/go-schemax) if this capability interests you).
 
 ## Comparison Operators
 
@@ -255,8 +262,8 @@ schemes should be honored by the user except that quotation should always be use
 ## Contribution Encouraged
 
 The ACIv3 syntax is fairly complex, rendering its innate flexibility akin to a double-edged sword. As such there may be errors, or
-concepts overlooked by the author within this package. Users are STRONGLY ENCOURAGED TO SPEAK UP if they perceive a feature or some
-behavioral trait of the package to be suboptimal or incomplete in some manner.
+concepts overlooked by the author within this package. Users are **strongly encouraged to speak up** if they perceive a feature or
+some behavioral trait of the package to be suboptimal or incomplete in some manner.
 
 See [issues](https://github.com/JesseCoretta/go-aci/issues) for all bug reports -- past and present -- as well as a means to file
 new ones.
@@ -286,4 +293,3 @@ values unintentionally. This particular case is well-documented in vendor manual
 reasons). Users are advised to LEARN the syntax well enough to know when to take such risks.
 
 [^10]: Cover Your ~~_REDACTED_~~ **Gluteus Maximus**
-
