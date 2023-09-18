@@ -950,64 +950,60 @@ func dnToCondition(dest any, op ComparisonOperator) (any, bool) {
 	return badBindRule, false
 }
 
-func bindDNToCondition(dest any, op ComparisonOperator) (BindRule, bool) {
-	var b BindRule
+func bindDNToCondition(dest any, op ComparisonOperator) (b BindRule, ok bool) {
+	b = badBindRule
+	var value any
+	var kw Keyword
 	switch tv := dest.(type) {
 	case BindDistinguishedName:
 		if tv.IsZero() {
-			return badBindRule, false
+			return
 		}
-
-		if tv.Keyword() == BindKeyword(0x0) {
-			return badBindRule, false
-		}
-		b = BR(tv.Keyword(), op, tv)
+		value = tv
+		kw = tv.Keyword()
 
 	case BindDistinguishedNames:
 		if tv.IsZero() {
-			return badBindRule, false
+			return
 		}
-
-		if tv.Keyword() == BindKeyword(0x0) {
-			return badBindRule, false
-		}
-		b = BR(tv.Keyword(), op, tv)
-
-	default:
-		return badBindRule, false
+		value = tv
+		kw = tv.Keyword()
 	}
 
-	return b, true
+	if value != nil {
+		b = BR(kw, op, value)
+		ok = true
+	}
+
+	return
 }
 
-func targetDNToCondition(dest any, op ComparisonOperator) (TargetRule, bool) {
-	var t TargetRule
+func targetDNToCondition(dest any, op ComparisonOperator) (t TargetRule, ok bool) {
+	t = badTargetRule
+	var value any
+	var kw Keyword
 	switch tv := dest.(type) {
 	case TargetDistinguishedName:
 		if tv.IsZero() {
-			return badTargetRule, false
+			return
 		}
-
-		if matchTKW(tv.Keyword().String()) == TargetKeyword(0x0) {
-			return badTargetRule, false
-		}
-		t = TR(tv.Keyword(), op, tv)
+		value = tv
+		kw = tv.Keyword()
 
 	case TargetDistinguishedNames:
 		if tv.IsZero() {
-			return badTargetRule, false
+			return
 		}
-
-		if matchTKW(tv.Keyword().String()) == TargetKeyword(0x0) {
-			return badTargetRule, false
-		}
-		t = TR(tv.Keyword(), op, tv)
-
-	default:
-		return badTargetRule, false
+		value = tv
+		kw = tv.Keyword()
 	}
 
-	return t, true
+	if value != nil {
+		t = TR(kw, op, value)
+		ok = true
+	}
+
+	return
 }
 
 /*
@@ -1329,12 +1325,6 @@ func (r BindDistinguishedNames) contains(x any) bool {
 		candidate = tv.String()
 	case LDAPURI:
 		candidate = tv.String()
-	default:
-		return false
-	}
-
-	if len(candidate) == 0 {
-		return false
 	}
 
 	for i := 0; i < r.Len(); i++ {
@@ -1406,12 +1396,6 @@ func (r TargetDistinguishedNames) contains(x any) bool {
 		candidate = dn.String()
 	case TargetDistinguishedName:
 		candidate = tv.String()
-	default:
-		return false
-	}
-
-	if len(candidate) == 0 {
-		return false
 	}
 
 	for i := 0; i < r.Len(); i++ {

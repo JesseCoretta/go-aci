@@ -218,6 +218,10 @@ func TestBindDistinguishedNames_codecov(t *testing.T) {
 
 			Ol = Os.Len()
 			Os.Push(O)
+			Os.Push(``)
+			Os.Push(nil)
+			Os.Push('a')
+			Os.Contains(dn)
 			Os.Push(Os.Pop())
 			Os.Push(O) // try to introduce duplicate
 			Id = Os.ID()
@@ -313,6 +317,10 @@ func TestTargetDistinguishedNames_codecov(t *testing.T) {
 
 			Ol = Os.Len()
 			Os.Push(O)
+			Os.Push(``)
+			Os.Push(nil)
+			Os.Push('a')
+			Os.Contains(dn)
 			Os.Push(Os.Pop())
 			Os.Push(O) // try to introduce duplicate
 			Id = Os.ID()
