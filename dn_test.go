@@ -228,9 +228,11 @@ func TestBindDistinguishedNames_codecov(t *testing.T) {
 
 			Ol = Os.Len()
 			Os.Push(O)
+			Os.Push()
 			Os.Push(``)
 			Os.Push(nil)
 			Os.Push('a')
+			Os.Push(URI(`ldap:///ou=People,dc=example,dc=com?cn,sn,givenName?one?(&(objectClass=contractor)(status=active))`))
 			Os.Contains(dn)
 			Os.Push(Os.Pop())
 			Os.Push(O) // try to introduce duplicate

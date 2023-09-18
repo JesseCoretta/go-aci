@@ -1307,9 +1307,7 @@ func (r BindDistinguishedNames) contains(x any) bool {
 	case string:
 		dn := r.F()(tv)
 		candidate = dn.String()
-	case BindDistinguishedName:
-		candidate = tv.String()
-	case LDAPURI:
+	case DistinguishedNameContext:
 		candidate = tv.String()
 	}
 
