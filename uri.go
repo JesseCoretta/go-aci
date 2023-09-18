@@ -137,9 +137,7 @@ func parseLDAPURI(x string, bkw ...BindKeyword) (L LDAPURI, err error) {
 	// iterate each value produced through split
 	// on question mark and massage values into
 	// LDAP URI appropriate component values ...
-	if err = l.assertURIComponents(split(uri, `?`), bkw...); err != nil {
-		return
-	}
+	err = l.assertURIComponents(split(uri, `?`), bkw...)
 
 	// Envelope ldapURI instance and send it off
 	L = LDAPURI{l}
@@ -502,12 +500,6 @@ func (r ldapURI) string() string {
 			param = sprintf("?%s", r.attrs)
 		} else {
 			param = "?"
-		}
-
-		// Use this opportunity to supplant a misplaced
-		// Subordinate scope with the default BaseObject
-		if r.scope == Subordinate {
-			r.scope = BaseObject
 		}
 
 		// Be sure to call the standard scope here,
