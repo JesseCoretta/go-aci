@@ -58,10 +58,8 @@ func (r *BindRules) Parse(raw string) error {
 	if err != nil {
 		return err
 	}
+
 	switch tv := _r.(type) {
-	case BindRule:
-		r.reset()
-		r.Push(tv)
 	case BindRules:
 		*r = tv
 	}
@@ -496,11 +494,7 @@ func parseTargetRules(raw string) (TargetRules, error) {
 func processTargetRules(stack any) (TargetRules, error) {
 	var err error
 
-	_z, ok := castAsStack(stack)
-	if !ok {
-		err = errorf("Invalid input type %T; expecting stackage.Stack", stack)
-		return badTargetRules, err
-	}
+	_z, _ := castAsStack(stack)
 
 	// create our (eventual) return object.
 	t := TRs()
@@ -796,10 +790,7 @@ func assertTargetAttrFilters(expr parser.RuleExpression) (ex AttributeFilterOper
 	} else {
 		// The only other thing it could be is a bare AttributeFilter.
 		var af AttributeFilter
-		if af, err = parseAttributeFilter(value); err != nil {
-			return
-		}
-
+		af, err = parseAttributeFilter(value)
 		ex = AFOs(AddOp.AFO(af)) // we have to choose one, 'add' seems safer than 'delete'
 	}
 
@@ -962,12 +953,7 @@ func processPermissionBindRule(pbr parser.PermissionBindRule) (PermissionBindRul
 func processPermissionBindRules(stack any) (PermissionBindRules, error) {
 	var err error
 
-	_pbrs, ok := castAsStack(stack)
-	if !ok {
-		err = errorf("Invalid input type %T; expecting stackage.Stack", stack)
-		return badPermissionBindRules, err
-	}
-
+	_pbrs, _ := castAsStack(stack)
 	var pbrs PermissionBindRules = PBRs()
 	for i := 0; i < _pbrs.Len(); i++ {
 		slice, _ := _pbrs.Index(i)
