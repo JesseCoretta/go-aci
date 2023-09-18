@@ -161,13 +161,6 @@ func (r SecurityStrengthFactor) IsZero() bool {
 		return true
 	}
 
-	return r.ssf.isZero()
-}
-
-func (r *ssf) isZero() bool {
-	if r == nil {
-		return true
-	}
 	return r.uint8 == nil
 }
 
@@ -260,7 +253,7 @@ String is a stringer method that returns the string representation
 of the receiver instance.
 */
 func (r SecurityStrengthFactor) String() string {
-	if r.isZero() {
+	if r.IsZero() {
 		return `0`
 	}
 	return sprintf("%d", int((*r.ssf.uint8))+1)
@@ -287,14 +280,16 @@ the purpose of signature consistency throughout the package.
 func (r SecurityStrengthFactor) Valid() error { return nil }
 
 func (r SecurityStrengthFactor) clear() {
-	if r.ssf.isZero() {
+	if r.IsZero() {
 		return
 	}
 	r.ssf.clear()
 }
 
 func (r *ssf) clear() {
-	r.uint8 = nil
+	if r != nil {
+		r.uint8 = nil
+	}
 }
 
 /*

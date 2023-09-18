@@ -11,6 +11,7 @@ func TestSecurityStrengthFactor(t *testing.T) {
 		typ    string = BindSSF.String()
 		err    error
 	)
+	factor.set(nil)
 
 	for i := 0; i < 257; i++ {
 		want := itoa(i) // what we expect (string representation)
@@ -73,6 +74,8 @@ func TestAuthenticationMethod(t *testing.T) {
 	_ = noAuth.Eq()
 	_ = noAuth.Ne()
 
+	AuthenticationMethodLowerCase = true
+
 	for idx, auth := range authMap {
 		if matchAuthenticationMethod(idx) == noAuth {
 			t.Errorf("%s failed: unable to match auth method by index (%d)",
@@ -84,6 +87,8 @@ func TestAuthenticationMethod(t *testing.T) {
 			return
 		}
 	}
+
+	AuthenticationMethodLowerCase = false
 }
 
 func ExampleSecurityStrengthFactor_Set_byWordNoFactor() {
