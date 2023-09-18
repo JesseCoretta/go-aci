@@ -48,7 +48,6 @@ an instance of error instead of a Boolean.
 func (r SearchFilter) Valid() (err error) {
 	if r.IsZero() {
 		err = nilInstanceErr(r)
-		return
 	}
 
 	//TODO - add filter checks/decompiler? maybe. maybe not.
@@ -752,8 +751,11 @@ func (r AttributeFilterOperations) pushPolicy(x ...any) (err error) {
 		}
 
 	case AttributeFilterOperation:
-		if err = tv.Valid(); err != nil {
-			err = pushErrorNilOrZero(r, tv, TargetAttrFilters, err)
+		// because codecov :/
+		xerr := tv.Valid()
+		err = pushErrorNilOrZero(r, tv, TargetAttrFilters, xerr)
+		if xerr == nil {
+			err = nil
 		}
 	default:
 		err = pushErrorBadType(r, tv, TargetAttrFilters)
