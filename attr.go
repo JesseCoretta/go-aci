@@ -365,18 +365,23 @@ func parseATBTV(x string, bkw ...any) (A AttributeBindTypeOrValue, err error) {
 	// use the default of userattr.
 	kw := assertATBTVBindKeyword(bkw...)
 
+	at := AT(x[:idx])
+	av := AV(x[idx+1:])
+
+	if at.String() == badAT {
+		err = badAttributeBindTypeOrValueErr(x)
+		return
+	}
+
 	// If the remaining portion of the value is, in
 	// fact, a known BIND TYPE keyword, pack it up
 	// and ship it out.
 	if bt := matchBT(x[idx+1:]); bt != BindType(0x0) {
-		A = userOrGroupAttr(kw, AT(x[:idx]), bt)
+		A = userOrGroupAttr(kw, at, bt)
 		return
 	}
 
-	// Remaining portion of the value would appear
-	// to be an attribute value, so pack it up and
-	// send it off.
-	A = userOrGroupAttr(kw, AT(x[:idx]), AV(x[idx+1:]))
+	A = userOrGroupAttr(kw, at, av)
 	return
 }
 

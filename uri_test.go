@@ -22,6 +22,7 @@ func TestLDAPURI_Parse(t *testing.T) {
 		_ = x.Valid()
 		_ = x.Eq()
 		_ = x.Ne()
+		_ = x.Kind()
 		x.isDistinguishedNameContext()
 
 		if got := x.String(); want != got {
@@ -29,6 +30,14 @@ func TestLDAPURI_Parse(t *testing.T) {
 				t.Name(), want, got)
 			return
 		}
+	}
+
+	donotwant := `ldap:///ou=People,dc=example,dc=com?#SELFDN`
+	var x LDAPURI
+	if err := x.Parse(donotwant); err == nil {
+		t.Errorf("%s failed: no error where one was expected",
+			t.Name())
+		return
 	}
 }
 
@@ -44,6 +53,8 @@ func TestURI_initParse(t *testing.T) {
 func TestURI_bindRules(t *testing.T) {
 	var x LDAPURI
 	_ = x.Keyword()
+	_ = x.String()
+	_ = x.Valid()
 
 	// codecov
 	if !x.Eq().IsZero() {
