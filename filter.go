@@ -332,9 +332,6 @@ func (r AttributeFilter) Valid() (err error) {
 	if r.IsZero() {
 		err = nilInstanceErr(r)
 		return
-	} else if r.atf == nil {
-		err = nilInstanceErr(r)
-		return
 	}
 
 	if r.atf.SearchFilter.IsZero() {
@@ -476,10 +473,6 @@ func (r AttributeFilterOperations) contains(x any) bool {
 	case AttributeFilterOperation:
 		candidate = tv.String()
 	default:
-		return false
-	}
-
-	if len(candidate) == 0 {
 		return false
 	}
 
@@ -928,10 +921,6 @@ func (r AttributeFilterOperation) contains(x any) bool {
 	case AttributeFilter:
 		candidate = tv.String()
 	default:
-		return false
-	}
-
-	if len(candidate) == 0 {
 		return false
 	}
 
