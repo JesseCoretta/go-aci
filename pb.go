@@ -367,6 +367,9 @@ func (r PermissionBindRules) contains(x any) bool {
 		}
 		candidate = pbr
 	case PermissionBindRule:
+		if err := tv.Valid(); err != nil {
+			return false
+		}
 		candidate = tv
 	default:
 		return false
