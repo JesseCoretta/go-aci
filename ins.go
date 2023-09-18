@@ -213,7 +213,7 @@ func (r Instructions) Push(x ...any) Instructions {
 			if err := ins.Parse(tv); err == nil {
 				_r.Push(ins)
 			}
-		case Instruction:
+		default:
 			_r.Push(tv)
 		}
 	}
