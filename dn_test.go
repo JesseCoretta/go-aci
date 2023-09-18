@@ -336,6 +336,7 @@ func TestTargetDistinguishedNames_codecov(t *testing.T) {
 
 			Ol = Os.Len()
 			Os.Push(O)
+			Os.Push()
 			Os.Push(``)
 			Os.Push(nil)
 			Os.Push('a')
