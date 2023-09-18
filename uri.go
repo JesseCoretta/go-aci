@@ -190,11 +190,7 @@ func (r *ldapURI) assertURIComponents(vals []string, kw ...BindKeyword) (err err
 
 		case 3:
 			// case match is LDAP Search Filter
-			filt := Filter(vals[i])
-			if err = filt.Valid(); err != nil {
-				return
-			}
-			r.set(filt)
+			r.set(Filter(vals[i]))
 		}
 	}
 

@@ -6,23 +6,29 @@ import (
 )
 
 func TestLDAPURI_Parse(t *testing.T) {
-	var x LDAPURI
-	want := `ldap:///ou=People,dc=example,dc=com?cn,sn,givenName,objectClass,uid?one?(&(objectClass=employee)(employeeStatus=active))`
-	if err := x.Parse(want); err != nil {
-		t.Errorf("%s failed [LDAPURI.Parse()]: %v",
-			t.Name(), err)
-		return
-	}
-	_ = x.String()
-	_ = x.Valid()
-	_ = x.Eq()
-	_ = x.Ne()
-	x.isDistinguishedNameContext()
 
-	if got := x.String(); want != got {
-		t.Errorf("%s failed: [LDAPURI.Parse(compare)]:\nwant: '%s'\ngot:  '%s'",
-			t.Name(), want, got)
-		return
+	for _, want := range []string{
+		`ldap:///ou=People,dc=example,dc=com?cn,sn,givenName,objectClass,uid?one?(&(objectClass=employee)(employeeStatus=active))`,
+		`ldap:///ou=People,dc=example,dc=com?manager#SELFDN`,
+		`ldap:///ou=People,dc=example,dc=com??sub?`,
+	} {
+		var x LDAPURI
+		if err := x.Parse(want); err != nil {
+			t.Errorf("%s failed [LDAPURI.Parse()]: %v",
+				t.Name(), err)
+			return
+		}
+		_ = x.String()
+		_ = x.Valid()
+		_ = x.Eq()
+		_ = x.Ne()
+		x.isDistinguishedNameContext()
+
+		if got := x.String(); want != got {
+			t.Errorf("%s failed: [LDAPURI.Parse(compare)]:\nwant: '%s'\ngot:  '%s'",
+				t.Name(), want, got)
+			return
+		}
 	}
 }
 
