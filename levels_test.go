@@ -245,6 +245,13 @@ func ExampleLevels_Compare() {
 }
 
 func TestLevels_bogus(t *testing.T) {
+	var l1 Levels
+	_ = l1.String()
+	_ = l1.Positive(noLvl)
+	_ = l1.Positive(Level8)
+	_ = l1.Positive(8)
+	_ = l1.Positive(`8`)
+
 	var inh Inheritance
 	if err := inh.Valid(); err == nil {
 		t.Errorf("%s failed: invalid %T returned no validity error",
