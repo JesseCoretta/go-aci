@@ -64,59 +64,62 @@ func parseDoW(d string) (D DayOfWeek, err error) {
 	return
 }
 
-func matchDoW(d any) Day {
+func matchDoW(d any) (D Day) {
+	D = noDay
 	switch tv := d.(type) {
 	case int:
-		return matchIntDoW(tv)
+		D = matchIntDoW(tv)
 	case string:
-		return matchStrDoW(tv)
+		D = matchStrDoW(tv)
 	case Day:
-		return tv
+		D = tv
 	}
 
-	return noDay
+	return
 }
 
-func matchStrDoW(d string) Day {
+func matchStrDoW(d string) (D Day) {
+	D = noDay
 	switch lc(d) {
 	case `sun`, `sunday`, `1`:
-		return Sun
+		D = Sun
 	case `mon`, `monday`, `2`:
-		return Mon
+		D = Mon
 	case `tues`, `tuesday`, `3`:
-		return Tues
+		D = Tues
 	case `wed`, `wednesday`, `4`:
-		return Wed
+		D = Wed
 	case `thur`, `thurs`, `thursday`, `5`:
-		return Thur
+		D = Thur
 	case `fri`, `friday`, `6`:
-		return Fri
+		D = Fri
 	case `sat`, `saturday`, `7`:
-		return Sat
+		D = Sat
 	}
 
-	return noDay
+	return
 }
 
-func matchIntDoW(d int) Day {
+func matchIntDoW(d int) (D Day) {
+	D = noDay
 	switch d {
 	case 1:
-		return Sun
+		D = Sun
 	case 2:
-		return Mon
+		D = Mon
 	case 3:
-		return Tues
+		D = Tues
 	case 4:
-		return Wed
+		D = Wed
 	case 5:
-		return Thur
+		D = Thur
 	case 6:
-		return Fri
+		D = Fri
 	case 7:
-		return Sat
+		D = Sat
 	}
 
-	return noDay
+	return
 }
 
 /*
@@ -176,11 +179,12 @@ for summation in this manner.
 Supplying an invalid or nonapplicable ComparisonOperator to this method shall return a bogus
 BindRule instance.
 */
-func Weekdays(cop any) BindRule {
+func Weekdays(cop any) (b BindRule) {
+	b = badBindRule
 	if c, meth := DoW(Mon, Tues, Wed, Thur, Fri).BRM().index(cop); c.Valid() == nil {
-		return meth()
+		b = meth()
 	}
-	return badBindRule
+	return
 }
 
 /*
@@ -192,11 +196,12 @@ for summation in this manner.
 Supplying an invalid or nonapplicable ComparisonOperator to this method shall return a bogus
 BindRule instance.
 */
-func Weekend(cop any) BindRule {
+func Weekend(cop any) (b BindRule) {
+	b = badBindRule
 	if c, meth := DoW(Sun, Sat).BRM().index(cop); c.Valid() == nil {
-		return meth()
+		b = meth()
 	}
-	return badBindRule
+	return
 }
 
 /*
@@ -240,9 +245,6 @@ func (r *DayOfWeek) Unshift(x Day) *DayOfWeek {
 IsZero returns a Boolean value indicative of whether the receiver is nil, or unset.
 */
 func (r DayOfWeek) IsZero() bool {
-	if &r == nil {
-		return true
-	}
 	return r.days == nil
 }
 
@@ -564,11 +566,12 @@ func (r TimeOfDay) String() string {
 /*
 string is a private stringer called by TimeOfDay.String.
 */
-func (r *timeOfDay) string() string {
-	if r == nil {
-		return badToD
+func (r *timeOfDay) string() (s string) {
+	s = badToD
+	if r != nil {
+		s = sprintf("%04d", uint16g([]byte{(*r)[0], (*r)[1]}))
 	}
-	return sprintf("%04d", uint16g([]byte{(*r)[0], (*r)[1]}))
+	return
 }
 
 /*

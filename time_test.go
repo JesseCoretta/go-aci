@@ -533,6 +533,7 @@ func TestTime_codecov(t *testing.T) {
 	_ = tod.Ge()
 	_ = tod.Le()
 	_ = tod.Lt()
+	_ = tod.String()
 	_ = tod.Valid()
 	_ = tod.Set(``)
 	_ = tod.BRM()
@@ -546,6 +547,7 @@ func TestDay_codecov(t *testing.T) {
 	_ = dow.Shift(noDay)
 	_ = dow.Eq()
 	_ = dow.Ne()
+	_ = dow.String()
 	_ = dow.Valid()
 	_ = dow.BRM()
 }
