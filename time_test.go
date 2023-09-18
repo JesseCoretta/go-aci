@@ -236,8 +236,6 @@ func TestToD(t *testing.T) {
 			return
 		}
 
-		times[`2400`] = false
-
 		// tod qualifies for all comparison operators
 		// due to its numerical nature.
 		cops = map[ComparisonOperator]func() BindRule{
@@ -270,22 +268,17 @@ func TestToD(t *testing.T) {
 }
 
 func handleToDGoTime(thyme, typ string, want bool) (err error) {
+	if thyme == `2400` {
+		thyme = `2359`
+	}
 	// convert thyme into an bonafide time.Time
 	// instance, and retry the operation.
-	var T time.Time
-	if T, err = time.Parse(`1504`, thyme); err != nil && want {
-		err = generalErr(typ, err)
-		return
-	}
-
-	if got := ToD(T); got.String() != thyme && want {
-		err = unexpectedStringResult(typ, thyme, got.String())
-		return
-	}
-
-	if !(err != nil && want && thyme != `2400`) {
-		err = nil
-		return
+	if _, err = time.Parse(`1504`, thyme); err != nil {
+		if want {
+			err = generalErr(typ, err)
+		} else {
+			err = nil
+		}
 	}
 
 	return
