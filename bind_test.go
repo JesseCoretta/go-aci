@@ -64,6 +64,7 @@ func TestBindRule_bogus(t *testing.T) {
 	var br BindRule
 	br.isBindContextQualifier() // just to satisfy codecov.
 	_ = br.ID()
+	_ = br.Index(0)
 	_ = br.Category()
 	_ = br.IsZero()
 	_ = br.Paren()
@@ -503,9 +504,14 @@ func ExampleBindRule_Valid() {
 
 func ExampleBindRule_SetQuoteStyle() {
 	var tgt BindRule
+	tgt.SetKeyword(BindUDN)
+
 	tgt.Init()
 
 	tgt.SetKeyword(BindUDN)
+	tgt.SetOperator(`!=`)
+	tgt.SetOperator(2)
+	tgt.SetOperator(54738372)
 	tgt.SetOperator(Ne)
 	tgt.SetExpression(UDNs(
 		UDN(`ldap:///uid=jesse,ou=People,dc=example,dc=com`),

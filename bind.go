@@ -380,10 +380,6 @@ func (r BindRule) Valid() (err error) {
 		err = nilInstanceErr(r)
 		return
 	}
-	if r.Keyword() == nil {
-		err = badPTBRuleKeywordErr(r, bindRuleID, `bindkeyword`, `bad keyword`)
-		return
-	}
 
 	_t := castAsCondition(r)
 	err = _t.Valid()
