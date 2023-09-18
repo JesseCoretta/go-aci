@@ -705,7 +705,8 @@ func TestAttrs_codecov(t *testing.T) {
 func TestAttributeTypes(t *testing.T) {
 
 	for keyword, atfn := range map[Keyword]func(...any) AttributeTypes{
-		//BindUDN:    UAs,	/// TODO clean this up
+		BindUAT:    UAs, /// TODO clean this up
+		BindGAT:    UAs, /// TODO clean this up
 		TargetAttr: TAs,
 	} {
 		var attrs AttributeTypes
@@ -730,6 +731,16 @@ func TestAttributeTypes(t *testing.T) {
 		_ = attrs.Valid()
 
 		attrs = atfn()
+
+		attrs.Push()
+		attrs.Push(AT(``))
+		attrs.Push(keyword)
+		attrs.resetKeyword(keyword)
+		attrs.resetKeyword(keyword.String())
+		attrs.setQuoteStyle(1)
+		attrs.setQuoteStyle(0)
+		attrs.Contains(3.14159)
+		attrs.Push('𝝅')
 
 		for _, raw := range []string{
 			`cn`,

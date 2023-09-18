@@ -335,12 +335,13 @@ func (r *AttributeBindTypeOrValue) Parse(raw string, bkw ...any) (err error) {
 Valid returns an error indicative of whether the receiver is in
 an aberrant state.
 */
-func (r AttributeBindTypeOrValue) Valid() error {
-	if r.IsZero() {
-		return nilInstanceErr(r)
+func (r AttributeBindTypeOrValue) Valid() (err error) {
+	err = nilInstanceErr(r)
+	if !r.IsZero() {
+		err = nil
 	}
 
-	return nil
+	return
 }
 
 /*
@@ -896,12 +897,6 @@ func (r AttributeTypes) contains(x any) bool {
 		candidate = tv
 	case AttributeType:
 		candidate = tv.String()
-	default:
-		return false
-	}
-
-	if len(candidate) == 0 {
-		return false
 	}
 
 	for i := 0; i < r.Len(); i++ {
