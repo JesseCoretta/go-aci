@@ -170,21 +170,36 @@ defined within go-stackage. The BindRule or TargetRule, once it has
 been altered to one's satisfaction, can be sent off as intended and
 this "Condition Counterpart" can be discarded, or left for GC.
 */
-func castAsCondition(x any) (c *stackage.Condition) {
+func castAsCondition(x any) (c stackage.Condition) {
+	c = badCond(errorf("Unsupported cast type %T for %T", x, c))
 	switch tv := x.(type) {
 
 	// case match is a single BindRule instance
 	case BindRule:
-		C := stackage.Condition(tv)
-		return &C
+		c = stackage.Condition(tv)
 
 	// case match is a single TargetRule instance
 	case TargetRule:
-		C := stackage.Condition(tv)
-		return &C
+		c = stackage.Condition(tv)
 	}
 
-	return nil
+	return
+}
+
+func castAsBindRule(x any) BindRule {
+	assert, ok := x.(stackage.Condition)
+	if !ok {
+		return badBindRule
+	}
+	return BindRule(assert)
+}
+
+func castAsBindRules(x any) BindRules {
+	assert, ok := x.(stackage.Stack)
+	if !ok {
+		return badBindRules
+	}
+	return BindRules(assert)
 }
 
 /*
@@ -201,6 +216,8 @@ func castCop(x any) (cop ComparisonOperator) {
 	switch tv := x.(type) {
 	case stackage.ComparisonOperator:
 		cop = ComparisonOperator(tv)
+	case ComparisonOperator:
+		cop = tv
 	}
 
 	return
@@ -259,8 +276,6 @@ func isStackageCondition(stack any) (is bool) {
 
 func derefC(cond any) (c stackage.Condition) {
 	switch tv := cond.(type) {
-	case *stackage.Condition:
-		c = *tv
 	case stackage.Condition:
 		c = tv
 	}
@@ -359,5 +374,11 @@ func castFilterRules(x any) (S stackage.Stack, converted bool) {
 		converted = true
 	}
 
+	return
+}
+
+func badCond(err error) (bad stackage.Condition) {
+	bad.Init()
+	bad.SetErr(err)
 	return
 }

@@ -5,12 +5,34 @@ import (
 	"testing"
 )
 
+func TestParseAttributeBindTypeOrValue(t *testing.T) {
+	var avb AttributeBindTypeOrValue
+	_ = avb.Valid()
+	_ = avb.IsZero()
+	raw := `manager#SELFDN`
+
+	for _, kw := range []any{
+		3,
+		`groupattr`,
+		BindGAT,
+	} {
+		if err := avb.Parse(raw, kw); err != nil {
+			t.Errorf("%s failed: %v", t.Name(), err)
+			return
+		}
+	}
+}
+
 func TestParseBindRule(t *testing.T) {
 	want := `userdn = "ldap:///cn=Jesse Coretta,ou=People,dc=example,dc=com" || "ldap:///anyone"`
+	var temp BindRule
+	temp.SetExpression("fhjdsk")
 
 	var b BindRule
+	b.SetOperator(`=`)
 	var err error
 	_, _ = ParseBindRule(``)
+	_ = b.Parse(``)
 
 	if b, err = ParseBindRule(want); err != nil {
 		return
@@ -20,12 +42,39 @@ func TestParseBindRule(t *testing.T) {
 		t.Errorf("%s failed:\nwant '%s'\ngot '%s'", t.Name(), want, b)
 		return
 	}
+
+	if err = b.Parse(want); err != nil {
+		return
+	}
+
+	if want != b.String() {
+		t.Errorf("%s failed:\nwant '%s'\ngot '%s'", t.Name(), want, b)
+		return
+	}
+}
+
+func TestParseBindRules_codecov(t *testing.T) {
+	_, _ = convertBindRulesHierarchy(And())
+	temp := uncloak(And(And(And())))
+	_ = temp.replace(nil, 0)
+
+	single := `userdn = "ldap:///anyone"`
+	var b BindRules
+	var err error
+	if err = b.Parse(single); err != nil {
+		return
+	}
+
+	if b.String() != single {
+		t.Errorf("%s failed:\nwant '%s',\ngot  '%s'", t.Name(), single, b)
+		return
+	}
 }
 
 func TestParseBindRules(t *testing.T) {
 	want := `( ( ( userdn = "ldap:///anyone" ) AND ( ssf >= "71" ) ) AND NOT ( dayofweek = "Wed" OR dayofweek = "Fri" ) )`
 
-	var r BindRules
+	var r BindContext
 	var err error
 
 	_, _ = ParseBindRules(``)
@@ -52,37 +101,45 @@ func TestParseBindRules(t *testing.T) {
 	bl := r.Len()
 	orig := r.String()
 
-	r.Push(BindRules{})
+	R, _ := r.(BindRules)
+
+	R.Push(BindRules{})
 
 	var ctx BindContext = BindRule{}
 
-	if r.Push(ctx); r.Len() != bl {
+	if R.Push(ctx); r.Len() != bl {
 		t.Errorf("%s failed: bogus enveloped content was pushed into %T", t.Name(), r)
 		return
 	}
 
-	popped := r.Pop()
+	popped := R.Pop()
 	bl = r.Len()
 	if popped.String() != orig {
 		t.Errorf("%s failed: unexpected element popped; want '%s', got '%s'", t.Name(), orig, popped)
 		return
 	}
 
-	r.Push(popped)
-	r.remove(r.Len() - 1)
+	R.Push(popped)
+	R.remove(r.Len() - 1)
 	if r.Len() != bl {
 		t.Errorf("%s failed: content not removed from %T", t.Name(), r)
 		return
 	}
 
-	r.insert(popped, 0)
+	R.insert(popped, 0)
 	if r.Len() == bl {
 		t.Errorf("%s failed: content not inserted into %T", t.Name(), r)
 		return
 	}
 }
 
-func ExampleParseBindRules_messy() {
+func TestBindRules_Parse_codecov(t *testing.T) {
+	var br BindRules
+	_ = br.Parse(``)
+	_ = br.Parse(`%$#^&*iB%^*O%&^#G*%^*U(&%^S#&*%^#&*`)
+}
+
+func ExampleBindRules_Parse_messy() {
 	raw := `(
                         (
                                 ( userdn = "ldap:///anyone" ) AND
@@ -96,13 +153,40 @@ func ExampleParseBindRules_messy() {
 
 	br, err := ParseBindRules(raw)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(err) // always check your parser errors
 		return
 	}
 
 	called := br.Traverse(0, 0, 0)
 	fmt.Printf("%s", called)
 	// Output: ( userdn = "ldap:///anyone" )
+}
+
+func ExampleBindRules_Parse() {
+	raw := `( ssf >= "128" AND ( authmethod = "SASL" OR authmethod = "SSL" ) )`
+	var brs BindRules
+	if err := brs.Parse(raw); err != nil {
+		fmt.Println(err) // always check your parser errors
+		return
+	}
+
+	fmt.Printf("%s", brs.Traverse(0, 1, 0))
+	// Output: authmethod = "SASL"
+}
+
+func ExampleBindRule_Parse() {
+	raw := `ssf >= "128"`
+	var br BindRule
+	if err := br.Parse(raw); err != nil {
+		fmt.Println(err) // always check your parser errors
+		return
+	}
+
+	br.NoPadding(true)
+	br.Paren(true)
+
+	fmt.Printf("%s", br)
+	// Output: (ssf>="128")
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -417,7 +501,9 @@ func TestParseBindRule_postANTLR(t *testing.T) {
 	for typ, kwtests := range tests {
 		for kw, typtests := range kwtests {
 			for idx, value := range typtests {
-				br := new(BindRule).SetKeyword(kw)
+				var br BindRule
+				br.Init()
+				br.SetKeyword(kw)
 				for _, cop := range []ComparisonOperator{
 					Eq, Ne,
 				} {
@@ -441,8 +527,35 @@ func TestParseBindRule_postANTLR(t *testing.T) {
 	}
 }
 
-func TestParseTargetRule_postANTLR(t *testing.T) {
-	_, _ = ParseTargetRule(``) // codecov
+func TestParseTargetRule_postANTLR_codecov(t *testing.T) {
+	_, _ = ParseTargetRule(``)
+	want := `( target_to = "ldap:///ou=People,dc=example,dc=com" )`
+
+	var _t TargetRule
+	var err error
+	_, _ = ParseBindRule(``)
+	_ = _t.Parse(``)
+
+	if _t, err = ParseTargetRule(want); err != nil {
+		return
+	}
+
+	if want != _t.String() {
+		t.Errorf("%s failed:\nwant '%s'\ngot '%s'", t.Name(), want, _t)
+		return
+	}
+
+	if err = _t.Parse(want); err != nil {
+		return
+	}
+
+	if want != _t.String() {
+		t.Errorf("%s failed:\nwant '%s'\ngot '%s'", t.Name(), want, _t)
+		return
+	}
+}
+
+func TestParseTargetRule_postANTLR_extended(t *testing.T) {
 
 	tests := map[string]map[string]map[int][]string{
 		`valid`: {
@@ -573,9 +686,11 @@ func TestParseTargetRule_postANTLR(t *testing.T) {
 	for typ, kwtests := range tests {
 		for kw, typtests := range kwtests {
 			for idx, value := range typtests {
-				var tr *TargetRule
-				tr = new(TargetRule).SetKeyword(kw)
+				var tr TargetRule
+				tr.Init()
+				tr.SetKeyword(kw)
 				_ = tr.assertExpressionValue() // codecov
+				// TODO: replace with TRM
 				for _, cop := range []ComparisonOperator{
 					Eq, Ne,
 				} {
@@ -601,7 +716,26 @@ func TestParseTargetRule_postANTLR(t *testing.T) {
 
 func TestParseTargetRules(t *testing.T) {
 	//var trs TargetRules
-	_, _ = ParseTargetRule(``) // codecov
+	_, _ = ParseTargetRules(``) // codecov
+	bad_single := `target = "ldap:///uid=jesse,ou=People,dc=example,dc=com"`
+	single := `( target = "ldap:///uid=jesse,ou=People,dc=example,dc=com" )`
+	var b TargetRules
+	var err error
+	if err = b.Parse(bad_single); err == nil {
+		t.Errorf("%s failed: no error where one was expected",
+			t.Name())
+		return
+	}
+
+	if err = b.Parse(single); err != nil {
+		t.Errorf("%s failed: %v", t.Name(), err)
+		return
+	}
+
+	if b.String() != single {
+		t.Errorf("%s failed:\nwant '%s',\ngot  '%s'", t.Name(), single, b)
+		return
+	}
 }
 
 func TestParsePermission(t *testing.T) {
@@ -814,4 +948,54 @@ func ExampleInstruction_Parse() {
 
 	fmt.Printf("%s", ins)
 	// Output: ( target = "ldap:///uid=*,ou=People,dc=example,dc=com" )(version 3.0; acl "Limit people access to timeframe"; allow(read,search,compare) ( timeofday >= "1730" AND timeofday < "2400" );)
+}
+
+/*
+This example demonstrates the parsing of a single BindRule condition.
+
+A textual Bind Keyword, an appropriate ComparisonOperator as well as
+an appropriate expression value are submitted through the ParseBindRule
+package-level function, which in turn calls a similarly named antlraci
+function through which parsing is delegated.
+*/
+func ExampleParseBindRule() {
+	raw := `( userdn = "ldap:///cn=Jesse Coretta,ou=People,dc=example,dc=com" || "ldap:///cn=Courtney Tolana,ou=People,dc=example,dc=com" )`
+	br, err := ParseBindRule(raw)
+	if err != nil {
+		fmt.Println(err) // always check your parser errors
+		return
+	}
+	fmt.Printf("%T is parenthetical: %t", br, br.IsParen())
+	// Output: aci.BindRule is parenthetical: true
+}
+
+/*
+This example demonstrates the parsing of a TargetRules expressive statement
+containing multiple TargetRule conditions.
+*/
+func ExampleTargetRules_Parse() {
+	raw := `( targetscope="base" )(targetfilter="(&(objectClass=employee)(status=terminated))")(targetattr != "aci")"`
+	var trs TargetRules
+	if err := trs.Parse(raw); err != nil {
+		fmt.Println(err) // always check your parser errors
+		return
+	}
+
+	fmt.Printf("%s", trs.Index(1))
+	// Output: ( targetfilter = "(&(objectClass=employee)(status=terminated))" )
+}
+
+/*
+This example demonstrates the parsing of a single TargetRule condition.
+*/
+func ExampleTargetRule_Parse() {
+	raw := `(targetattr != "aci")"`
+	var tr TargetRule
+	if err := tr.Parse(raw); err != nil {
+		fmt.Println(err) // always check your parser errors
+		return
+	}
+
+	fmt.Printf("%s", tr.Expression())
+	// Output: aci
 }

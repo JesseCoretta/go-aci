@@ -19,6 +19,20 @@ func ExampleInheritance_BRM() {
 	// Output: 2 available comparison operator methods
 }
 
+func ExampleInheritance_String() {
+	attr := AT(`manager`)
+	uat := UAT(attr, AV(`uid=frank,ou=People,dc=example,dc=com`))
+	inh := Inherit(uat, 1, 3)
+	fmt.Printf("%s", inh)
+	// Output: parent[1,3].manager#uid=frank,ou=People,dc=example,dc=com
+}
+
+func ExampleInheritance_Valid() {
+	var inh Inheritance
+	fmt.Printf("%T.Valid: %t", inh, inh.Valid() == nil)
+	// Output: aci.Inheritance.Valid: false
+}
+
 func ExampleInheritance_Eq() {
 	attr := AT(`manager`)
 	uat := UAT(attr, AV(`uid=frank,ou=People,dc=example,dc=com`))
@@ -231,6 +245,13 @@ func ExampleLevels_Compare() {
 }
 
 func TestLevels_bogus(t *testing.T) {
+	var l1 Levels
+	_ = l1.String()
+	_ = l1.Positive(noLvl)
+	_ = l1.Positive(Level8)
+	_ = l1.Positive(8)
+	_ = l1.Positive(`8`)
+
 	var inh Inheritance
 	if err := inh.Valid(); err == nil {
 		t.Errorf("%s failed: invalid %T returned no validity error",

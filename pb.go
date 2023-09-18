@@ -161,8 +161,6 @@ func (r PermissionBindRule) valid() (err error) {
 
 	if r.B == nil {
 		return nilInstanceErr(r.B)
-	} else if err = r.B.Valid(); err != nil {
-		return
 	}
 
 	return
@@ -312,13 +310,20 @@ permissionBindRulesPushPolicy conforms to the PushPolicy interface signature
 defined within the go-stackage package. This private function is called during
 Push attempts to a PermissionBindRules instance.
 */
-func (r PermissionBindRules) pushPolicy(x any) (err error) {
-	if r.contains(x) {
-		err = pushErrorNotUnique(r, x, nil)
+func (r PermissionBindRules) pushPolicy(x ...any) (err error) {
+	if len(x) == 0 {
+		return
+	} else if x[0] == nil {
+		err = nilInstanceErr(x[0])
 		return
 	}
 
-	switch tv := x.(type) {
+	if r.contains(x[0]) {
+		err = pushErrorNotUnique(r, x[0], nil)
+		return
+	}
+
+	switch tv := x[0].(type) {
 	case PermissionBindRule:
 		if err = tv.Valid(); err != nil {
 			err = pushErrorNilOrZero(PermissionBindRules{}, tv, nil, err)
@@ -354,19 +359,10 @@ func (r PermissionBindRules) contains(x any) bool {
 
 	switch tv := x.(type) {
 	case string:
-		pbr, err := parsePermissionBindRule(tv)
-		if err != nil {
-			return false
-		}
+		pbr, _ := parsePermissionBindRule(tv)
 		candidate = pbr
 	case PermissionBindRule:
 		candidate = tv
-	default:
-		return false
-	}
-
-	if len(candidate.String()) == 0 {
-		return false
 	}
 
 	for i := 0; i < r.Len(); i++ {
@@ -394,7 +390,7 @@ func PBRs(x ...any) (pbr PermissionBindRules) {
 		SetID(pbrsRuleID).
 		SetDelimiter(rune(32)).
 		SetCategory(pbrsRuleID).
-		NoPadding(!StackPadding)
+		NoPadding(true)
 
 	// cast _p as a proper PermissionBindRules
 	// instance (pbr). We do it this way to gain

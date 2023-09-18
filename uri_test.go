@@ -6,17 +6,37 @@ import (
 )
 
 func TestLDAPURI_Parse(t *testing.T) {
-	want := `ldap:///ou=People,dc=example,dc=com?cn,sn,givenName,objectClass,uid?one?(&(objectClass=employee)(employeeStatus=active))`
-	var l LDAPURI
-	if err := l.Parse(want); err != nil {
-		t.Errorf("%s failed [LDAPURI.Parse()]: %v",
-			t.Name(), err)
-		return
+
+	for _, want := range []string{
+		`ldap:///ou=People,dc=example,dc=com?cn,sn,givenName,objectClass,uid?one?(&(objectClass=employee)(employeeStatus=active))`,
+		`ldap:///ou=People,dc=example,dc=com?manager#SELFDN`,
+		`ldap:///ou=People,dc=example,dc=com??sub?`,
+	} {
+		var x LDAPURI
+		if err := x.Parse(want); err != nil {
+			t.Errorf("%s failed [LDAPURI.Parse()]: %v",
+				t.Name(), err)
+			return
+		}
+		_ = x.String()
+		_ = x.Valid()
+		_ = x.Eq()
+		_ = x.Ne()
+		_ = x.Kind()
+		x.isDistinguishedNameContext()
+
+		if got := x.String(); want != got {
+			t.Errorf("%s failed: [LDAPURI.Parse(compare)]:\nwant: '%s'\ngot:  '%s'",
+				t.Name(), want, got)
+			return
+		}
 	}
 
-	if got := l.String(); want != got {
-		t.Errorf("%s failed: [LDAPURI.Parse(compare)]:\nwant: '%s'\ngot:  '%s'",
-			t.Name(), want, got)
+	donotwant := `ldap:///ou=People,dc=example,dc=com?#SELFDN`
+	var x LDAPURI
+	if err := x.Parse(donotwant); err == nil {
+		t.Errorf("%s failed: no error where one was expected",
+			t.Name())
 		return
 	}
 }
@@ -32,6 +52,9 @@ func TestURI_initParse(t *testing.T) {
 
 func TestURI_bindRules(t *testing.T) {
 	var x LDAPURI
+	_ = x.Keyword()
+	_ = x.String()
+	_ = x.Valid()
 
 	// codecov
 	if !x.Eq().IsZero() {
@@ -51,8 +74,8 @@ func TestURI_bindRules(t *testing.T) {
 
 	want := `userdn = "ldap:///ou=People,dc=example,dc=com??one?(&(objectClass=employee)(employeeStatus=active))"`
 	if got := x.Eq().String(); got != want {
-		t.Errorf("%s failed: [LDAPURI.piecemeal(compare)]:\nwant: '%s'\ngot:  '%s'",
-			t.Name(), want, got)
+		t.Errorf("%s failed: [LDAPURI(%s).piecemeal(compare)]:\nwant: '%s'\ngot:  '%s'",
+			t.Name(), x.Keyword(), want, got)
 		return
 	}
 
@@ -62,8 +85,8 @@ func TestURI_bindRules(t *testing.T) {
 	x.Set(Filter(`(&(objectClass=groupOfNames)(ownerStatus=active))`))
 	want = `( groupdn != "ldap:///ou=Groups,dc=example,dc=com??one?(&(objectClass=groupOfNames)(ownerStatus=active))" )`
 	if got := x.Ne().Paren().String(); got != want {
-		t.Errorf("%s failed: [LDAPURI.piecemeal(compare)]:\nwant: '%s'\ngot:  '%s'",
-			t.Name(), want, got)
+		t.Errorf("%s failed: [LDAPURI(%s).piecemeal(compare)]:\nwant: '%s'\ngot:  '%s'",
+			t.Name(), x.Keyword(), want, got)
 		return
 	}
 }
@@ -208,6 +231,24 @@ func ExampleLDAPURI_Keyword() {
 
 	fmt.Printf("Keyword: %s", uri.Keyword())
 	// Output: Keyword: groupdn
+}
+
+func ExampleLDAPURI_Kind() {
+	dn := GDN(`ou=Groups,dc=example,dc=com`)
+	filter := Filter(`(&(objectClass=distributionList)(status=active))`)
+	uri := URI(dn, filter)
+
+	fmt.Printf("Keyword: %s", uri.Keyword())
+	// Output: Keyword: groupdn
+}
+
+func ExampleLDAPURI_Len() {
+	dn := GDN(`ou=Groups,dc=example,dc=com`)
+	filter := Filter(`(&(objectClass=distributionList)(status=active))`)
+	uri := URI(dn, filter)
+
+	fmt.Printf("Len: %d", uri.Len())
+	// Output: Len: 0
 }
 
 func ExampleLDAPURI_String() {

@@ -80,19 +80,7 @@ func (r AuthenticationMethod) Eq() BindRule {
 	if r == noAuth {
 		return badBindRule
 	}
-
-	var b BindRule
-	b.SetKeyword(BindAM)
-	b.SetOperator(Eq)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(BindAM.String())
-
-	return b
+	return BR(BindAM, Eq, r)
 }
 
 /*
@@ -104,19 +92,7 @@ func (r AuthenticationMethod) Ne() BindRule {
 	if r == noAuth {
 		return badBindRule
 	}
-
-	var b BindRule
-	b.SetKeyword(BindAM)
-	b.SetOperator(Ne)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(BindAM.String())
-
-	return b
+	return BR(BindAM, Ne, r)
 }
 
 /*
@@ -177,16 +153,6 @@ func (r SecurityStrengthFactor) Keyword() Keyword {
 }
 
 /*
-value is a private method that returns uint8 + 1, or 0 if uint8 is nil.
-*/
-func (r SecurityStrengthFactor) value() int {
-	if r.isZero() {
-		return 0
-	}
-	return int(*(r.ssf.uint8)) + 1 // offset for 256 max.
-}
-
-/*
 IsZero returns a Boolean value indicative of whether the receiver is
 nil, or unset.
 */
@@ -195,13 +161,6 @@ func (r SecurityStrengthFactor) IsZero() bool {
 		return true
 	}
 
-	return r.ssf.isZero()
-}
-
-func (r *ssf) isZero() bool {
-	if r == nil {
-		return true
-	}
 	return r.uint8 == nil
 }
 
@@ -210,19 +169,7 @@ Eq initializes and returns a new BindRule instance configured to express the
 evaluation of the receiver value as Equal-To the `ssf` Bind keyword context.
 */
 func (r SecurityStrengthFactor) Eq() BindRule {
-
-	var b BindRule
-	b.SetKeyword(BindSSF)
-	b.SetOperator(Eq)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(BindSSF.String())
-
-	return b
+	return BR(BindSSF, Eq, r)
 }
 
 /*
@@ -233,19 +180,7 @@ context.
 Negated equality BindRule instances should be used with caution.
 */
 func (r SecurityStrengthFactor) Ne() BindRule {
-
-	var b BindRule
-	b.SetKeyword(BindSSF)
-	b.SetOperator(Ne)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(BindSSF.String())
-
-	return b
+	return BR(BindSSF, Ne, r)
 }
 
 /*
@@ -253,19 +188,7 @@ Lt initializes and returns a new BindRule instance configured to express the
 evaluation of the receiver value as Less-Than the `ssf` Bind keyword context.
 */
 func (r SecurityStrengthFactor) Lt() BindRule {
-
-	var b BindRule
-	b.SetKeyword(BindSSF)
-	b.SetOperator(Lt)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(BindSSF.String())
-
-	return b
+	return BR(BindSSF, Lt, r)
 }
 
 /*
@@ -274,19 +197,7 @@ evaluation of the receiver value as Less-Than-Or-Equal to the `ssf` Bind
 keyword context.
 */
 func (r SecurityStrengthFactor) Le() BindRule {
-
-	var b BindRule
-	b.SetKeyword(BindSSF)
-	b.SetOperator(Le)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(BindSSF.String())
-
-	return b
+	return BR(BindSSF, Le, r)
 }
 
 /*
@@ -295,19 +206,7 @@ evaluation of the receiver value as Greater-Than the `ssf` Bind keyword
 context.
 */
 func (r SecurityStrengthFactor) Gt() BindRule {
-
-	var b BindRule
-	b.SetKeyword(BindSSF)
-	b.SetOperator(Gt)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(BindSSF.String())
-
-	return b
+	return BR(BindSSF, Gt, r)
 }
 
 /*
@@ -316,20 +215,7 @@ evaluation of the receiver value as Greater-Than-Or-Equal to the `ssf` Bind
 keyword context.
 */
 func (r SecurityStrengthFactor) Ge() BindRule {
-
-	var b BindRule
-
-	b.SetKeyword(BindSSF)
-	b.SetOperator(Ge)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(BindSSF.String())
-
-	return b
+	return BR(BindSSF, Ge, r)
 }
 
 /*
@@ -367,7 +253,7 @@ String is a stringer method that returns the string representation
 of the receiver instance.
 */
 func (r SecurityStrengthFactor) String() string {
-	if r.isZero() {
+	if r.IsZero() {
 		return `0`
 	}
 	return sprintf("%d", int((*r.ssf.uint8))+1)
@@ -382,26 +268,28 @@ func (r SecurityStrengthFactor) Compare(x any) bool {
 }
 
 /*
-Valid returns a Boolean value indicative of whether the receiver represents
-a security strength factor greater than zero (0).
-*/
-func (r SecurityStrengthFactor) Valid() (err error) {
-	if r.value() == 0 {
-		err = nilInstanceErr(r)
-	}
+Valid returns nil and, at present, does nothing else. Based on the efficient
+design of the receiver type, there is no possible state that is technically
+invalid at ALL times. A nil instance may, in fact, be correct in particular
+situations.
 
-	return
-}
+Thus as there is no room for unforeseen errors with regards to this type
+specifically, this method has been gutted but remains present merely for
+the purpose of signature consistency throughout the package.
+*/
+func (r SecurityStrengthFactor) Valid() error { return nil }
 
 func (r SecurityStrengthFactor) clear() {
-	if r.ssf.isZero() {
+	if r.IsZero() {
 		return
 	}
 	r.ssf.clear()
 }
 
 func (r *ssf) clear() {
-	r.uint8 = nil
+	if r != nil {
+		r.uint8 = nil
+	}
 }
 
 /*

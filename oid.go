@@ -158,23 +158,10 @@ evaluation of the receiver value as Equal-To an `extop` or `targetcontrol`
 keyword context.
 */
 func (r ObjectIdentifier) Eq() TargetRule {
-	if r.IsZero() {
+	if err := r.Valid(); err != nil {
 		return badTargetRule
 	}
-
-	var t TargetRule
-	t.SetKeyword(r.objectIdentifier.TargetKeyword)
-	t.SetOperator(Eq)
-	t.SetExpression(r)
-
-	castAsCondition(t).
-		Encap(`"`).
-		Paren(true).
-		SetID(targetRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(r.objectIdentifier.TargetKeyword.String())
-
-	return t
+	return TR(r.objectIdentifier.TargetKeyword, Eq, r)
 }
 
 /*
@@ -185,23 +172,10 @@ keyword context.
 Negated equality TargetRule instances should be used with caution.
 */
 func (r ObjectIdentifier) Ne() TargetRule {
-	if r.IsZero() {
+	if err := r.Valid(); err != nil {
 		return badTargetRule
 	}
-
-	var t TargetRule
-	t.SetKeyword(r.objectIdentifier.TargetKeyword)
-	t.SetOperator(Ne)
-	t.SetExpression(r)
-
-	castAsCondition(t).
-		Encap(`"`).
-		Paren(true).
-		SetID(targetRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(r.objectIdentifier.TargetKeyword.String())
-
-	return t
+	return TR(r.objectIdentifier.TargetKeyword, Ne, r)
 }
 
 /*
@@ -214,16 +188,18 @@ func (r ObjectIdentifier) Valid() (err error) {
 		return
 	}
 
-	raw := r.objectIdentifier.DotNotation.String()
-	if !isDotNot(raw) {
-		err = badObjectIdentifierErr(raw)
-		return
-	}
+	/*
+		raw := r.objectIdentifier.DotNotation.String()
+		if !isDotNot(raw) {
+			err = badObjectIdentifierErr(raw)
+			return
+		}
 
-	if !(r.objectIdentifier.DotNotation.Len() > 0 &&
-		r.objectIdentifier.TargetKeyword != TargetKeyword(0x0)) {
-		err = badObjectIdentifierKeywordErr(r.objectIdentifier.TargetKeyword)
-	}
+		if !(r.objectIdentifier.DotNotation.Len() > 0 &&
+			r.objectIdentifier.TargetKeyword != TargetKeyword(0x0)) {
+			err = badObjectIdentifierKeywordErr(r.objectIdentifier.TargetKeyword)
+		}
+	*/
 
 	return
 }
@@ -545,11 +521,17 @@ Only ObjectIdentifier instances are to be cleared for push
 executions, assuming they are keyword context-aligned with
 the destination stack.
 */
-func (r ObjectIdentifiers) extOpsPushPolicy(x any) error {
-	if r.contains(x) {
-		return pushErrorNotUnique(r, x, r.Keyword())
+func (r ObjectIdentifiers) extOpsPushPolicy(x ...any) error {
+	if len(x) == 0 {
+		return nil
+	} else if x[0] == nil {
+		return nilInstanceErr(x[0])
 	}
-	return objectIdentifiersPushPolicy(r, x, TargetExtOp)
+
+	if r.contains(x[0]) {
+		return pushErrorNotUnique(r, x[0], r.Keyword())
+	}
+	return objectIdentifiersPushPolicy(r, x[0], TargetExtOp)
 }
 
 /*
@@ -563,11 +545,17 @@ Only ObjectIdentifier instances are to be cleared for push
 executions, assuming they are keyword context-aligned with
 the destination stack.
 */
-func (r ObjectIdentifiers) ctrlsPushPolicy(x any) error {
-	if r.contains(x) {
-		return pushErrorNotUnique(r, x, r.Keyword())
+func (r ObjectIdentifiers) ctrlsPushPolicy(x ...any) error {
+	if len(x) == 0 {
+		return nil
+	} else if x[0] == nil {
+		return nilInstanceErr(x[0])
 	}
-	return objectIdentifiersPushPolicy(r, x, TargetCtrl)
+
+	if r.contains(x[0]) {
+		return pushErrorNotUnique(r, x[0], r.Keyword())
+	}
+	return objectIdentifiersPushPolicy(r, x[0], TargetCtrl)
 }
 
 /*
@@ -747,23 +735,10 @@ evaluation of the receiver value as Equal-To an `extop` or `targetcontrol`
 keyword context.
 */
 func (r ObjectIdentifiers) Eq() TargetRule {
-	if r.IsZero() {
+	if err := r.Valid(); err != nil {
 		return badTargetRule
 	}
-
-	var t TargetRule
-	t.SetKeyword(r.Kind())
-	t.SetOperator(Eq)
-	t.SetExpression(r)
-
-	castAsCondition(t).
-		Encap(`"`).
-		Paren(true).
-		SetID(targetRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(t.Keyword().String())
-
-	return t
+	return TR(r.Kind(), Eq, r)
 }
 
 /*
@@ -777,20 +752,7 @@ func (r ObjectIdentifiers) Ne() TargetRule {
 	if r.IsZero() {
 		return badTargetRule
 	}
-
-	var t TargetRule
-	t.SetKeyword(r.Kind())
-	t.SetOperator(Ne)
-	t.SetExpression(r)
-
-	castAsCondition(t).
-		Encap(`"`).
-		Paren(true).
-		SetID(targetRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(t.Keyword().String())
-
-	return t
+	return TR(r.Kind(), Ne, r)
 }
 
 /*

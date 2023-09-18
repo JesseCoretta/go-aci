@@ -65,31 +65,69 @@ func TestTargetKeyword_Set_targetScope(t *testing.T) {
 func TestTargetRule_bogus(t *testing.T) {
 	var tr TargetRule
 	_ = tr.ID()
+	_ = tr.Len()
 	_ = tr.Kind()
 	_ = tr.NoPadding()
 	_ = tr.Category()
 	_ = tr.IsZero()
 	_ = tr.Valid()
+	_ = tr.SetOperator(`hello`)
+	_ = tr.SetOperator(ComparisonOperator(99))
 	_ = tr.Operator()
 	_ = tr.Expression()
 	_ = tr.Keyword()
 	_ = tr.String()
+	_ = tr.SetExpression(`hello`)
+	_ = tr.SetExpression(nil)
+
+	tr.Init()
+	tr.SetKeyword(BindUDN) // wrong class of kw
+
+	if err := tr.Valid(); err == nil {
+		t.Errorf("%s failed: no error where one should be (bogus kw set for TR)",
+			t.Name())
+		return
+	}
+
+	tr.SetOperator('𝝅')
+	tr.SetOperator(ComparisonOperator(99))
+	tr.SetOperator(`hello`)
+	tr.SetOperator(`=`)
 }
 
 // mainly this exists to satisfy codecov, but also
 // aid in identifying panic points.
 func TestTargetRules_bogus(t *testing.T) {
 	var tr TargetRules
+	tr.reset()
+	_ = tr.Contains(``)
+	_ = tr.Contains(Target)
+	_ = tr.Contains(nil)
 	_ = tr.Category()
 	_ = tr.IsZero()
 	_ = tr.Len()
 	_ = tr.Valid()
 	_ = tr.ReadOnly()
 	_ = tr.NoPadding()
+	_ = tr.NoPadding(true)
 	_ = tr.String()
+	_ = tr.Push()
+	_ = tr.Push(``)
+	_ = tr.NoPadding(false)
+	_ = tr.Push('a')
+	_ = tr.Push(TargetRule{})
+	_ = tr.Push(nil, nil)
 	_ = tr.Pop()
 	_ = tr.Index(100)
 	_ = tr.remove(14)
+	tr = TRs()
+	tr.NoPadding()
+	_ = tr.Push()
+	_ = tr.Push(``)
+	_ = tr.Push(Target)
+	_ = tr.Push(nil, nil)
+	_ = tr.Push('𝝅')
+	tr.Push(TDN(`uid=jesse,ou=People,dc=example,dc=com`).Eq())
 	tr.reset()
 }
 
@@ -120,7 +158,7 @@ func TestAttrs_attrList(t *testing.T) {
 		AT(`givenName`),
 		AT(`homeDirectory`),
 		AT(`uid`),
-	) //.SetQuoteStyle(0)
+	)
 
 	// Style #0 (MultivalOuterQuotes)
 	//want := `( targetattr = "cn || sn || givenName || homeDirectory || uid" )`
@@ -557,6 +595,7 @@ func ExampleTargetRule_NoPadding() {
 
 func ExampleTargetRule_SetKeyword() {
 	var tgt TargetRule
+	tgt.Init()
 	tgt.SetKeyword(TargetAttr)
 	tgt.SetOperator(Ne)
 	tgt.SetExpression(AT(`aci`))
@@ -567,6 +606,7 @@ func ExampleTargetRule_SetKeyword() {
 
 func ExampleTargetRule_SetOperator() {
 	var tgt TargetRule
+	tgt.Init()
 	tgt.SetKeyword(TargetAttr)
 	tgt.SetOperator(Ne)
 	tgt.SetExpression(AT(`aci`))
@@ -583,6 +623,7 @@ func ExampleTargetRule_Operator() {
 
 func ExampleTargetRule_SetExpression() {
 	var tgt TargetRule
+	tgt.Init()
 	tgt.SetKeyword(TargetAttr)
 	tgt.SetOperator(Ne)
 	tgt.SetExpression(AT(`aci`))
@@ -632,6 +673,8 @@ func ExampleTargetRule_Valid() {
 
 func ExampleTargetRule_SetQuoteStyle() {
 	var tgt TargetRule
+	tgt.Init()
+
 	tgt.SetKeyword(Target)
 	tgt.SetOperator(Ne)
 	tgt.SetExpression(TDNs(
@@ -650,4 +693,34 @@ func ExampleTargetRule_SetQuoteStyle() {
 	// Output:
 	// 0: ( target != "ldap:///uid=jesse,ou=People,dc=example,dc=com" || "ldap:///uid=courtney,ou=People,dc=example,dc=com" || "ldap:///uid=jimmy,ou=People,dc=example,dc=com" )
 	// 1: ( target != "ldap:///uid=jesse,ou=People,dc=example,dc=com || ldap:///uid=courtney,ou=People,dc=example,dc=com || ldap:///uid=jimmy,ou=People,dc=example,dc=com" )
+}
+
+func ExampleTargetRule_Init() {
+	var tr TargetRule
+	tr.Init() // required when assembly through "piecemeal"
+
+	// ... later in your code ...
+
+	tr.SetKeyword(Target) // set keyword ...
+	tr.SetOperator(Ne)    // ... so operator can be evaluated
+	fmt.Printf("Operator: %s", tr.Operator().Description())
+	// Output: Operator: Not Equal To
+}
+
+/*
+This example demonstrates the (mostly) useless execution of the Len
+method, as singular TargetRule instances are generally not judged in
+terms of length, whether value-based or through some other abstraction.
+
+As such, the execution of this method shall always return one (1)
+when executed on a non-nil instance, and zero (0) otherwise.
+*/
+func ExampleTargetRule_Len() {
+	var tr TargetRule
+	if err := tr.Parse(`( targetscope="onelevel")`); err != nil {
+		fmt.Println(err) // always check your parser errors
+		return
+	}
+	fmt.Printf("%T.Len: %d", tr, tr.Len())
+	// Output: aci.TargetRule.Len: 1
 }

@@ -285,6 +285,19 @@ func TestPermissionBindRules_codecov(t *testing.T) {
 	var pbs PermissionBindRules
 	_ = pbs.IsZero()
 	_ = pbs.Valid()
+	pbs.Push()
+	pbs.Contains(``)
+	pbs.Contains(nil)
+	pbs.Contains('a')
+	pbs.Push(nil, nil)
+	pbs.Push(``)
+	pbs.Contains(PermissionBindRule{})
+	pbs.Push(PermissionBindRule{})
+	pbs.Push(`fartknocker`)
+	_ = pbs.pushPolicy()
+	_ = pbs.pushPolicy('a')
+	_ = pbs.pushPolicy(`baljfg`)
+	_ = pbs.pushPolicy(nil, nil)
 
 	var pb PermissionBindRule
 	_ = pb.IsZero()
@@ -294,6 +307,16 @@ func TestPermissionBindRules_codecov(t *testing.T) {
 		And(),
 	)
 	pbs.Push(pb)
+	pbs.Push()
+	pbs.Contains(``)
+	pbs.Contains(nil)
+	pbs.Contains('a')
+	pbs.Push(nil, nil)
+	pbs.Push(``)
+	pbs.Contains(PermissionBindRule{})
+	pbs.Push(PermissionBindRule{})
+	pbs.Push(`fartknocker`)
+	_ = pb.IsZero()
 	_ = pbs.Len()
 	_ = pbs.Valid()
 
@@ -311,18 +334,20 @@ func TestPermissionBindRules_codecov(t *testing.T) {
 	pbs.Push(rule1)
 
 	var rule2a PermissionBindRule
+	var badbind BindContext = GDN(`cn=disgruntled_employees,ou=Groups,dc=example,dc=com`).Eq()
 	rule2a.Set(
 		Permission{nil},
-		GDN(`cn=disgruntled_employees,ou=Groups,dc=example,dc=com`).Eq(),
+		badbind,
 	)
 	_ = rule2a.IsZero()
 	_ = rule2a.Valid()
 	pbs.Push(rule2a)
 
 	var rule2b PermissionBindRule
+	badbind = RDN(``).Ne()
 	rule2b.Set(
 		Allow(`read`, `search`, `compare`),
-		badBindDN,
+		badbind,
 	)
 	_ = rule2b.IsZero()
 	_ = rule2b.Valid()

@@ -11,6 +11,7 @@ func TestSecurityStrengthFactor(t *testing.T) {
 		typ    string = BindSSF.String()
 		err    error
 	)
+	factor.set(nil)
 
 	for i := 0; i < 257; i++ {
 		want := itoa(i) // what we expect (string representation)
@@ -31,27 +32,14 @@ func TestSecurityStrengthFactor(t *testing.T) {
 			return
 		}
 
-		// ssf qualifies for all comparison operators
-		// due to its numerical nature.
-		// TODO: decom this in favor of BRM()
-		cops := map[ComparisonOperator]func() BindRule{
-			Eq: got.Eq,
-			Ne: got.Ne,
-			Lt: got.Lt,
-			Le: got.Le,
-			Gt: got.Gt,
-			Ge: got.Ge,
-		}
-
-		// try every comparison operator supported in
-		// this context ...
-		for c := 1; c < len(cops)+1; c++ {
-			cop := ComparisonOperator(c)
+		brm := factor.BRM()
+		for c := 0; c < brm.Len(); c++ {
+			cop, meth := brm.Index(c + 1)
 			wcop := sprintf("%s %s %q", got.Keyword(), cop, got)
 
 			// create bindrule B using comparison
 			// operator (cop).
-			if B := cops[cop](); B.String() != wcop {
+			if B := meth(); B.String() != wcop {
 				err = unexpectedStringResult(typ, wcop, B.String())
 			}
 
@@ -60,6 +48,7 @@ func TestSecurityStrengthFactor(t *testing.T) {
 				return
 			}
 		}
+		factor.clear() // codecov
 
 	}
 
@@ -78,6 +67,28 @@ func TestSecurityStrengthFactor(t *testing.T) {
 			return
 		}
 	}
+}
+
+func TestAuthenticationMethod(t *testing.T) {
+	// codecov
+	_ = noAuth.Eq()
+	_ = noAuth.Ne()
+
+	AuthenticationMethodLowerCase = true
+
+	for idx, auth := range authMap {
+		if matchAuthenticationMethod(idx) == noAuth {
+			t.Errorf("%s failed: unable to match auth method by index (%d)",
+				t.Name(), idx)
+			return
+		} else if matchAuthenticationMethod(auth.String()) == noAuth {
+			t.Errorf("%s failed: unable to match auth method by string (%s)",
+				t.Name(), auth.String())
+			return
+		}
+	}
+
+	AuthenticationMethodLowerCase = false
 }
 
 func ExampleSecurityStrengthFactor_Set_byWordNoFactor() {
@@ -146,8 +157,8 @@ func ExampleSecurityStrengthFactor_String() {
 
 func ExampleSecurityStrengthFactor_Valid() {
 	var s SecurityStrengthFactor
-	fmt.Printf("Valid: %t", s.Valid() == nil)
-	// Output: Valid: false
+	fmt.Printf("Valid: %t", s.Valid() == nil) // zero IS valid, technically speaking!
+	// Output: Valid: true
 }
 
 func ExampleSecurityStrengthFactor_IsZero() {

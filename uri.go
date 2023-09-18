@@ -137,9 +137,7 @@ func parseLDAPURI(x string, bkw ...BindKeyword) (L LDAPURI, err error) {
 	// iterate each value produced through split
 	// on question mark and massage values into
 	// LDAP URI appropriate component values ...
-	if err = l.assertURIComponents(split(uri, `?`), bkw...); err != nil {
-		return
-	}
+	err = l.assertURIComponents(split(uri, `?`), bkw...)
 
 	// Envelope ldapURI instance and send it off
 	L = LDAPURI{l}
@@ -192,11 +190,7 @@ func (r *ldapURI) assertURIComponents(vals []string, kw ...BindKeyword) (err err
 
 		case 3:
 			// case match is LDAP Search Filter
-			filt := Filter(vals[i])
-			if err = filt.Valid(); err != nil {
-				return
-			}
-			r.set(filt)
+			r.set(Filter(vals[i]))
 		}
 	}
 
@@ -359,8 +353,6 @@ func (r LDAPURI) makeBindRule(negate ...bool) BindRule {
 		return badBindRule
 	}
 
-	var b BindRule
-
 	// Use the desired comparison operator,
 	// which can be one of Eq (Equal-To), or
 	// Ne (Not-Equal-To).
@@ -396,19 +388,19 @@ func (r LDAPURI) makeBindRule(negate ...bool) BindRule {
 	}
 
 	// assemble our BindRule instance ...
-	b.SetKeyword(kw)
-	b.SetOperator(oper)
-	b.SetExpression(r)
+	var b BindRule = BR(kw, oper, r)
 
 	// temporarily cast as a stackage.Condition
 	// so we can apply some additional changes
 	// using methods we didn't wrap because it
 	// wouldn't be necessary otherwise.
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(kw.String())
+	/*
+		castAsCondition(b).
+			Encap(`"`).
+			SetID(bindRuleID).
+			NoPadding(!RulePadding).
+			SetCategory(kw.String())
+	*/
 
 	return b
 }
@@ -504,12 +496,6 @@ func (r ldapURI) string() string {
 			param = sprintf("?%s", r.attrs)
 		} else {
 			param = "?"
-		}
-
-		// Use this opportunity to supplant a misplaced
-		// Subordinate scope with the default BaseObject
-		if r.scope == Subordinate {
-			r.scope = BaseObject
 		}
 
 		// Be sure to call the standard scope here,

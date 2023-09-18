@@ -22,7 +22,7 @@ func TestBindRuleMethods(t *testing.T) {
 
 	for i := 0; i < brm.Len(); i++ {
 		if cop, meth := brm.Index(i + 1); meth().String() != fmt.Sprintf("ssf %s %q", cop, `256`) {
-			t.Errorf("%s failed: failed to call index %d [%s] non-nil %T", t.Name(), i, cop.Context(), brm)
+			t.Errorf("%s failed: failed to call index %d [%s] non-nil %T (got %s)", t.Name(), i, cop.Context(), brm, meth())
 			return
 		}
 	}
@@ -64,6 +64,7 @@ func TestBindRule_bogus(t *testing.T) {
 	var br BindRule
 	br.isBindContextQualifier() // just to satisfy codecov.
 	_ = br.ID()
+	_ = br.Index(0)
 	_ = br.Category()
 	_ = br.IsZero()
 	_ = br.Paren()
@@ -78,6 +79,11 @@ func TestBindRule_bogus(t *testing.T) {
 	_ = br.Keyword()
 	_ = br.SetQuoteStyle(1)
 	_ = br.String()
+	_ = badCond(nil)
+	_ = castAsBindRule(nil)
+	_ = castAsBindRules(nil)
+	_ = castAsBindRule(float64(0))
+	_ = castAsBindRules(float64(0))
 }
 
 // mainly this exists to satisfy codecov, but also
@@ -107,6 +113,7 @@ func TestBindRules_bogus(t *testing.T) {
 		GDN(`cn=Executives,ou=Groups,dc=example,dc=com`).Ne(),
 		UDNs("uid=jesse,ou=People,dc=example,dc=com", "uid=courtney,ou=People,dc=example,dc=com").Eq(),
 	)
+
 	_ = br.Kind()
 	_ = br.IsNesting()
 	_ = br.Keyword()
@@ -118,6 +125,7 @@ func TestBindRules_bogus(t *testing.T) {
 	br.Replace(replacer, 1)
 
 	replaced := br.Index(1)
+
 	if replacer.String() != replaced.String() {
 		t.Errorf("%s failed: %T.Replace did not replace specified slice value, want '%s', got '%s'",
 			t.Name(), br, replacer, replaced)
@@ -163,7 +171,11 @@ func ExampleBindRules_Traverse() {
 			UAT(`manager`, `LDAPURL`).Eq().Paren(),
 			GAT(`owner`, SELFDN).Eq().Paren(),
 			URI(UDN(`ou=People,dc=example,dc=com`), Subtree).Eq().Paren(),
-			// OR slice #3
+			// OR slice #3. This is ILLOGICAL because
+			// there's no benefit to placing an AND in
+			// this rule, as it does not produce what
+			// would be viewed as a "sensible" statement
+			// of evaluation.
 			And(
 				// Inner AND slice #0
 				SSF(128).Ge(),
@@ -493,6 +505,13 @@ func ExampleBindRule_Valid() {
 func ExampleBindRule_SetQuoteStyle() {
 	var tgt BindRule
 	tgt.SetKeyword(BindUDN)
+
+	tgt.Init()
+
+	tgt.SetKeyword(BindUDN)
+	tgt.SetOperator(`!=`)
+	tgt.SetOperator(2)
+	tgt.SetOperator(54738372)
 	tgt.SetOperator(Ne)
 	tgt.SetExpression(UDNs(
 		UDN(`ldap:///uid=jesse,ou=People,dc=example,dc=com`),
@@ -850,4 +869,183 @@ func ExampleBindRules_Paren() {
 
 	fmt.Printf("%s", brs)
 	// Output: ( timeofday >= "0900" AND timeofday < "1830" AND dayofweek = "Mon,Tues,Wed,Thur,Fri" )
+}
+
+/*
+This example demonstrates the use of the package-level BR function
+for quick assembly of an instance of BindRule.
+
+This is usually not necessary, and would only be practical when the
+input and type information is known in advance. It is also nowhere
+near as safe (regarding the specification of illegal constructs) as
+the use of type-extended comparison operator methods. See the BRM
+method extended by such types for further details.
+*/
+func ExampleBR() {
+	kw := BindUDN
+	op := Eq
+	ex := UDN(`uid=jesse,ou=People,dc=example,dc=com`)
+
+	fmt.Printf("%s", BR(kw, op, ex))
+	// Output: userdn = "ldap:///uid=jesse,ou=People,dc=example,dc=com"
+}
+
+func ExampleWeekdays() {
+	fmt.Printf("%s", Weekdays(Eq))
+	// Output: dayofweek = "Mon,Tues,Wed,Thur,Fri"
+}
+
+func ExampleWeekend() {
+	fmt.Printf("%s", Weekend(Ne))
+	// Output: dayofweek != "Sun,Sat"
+}
+
+func ExampleBindRule_Init() {
+	var br BindRule
+	br.Init() // required when assembly through "piecemeal"
+
+	// ... later in your code ...
+
+	br.SetKeyword(BindUDN) // set keyword ...
+	br.SetOperator(Ne)     // ... so operator can be evaluated
+	fmt.Printf("Operator: %s", br.Operator().Description())
+	// Output: Operator: Not Equal To
+}
+
+func ExampleBindRule_Operator() {
+	var br BindRule
+	br.Init() // required when assembly through "piecemeal"
+
+	// ... later in your code ...
+
+	br.SetKeyword(BindUDN) // set keyword ...
+	br.SetOperator(Ne)     // ... so operator can be evaluated
+	fmt.Printf("Operator: %s", br.Operator().Description())
+	// Output: Operator: Not Equal To
+}
+
+func ExampleBindRule_SetOperator() {
+	var br BindRule
+	br.Init() // required when assembly through "piecemeal"
+
+	// ... later in your code ...
+
+	br.SetKeyword(BindUDN) // set keyword ...
+	br.SetOperator(Ne)     // ... so operator can be evaluated
+	fmt.Printf("Operator: %s", br.Operator().Description())
+	// Output: Operator: Not Equal To
+}
+
+func ExampleBindRule_SetKeyword() {
+	var br BindRule
+	br.Init() // required when assembly through "piecemeal"
+
+	// ... later in your code ...
+
+	br.SetKeyword(BindGDN) // set keyword ...
+	fmt.Printf("Keyword: %s", br.Keyword())
+	// Output: Keyword: groupdn
+}
+
+func ExampleBindRule_SetExpression() {
+	var br BindRule
+	br.Init() // required when assembly through "piecemeal"
+
+	// ... later in your code ...
+
+	br.SetExpression(UDN(`uid=jesse,ou=People,dc=example,dc=com`))
+	fmt.Printf("Expression: %s", br.Expression().(BindDistinguishedName))
+	// Output: Expression: ldap:///uid=jesse,ou=People,dc=example,dc=com
+}
+
+func ExampleBindRule_IsParen() {
+	var br BindRule
+	if err := br.Parse(`(timeofday>="0415")`); err != nil {
+		fmt.Println(err) // always check your parser errors
+		return
+	}
+	fmt.Printf("%T.IsParen: %t", br, br.IsParen())
+	// Output: aci.BindRule.IsParen: true
+}
+
+func ExampleBindRules_IsParen() {
+	// Use the convenient timeframe prefabber to
+	// create a BindRules instance, for which we
+	// engage parentheticals, all in one shot.
+	tf := Timeframe(ToD(`0700`), ToD(`1800`)).Paren()
+
+	fmt.Printf("%T.IsParen: %t", tf, tf.IsParen())
+	// Output: aci.BindRules.IsParen: true
+}
+
+func ExampleBindRule_String() {
+	var br BindRule
+	if err := br.Parse(`(timeofday>="0415")`); err != nil {
+		fmt.Println(err) // always check your parser errors
+		return
+	}
+
+	fmt.Printf("%s", br)
+	// Output: ( timeofday >= "0415" )
+}
+
+func ExampleBindRule_Paren() {
+	var br BindRule
+	if err := br.Parse(`(timeofday>="0415")`); err != nil {
+		fmt.Println(err) // always check your parser errors
+		return
+	}
+
+	// Here we'll turn off parenthetical encaps
+	// and then verify it was turned off in one
+	// fmt.Printf call.
+
+	fmt.Printf("%T.IsParen: %t", br.Paren(false), br.IsParen())
+	// Output: aci.BindRule.IsParen: false
+}
+
+func ExampleBindRule_NoPadding() {
+	var br BindRule
+	if err := br.Parse(`(timeofday>="0415")`); err != nil {
+		fmt.Println(err) // always check your parser errors
+		return
+	}
+
+	fmt.Printf("%s", br.NoPadding(false))
+	// Output: ( timeofday >= "0415" )
+}
+
+/*
+This example demonstrates the useless execution of the IsNesting
+method, as its primary function does not apply to instances of
+BindRule, only BindRules.
+
+As such, the execution of this method shall always return false.
+*/
+func ExampleBindRule_IsNesting() {
+	var br BindRule
+	if err := br.Parse(`(timeofday>="0415")`); err != nil {
+		fmt.Println(err) // always check your parser errors
+		return
+	}
+	fmt.Printf("%T.IsNesting: %t", br, br.IsNesting())
+	// Output: aci.BindRule.IsNesting: false
+}
+
+/*
+This example demonstrates the (mostly) useless execution of the Len
+method, as singular BindRule instances are generally not judged in
+terms of length, whether value-based or some other abstraction.
+
+As such, the execution of this method shall always return one (1)
+when executed on a non-nil instance, and zero (0) otherwise.
+*/
+func ExampleBindRule_Len() {
+	var br BindRule
+	if err := br.Parse(`(timeofday>="0415")`); err != nil {
+		fmt.Println(err) // always check your parser errors
+		return
+	}
+	fmt.Printf("%T.Len: %d", br, br.Len())
+	// Output: aci.BindRule.Len: 1
 }

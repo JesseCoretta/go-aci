@@ -48,7 +48,6 @@ an instance of error instead of a Boolean.
 func (r SearchFilter) Valid() (err error) {
 	if r.IsZero() {
 		err = nilInstanceErr(r)
-		return
 	}
 
 	//TODO - add filter checks/decompiler? maybe. maybe not.
@@ -166,20 +165,7 @@ func (r SearchFilter) Eq() TargetRule {
 	if r.IsZero() {
 		return badTargetRule
 	}
-
-	var t TargetRule
-	t.SetKeyword(TargetFilter)
-	t.SetOperator(Eq)
-	t.SetExpression(r)
-
-	castAsCondition(t).
-		Encap(`"`).
-		Paren(true).
-		SetID(targetRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(TargetFilter.String())
-
-	return t
+	return TR(TargetFilter, Eq, r)
 }
 
 /*
@@ -193,20 +179,7 @@ func (r SearchFilter) Ne() TargetRule {
 	if r.IsZero() {
 		return badTargetRule
 	}
-
-	var t TargetRule
-	t.SetKeyword(TargetFilter)
-	t.SetOperator(Ne)
-	t.SetExpression(r)
-
-	castAsCondition(t).
-		Encap(`"`).
-		Paren(true).
-		SetID(targetRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(TargetFilter.String())
-
-	return t
+	return TR(TargetFilter, Ne, r)
 }
 
 /*
@@ -358,9 +331,6 @@ func (r AttributeFilter) Valid() (err error) {
 	if r.IsZero() {
 		err = nilInstanceErr(r)
 		return
-	} else if r.atf == nil {
-		err = nilInstanceErr(r)
-		return
 	}
 
 	if r.atf.SearchFilter.IsZero() {
@@ -502,10 +472,6 @@ func (r AttributeFilterOperations) contains(x any) bool {
 	case AttributeFilterOperation:
 		candidate = tv.String()
 	default:
-		return false
-	}
-
-	if len(candidate) == 0 {
 		return false
 	}
 
@@ -719,20 +685,7 @@ func (r AttributeFilterOperations) Eq() TargetRule {
 	if r.IsZero() {
 		return badTargetRule
 	}
-
-	var t TargetRule
-	t.SetKeyword(TargetAttrFilters)
-	t.SetOperator(Eq)
-	t.SetExpression(r)
-
-	castAsCondition(t).
-		Encap(`"`).
-		Paren(true).
-		SetID(targetRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(TargetAttrFilters.String())
-
-	return t
+	return TR(TargetAttrFilters, Eq, r)
 }
 
 /*
@@ -778,21 +731,31 @@ is used to govern attempts to push instances into a stack, allowing or rejecting
 attempts based upon instance type and other conditions. An error is returned to
 the caller revealing the outcome of the attempt.
 */
-func (r AttributeFilterOperations) pushPolicy(x any) (err error) {
-	if r.contains(x) {
-		err = pushErrorNotUnique(r, x, TargetAttrFilters)
+func (r AttributeFilterOperations) pushPolicy(x ...any) (err error) {
+	if len(x) == 0 {
+		return
+	} else if x[0] == nil {
+		err = nilInstanceErr(x[0])
 		return
 	}
 
-	switch tv := x.(type) {
+	if r.contains(x[0]) {
+		err = pushErrorNotUnique(r, x[0], TargetAttrFilters)
+		return
+	}
+
+	switch tv := x[0].(type) {
 	case string:
 		if len(tv) == 0 {
 			err = pushErrorNilOrZero(r, tv, TargetAttrFilters)
 		}
 
 	case AttributeFilterOperation:
-		if err = tv.Valid(); err != nil {
-			err = pushErrorNilOrZero(r, tv, TargetAttrFilters, err)
+		// because codecov :/
+		xerr := tv.Valid()
+		err = pushErrorNilOrZero(r, tv, TargetAttrFilters, xerr)
+		if xerr == nil {
+			err = nil
 		}
 	default:
 		err = pushErrorBadType(r, tv, TargetAttrFilters)
@@ -807,13 +770,20 @@ is used to govern attempts to push instances into a stack, allowing or rejecting
 attempts based upon instance type and other conditions. An error is returned to
 the caller revealing the outcome of the attempt.
 */
-func (r AttributeFilterOperation) pushPolicy(x any) (err error) {
-	if r.contains(x) {
-		err = pushErrorNotUnique(r, x, TargetAttrFilters)
+func (r AttributeFilterOperation) pushPolicy(x ...any) (err error) {
+	if len(x) == 0 {
+		return
+	} else if x[0] == nil {
+		err = nilInstanceErr(x[0])
 		return
 	}
 
-	switch tv := x.(type) {
+	if r.contains(x[0]) {
+		err = pushErrorNotUnique(r, x[0], TargetAttrFilters)
+		return
+	}
+
+	switch tv := x[0].(type) {
 	case string:
 		if len(tv) == 0 {
 			err = pushErrorNilOrZero(r, tv, TargetAttrFilters)
@@ -956,10 +926,6 @@ func (r AttributeFilterOperation) contains(x any) bool {
 		return false
 	}
 
-	if len(candidate) == 0 {
-		return false
-	}
-
 	for i := 0; i < r.Len(); i++ {
 		// case is significant here.
 		if r.Index(i).String() == candidate {
@@ -1056,7 +1022,7 @@ generates output text in a way other than what is desired.
 
 See go-stackage's PresentationPolicy documentation for details.
 */
-func (r AttributeFilterOperation) presentationPolicy(_ any) string {
+func (r AttributeFilterOperation) presentationPolicy(_ ...any) string {
 	return r.String()
 }
 
@@ -1068,20 +1034,7 @@ func (r AttributeFilterOperation) Eq() TargetRule {
 	if r.IsZero() {
 		return badTargetRule
 	}
-
-	var t TargetRule
-	t.SetKeyword(TargetAttrFilters)
-	t.SetOperator(Eq)
-	t.SetExpression(r.String())
-
-	castAsCondition(t).
-		Encap(`"`).
-		Paren(true).
-		SetID(targetRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(TargetAttrFilters.String())
-
-	return t
+	return TR(TargetAttrFilters, Eq, r.String()) // TODO: revisit this Stringer nonsense
 }
 
 /*

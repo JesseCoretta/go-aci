@@ -157,19 +157,7 @@ func (r AttributeBindTypeOrValue) Eq() BindRule {
 	if r.atbtv.isZero() {
 		return badBindRule
 	}
-
-	var b BindRule
-	b.SetKeyword(r.BindKeyword)
-	b.SetOperator(Eq)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(r.BindKeyword.String())
-
-	return b
+	return BR(r.BindKeyword, Eq, r)
 }
 
 /*
@@ -183,19 +171,7 @@ func (r AttributeBindTypeOrValue) Ne() BindRule {
 	if r.atbtv.isZero() {
 		return badBindRule
 	}
-
-	var b BindRule
-	b.SetKeyword(r.BindKeyword)
-	b.SetOperator(Ne)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(r.BindKeyword.String())
-
-	return b
+	return BR(r.BindKeyword, Ne, r)
 }
 
 /*
@@ -359,12 +335,13 @@ func (r *AttributeBindTypeOrValue) Parse(raw string, bkw ...any) (err error) {
 Valid returns an error indicative of whether the receiver is in
 an aberrant state.
 */
-func (r AttributeBindTypeOrValue) Valid() error {
-	if r.IsZero() {
-		return nilInstanceErr(r)
+func (r AttributeBindTypeOrValue) Valid() (err error) {
+	err = nilInstanceErr(r)
+	if !r.IsZero() {
+		err = nil
 	}
 
-	return nil
+	return
 }
 
 /*
@@ -389,18 +366,23 @@ func parseATBTV(x string, bkw ...any) (A AttributeBindTypeOrValue, err error) {
 	// use the default of userattr.
 	kw := assertATBTVBindKeyword(bkw...)
 
+	at := AT(x[:idx])
+	av := AV(x[idx+1:])
+
+	if at.String() == badAT {
+		err = badAttributeBindTypeOrValueErr(x)
+		return
+	}
+
 	// If the remaining portion of the value is, in
 	// fact, a known BIND TYPE keyword, pack it up
 	// and ship it out.
 	if bt := matchBT(x[idx+1:]); bt != BindType(0x0) {
-		A = userOrGroupAttr(kw, AT(x[:idx]), bt)
+		A = userOrGroupAttr(kw, at, bt)
 		return
 	}
 
-	// Remaining portion of the value would appear
-	// to be an attribute value, so pack it up and
-	// send it off.
-	A = userOrGroupAttr(kw, AT(x[:idx]), AV(x[idx+1:]))
+	A = userOrGroupAttr(kw, at, av)
 	return
 }
 
@@ -428,20 +410,7 @@ func (r AttributeType) Eq() TargetRule {
 	if r.IsZero() {
 		return badTargetRule
 	}
-
-	var t TargetRule
-	t.SetKeyword(TargetAttr)
-	t.SetOperator(Eq)
-	t.SetExpression(r)
-
-	castAsCondition(t).
-		Encap(`"`).
-		Paren(true).
-		SetID(targetRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(TargetAttr.String())
-
-	return t
+	return TR(TargetAttr, Eq, r)
 }
 
 /*
@@ -454,32 +423,20 @@ func (r AttributeType) Ne() TargetRule {
 	if r.IsZero() {
 		return badTargetRule
 	}
-
-	var t TargetRule
-	t.SetKeyword(TargetAttr)
-	t.SetOperator(Ne)
-	t.SetExpression(r)
-
-	castAsCondition(t).
-		Encap(`"`).
-		Paren(true).
-		SetID(targetRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(TargetAttr.String())
-
-	return t
+	return TR(TargetAttr, Ne, r)
 }
 
 /*
-Keyword performs no useful task, as the receiver instance has no concept
-of keywords. This method exists solely to satisfy Go's interface signature
-requirements and will return nil if executed.
+Kind performs no useful task, as the receiver instance has no concept of
+a keyword, which is the typical value source for Kind calls. This method
+exists solely to satisfy Go's interface signature requirements and will
+return a zero string if executed.
 */
 func (r AttributeType) Kind() string { return `` }
 
 /*
 Keyword performs no useful task, as the receiver instance has no concept
-of keywords. This method exists solely to satisfy Go's interface signature
+of a keyword. This method exists solely to satisfy Go's interface signature
 requirements and will return nil if executed.
 */
 func (r AttributeType) Keyword() Keyword { return nil }
@@ -503,7 +460,7 @@ Please note that if the receiver is in an aberrant state, or if it has not
 yet been initialized, the execution of ANY of the return instance's value
 methods will return bogus TargetRule instances. While this is useful in unit
 testing, the end user must only execute this method IF and WHEN the receiver
-has been properly populated and prepared for such activity.
+has been properly initialized, populated and prepared for such activity.
 */
 func (r AttributeType) TRM() TargetRuleMethods {
 	return newTargetRuleMethods(targetRuleFuncMap{
@@ -550,6 +507,13 @@ func (r AttributeType) Len() int {
 	return 1
 }
 
+/*
+Valid returns an instance of error describing the aberrant
+state of the receiver, if applicable. At the moment, this
+method merely verifies nilness, as the AttributeType type
+defined within this package is extremely one dimensional,
+and lacks any significant mechanics for extended scrutiny.
+*/
 func (r AttributeType) Valid() error {
 	if r.IsZero() {
 		return nilInstanceErr(r)
@@ -668,20 +632,7 @@ func (r AttributeTypes) Eq() TargetRule {
 	if r.IsZero() {
 		return badTargetRule
 	}
-
-	var t TargetRule
-	t.SetKeyword(TargetAttr)
-	t.SetOperator(Eq)
-	t.SetExpression(r)
-
-	castAsCondition(t).
-		Encap(`"`).
-		Paren(true).
-		SetID(targetRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(TargetAttr.String())
-
-	return t
+	return TR(TargetAttr, Eq, r)
 }
 
 /*
@@ -695,19 +646,7 @@ func (r AttributeTypes) Ne() TargetRule {
 		return badTargetRule
 	}
 
-	var t TargetRule
-	t.SetKeyword(TargetAttr)
-	t.SetOperator(Ne)
-	t.SetExpression(r)
-
-	castAsCondition(t).
-		Encap(`"`).
-		Paren(true).
-		SetID(targetRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(TargetAttr.String())
-
-	return t
+	return TR(TargetAttr, Ne, r)
 }
 
 func (r AttributeTypes) isAttributeTypeContext() {}
@@ -835,13 +774,11 @@ the context of this type instance, the Keyword returned shall be either
 TargetAttr or TargetFilter.
 */
 func (r AttributeTypes) Keyword() Keyword {
-	kw, _ := idKW(r.Kind())
-	switch kw {
-	case TargetAttr:
-		return kw
+	if r.Kind() == `<uri_search_attributes>` {
+		return TargetFilter
 	}
 
-	return nil
+	return matchTKW(r.Kind())
 }
 
 /*
@@ -898,17 +835,21 @@ pushPolicy conforms to the PushPolicy interface signature defined within
 go-stackage. This private function is called during Push attempts to a
 AttributeTypes stack instance.
 */
-func (r AttributeTypes) pushPolicy(x any) (err error) {
+func (r AttributeTypes) pushPolicy(x ...any) (err error) {
+	if len(x) == 0 {
+		return nil
+	}
+
 	// verify uniqueness; bail out if Boolean
 	// false is return value.
-	if r.contains(x) {
-		err = pushErrorNotUnique(r, x, matchTKW(r.Kind()))
+	if r.contains(x[0]) {
+		err = pushErrorNotUnique(r, x[0], matchTKW(r.Kind()))
 		return
 	}
 
 	// perform type switch upon input value
 	// x to determine suitability for push.
-	switch tv := x.(type) {
+	switch tv := x[0].(type) {
 
 	case string:
 		// case matches a string-based LDAP AttributeType
@@ -956,12 +897,6 @@ func (r AttributeTypes) contains(x any) bool {
 		candidate = tv
 	case AttributeType:
 		candidate = tv.String()
-	default:
-		return false
-	}
-
-	if len(candidate) == 0 {
-		return false
 	}
 
 	for i := 0; i < r.Len(); i++ {

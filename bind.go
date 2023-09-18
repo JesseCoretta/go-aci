@@ -134,6 +134,84 @@ func rangeBindRuleFuncMap(candidate string, fm *bindRuleFuncMap) (cop Comparison
 }
 
 /*
+BR wraps go-stackage's Cond package-level function. In this context,
+it is wrapped here to assemble and return a BindRule instance using
+the so-called "one-shot" procedure. This is an option only when ALL
+information necessary for the process is in-hand and ready for user
+input: the keyword, comparison operator and the appropriate value(s)
+expression.
+
+Use of this function shall not require a subsequent call of BindRule's
+Init method, which is needed only for so-called "piecemeal" BindRule
+assembly.
+
+Use of this function is totally optional. Users may, instead, opt to
+populate the specific value instance(s) needed and execute the type's
+own Eq, Ne, Ge, Gt, Le and Lt methods (when applicable) to produce an
+identical return instance. Generally speaking, those methods may prove
+to be more convenient -- and far safer -- than use of this function.
+*/
+func BR(kw, op, ex any) BindRule {
+	return newBindRule(kw, op, ex)
+}
+
+/*
+newBindRule is a private package-level function called by the BR
+package-level function.
+*/
+func newBindRule(kw, op, ex any) (b BindRule) {
+	c := castAsCondition(b)
+	c.Init()
+	c.Encap(`"`).
+		SetID(bindRuleID).
+		NoPadding(!RulePadding)
+
+	b = BindRule(c)
+	b.SetKeyword(kw)
+	b.SetOperator(op)
+	b.SetExpression(ex)
+
+	return
+}
+
+/*
+Init wraps stackage.Condition's Init method. This is a required method
+for situations involving the piecemeal (step-by-step) assembly of an
+instance of BindRule as opposed to a one-shot creation using the BR
+package-level function. It is also an ideal means for the creation of
+a BindRule instance when one does not immediately possess all of the
+needed pieces of information (i.e.: uncertain which keyword to use, or
+when an expression value has not yet been determined, etc).
+
+Call this method after a variable declaration but before your first
+change, e.g.:
+
+	var br BindRule
+	... do other things ...
+	... we're ready to set something now ...
+	br.Init()
+	br.SetKeyword("blarg")
+	br.SetSomethingElse(...)
+	...
+
+Init need only be executed once within the lifespan of a BindRule
+instance. Its execution shall result in a completely new embedded
+pointer instance supplanting the previous one.
+
+One may choose, however, to re-execute this method IF this instance
+shall be reused (perhaps in a repetative or looped manner), and if
+it would be desirable to 'wipe the slate clean' for some reason.
+*/
+func (r *BindRule) Init() BindRule {
+	_r := castAsCondition(*r)
+	if _r.IsZero() || !_r.IsInit() {
+		_r.Init()
+	}
+	*r = BindRule(_r)
+	return *r
+}
+
+/*
 Contains returns a Boolean value indicative of whether the specified ComparisonOperator,
 which may be expressed as a string, int or native ComparisonOperator, is allowed for use
 by the type instance that created the receiver instance. This method offers a convenient
@@ -232,6 +310,15 @@ func (r BindRule) Traverse(indices ...int) BindContext {
 }
 
 /*
+Index returns the receiver instance. This method only exists to satisfy
+Go's interface signature requirements for the BindContext interface. See
+BindRules.Index instead.
+*/
+func (r BindRule) Index(_ int) BindContext {
+	return r
+}
+
+/*
 Compare returns a Boolean value indicative of a SHA-1 comparison
 between the receiver (r) and input value x.
 */
@@ -254,6 +341,9 @@ interface signature requirements and to convey this message.
 An integer value of one (1) is returned in any scenario.
 */
 func (r BindRule) Len() int {
+	if r.IsZero() {
+		return 0
+	}
 	return 1
 }
 
@@ -276,15 +366,18 @@ func (r BindRule) Paren(state ...bool) BindRule {
 }
 
 /*
+IsParen wraps go-stackage's Condition.IsParen method.
+*/
+func (r BindRule) IsParen() bool {
+	return castAsCondition(r).IsParen()
+}
+
+/*
 Valid wraps go-stackage's Condition.Valid method.
 */
 func (r BindRule) Valid() (err error) {
 	if r.IsZero() {
 		err = nilInstanceErr(r)
-		return
-	}
-	if r.Keyword() == nil {
-		err = badPTBRuleKeywordErr(r, bindRuleID, `bindkeyword`, `bad keyword`)
 		return
 	}
 
@@ -310,7 +403,7 @@ func (r BindRule) Category() string {
 	if r.IsZero() {
 		return ``
 	}
-	return castAsCondition(r).Category()
+	return r.Keyword().String()
 }
 
 /*
@@ -344,10 +437,6 @@ resolves the raw value into a BindKeyword. Failure to do
 so will return a bogus Keyword.
 */
 func (r BindRule) Keyword() Keyword {
-	if r.IsZero() {
-		return nil
-	}
-
 	k := castAsCondition(r).Keyword()
 	var kw any = matchBKW(k)
 	return kw.(BindKeyword)
@@ -359,34 +448,13 @@ and casts the stackage.ComparisonOperator to the local
 aci.ComparisonOperator.
 */
 func (r BindRule) Operator() ComparisonOperator {
-	if r.IsZero() {
-		return badCop
-	}
-
-	sc := castAsCondition(r)
-	if BindRule(*sc) == badBindRule {
-		return badCop
-	}
-
-	if sc.Operator() == nil {
-		return badCop
-	}
-
-	cop, ok := sc.Operator().(ComparisonOperator)
-	if !ok {
-		return badCop
-	}
-
-	return cop
+	return castCop(castAsCondition(r).Operator())
 }
 
 /*
 Expression wraps go-stackage's Condition.Expression method.
 */
 func (r BindRule) Expression() any {
-	if r.IsZero() {
-		return nil
-	}
 	return castAsCondition(r).Expression()
 }
 
@@ -566,7 +634,7 @@ seamlessly.
 This function is called following an apparently successful BindRules
 parsing request through go-antlraci.
 */
-func convertBindRulesHierarchy(stack any) (BindRules, bool) {
+func convertBindRulesHierarchy(stack any) (BindContext, bool) {
 	orig, _ := castAsStack(stack)
 	if orig.Len() == 0 {
 		return badBindRules, false
@@ -639,7 +707,11 @@ func convertBindRulesHierarchy(stack any) (BindRules, bool) {
 			if !subok {
 				return badBindRules, subok
 			}
-			clean.Push(sub.Paren(paren))
+			if _, ok := sub.(BindRules); ok {
+				sub.(BindRules).Paren(paren)
+				uncloakBindRules(sub.(BindRules))
+			}
+			clean.Push(sub)
 
 		}
 	}
@@ -650,7 +722,49 @@ func convertBindRulesHierarchy(stack any) (BindRules, bool) {
 	// was missed.
 	//ok = orig.String() == clean.String()
 	ok = len(clean.String()) > 0
+
+	// uncloak any hidden stacks
+	uncloakBindRules(clean)
+
 	return clean, ok
+}
+
+func uncloakBindRules(ctx BindRules) {
+	for i := 0; i < ctx.Len(); i++ {
+		if slice := ctx.Index(i); isCloaked(slice) {
+			stack := uncloak(slice.(BindRules))
+			ctx.Replace(stack, i)
+		}
+	}
+}
+
+/*
+BUG: testing cornercase for go-antlraci. Temporary, do not remove yet.
+*/
+func uncloak(ctx BindRules) BindRules {
+	stack := ctx.Index(0)
+	if isCloaked(stack) {
+		stack = uncloak(stack.(BindRules))
+	}
+
+	return stack.(BindRules)
+}
+
+/*
+BUG: testing cornercase for go-antlraci. Temporary, do not remove yet.
+*/
+func isCloaked(x BindContext) bool {
+	switch tv := x.(type) {
+	case BindRules:
+		if hasSfx(tv.Category(), `not`) || tv.Len() != 1 {
+			break
+		}
+
+		if tv.Index(0).Kind() == `stack` {
+			return !tv.IsParen()
+		}
+	}
+	return false
 }
 
 func wordToStack(k string) (BindRules, bool) {
@@ -680,25 +794,49 @@ func wordToStack(k string) (BindRules, bool) {
 /*
 SetKeyword wraps go-stackage's Condition.SetKeyword method.
 */
-func (r *BindRule) SetKeyword(kw any) *BindRule {
-	x := castAsCondition(*r)
-	x.SetKeyword(kw)
-	*r = BindRule(*x)
-
+func (r BindRule) SetKeyword(kw any) BindRule {
+	cac := castAsCondition(r)
+	if !cac.IsInit() {
+		r.Init()
+	}
+	cac.SetKeyword(kw)
 	return r
 }
 
 /*
 SetOperator wraps go-stackage's Condition.SetOperator method.
 */
-func (r *BindRule) SetOperator(op ComparisonOperator) *BindRule {
-	if !keywordAllowsComparisonOperator(r.Keyword(), op) {
+func (r BindRule) SetOperator(op any) BindRule {
+	var cop ComparisonOperator
+	switch tv := op.(type) {
+	case string:
+		cop = matchCOP(tv)
+	case ComparisonOperator:
+		cop = tv
+	}
+
+	// ALL Target and Bind rules accept Eq,
+	// so only scrutinize the operator if
+	// it is something *other than* that.
+	if cop != Eq {
+		if !keywordAllowsComparisonOperator(r.Keyword(), op) {
+			return r
+		}
+	}
+
+	// operator not known? bail out
+	if cop == ComparisonOperator(0) {
 		return r
 	}
 
-	x := castAsCondition(*r)
-	x.SetOperator(castAsCop(op))
-	*r = BindRule(*x)
+	// not initialized? bail out
+	if !castAsCondition(r).IsInit() {
+		return r
+	}
+
+	// cast to stackage.Condition and
+	// set operator value.
+	castAsCondition(r).SetOperator(cop)
 
 	return r
 }
@@ -706,54 +844,67 @@ func (r *BindRule) SetOperator(op ComparisonOperator) *BindRule {
 /*
 SetExpression wraps go-stackage's Condition.SetExpression method.
 */
-func (r *BindRule) SetExpression(expr any) *BindRule {
-	x := castAsCondition(*r)
-	x.SetExpression(expr)
-	*r = BindRule(*x)
-
+func (r BindRule) SetExpression(expr any) BindRule {
+	cac := castAsCondition(r)
+	if !cac.IsInit() {
+		cac.Init()
+	}
+	cac.SetExpression(expr)
 	return r
 }
 
 /*
 SetQuoteStyle allows the election of a particular multivalued
 quotation style offered by the various adopters of the ACIv3
-syntax.
+syntax. In the context of a BindRule, this will only have a
+meaningful impact if the keyword for the receiver is one (1)
+of the following:
+
+  - BindUDN (userdn)
+  - BindRDN (roledn)
+  - BindGDN (groupdn)
+
+Additionally, the underlying type set as the expression value
+within the receiver MUST be a BindDistinguishedNames instance
+with two (2) or more distinguished names within.
 
 See the const definitions for MultivalOuterQuotes (default)
 and MultivalSliceQuotes for details.
-
-Note that this will only have an effect on BindRule instances
-that bear the userdn, roledn or groupdn keyword contexts AND
-contain a stack-based expression containing more than one (1)
-slice elements.
 */
 func (r BindRule) SetQuoteStyle(style int) BindRule {
-	_r := castAsCondition(r)
+	key := r.Keyword()
 
-	switch key := r.Keyword(); key {
-	case BindUDN, BindGDN, BindRDN:
-		if isStackageStack(_r.Expression()) {
-			tv, _ := castAsStack(_r.Expression())
-			BindDistinguishedNames(tv).setQuoteStyle(style)
-
-			// Toggle the individual value quotation scheme
-			// to the INVERSE of the Stack quotation scheme
-			// set above
-			if style == MultivalSliceQuotes {
-				_r.Encap()
-			} else {
-				_r.Encap(`"`)
-			}
+	switch tv := r.Expression().(type) {
+	case BindDistinguishedNames:
+		switch key {
+		case BindUDN, BindGDN, BindRDN:
+			tv.setQuoteStyle(style)
 		}
 	default:
-		if style == MultivalSliceQuotes {
-			_r.Encap()
-		} else {
-			_r.Encap(`"`)
-		}
+		castAsCondition(r).Encap(`"`)
+		return r
+	}
+
+	// Toggle the individual value quotation scheme
+	// to the INVERSE of the Stack quotation scheme
+	// set above.
+	//
+	// If MultivalSliceQuotes equals the style set
+	// by the user, this implies that that no outer
+	// encapsulation shall be used, thus _r.Encap()
+	// is called for the receiver.
+	//
+	// But the above type instances (TDNs, OIDs, ATs)
+	// will have the opposite setting imposed, which
+	// enables quotation for the individual values.
+	if style == MultivalSliceQuotes {
+		castAsCondition(r).Encap()
+	} else {
+		castAsCondition(r).Encap(`"`)
 	}
 
 	return r
+
 }
 
 /*
@@ -869,7 +1020,7 @@ func (r BindRules) Pop() BindContext {
 	return r.pop()
 }
 
-func (r BindRules) pop() BindContext {
+func (r BindRules) pop() (popped BindContext) {
 	if r.IsZero() {
 		return nil
 	}
@@ -877,17 +1028,14 @@ func (r BindRules) pop() BindContext {
 	_r, _ := castAsStack(r)
 	x, _ := _r.Pop()
 
-	var z any
 	switch tv := x.(type) {
 	case BindRule:
-		z = tv
-		return z.(BindRule)
+		popped = tv
 	case BindRules:
-		z = tv
-		return z.(BindRules)
+		popped = tv
 	}
 
-	return nil
+	return
 }
 
 /*
@@ -961,6 +1109,14 @@ func (r BindRules) Paren(state ...bool) BindRules {
 }
 
 /*
+IsParen wraps go-stackage's Stack.IsParen method.
+*/
+func (r BindRules) IsParen() bool {
+	_r, _ := castAsStack(r)
+	return _r.IsParen()
+}
+
+/*
 Fold wraps go-stackage's Stack.Fold method to allow the case
 folding of logical Boolean 'AND', 'OR' and 'AND NOT' WORD
 operators to 'and', 'or' and 'and not' respectively, or vice
@@ -1004,22 +1160,22 @@ Traverse wraps go-stackage's Stack.Traverse method.
 */
 func (r BindRules) Traverse(indices ...int) (B BindContext) {
 	_b, _ := castAsStack(r)
-	if br, ok := _b.Traverse(indices...); ok {
-		indices = indices[1:]
-		if isStackageStack(br) {
-			x, _ := castAsStack(br)
-			B = BindRules(x)
-			if len(indices) > 1 {
-				return B.Traverse(indices...)
-			}
-		} else if isStackageCondition(br) {
-			x := castAsCondition(br)
-			B = BindRule(derefC(x))
-		} else {
-			if assert, ok := br.(BindRule); ok && len(indices) <= 2 {
-				return assert
+	br, ok := _b.Traverse(indices...)
+	if ok {
+		switch tv := br.(type) {
+		case BindContext:
+			B = tv
+		default:
+			if isStackageStack(tv) {
+				B = castAsBindRules(tv)
+			} else if isStackageCondition(tv) {
+				B = castAsBindRule(tv)
 			}
 		}
+	}
+
+	if B == nil {
+		B = badBindRules
 	}
 
 	return
@@ -1048,15 +1204,17 @@ Stack alias) type instance.
 
 Only BindContext qualifiers are to be cleared for push.
 */
-func (r BindRules) pushPolicy(x any) (err error) {
-	if x == nil {
+func (r BindRules) pushPolicy(x ...any) (err error) {
+	if len(x) == 0 {
+		return
+	} else if x[0] == nil {
 		err = pushErrorNilOrZero(r, x, matchBKW(r.Category()))
 		return
 	}
 
 	// perform type switch upon input value
 	// x to determine suitability for push.
-	switch tv := x.(type) {
+	switch tv := x[0].(type) {
 	case BindRules:
 		if err = tv.Valid(); err != nil {
 			err = pushErrorNilOrZero(r, tv, matchBKW(r.Category()), err)
@@ -1119,6 +1277,10 @@ type BindContext interface {
 	// receiver instance being nil, or unset.
 	IsZero() bool
 
+	// IsParen returns a Boolean value indicative of
+	// whether the receiver is parenthetical.
+	IsParen() bool
+
 	// Len returns the integer length of the receiver.
 	// Only meaningful when run on BindRules instances.
 	Len() int
@@ -1127,6 +1289,11 @@ type BindContext interface {
 	// whether the receiver contains a stack as a value.
 	// Only meaningful when run on BindRules instances.
 	IsNesting() bool
+
+	// Index returns the Nth slice from the receiver.
+	// This method is only meaningful if the underlying
+	// instance is BindRules.
+	Index(int) BindContext
 
 	// Traverse will walk a structure of BindContext
 	// instances using a sequence of index integers.
@@ -1140,9 +1307,10 @@ type BindContext interface {
 	// ID will report `bind` in all scenarios.
 	ID() string
 
-	// Category will report the logical state of a BindRule
-	// or BindRules instance. This will read `and`, or`,
-	// `not`.
+	// Category will report the logical state of a BindRules
+	// instance. This will read `and`, `or`, `not`. For an
+	// instance of BindRule, however, it will return the string
+	// form of the Keyword, if set, else a zero string.
 	Category() string
 
 	// Kind will report `stack` for a BindRules instance, or

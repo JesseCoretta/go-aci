@@ -158,19 +158,7 @@ func (r Inheritance) Eq() BindRule {
 	if err := r.Valid(); err != nil {
 		return badBindRule
 	}
-
-	var b BindRule
-	b.SetKeyword(r.inheritance.AttributeBindTypeOrValue.BindKeyword)
-	b.SetOperator(Eq)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(r.inheritance.AttributeBindTypeOrValue.BindKeyword.String())
-
-	return b
+	return BR(r.inheritance.AttributeBindTypeOrValue.BindKeyword, Eq, r)
 }
 
 /*
@@ -182,19 +170,7 @@ func (r Inheritance) Ne() BindRule {
 	if err := r.Valid(); err != nil {
 		return badBindRule
 	}
-
-	var b BindRule
-	b.SetKeyword(r.inheritance.AttributeBindTypeOrValue.BindKeyword)
-	b.SetOperator(Ne)
-	b.SetExpression(r)
-
-	castAsCondition(b).
-		Encap(`"`).
-		SetID(bindRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(r.inheritance.AttributeBindTypeOrValue.BindKeyword.String())
-
-	return b
+	return BR(r.inheritance.AttributeBindTypeOrValue.BindKeyword, Ne, r)
 }
 
 /*
@@ -312,18 +288,18 @@ Keyword returns the Keyword associated with the receiver instance. In
 the context of this type instance, the Keyword returned will be either
 BindUAT or BindGAT.
 */
-func (r Inheritance) Keyword() Keyword {
+func (r Inheritance) Keyword() (kw Keyword) {
 	if err := r.Valid(); err != nil {
 		return nil
 	}
 
-	kw := r.inheritance.AttributeBindTypeOrValue.BindKeyword
-	switch kw {
+	k := r.inheritance.AttributeBindTypeOrValue.BindKeyword
+	switch k {
 	case BindGAT, BindUAT:
-		return kw
+		kw = k
 	}
 
-	return nil
+	return
 }
 
 /*
@@ -436,10 +412,9 @@ func (r *Levels) shift(x ...any) {
 		var lvl Level
 		switch tv := x[i].(type) {
 		case Level:
-			if tv == noLvl {
-				continue
+			if tv != noLvl {
+				lvl = tv
 			}
-			lvl = tv
 		case int:
 			if lvl = assertIntInheritance(tv); lvl == noLvl {
 				continue
@@ -531,13 +506,13 @@ Valid returns an error instance that describes the undesirable
 state of the receiver, if applicable. A nil error is returned
 otherwise.
 */
-func (r Levels) Valid() error {
+func (r Levels) Valid() (err error) {
 	if r.IsZero() {
-		return nilInstanceErr(r)
+		err = nilInstanceErr(r)
 	}
 
 	// TODO: additional checks?
-	return nil
+	return
 }
 
 /*
@@ -601,10 +576,9 @@ func (r *Levels) unshift(x ...any) {
 		var lvl Level
 		switch tv := x[0].(type) {
 		case Level:
-			if tv == noLvl {
-				continue
+			if tv != noLvl {
+				lvl = tv
 			}
-			lvl = tv
 		case int:
 			if lvl = assertIntInheritance(tv); lvl == noLvl {
 				continue

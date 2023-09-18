@@ -427,8 +427,8 @@ func ExampleAttributeTypes_Keyword_uRIAttributes() {
 		`objectClass`,
 	)
 
-	fmt.Printf("Keyword is nil: %t", attrs.Keyword() == nil)
-	// Output: Keyword is nil: true
+	fmt.Printf("Keyword: %s", attrs.Keyword())
+	// Output: Keyword: targetfilter
 }
 
 func ExampleABTV() {
@@ -676,18 +676,48 @@ func ExampleAttributeValue_Compare() {
 	// Output: These passwords match: false
 }
 
+func TestAttrs_codecov(t *testing.T) {
+
+	var atv AttributeBindTypeOrValue
+	_ = atv.Eq()
+	_ = atv.Ne()
+	_ = atv.Valid()
+	atv.Set(AT(``))
+	_ = atv.String()
+
+	if err := atv.Parse(`fartknocker`); err == nil {
+		t.Errorf("%s failed: no error where one was expected", t.Name())
+		return
+	}
+
+	if atv = ABTV(BindGAT, AT(`manager`), SELFDN); !atv.Compare(`manager#SELFDN`) {
+		t.Errorf("%s failed: hash comparison error", t.Name())
+		return
+	}
+	_ = atv.Keyword()
+
+	var at AttributeType
+	_ = at.Eq()
+	_ = at.Ne()
+	_ = at.Len()
+}
+
 func TestAttributeTypes(t *testing.T) {
 
 	for keyword, atfn := range map[Keyword]func(...any) AttributeTypes{
-		//BindUDN:    UAs,	/// TODO clean this up
+		BindUAT:    UAs, /// TODO clean this up
+		BindGAT:    UAs, /// TODO clean this up
 		TargetAttr: TAs,
 	} {
-		var attrs AttributeTypes = atfn()
+		var attrs AttributeTypes
 		_ = attrs.Eq()
 		_ = attrs.Ne()
 		_ = attrs.Len()
+		_ = attrs.Valid()
 		attrs.isAttributeTypeContext()
 		attrs.reset()
+		attrs.Push()
+		attrs.Push(AT(``))
 		attrs.Push(keyword)
 		attrs.resetKeyword(keyword)
 		attrs.resetKeyword(keyword.String())
@@ -699,6 +729,18 @@ func TestAttributeTypes(t *testing.T) {
 		_ = attrs.Keyword()
 		_ = attrs.Kind()
 		_ = attrs.Valid()
+
+		attrs = atfn()
+
+		attrs.Push()
+		attrs.Push(AT(``))
+		attrs.Push(keyword)
+		attrs.resetKeyword(keyword)
+		attrs.resetKeyword(keyword.String())
+		attrs.setQuoteStyle(1)
+		attrs.setQuoteStyle(0)
+		attrs.Contains(3.14159)
+		attrs.Push('𝝅')
 
 		for _, raw := range []string{
 			`cn`,
@@ -731,6 +773,7 @@ func TestAttributeTypes(t *testing.T) {
 			}
 			popped := attrs.Pop()
 			attrs.Push(popped)
+			attrs.resetKeyword(TargetCtrl)
 			attrs.Push(popped.String())
 			attrs.Push(3.14159)
 			attrs.Push('𝝅')

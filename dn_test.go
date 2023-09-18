@@ -23,7 +23,12 @@ func TestBindDistinguishedName_codecov(t *testing.T) {
 			O.isDistinguishedNameContext()
 			_ = O.Eq()
 			_ = O.Ne()
+			_ = O.Keyword()
+			_ = O.Valid()
+			_ = O.IsZero()
 			_ = O.Len()
+			_ = isDNAlias(AllDN.String())
+			_ = isDNAlias(``)
 
 			if err := O.Valid(); err == nil {
 				t.Errorf("%s failed: invalid %T returned no validity error",
@@ -58,6 +63,7 @@ func TestBindDistinguishedName_codecov(t *testing.T) {
 
 			O.Set(`159`)
 			O.Set(``)
+			_ = O.Valid()
 			O.Set(`uid=jesse,ou=People,dc=example,dc=com`, kw)
 
 			// try every comparison operator supported in
@@ -91,6 +97,9 @@ func TestTargetDistinguishedName_codecov(t *testing.T) {
 			O.isDistinguishedNameContext()
 			_ = O.Eq()
 			_ = O.Ne()
+			_ = O.Keyword()
+			_ = O.Valid()
+			_ = O.IsZero()
 			_ = O.Len()
 
 			if err := O.Valid(); err == nil {
@@ -126,6 +135,7 @@ func TestTargetDistinguishedName_codecov(t *testing.T) {
 
 			O.Set(`159`)
 			O.Set(``)
+			_ = O.Valid()
 			O.Set(`#barf`, kw)
 
 			// DNs qualify for equality and negated equality
@@ -155,15 +165,29 @@ func TestTargetDistinguishedName_codecov(t *testing.T) {
 }
 
 func TestBindDistinguishedNames_codecov(t *testing.T) {
+	var ctx DistinguishedNameContext = UDN(`uid=jesse,ou=People,dc=example,dc=com`)
 	var Os BindDistinguishedNames
 	var Id string = Os.ID()
 	var Kw Keyword = Os.Keyword()
 	_ = sprintf("%v", Kw)
 	_ = Os.Eq()
 	_ = Os.Ne()
+	_ = Os.Push()
+	_ = Os.Push(``)
+	_ = Os.Push(`fhksjthg4`)
+	_ = Os.Push(`_1`)
+	_ = Os.Push(ctx)
+	_ = Os.Push(URI(`ldap:///ou=People,dc=example,dc=com?cn,sn,givenName?one?(&(objectClass=contractor)(status=active))`))
+
 	Os.reset()
 	_ = Os.setQuoteStyle(0)
 	_ = Os.setQuoteStyle(1)
+
+	Os.setExpressionValues(Target, []string{}...)
+	Os.setExpressionValues(BindUDN, []string{}...)
+	Os.setExpressionValues(BindSSF, []string{`1`}...)
+	Os.setExpressionValues(BindSSF, []string{`ldap:///ou=People,dc=example,dc=com?cn,sn,givenName?one?(&(objectClass=contractor)(status=active))`}...)
+	Os.setExpressionValues(BindUDN, []string{`325Ga_`}...)
 
 	for kw, fn := range map[BindKeyword]func(...any) BindDistinguishedNames{
 		BindUDN: UDNs,
@@ -176,6 +200,7 @@ func TestBindDistinguishedNames_codecov(t *testing.T) {
 		for _, dn := range []string{
 			`uid=jesse,ou=People,dc=example,dc=com`,
 			`cn=Courtney Tolana,ou=Contractors,ou=People,dc=example,dc=com`,
+			`ldap:///ou=People,dc=example,dc=com?cn,sn,objectClass?one?(objectClass=employee)`,
 		} {
 			var O BindDistinguishedName
 			var Ol int = Os.Len()
@@ -203,6 +228,12 @@ func TestBindDistinguishedNames_codecov(t *testing.T) {
 
 			Ol = Os.Len()
 			Os.Push(O)
+			Os.Push()
+			Os.Push(``)
+			Os.Push(nil)
+			Os.Push('a')
+			Os.Push(URI(`ldap:///ou=People,dc=example,dc=com?cn,sn,givenName?one?(&(objectClass=contractor)(status=active))`))
+			Os.Contains(dn)
 			Os.Push(Os.Pop())
 			Os.Push(O) // try to introduce duplicate
 			Id = Os.ID()
@@ -244,15 +275,28 @@ func TestBindDistinguishedNames_codecov(t *testing.T) {
 }
 
 func TestTargetDistinguishedNames_codecov(t *testing.T) {
+	var ctx DistinguishedNameContext = UDN(`uid=jesse,ou=People,dc=example,dc=com`)
 	var Os TargetDistinguishedNames
 	var Id string = Os.ID()
 	var Kw Keyword = Os.Keyword()
 	_ = sprintf("%v", Kw)
 	_ = Os.Eq()
 	_ = Os.Ne()
+	_ = Os.Push()
+	_ = Os.Push(``)
+	_ = Os.Push(`fhksjthg4`)
+	_ = Os.Push(`_1`)
+	_ = Os.Push(ctx)
+
 	Os.reset()
 	_ = Os.setQuoteStyle(0)
 	_ = Os.setQuoteStyle(1)
+
+	Os.setExpressionValues(BindGDN, []string{}...)
+	Os.setExpressionValues(Target, []string{}...)
+	Os.setExpressionValues(BindSSF, []string{`1`}...)
+	Os.setExpressionValues(BindSSF, []string{`ldap:///ou=People,dc=example,dc=com?cn,sn,givenName?one?(&(objectClass=contractor)(status=active))`}...)
+	Os.setExpressionValues(TargetTo, []string{`325Ga_`}...)
 
 	for kw, fn := range map[TargetKeyword]func(...any) TargetDistinguishedNames{
 		Target:     TDNs,
@@ -292,6 +336,11 @@ func TestTargetDistinguishedNames_codecov(t *testing.T) {
 
 			Ol = Os.Len()
 			Os.Push(O)
+			Os.Push()
+			Os.Push(``)
+			Os.Push(nil)
+			Os.Push('a')
+			Os.Contains(dn)
 			Os.Push(Os.Pop())
 			Os.Push(O) // try to introduce duplicate
 			Id = Os.ID()
@@ -742,6 +791,12 @@ func ExampleBindDistinguishedName_Ne() {
 	// Output: userdn != "ldap:///uid=courtney,ou=People,dc=example,dc=com"
 }
 
+func ExampleTargetDistinguishedName_Eq() {
+	var dn TargetDistinguishedName = TTDN(`cn=Distribution List,ou=Groups,dc=example,dc=com`)
+	fmt.Printf("%s", dn.Eq())
+	// Output: ( target_to = "ldap:///cn=Distribution List,ou=Groups,dc=example,dc=com" )
+}
+
 func ExampleTargetDistinguishedName_Ne() {
 	var dn TargetDistinguishedName = TFDN(`uid=courtney,ou=People,dc=example,dc=com`)
 	fmt.Printf("%s", dn.Ne())
@@ -812,4 +867,57 @@ func ExampleRDN() {
 	dn := RDN(`cn=Role Profile,ou=Roles,dc=example,dc=com`)
 	fmt.Printf("%s", dn)
 	// Output: ldap:///cn=Role Profile,ou=Roles,dc=example,dc=com
+}
+
+func ExampleBindDistinguishedName_Set() {
+	var dn BindDistinguishedName
+	dn.Set(`cn=Role Profile,ou=Roles,dc=example,dc=com`, BindRDN)
+	fmt.Printf("%s", dn.Eq())
+	// Output: roledn = "ldap:///cn=Role Profile,ou=Roles,dc=example,dc=com"
+}
+
+func ExampleTargetDistinguishedName_Set() {
+	var dn TargetDistinguishedName
+	dn.Set(`cn=*,($attr.ou),dc=example,dc=com`, Target)
+	fmt.Printf("%s", dn.Ne())
+	// Output: ( target != "ldap:///cn=*,($attr.ou),dc=example,dc=com" )
+}
+
+func ExampleBindDistinguishedNames_ID() {
+	var dn BindDistinguishedNames
+	fmt.Printf("%s", dn.ID())
+	// Output: bind
+}
+
+func ExampleTargetDistinguishedNames_ID() {
+	var dn TargetDistinguishedNames
+	fmt.Printf("%s", dn.ID())
+	// Output: target
+}
+
+func ExampleTDNs() {
+	tdns := TDNs(
+		`uid=jesse,ou=People,dc=example,dc=com`,
+		`uid=courtney,ou=People,dc=example,dc=com`,
+	)
+	fmt.Printf("%s contains %d DNs", tdns.Keyword(), tdns.Len())
+	// Output: target contains 2 DNs
+}
+
+func ExampleTTDNs() {
+	tdns := TTDNs(
+		`uid=jesse,ou=People,dc=example,dc=com`,
+		`uid=courtney,ou=People,dc=example,dc=com`,
+	)
+	fmt.Printf("%s contains %d DNs", tdns.Keyword(), tdns.Len())
+	// Output: target_to contains 2 DNs
+}
+
+func ExampleTFDNs() {
+	tdns := TFDNs(
+		`uid=jesse,ou=People,dc=example,dc=com`,
+		`uid=courtney,ou=People,dc=example,dc=com`,
+	)
+	fmt.Printf("%s contains %d DNs", tdns.Keyword(), tdns.Len())
+	// Output: target_from contains 2 DNs
 }

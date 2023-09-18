@@ -32,7 +32,7 @@ func ACIs(x ...any) (i Instructions) {
 		NoNesting(true).
 		SetID(`instructions`).
 		SetDelimiter(rune(10)).
-		NoPadding(!StackPadding).
+		NoPadding(true).
 		SetCategory(`instructions`)
 
 		// cast _i as a proper Instructions instance
@@ -83,13 +83,20 @@ const (
 	badACI = `<invalid_aci>`
 )
 
-func (r Instructions) pushPolicy(x any) (err error) {
-	if r.contains(x) {
-		err = pushErrorNotUnique(r, x, nil)
+func (r Instructions) pushPolicy(x ...any) (err error) {
+	if len(x) == 0 {
+		return
+	} else if x[0] == nil {
+		err = nilInstanceErr(x[0])
 		return
 	}
 
-	switch tv := x.(type) {
+	if r.contains(x[0]) {
+		err = pushErrorNotUnique(r, x[0], nil)
+		return
+	}
+
+	switch tv := x[0].(type) {
 	case string:
 		if len(tv) == 0 {
 			err = nilInstanceErr(tv)
@@ -139,16 +146,9 @@ func (r Instructions) contains(x any) bool {
 		candidate = tv
 	case Instruction:
 		candidate = tv.String()
-	default:
-		return false
 	}
 
 	candidate = condenseWHSP(candidate)
-
-	if len(candidate) == 0 {
-		return false
-	}
-
 	for i := 0; i < r.Len(); i++ {
 		// case is not significant here.
 		if eq(r.Index(i).String(), candidate) {
@@ -213,7 +213,7 @@ func (r Instructions) Push(x ...any) Instructions {
 			if err := ins.Parse(tv); err == nil {
 				_r.Push(ins)
 			}
-		case Instruction:
+		default:
 			_r.Push(tv)
 		}
 	}
@@ -321,11 +321,6 @@ func (r Instruction) Valid() (err error) {
 valid is a private method called by instruction.Valid.
 */
 func (r instruction) valid() (err error) {
-	if r.isZero() {
-		err = nilInstanceErr(r)
-		return
-	}
-
 	if len(r.ACL) == 0 {
 		err = instructionNoLabelErr()
 		return

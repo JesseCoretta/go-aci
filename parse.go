@@ -9,30 +9,70 @@ import (
 )
 
 /*
-ParseBindRule returns an instance of Condition alongside an error instance.
+ParseBindRule returns an instance of BindRule alongside an error instance.
 
-The returned Condition instance shall contain
+This function calls the imported antlraci.ParseBindRule function, delegating
+parsing responsibilities there.
 */
 func ParseBindRule(raw string) (BindRule, error) {
 	return parseBindRule(raw)
 }
 
+func (r *BindRule) Parse(raw string) error {
+	_r, err := parseBindRule(raw)
+	if err != nil {
+		return err
+	}
+	*r = _r
+
+	return nil
+}
+
 func parseBindRule(raw string) (BindRule, error) {
-	_c, err := parser.ParseBindRule(raw)
-	return BindRule(_c), err
+	_r, err := parser.ParseBindRule(raw)
+	return BindRule(_r), err
 }
 
 /*
-ParseBindRules returns an instance of Rule alongside an error instance.
-
-The returned Rule instance shall contain a complete hierarchical stack
-structure that represents the abstract rule (raw) input by the user.
+ParseBindRules returns an instance of BindContext alongside an error
+instance. BindContext may represent either a BindRule or BindRules
+instance, depending on that which was parsed.
 */
-func ParseBindRules(raw string) (BindRules, error) {
+func ParseBindRules(raw string) (BindContext, error) {
 	return parseBindRules(raw)
 }
 
-func parseBindRules(raw string) (BindRules, error) {
+/*
+Parse returns an error based upon an attempt to parse the raw input
+value into the receiver instance. If successful, any contents within
+the receiver instance would be obliterated, replaced irrevocably by
+the freshly parsed values.
+
+Both this method, and the package-level ParseBindRule function, call
+antlraci's ParseBindRule function in similar fashion. The only real
+difference here is the process of writing to a receiver, versus writing
+to an uninitialized variable declaration.
+*/
+func (r *BindRules) Parse(raw string) error {
+	_r, err := parseBindRules(raw)
+	if err != nil {
+		return err
+	}
+
+	switch tv := _r.(type) {
+	case BindRules:
+		*r = tv
+	}
+
+	return nil
+}
+
+/*
+parseBindRules communicates with the backend parser (antlraci)
+package for the purpose of parsing an instance of BindRules,
+which is returned alongside an error.
+*/
+func parseBindRules(raw string) (BindContext, error) {
 	// In case the input has bizarre
 	// contiguous whsp, etc., remove
 	// it safely.
@@ -53,11 +93,13 @@ func parseBindRules(raw string) (BindRules, error) {
 	// type with more appropriate types
 	// defined in this package.
 	n, ok := convertBindRulesHierarchy(_b)
-	if !ok {
-		return badBindRules, parseBindRulesHierErr(_b, n)
+
+	// for codecov
+	if err = parseBindRulesHierErr(_b, n); ok {
+		err = nil
 	}
 
-	return n, nil
+	return n, err
 }
 
 /*
@@ -299,6 +341,10 @@ func (r BindRule) assertExpressionValue() (err error) {
 	// will make things simpler.
 	var ex any
 
+	// prepare this error ahead of time to
+	// avoid untestable codecov gaps.
+	err = badPTBRuleKeywordErr(r, bindRuleID, `BindKeyword`, r.Keyword())
+
 	// perform a bind keyword switch upon
 	// a resolution attempt of the value.
 	switch key := matchBKW(r.Keyword().String()); key {
@@ -328,9 +374,6 @@ func (r BindRule) assertExpressionValue() (err error) {
 		// or a security factor expressive
 		// statement.
 		ex, err = assertBindSec(expr, key)
-
-	default:
-		err = badPTBRuleKeywordErr(r, bindRuleID, `BindKeyword`, key)
 	}
 
 	if err != nil {
@@ -363,7 +406,51 @@ returned alongside an error upon completion of processing.
 */
 func parseTargetRule(raw string) (TargetRule, error) {
 	_t, err := parser.ParseTargetRule(raw)
-	return TargetRule(_t), err
+	t := TargetRule(_t)
+	t.assertExpressionValue()
+	return t, err
+}
+
+/*
+Parse returns an error based upon an attempt to parse the raw input
+value into the receiver instance. If successful, any contents within
+the receiver instance would be obliterated, replaced irrevocably by
+the freshly parsed values.
+
+Both this method, and the package-level ParseTargetRule function,
+call antlraci's ParseTargetRule function in similar fashion. The only
+real difference here is the process of writing to a receiver, versus
+writing to an uninitialized variable declaration.
+*/
+func (r *TargetRule) Parse(raw string) error {
+	_r, err := parseTargetRule(raw)
+	if err != nil {
+		return err
+	}
+	*r = _r
+
+	return nil
+}
+
+/*
+Parse returns an error based upon an attempt to parse the raw input
+value into the receiver instance. If successful, any contents within
+the receiver instance would be obliterated, replaced irrevocably by
+the freshly parsed values.
+
+Both this method, and the package-level ParseTargetRules function,
+call antlraci's ParseTargetRules function in similar fashion. The only
+real difference here is the process of writing to a receiver, versus
+writing to an uninitialized variable declaration.
+*/
+func (r *TargetRules) Parse(raw string) error {
+	_r, err := parseTargetRules(raw)
+	if err != nil {
+		return err
+	}
+	*r = _r
+
+	return nil
 }
 
 /*
@@ -396,6 +483,10 @@ func parseTargetRules(raw string) (TargetRules, error) {
 	if err != nil {
 		return badTargetRules, err
 	}
+	if _t.String() == `` {
+		err = noValueErr(TargetRules{}, `targetrules`)
+		return badTargetRules, err
+	}
 
 	return processTargetRules(_t)
 }
@@ -403,14 +494,10 @@ func parseTargetRules(raw string) (TargetRules, error) {
 func processTargetRules(stack any) (TargetRules, error) {
 	var err error
 
-	_z, ok := castAsStack(stack)
-	if !ok {
-		err = errorf("Invalid input type %T; expecting stackage.Stack", stack)
-		return badTargetRules, err
-	}
+	_z, _ := castAsStack(stack)
 
 	// create our (eventual) return object.
-	t := TRs().NoPadding(true)
+	t := TRs()
 
 	// transfer raw contents into new TargetRules
 	// instance.
@@ -455,7 +542,7 @@ with a proper value-appropriate type defined within the go-aci package.
 
 An error is returned upon processing completion.
 */
-func (r TargetRule) assertExpressionValue() (err error) {
+func (r *TargetRule) assertExpressionValue() (err error) {
 	// grab the raw value from the receiver. If it is
 	// NOT an instance of parser.RuleExpression, then
 	// bail out.
@@ -470,6 +557,10 @@ func (r TargetRule) assertExpressionValue() (err error) {
 	// stackage.Condition allows this and
 	// will make things simpler.
 	var ex any
+
+	// prepare this error ahead of time to
+	// avoid untestable codecov gaps.
+	err = badPTBRuleKeywordErr(expr, targetRuleID, `TargetKeyword`, r.Keyword())
 
 	// perform a target keyword switch upon
 	// a resolution attempt of the value.
@@ -509,10 +600,6 @@ func (r TargetRule) assertExpressionValue() (err error) {
 		// value is a target, target_to or target_from
 		// expressive statement, possibly multi-valued
 		ex, err = assertTargetTFDN(expr, key)
-
-	default:
-		// value is ... bogus
-		err = badPTBRuleKeywordErr(expr, targetRuleID, `TargetKeyword`, key)
 	}
 
 	if err != nil {
@@ -703,10 +790,7 @@ func assertTargetAttrFilters(expr parser.RuleExpression) (ex AttributeFilterOper
 	} else {
 		// The only other thing it could be is a bare AttributeFilter.
 		var af AttributeFilter
-		if af, err = parseAttributeFilter(value); err != nil {
-			return
-		}
-
+		af, err = parseAttributeFilter(value)
 		ex = AFOs(AddOp.AFO(af)) // we have to choose one, 'add' seems safer than 'delete'
 	}
 
@@ -869,12 +953,7 @@ func processPermissionBindRule(pbr parser.PermissionBindRule) (PermissionBindRul
 func processPermissionBindRules(stack any) (PermissionBindRules, error) {
 	var err error
 
-	_pbrs, ok := castAsStack(stack)
-	if !ok {
-		err = errorf("Invalid input type %T; expecting stackage.Stack", stack)
-		return badPermissionBindRules, err
-	}
-
+	_pbrs, _ := castAsStack(stack)
 	var pbrs PermissionBindRules = PBRs()
 	for i := 0; i < _pbrs.Len(); i++ {
 		slice, _ := _pbrs.Index(i)

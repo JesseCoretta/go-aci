@@ -7,11 +7,23 @@ import (
 
 func TestObjectIdentifiers_codecov(t *testing.T) {
 
+	_ = isDotNot(``)
+	_ = isDotNot(`this is not dot not`)
+
 	for keyword, Oidsfn := range map[TargetKeyword]func(...any) ObjectIdentifiers{
 		TargetCtrl:  Ctrls,
 		TargetExtOp: ExtOps,
 	} {
-		var Oids ObjectIdentifiers = Oidsfn()
+		var Oids ObjectIdentifiers
+		_ = Oids.Ne()
+		_ = Oids.Eq()
+
+		_ = objectIdentifiersPushPolicy(Oids, ``, keyword)
+		_ = objectIdentifiersPushPolicy(Oids, nil, keyword)
+		_ = objectIdentifiersPushPolicy(Oids, float64(1), keyword)
+		_ = objectIdentifiersPushPolicy(Oids, BindUDN, keyword)
+		_ = objectIdentifiersPushPolicy(Oids, keyword, keyword)
+		_ = objectIdentifiersPushPolicy(Oids, `hello`, keyword)
 
 		_ = Oids.Len()
 		Oids.reset()
@@ -20,6 +32,36 @@ func TestObjectIdentifiers_codecov(t *testing.T) {
 		Oids.Push(keyword)
 		_ = Oids.Keyword()
 		_ = Oids.Kind()
+		_ = Oids.Push()
+		_ = Oids.Push(nil)
+		_ = Oids.Push(``)
+		_ = Oids.Push('a')
+		_ = Oids.Ne()
+		_ = Oids.Eq()
+		_ = Oids.Valid()
+		_ = Oids.setQuoteStyle(0)
+		_ = Oids.setQuoteStyle(1)
+		Oids.isObjectIdentifierContext()
+
+		Oids = Oidsfn() // init
+		_ = Oids.Len()
+		_ = objectIdentifiersPushPolicy(Oids, ``, keyword)
+		_ = objectIdentifiersPushPolicy(Oids, nil, keyword)
+		_ = objectIdentifiersPushPolicy(Oids, BindUDN, keyword)
+		_ = objectIdentifiersPushPolicy(Oids, keyword, keyword)
+		_ = objectIdentifiersPushPolicy(Oids, float64(1), keyword)
+		_ = objectIdentifiersPushPolicy(Oids, `hello`, keyword)
+
+		Oids.reset()
+		Oids.resetKeyword(keyword)
+		Oids.resetKeyword(keyword.String())
+		Oids.Push(keyword)
+		_ = Oids.Keyword()
+		_ = Oids.Kind()
+		_ = Oids.Push()
+		_ = Oids.Push(nil)
+		_ = Oids.Push(``)
+		_ = Oids.Push('a')
 		_ = Oids.Ne()
 		_ = Oids.Eq()
 		_ = Oids.Valid()

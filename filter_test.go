@@ -82,6 +82,10 @@ func TestFilter_Set(t *testing.T) {
 }
 
 func TestAttributeFilter(t *testing.T) {
+	var _afo AttributeFilter
+	_ = _afo.Parse(` (       hi        ) `)
+	_, _, _ = parseAttrFilterOperPreamble(` (       hi        )`)
+
 	afo := AF(AT(`cn`))
 	_ = afo.Valid()
 	_ = afo.IsZero()
@@ -115,17 +119,30 @@ func TestAttributeFilterOperation_byStringParse(t *testing.T) {
 	straf := `objectClass:(&(objectClass=employee)(cn=Jesse Coretta))`
 	want := `add=` + straf
 
-	var afo AttributeFilterOperation = AFO()
+	var afo AttributeFilterOperation
+
+	afo.Push()
+	_ = afo.Valid()
+	_ = afo.String()
+	_ = afo.Contains('𝝅')
+	_ = afo.Push('𝝅')
+	_ = afo.Push(nil)
+	_ = afo.Eq()
+	_ = afo.Pop()
+	_ = afo.Valid()
 
 	adder := AddOp.AFO(straf)
 
+	afo = AFO()
 	afo.Push()
+	_ = afo.String()
 	_ = afo.Valid()
 	_ = afo.Contains('𝝅')
 	_ = afo.Push('𝝅')
 	_ = afo.Push(nil)
 	_ = afo.Push(adder)
 	_ = afo.Push(adder.String())
+	_ = afo.Eq()
 	_ = afo.Pop()
 	_ = afo.Valid()
 
@@ -193,9 +210,23 @@ func TestAttributeFilterOperation_delMultiVal(t *testing.T) {
 			t.Name(), want, afo)
 		return
 	}
+
+	_ = afo.Contains(nil)
+	_ = afo.Contains(``)
+	_ = afo.pushPolicy()
+	_ = afo.pushPolicy(``)
+	_ = afo.pushPolicy(AddOp)
+	_ = afo.pushPolicy(nil, nil)
+	_ = afo.pushPolicy(nil)
+	_ = afo.pushPolicy(AF(``))
+
 }
 
 func TestAttributeFilterOperations_byStringParse(t *testing.T) {
+
+	badaf1 := `add==,objcectlcass*`
+	_, _ = parseAttributeFilterOperations(badaf1, 0)
+
 	af1 := `objectClass:(&(objectClass=employee)(cn=Jesse Coretta))`
 	af2 := `homeDirectory:(&(objectClass=accountant)(cn=Courtney Tolana))`
 	af3 := `nsroledn:(!(nsroledn=cn=X.500 Administrator))`
@@ -211,6 +242,12 @@ func TestAttributeFilterOperations_byStringParse(t *testing.T) {
 			t.Name(), err)
 		return
 	}
+	_ = afos.Contains(nil)
+	_ = afos.pushPolicy()
+	_ = afos.pushPolicy(``)
+	_ = afos.pushPolicy(nil, nil)
+	_ = afos.pushPolicy(nil)
+	_ = afos.pushPolicy(AFO())
 
 	// verify the complete string representation
 	// matches that of the above want literal.

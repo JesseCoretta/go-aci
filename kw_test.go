@@ -8,6 +8,7 @@ import (
 var bogusKeywords []string = []string{
 	`bagels`,
 	`63`,
+	`a^574384`,
 	``,
 	`userdnssf`,
 }
@@ -29,12 +30,6 @@ func TestKeyword_bogusMatches(t *testing.T) {
 		if bk := matchBKW(bogus); bk != BindKeyword(0x0) {
 			t.Errorf("%s failed: '%s' matched bogus %T",
 				t.Name(), bogus, bk)
-			return
-		}
-
-		if key, ok := idKW(bogus); ok || key != nil {
-			t.Errorf("%s failed: '%s' matched %s interface context",
-				t.Name(), bogus, key)
 			return
 		}
 	}

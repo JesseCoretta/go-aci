@@ -6,9 +6,13 @@ import (
 )
 
 func TestFQDN(t *testing.T) {
-	var f FQDN = DNS()
+	var f FQDN
 	_ = f.Len()
 	_ = f.Keyword()
+	_ = f.Eq()
+	_ = f.Ne()
+	_ = f.Valid()
+	f = DNS()
 	var typ string = f.Keyword().String()
 
 	if f.len() != 0 {
@@ -22,6 +26,9 @@ func TestFQDN(t *testing.T) {
 		return
 	}
 
+	f.Set()
+	f.Set(``)
+	f.Set(`-www-`, `-example`, `com-`)
 	f.Set(`www`, `example`, `com`)
 
 	want := `www.example.com`
@@ -81,6 +88,9 @@ func TestDNS_alternativeFQDN(t *testing.T) {
 func TestIPAddr_BRM(t *testing.T) {
 	var i IPAddr
 	_ = i.Len()
+	_ = i.Eq()
+	_ = i.Ne()
+	_ = i.Valid()
 	_ = i.Keyword()
 
 	if !i.IsZero() {
@@ -96,10 +106,17 @@ func TestIPAddr_BRM(t *testing.T) {
 
 	var typ string = i.Keyword().String()
 
+	if !i.unique(`192.168.0`) {
+		t.Errorf("%s failed; uniqueness check returned bogus result",
+			t.Name())
+		return
+	}
 	i.Set(`192.168.0`)
 	i.Set(`12.3.45.*`)
 	i.Set(`12.3.45.*`) // duplicate
 	i.Set(`10.0.0.0/8`)
+	i.Valid()
+	i.unique(`10.0.0.0/8`)
 
 	if lens := i.Len(); lens != 3 {
 		t.Errorf("%s failed: bad %T length; want '%d', got '%d'", t.Name(), i, 3, lens)
@@ -339,4 +356,31 @@ func ExampleFQDN_Compare() {
 
 	fmt.Printf("Hashes are equal: %t", addr1.Compare(addr2))
 	// Output: Hashes are equal: true
+}
+
+func ExampleFQDN_BRM() {
+	var host FQDN
+	host.Set(`www.example.com`)
+	cops := host.BRM()
+	fmt.Printf("%T allows Eq: %t", host, cops.Contains(`=`))
+	// Output: aci.FQDN allows Eq: true
+}
+
+func ExampleFQDN_Len() {
+	var host FQDN
+	host.Set(`www`)
+	host.Set(`example`)
+	host.Set(`com`)
+	//host.Set(`www.example.com`)	// same!
+
+	fmt.Printf("%T contains %d DNS labels", host, host.Len())
+	// Output: aci.FQDN contains 3 DNS labels
+}
+
+func ExampleIPAddr_BRM() {
+	var address IPAddr
+	address.Set(`192.168.0`)
+	cops := address.BRM()
+	fmt.Printf("%T allows Eq: %t", address, cops.Contains(`=`))
+	// Output: aci.IPAddr allows Eq: true
 }

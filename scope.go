@@ -86,9 +86,8 @@ search scope. Generally, these are used in fully-qualified LDAP
 Search URL statements.
 */
 func (r SearchScope) standard() (s string) {
+	s = `base`
 	switch r {
-	case BaseObject:
-		s = `base`
 	case SingleLevel:
 		s = `one`
 	case Subtree:
@@ -106,20 +105,7 @@ func (r SearchScope) Eq() TargetRule {
 	if r == noScope {
 		return badTargetRule
 	}
-
-	var t TargetRule
-	t.SetKeyword(TargetScope)
-	t.SetOperator(Eq)
-	t.SetExpression(r) // don't use main stringer here
-
-	castAsCondition(t).
-		Encap(`"`).
-		Paren(true).
-		SetID(targetRuleID).
-		NoPadding(!RulePadding).
-		SetCategory(TargetScope.String())
-
-	return t
+	return TR(TargetScope, Eq, r)
 }
 
 /*

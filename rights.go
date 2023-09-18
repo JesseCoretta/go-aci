@@ -77,41 +77,37 @@ func newPermission(disp bool, x ...any) (p *permission) {
 }
 
 func (r *permission) shift(x ...any) {
-	if r.isZero() {
-		return
-	}
-
-	// iterate through the sequence of "anys"
-	// and assert to a Right (or the abstraction
-	// of a Right).
-	for i := 0; i < len(x); i++ {
-		switch tv := x[i].(type) {
-		case int:
-			r.shiftIntRight(tv)
-		case string:
-			r.shiftStrRight(tv)
-		case Right:
-			r.shiftIntRight(int(tv))
+	if !r.isZero() {
+		// iterate through the sequence of "anys"
+		// and assert to a Right (or the abstraction
+		// of a Right).
+		for i := 0; i < len(x); i++ {
+			switch tv := x[i].(type) {
+			case int:
+				r.shiftIntRight(tv)
+			case string:
+				r.shiftStrRight(tv)
+			case Right:
+				r.shiftIntRight(int(tv))
+			}
 		}
 	}
 }
 
 func (r *permission) unshift(x ...any) {
-	if r.isZero() {
-		return
-	}
-
-	// iterate through the sequence of "anys"
-	// and assert to a Right (or the abstraction
-	// of a Right).
-	for i := 0; i < len(x); i++ {
-		switch tv := x[i].(type) {
-		case int:
-			r.unshiftIntRight(tv)
-		case string:
-			r.unshiftStrRight(tv)
-		case Right:
-			r.unshiftIntRight(int(tv))
+	if !r.isZero() {
+		// iterate through the sequence of "anys"
+		// and assert to a Right (or the abstraction
+		// of a Right).
+		for i := 0; i < len(x); i++ {
+			switch tv := x[i].(type) {
+			case int:
+				r.unshiftIntRight(tv)
+			case string:
+				r.unshiftStrRight(tv)
+			case Right:
+				r.unshiftIntRight(int(tv))
+			}
 		}
 	}
 }
@@ -164,59 +160,60 @@ func rightsPowerOfTwo(x int) bool {
 	return isPowerOfTwo(x) && (0 <= x && x <= int(^uint16(0)))
 }
 
-func (r permission) positive(x any) bool {
-	if r.isZero() {
-		return false
+func (r permission) positive(x any) (posi bool) {
+	if !r.isZero() {
+		switch tv := x.(type) {
+		case int:
+			posi = r.positiveIntRight(tv)
+
+		case string:
+			posi = r.positiveStrRight(tv)
+
+		case Right:
+			posi = r.positiveIntRight(int(tv))
+		}
 	}
-	switch tv := x.(type) {
-	case int:
-		return r.positiveIntRight(tv)
-
-	case string:
-		return r.positiveStrRight(tv)
-
-	case Right:
-		return r.positiveIntRight(int(tv))
-	}
-
-	// unsupported type?
-	return false
+	return
 }
 
-func (r permission) positiveIntRight(i int) bool {
+func (r permission) positiveIntRight(i int) (posi bool) {
 	// avoid over/under flow
 	if !(0 <= i && i <= int(^uint16(0))) {
-		return false
+		return
 	}
 
 	if _, matched := noneOrFullAccessRights(Right(i)); matched {
 		if i == 0 {
-			return int(*r.Right) == i
+			posi = int(*r.Right) == i
+		} else {
+			posi = ((*r.Right) & AllAccess) > 0
 		}
-		return ((*r.Right) & AllAccess) > 0
+		return
 	}
 
 	if rightsPowerOfTwo(i) {
-		return ((*r.Right) & Right(i)) > 0
+		posi = ((*r.Right) & Right(i)) > 0
 	}
 
-	return false
+	return
 }
 
-func (r permission) positiveStrRight(s string) bool {
+func (r permission) positiveStrRight(s string) (posi bool) {
 	if R, matched := noneOrFullAccessString(lc(s), (*r.Right)); matched {
 		if R == NoAccess {
-			return int(*r.Right) == 0
+			posi = int(*r.Right) == 0
+		} else {
+			posi = ((*r.Right) & AllAccess) > 0
 		}
-		return ((*r.Right) & AllAccess) > 0
+		return
 	}
 
 	// Resolve the name of a Right into a Right.
 	if priv, found := rightsNames[lc(s)]; found {
-		return ((*r.Right) & priv) > 0
+		posi = ((*r.Right) & priv) > 0
 	}
 
-	return false
+	return
 }
 
 func noneOrFullAccessRights(x Right) (Right, bool) {
@@ -354,15 +351,14 @@ func (r Permission) Disposition() string {
 	return r.permission.disposition()
 }
 
-func (r permission) disposition() string {
-	if r.isZero() {
-		return `<unknown_disposition>`
-	}
-
+func (r permission) disposition() (disp string) {
+	disp = `<unknown_disposition>`
 	if *r.bool {
-		return `allow`
+		disp = `allow`
+	} else if !*r.bool {
+		disp = `deny`
 	}
-	return `deny`
+	return
 }
 
 /*
@@ -444,8 +440,9 @@ func (r Permission) Valid() (err error) {
 		return
 	}
 
-	if r.permission.bool == nil {
-		err = noPermissionDispErr()
+	err = noPermissionDispErr()
+	if r.permission.bool != nil {
+		err = nil
 	}
 
 	return
