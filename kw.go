@@ -170,14 +170,6 @@ func assertATBTVBindKeyword(bkw ...any) (kw BindKeyword) {
 		if tv == BindGAT {
 			kw = tv
 		}
-	case int:
-		if tv == 3 {
-			kw = BindGAT
-		}
-	case string:
-		if eq(tv, BindGAT.String()) {
-			kw = BindGAT
-		}
 	}
 
 	return
