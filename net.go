@@ -376,9 +376,11 @@ func (r *labels) set(label ...string) {
 		return
 	}
 
-	if r.isZero() {
-		r = new(labels)
-	}
+	/*
+		if r.isZero() {
+			r = new(labels)
+		}
+	*/
 
 	dl, c, ok := processLabel(label...)
 	if !ok {
@@ -409,10 +411,6 @@ func processLabel(label ...string) (dl labels, c int, ok bool) {
 				// null label doesn't
 				// need to stop the
 				// show.
-				if len(sp) == 0 {
-					continue
-				}
-
 				if !validLabel(sp[j]) {
 					return
 				}

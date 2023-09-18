@@ -28,6 +28,7 @@ func TestFQDN(t *testing.T) {
 
 	f.Set()
 	f.Set(``)
+	f.Set(`-www-`, `-example`, `com-`)
 	f.Set(`www`, `example`, `com`)
 
 	want := `www.example.com`
@@ -87,6 +88,8 @@ func TestDNS_alternativeFQDN(t *testing.T) {
 func TestIPAddr_BRM(t *testing.T) {
 	var i IPAddr
 	_ = i.Len()
+	_ = i.Eq()
+	_ = i.Ne()
 	_ = i.Valid()
 	_ = i.Keyword()
 
@@ -112,6 +115,8 @@ func TestIPAddr_BRM(t *testing.T) {
 	i.Set(`12.3.45.*`)
 	i.Set(`12.3.45.*`) // duplicate
 	i.Set(`10.0.0.0/8`)
+	i.Valid()
+	i.unique(`10.0.0.0/8`)
 
 	if lens := i.Len(); lens != 3 {
 		t.Errorf("%s failed: bad %T length; want '%d', got '%d'", t.Name(), i, 3, lens)
