@@ -386,16 +386,6 @@ func (r TargetRule) String() string {
 	return tr.String()
 }
 
-func (r TargetRules) replace(x any, idx int) TargetRules {
-	if r.IsZero() {
-		return r
-	}
-
-	_r, _ := castAsStack(r)
-	_r.Replace(x, idx)
-	return r
-}
-
 /*
 NoPadding wraps go-stackage's Condition.NoPadding method.
 */
@@ -823,11 +813,6 @@ func (r TargetRules) pushPolicy(x ...any) (err error) {
 		if tv.IsZero() {
 			err = pushErrorNilOrZero(r, tv, tv.Keyword())
 		}
-		if tv.Keyword() == nil {
-			err = badPTBRuleKeywordErr(tv, `target`, `targetkeyword`, tv.Keyword())
-			break
-		}
-
 		if matchTKW(tv.Keyword().String()) == TargetKeyword(0x0) {
 			err = badPTBRuleKeywordErr(tv, `target`, `targetkeyword`, tv.Keyword())
 		}
@@ -867,16 +852,7 @@ func (r TargetRules) contains(x any) bool {
 		candidate = tv
 
 	case Keyword:
-		if kw := matchTKW(tv.String()); kw == TargetKeyword(0x0) {
-			return false
-		}
 		candidate = tv.String()
-	default:
-		return false
-	}
-
-	if len(candidate) == 0 {
-		return false
 	}
 
 	for i := 0; i < r.Len(); i++ {
