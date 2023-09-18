@@ -8,6 +8,7 @@ import (
 var bogusKeywords []string = []string{
 	`bagels`,
 	`63`,
+	`a^574384`,
 	``,
 	`userdnssf`,
 }
