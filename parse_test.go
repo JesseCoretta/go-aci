@@ -25,8 +25,11 @@ func TestParseAttributeBindTypeOrValue(t *testing.T) {
 
 func TestParseBindRule(t *testing.T) {
 	want := `userdn = "ldap:///cn=Jesse Coretta,ou=People,dc=example,dc=com" || "ldap:///anyone"`
+	var temp BindRule
+	temp.SetExpression("fhjdsk")
 
 	var b BindRule
+	b.SetOperator(`=`)
 	var err error
 	_, _ = ParseBindRule(``)
 	_ = b.Parse(``)
@@ -51,6 +54,10 @@ func TestParseBindRule(t *testing.T) {
 }
 
 func TestParseBindRules_codecov(t *testing.T) {
+	_, _ = convertBindRulesHierarchy(And())
+	temp := uncloak(And(And(And())))
+	_ = temp.replace(nil, 0)
+
 	single := `userdn = "ldap:///anyone"`
 	var b BindRules
 	var err error

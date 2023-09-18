@@ -879,9 +879,6 @@ func (r BindRule) SetQuoteStyle(style int) BindRule {
 		switch key {
 		case BindUDN, BindGDN, BindRDN:
 			tv.setQuoteStyle(style)
-		default:
-			castAsCondition(r).Encap(`"`)
-			return r
 		}
 	default:
 		castAsCondition(r).Encap(`"`)
@@ -1023,7 +1020,7 @@ func (r BindRules) Pop() BindContext {
 	return r.pop()
 }
 
-func (r BindRules) pop() BindContext {
+func (r BindRules) pop() (popped BindContext) {
 	if r.IsZero() {
 		return nil
 	}
@@ -1031,17 +1028,14 @@ func (r BindRules) pop() BindContext {
 	_r, _ := castAsStack(r)
 	x, _ := _r.Pop()
 
-	var z any
 	switch tv := x.(type) {
 	case BindRule:
-		z = tv
-		return z.(BindRule)
+		popped = tv
 	case BindRules:
-		z = tv
-		return z.(BindRules)
+		popped = tv
 	}
 
-	return nil
+	return
 }
 
 /*
