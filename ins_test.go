@@ -31,6 +31,9 @@ func TestInstruction(t *testing.T) {
 	badACL := ``
 
 	ACI(badACL, Tar, pbrule)
+	_ = Ins.Valid()
+	_ = Ins.IsZero()
+	_ = Ins.String()
 }
 
 func TestACIs(t *testing.T) {
@@ -91,6 +94,17 @@ func TestACIs(t *testing.T) {
 	}
 
 	Ins = ACIs()
+	_ = Ins.Valid()
+	_ = Ins.Push()
+	_ = Ins.Push(nil)
+	_ = Ins.Push(Instruction{})
+	_ = Ins.Push(``)
+	_ = Ins.Push('a')
+	_ = Ins.IsZero()
+	_ = Ins.String()
+	_ = Ins.Len()
+	_ = Ins.Index(0)
+
 	Ins.Push(i)
 	popped := Ins.Pop()
 	Ins.Push(popped)

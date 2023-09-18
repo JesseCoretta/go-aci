@@ -321,11 +321,6 @@ func (r Instruction) Valid() (err error) {
 valid is a private method called by instruction.Valid.
 */
 func (r instruction) valid() (err error) {
-	if r.isZero() {
-		err = nilInstanceErr(r)
-		return
-	}
-
 	if len(r.ACL) == 0 {
 		err = instructionNoLabelErr()
 		return
