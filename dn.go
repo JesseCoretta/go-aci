@@ -328,29 +328,19 @@ doing so during the initialization process alone and is totally optional.
 If no keyword is specified, the userdn keyword context is supplied automatically,
 which may or may not be what the caller wants.
 */
-func (r *BindDistinguishedName) Set(x string, kw ...Keyword) BindDistinguishedName {
+func (r *BindDistinguishedName) Set(x string, kw ...BindKeyword) BindDistinguishedName {
 
 	// default keyword, if unspecified by caller,
 	// is the main DN context `userdn`.
 	var key BindKeyword = BindUDN
 	if len(kw) > 0 {
-		// verify the provided keyword belongs
-		// in the bindrule "family" context
-		if kw[0].Kind() == bindRuleID {
-			k := kw[0].(BindKeyword)
-
-			// perform a keyword switch
-			switch k {
-			case BindUDN, BindGDN, BindRDN:
-				// keyword is verified to be
-				// related to bindrule DNs of
-				// some kind.
-				key = k
-			default:
-				return *r
-			}
-		} else {
-			return *r
+		// perform a keyword switch
+		switch kw[0] {
+		case BindGDN, BindRDN:
+			// keyword is verified to be
+			// related to bindrule DNs of
+			// some kind.
+			key = kw[0]
 		}
 	}
 
@@ -374,29 +364,19 @@ doing so during the initialization process alone and is totally optional.
 If no keyword is specified, the target keyword context is supplied automatically,
 which may or may not be what the caller wants.
 */
-func (r *TargetDistinguishedName) Set(x string, kw ...Keyword) TargetDistinguishedName {
+func (r *TargetDistinguishedName) Set(x string, kw ...TargetKeyword) TargetDistinguishedName {
 
 	// default keyword, if unspecified by caller,
-	// is the main DN context `target`.
+	// is the main DN context `userdn`.
 	var key TargetKeyword = Target
 	if len(kw) > 0 {
-		// verify the provided keyword belongs in the
-		// targetrule "family" context
-		if kw[0].Kind() == targetRuleID {
-			k := kw[0].(TargetKeyword)
-
-			// perform a keyword switch
-			switch k {
-			case Target, TargetTo, TargetFrom:
-				// keyword is verified to be
-				// related to targetrule DNs
-				// of some kind.
-				key = k
-			default:
-				return *r
-			}
-		} else {
-			return *r
+		// perform a keyword switch
+		switch kw[0] {
+		case TargetTo, TargetFrom:
+			// keyword is verified to be
+			// related to bindrule DNs of
+			// some kind.
+			key = kw[0]
 		}
 	}
 
@@ -926,28 +906,29 @@ func (r TargetDistinguishedNames) Ne() TargetRule {
 	return x.(TargetRule)
 }
 
-func dnToCondition(dest any, op ComparisonOperator) (any, bool) {
+func dnToCondition(dest any, op ComparisonOperator) (c any, ok bool) {
+	c = badBindRule
 	switch tv := dest.(type) {
 
 	case BindDistinguishedNames:
 		// case matched bind rule DN(s)
-		return bindDNToCondition(tv, op)
+		c, ok = bindDNToCondition(tv, op)
 
 	case TargetDistinguishedNames:
 		// case matched target rule DN(s)
-		return targetDNToCondition(tv, op)
+		c, ok = targetDNToCondition(tv, op)
 
 	case BindDistinguishedName:
 		if tv.Kind() == bindRuleID {
-			return bindDNToCondition(tv, op)
+			c, ok = bindDNToCondition(tv, op)
 		}
 	case TargetDistinguishedName:
 		if tv.Kind() == targetRuleID {
-			return targetDNToCondition(tv, op)
+			c, ok = targetDNToCondition(tv, op)
 		}
 	}
 
-	return badBindRule, false
+	return
 }
 
 func bindDNToCondition(dest any, op ComparisonOperator) (b BindRule, ok bool) {
@@ -1112,16 +1093,20 @@ Index wraps go-stackage's Stack.Index method. Note that the
 Boolean OK value returned by go-stackage's Stack.Index method
 by default will be shadowed and not obtainable by the caller.
 */
-func (r BindDistinguishedNames) Index(idx int) DistinguishedNameContext {
-	var assert any
-	var ok bool
+func (r BindDistinguishedNames) Index(idx int) (b DistinguishedNameContext) {
+	b = badBindDN
+	var (
+		assert any
+		ok     bool
+	)
+
 	if assert, ok = distinguishedNameIndex(r, idx).(BindDistinguishedName); ok {
-		return assert.(BindDistinguishedName)
+		b = assert.(BindDistinguishedName)
 	} else if assert, ok = distinguishedNameIndex(r, idx).(LDAPURI); ok {
-		return assert.(LDAPURI)
+		b = assert.(LDAPURI)
 	}
 
-	return badBindDN
+	return
 }
 
 /*
@@ -1129,30 +1114,31 @@ Index wraps go-stackage's Stack.Index method. Note that the
 Boolean OK value returned by go-stackage by default will be
 shadowed and not obtainable by the caller.
 */
-func (r TargetDistinguishedNames) Index(idx int) TargetDistinguishedName {
+func (r TargetDistinguishedNames) Index(idx int) (t TargetDistinguishedName) {
+	t = badTargetDN
 	if assert, ok := distinguishedNameIndex(r, idx).(TargetDistinguishedName); ok {
-		return assert
+		t = assert
 	}
 
-	return badTargetDN
+	return
 }
 
 /*
 distinguishedNameIndex is a private index function called through instances
 of BindDistinguishedName and TargetDistinguishedName.
 */
-func distinguishedNameIndex(r any, idx int) any {
+func distinguishedNameIndex(r any, idx int) (i any) {
 	_r, _ := castAsStack(r)
 	y, _ := _r.Index(idx)
 	if assert, ok := y.(BindDistinguishedName); ok {
-		return assert
+		i = assert
 	} else if assert2, ok2 := y.(TargetDistinguishedName); ok2 {
-		return assert2
+		i = assert2
 	} else if assert3, ok3 := y.(LDAPURI); ok3 {
-		return assert3
+		i = assert3
 	}
 
-	return nil
+	return
 }
 
 /*
@@ -1182,22 +1168,22 @@ Keyword returns the Keyword (interface) assigned to the receiver instance.
 This shall be the keyword that appears in a BindRule bearing the receiver
 as a condition value.
 */
-func (r BindDistinguishedNames) Keyword() Keyword {
+func (r BindDistinguishedNames) Keyword() (kw Keyword) {
 	if r.IsZero() {
-		return nil
+		return
 	}
 
 	_r, _ := castAsStack(r)
 	switch _k := lc(_r.Category()); _k {
 	case BindUDN.String():
-		return BindUDN
+		kw = BindUDN
 	case BindGDN.String():
-		return BindGDN
+		kw = BindGDN
 	case BindRDN.String():
-		return BindRDN
+		kw = BindRDN
 	}
 
-	return nil
+	return
 }
 
 /*
@@ -1226,22 +1212,22 @@ Keyword returns the Keyword (interface) assigned to the receiver instance.
 This shall be the keyword that appears in a BindRule bearing the receiver
 as a condition value.
 */
-func (r TargetDistinguishedNames) Keyword() Keyword {
+func (r TargetDistinguishedNames) Keyword() (kw Keyword) {
 	if r.IsZero() {
-		return nil
+		return
 	}
 
 	_r, _ := castAsStack(r)
 	switch _k := lc(_r.Category()); _k {
 	case Target.String():
-		return Target
+		kw = Target
 	case TargetTo.String():
-		return TargetTo
+		kw = TargetTo
 	case TargetFrom.String():
-		return TargetFrom
+		kw = TargetFrom
 	}
 
-	return nil
+	return
 }
 
 /*
@@ -1408,10 +1394,11 @@ func (r TargetDistinguishedNames) contains(x any) bool {
 	return false
 }
 
-func pushBindDistinguishedNames(kw Keyword, x any) (DistinguishedNameContext, bool) {
+func pushBindDistinguishedNames(kw Keyword, x any) (ctx DistinguishedNameContext, ok bool) {
 	// perform an input type switch,
 	// allowing evaluation of the
 	// value.
+	ctx = badBindDN
 	switch tv := x.(type) {
 
 	// case match is a DistinguishedName in string form.
@@ -1419,40 +1406,33 @@ func pushBindDistinguishedNames(kw Keyword, x any) (DistinguishedNameContext, bo
 	// instance of DistinguishedName bearing the same
 	// ke yword as the destination receiver.
 	case string:
-		if len(tv) == 0 {
-			return badBindDN, false
+		if len(tv) > 0 {
+			ctx = BindDistinguishedName{newDistinguishedName(tv, kw)}
+			ok = true
 		}
-
-		return BindDistinguishedName{newDistinguishedName(tv, kw)}, true
 
 	// case match is a proper BindDistinguishedName instance.
 	// Both keywords (that of the BindDistinguishedName, and
 	// that of the destination receiver) must match.
 	case BindDistinguishedName:
-		if tv.IsZero() {
-			return badBindDN, false
+		if !tv.IsZero() && tv.Keyword() == kw {
+			ctx = tv
+			ok = true
 		}
-
-		// attempting to push a DN that bears a
-		// different keyword than the receiver.
-		// will stop the show.
-		if tv.Keyword() != kw {
-			return badBindDN, false
-		}
-
-		return tv, true
 
 	case LDAPURI:
-		return tv, true
+		ctx = tv
+		ok = true
 	}
 
-	return badBindDN, false
+	return
 }
 
-func pushTargetDistinguishedNames(kw Keyword, x any) (TargetDistinguishedName, bool) {
+func pushTargetDistinguishedNames(kw Keyword, x any) (tdn TargetDistinguishedName, ok bool) {
 	// perform an input type switch,
 	// allowing evaluation of the
 	// value.
+	tdn = badTargetDN
 	switch tv := x.(type) {
 
 	// case match is a DistinguishedName in string form.
@@ -1460,61 +1440,54 @@ func pushTargetDistinguishedNames(kw Keyword, x any) (TargetDistinguishedName, b
 	// instance of DistinguishedName bearing the same
 	// ke yword as the destination receiver.
 	case string:
-		if len(tv) == 0 {
-			return badTargetDN, false
+		if len(tv) > 0 {
+			tdn = TargetDistinguishedName{newDistinguishedName(tv, kw)}
+			ok = true
 		}
-
-		return TargetDistinguishedName{newDistinguishedName(tv, kw)}, true
 
 	// case match is a proper TargetDistinguishedName instance.
 	// Both keywords (that of the TargetDistinguishedName, and
 	// that of the destination receiver) must match.
 	case TargetDistinguishedName:
-		if tv.IsZero() {
-			return badTargetDN, false
+		if !tv.IsZero() && tv.Keyword() == kw {
+			tdn = tv
+			ok = true
 		}
-
-		// attempting to push a DN that bears a
-		// different keyword than the receiver.
-		// will stop the show.
-		if tv.Keyword() != kw {
-			return badTargetDN, false
-		}
-
-		return tv, true
 	}
 
-	return badTargetDN, false
+	return
 }
 
 /*
 Pop wraps go-stackage's Stack.Pop method and performs type
 assertion to return a proper BindDistinguishedName instance.
 */
-func (r BindDistinguishedNames) Pop() BindDistinguishedName {
+func (r BindDistinguishedNames) Pop() (popped BindDistinguishedName) {
 	_r, _ := castAsStack(r)
-
 	y, _ := _r.Pop()
+	popped = badBindDN
+
 	if assert, asserted := y.(BindDistinguishedName); asserted {
-		return assert
+		popped = assert
 	}
 
-	return badBindDN
+	return
 }
 
 /*
 Pop wraps go-stackage's Stack.Pop method and performs type
 assertion to return a proper TargetDistinguishedName instance.
 */
-func (r TargetDistinguishedNames) Pop() TargetDistinguishedName {
+func (r TargetDistinguishedNames) Pop() (popped TargetDistinguishedName) {
 	_r, _ := castAsStack(r)
-
 	y, _ := _r.Pop()
+	popped = badTargetDN
+
 	if assert, asserted := y.(TargetDistinguishedName); asserted {
-		return assert
+		popped = assert
 	}
 
-	return badTargetDN
+	return
 }
 
 /*

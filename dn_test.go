@@ -27,6 +27,8 @@ func TestBindDistinguishedName_codecov(t *testing.T) {
 			_ = O.Valid()
 			_ = O.IsZero()
 			_ = O.Len()
+			_ = isDNAlias(AllDN.String())
+			_ = isDNAlias(``)
 
 			if err := O.Valid(); err == nil {
 				t.Errorf("%s failed: invalid %T returned no validity error",
@@ -163,12 +165,20 @@ func TestTargetDistinguishedName_codecov(t *testing.T) {
 }
 
 func TestBindDistinguishedNames_codecov(t *testing.T) {
+	var ctx DistinguishedNameContext = UDN(`uid=jesse,ou=People,dc=example,dc=com`)
 	var Os BindDistinguishedNames
 	var Id string = Os.ID()
 	var Kw Keyword = Os.Keyword()
 	_ = sprintf("%v", Kw)
 	_ = Os.Eq()
 	_ = Os.Ne()
+	_ = Os.Push()
+	_ = Os.Push(``)
+	_ = Os.Push(`fhksjthg4`)
+	_ = Os.Push(`_1`)
+	_ = Os.Push(ctx)
+	_ = Os.Push(URI(`ldap:///ou=People,dc=example,dc=com?cn,sn,givenName?one?(&(objectClass=contractor)(status=active))`))
+
 	Os.reset()
 	_ = Os.setQuoteStyle(0)
 	_ = Os.setQuoteStyle(1)
@@ -263,12 +273,19 @@ func TestBindDistinguishedNames_codecov(t *testing.T) {
 }
 
 func TestTargetDistinguishedNames_codecov(t *testing.T) {
+	var ctx DistinguishedNameContext = UDN(`uid=jesse,ou=People,dc=example,dc=com`)
 	var Os TargetDistinguishedNames
 	var Id string = Os.ID()
 	var Kw Keyword = Os.Keyword()
 	_ = sprintf("%v", Kw)
 	_ = Os.Eq()
 	_ = Os.Ne()
+	_ = Os.Push()
+	_ = Os.Push(``)
+	_ = Os.Push(`fhksjthg4`)
+	_ = Os.Push(`_1`)
+	_ = Os.Push(ctx)
+
 	Os.reset()
 	_ = Os.setQuoteStyle(0)
 	_ = Os.setQuoteStyle(1)
