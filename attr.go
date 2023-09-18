@@ -768,13 +768,11 @@ the context of this type instance, the Keyword returned shall be either
 TargetAttr or TargetFilter.
 */
 func (r AttributeTypes) Keyword() Keyword {
-	kw, _ := idKW(r.Kind())
-	switch kw {
-	case TargetAttr:
-		return kw
+	if r.Kind() == `<uri_search_attributes>` {
+		return TargetFilter
 	}
 
-	return nil
+	return matchTKW(r.Kind())
 }
 
 /*

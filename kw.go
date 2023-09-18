@@ -225,21 +225,6 @@ func matchBT(kw string) BindType {
 	return BindType(0x0)
 }
 
-/*
-idKW is a private function that identifies any kind
-of T/B keyword.
-*/
-func idKW(raw string) (kw Keyword, ok bool) {
-	if kw = matchBKW(raw); kw != BindKeyword(0x0) {
-		ok = kw.Kind() == `bind`
-	} else if kw = matchTKW(raw); kw != TargetKeyword(0x0) {
-		ok = kw.Kind() == `target`
-	} else {
-		kw = nil
-	}
-	return
-}
-
 func init() {
 	// bindkeyword map
 	bkwMap = map[BindKeyword]string{

@@ -427,8 +427,8 @@ func ExampleAttributeTypes_Keyword_uRIAttributes() {
 		`objectClass`,
 	)
 
-	fmt.Printf("Keyword is nil: %t", attrs.Keyword() == nil)
-	// Output: Keyword is nil: true
+	fmt.Printf("Keyword: %s", attrs.Keyword())
+	// Output: Keyword: targetfilter
 }
 
 func ExampleABTV() {

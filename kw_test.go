@@ -31,12 +31,6 @@ func TestKeyword_bogusMatches(t *testing.T) {
 				t.Name(), bogus, bk)
 			return
 		}
-
-		if key, ok := idKW(bogus); ok || key != nil {
-			t.Errorf("%s failed: '%s' matched %s interface context",
-				t.Name(), bogus, key)
-			return
-		}
 	}
 }
 

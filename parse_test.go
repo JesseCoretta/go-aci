@@ -5,6 +5,24 @@ import (
 	"testing"
 )
 
+func TestParseAttributeBindTypeOrValue(t *testing.T) {
+	var avb AttributeBindTypeOrValue
+	_ = avb.Valid()
+	_ = avb.IsZero()
+	raw := `manager#SELFDN`
+
+	for _, kw := range []any{
+		3,
+		`groupattr`,
+		BindGAT,
+	} {
+		if err := avb.Parse(raw, kw); err != nil {
+			t.Errorf("%s failed: %v", t.Name(), err)
+			return
+		}
+	}
+}
+
 func TestParseBindRule(t *testing.T) {
 	want := `userdn = "ldap:///cn=Jesse Coretta,ou=People,dc=example,dc=com" || "ldap:///anyone"`
 
