@@ -1097,7 +1097,8 @@ func ExampleAttributeFilterOperations_Kind() {
 }
 
 /*
-This example demonstrates the creation of an instance of AttributeFilterOperations.
+This example demonstrates the creation of an instance of AttributeFilterOperations
+using the AttributeFilterOperations type's Parse method.
 
 In this example, a raw string representation of an AttributeFilterOperations is used
 for parser input. The resultant output from the instance's String method should be
@@ -1108,13 +1109,36 @@ func ExampleAttributeFilterOperations_Parse() {
 	var afos AttributeFilterOperations
 	err := afos.Parse(aftxt)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(err) // always check your parser errors
 		return
 	}
 	got := afos.String()
 
 	fmt.Printf("Values match: %t", got == aftxt)
 	// Output: Values match: true
+}
+
+/*
+This example demonstrates the creation of an instance of AttributeFilterOperation
+using the AttributeFilterOperation type's Parse method.
+
+In this example, a raw string representation of an AttributeFilterOperation is used
+for parser input. The resultant output from the instance's String method should be
+identical to that which was fed into the Parse method.
+*/
+func ExampleAttributeFilterOperation_Parse() {
+	af1 := `objectClass:(&(objectClass=employee)(cn=Jesse Coretta))`
+	af2 := `homeDirectory:(&(objectClass=accountant)(cn=Courtney Tolana))`
+	want := `add=` + af1 + ` && ` + af2
+
+	var afo AttributeFilterOperation
+	if err := afo.Parse(want); err != nil {
+		fmt.Println(err) // always check your parser errors
+		return
+	}
+
+	fmt.Printf("%s", afo)
+	// Output: add=objectClass:(&(objectClass=employee)(cn=Jesse Coretta)) && homeDirectory:(&(objectClass=accountant)(cn=Courtney Tolana))
 }
 
 /*
