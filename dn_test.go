@@ -174,6 +174,7 @@ func TestBindDistinguishedNames_codecov(t *testing.T) {
 	_ = Os.Ne()
 	_ = Os.Push()
 	_ = Os.Push(``)
+	_ = Os.Push('a')
 	_ = Os.Push(`fhksjthg4`)
 	_ = Os.Push(`_1`)
 	_ = Os.Push(ctx)
