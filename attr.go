@@ -402,11 +402,11 @@ func (r AttributeType) Compare(x any) bool {
 Eq initializes and returns a new TargetRule instance configured to express the
 evaluation of the receiver value as Equal-To a `targetattr` keyword context.
 */
-func (r AttributeType) Eq() TargetRule {
-	if r.IsZero() {
-		return badTargetRule
+func (r AttributeType) Eq() (t TargetRule) {
+	if !r.IsZero() {
+		t = TR(TargetAttr, Eq, r)
 	}
-	return TR(TargetAttr, Eq, r)
+	return
 }
 
 /*
@@ -415,11 +415,11 @@ evaluation of the receiver value as Not-Equal-To a `targetattr` keyword context.
 
 Negated equality TargetRule instances should be used with caution.
 */
-func (r AttributeType) Ne() TargetRule {
-	if r.IsZero() {
-		return badTargetRule
+func (r AttributeType) Ne() (t TargetRule) {
+	if !r.IsZero() {
+		t = TR(TargetAttr, Ne, r)
 	}
-	return TR(TargetAttr, Ne, r)
+	return
 }
 
 /*
