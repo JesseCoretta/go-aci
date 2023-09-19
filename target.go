@@ -463,7 +463,13 @@ func (r TargetRule) SetQuoteStyle(style int) TargetRule {
 SetKeyword wraps go-stackage's Condition.SetKeyword method.
 */
 func (r TargetRule) SetKeyword(kw any) TargetRule {
-	r.cast().SetKeyword(kw)
+	switch tv := kw.(type) {
+	case string:
+		r.cast().SetKeyword(matchTKW(tv))
+	case Keyword:
+		r.cast().SetKeyword(matchTKW(tv.String()))
+	}
+
 	return r
 }
 
@@ -484,6 +490,11 @@ func (r TargetRule) SetOperator(op any) TargetRule {
 		return r
 	}
 
+	// operator not known? bail out
+	if cop == ComparisonOperator(0) {
+		return r
+	}
+
 	// ALL Target and Bind rules accept Eq,
 	// so only scrutinize the operator if
 	// it is something *other than* that.
@@ -493,19 +504,12 @@ func (r TargetRule) SetOperator(op any) TargetRule {
 		}
 	}
 
-	// operator not known? bail out
-	if cop == ComparisonOperator(0) {
-		return r
-	}
-
 	// not initialized? bail out
-	if !r.cast().IsInit() {
-		return r
+	if r.cast().IsInit() {
+		// cast to stackage.Condition and
+		// set operator value.
+		r.cast().SetOperator(cop)
 	}
-
-	// cast to stackage.Condition and
-	// set operator value.
-	r.cast().SetOperator(cop)
 
 	return r
 }
@@ -746,17 +750,16 @@ func (r TargetRules) NoPadding(state ...bool) TargetRules {
 		return badTargetRules
 	}
 
-	var st bool = false
-	if len(state) == 0 {
-		if len(_t.Delimiter()) != 0 {
-			st = true
-		}
+	var s bool = len(_t.Delimiter()) == 0
+	var pad string
+	if len(state) > 0 {
+		s = state[0]
 	}
-	if st {
-		_t.SetDelimiter(``)
-	} else {
-		_t.SetDelimiter(string(rune(32)))
+
+	if !s {
+		pad = string(rune(32))
 	}
+	_t.SetDelimiter(pad)
 
 	return r
 }
