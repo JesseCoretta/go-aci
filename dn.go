@@ -1537,27 +1537,29 @@ the keyword-specific DN pushPolicy functions above. This function
 handles any type of DN/URI.
 */
 func distinguishedNamesPushPolicy(r, x any, kw Keyword) (err error) {
-	switch tv := x.(type) {
+	switch x.(type) {
 
 	case Keyword:
 		distinguishedNamesPushPolicyKeywordHandler(r, kw)
 
-	case LDAPURI:
-		err = errorf("Only DN or value-matching %s rule conditions may contain %T instances", kw.Kind(), tv)
-		if kw.Kind() == bindRuleID {
-			err = tv.Valid()
-		}
+		/*
+			case LDAPURI:
+				err = errorf("Only DN or value-matching %s rule conditions may contain %T instances", kw.Kind(), tv)
+				if kw.Kind() == bindRuleID {
+					err = tv.Valid()
+				}
 
-	case DistinguishedNameContext:
-		err = pushErrorNilOrZero(r, tv, kw)
-		if !tv.IsZero() {
-			err = badPTBRuleKeywordErr(tv, kw.Kind(), kw, tv.Keyword())
-			if tv.Keyword() == kw {
-				err = nil
-			}
-		}
-	default:
-		err = pushErrorBadType(r, x, kw)
+			case DistinguishedNameContext:
+				err = pushErrorNilOrZero(r, tv, kw)
+				if !tv.IsZero() {
+					err = badPTBRuleKeywordErr(tv, kw.Kind(), kw, tv.Keyword())
+					if tv.Keyword() == kw {
+						err = nil
+					}
+				}
+			default:
+				err = pushErrorBadType(r, x, kw)
+		*/
 	}
 
 	return
