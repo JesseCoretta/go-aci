@@ -156,6 +156,13 @@ func ExampleLevels_Positive() {
 	// Output: Level 4 positive? true
 }
 
+func ExampleLevels_Positive_byString() {
+	var l Levels
+	l.Shift(Level4, Level0)
+	fmt.Printf("Level 4 positive? %t", l.Positive(`4`))
+	// Output: Level 4 positive? true
+}
+
 func ExampleLevels_Unshift() {
 	var l Levels
 	l.Shift(Level4, Level0)
