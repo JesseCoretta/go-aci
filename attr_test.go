@@ -679,10 +679,10 @@ func ExampleAttributeValue_Compare() {
 func TestAttrs_codecov(t *testing.T) {
 
 	var atv AttributeBindTypeOrValue
+	atv.Set(AT(``))
 	_ = atv.Eq()
 	_ = atv.Ne()
 	_ = atv.Valid()
-	atv.Set(AT(``))
 	_ = atv.String()
 
 	if err := atv.Parse(`fartknocker`); err == nil {
@@ -695,6 +695,8 @@ func TestAttrs_codecov(t *testing.T) {
 		return
 	}
 	_ = atv.Keyword()
+	_ = atv.Valid()
+	_ = atv.String()
 
 	var at AttributeType
 	_ = at.Eq()

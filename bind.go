@@ -160,16 +160,15 @@ newBindRule is a private package-level function called by the BR
 package-level function.
 */
 func newBindRule(kw, op, ex any) (b BindRule) {
-	c := castAsCondition(b)
-	c.Init()
-	c.Encap(`"`).
+	b.Init()
+	b.SetKeyword(kw).
+		SetOperator(op).
+		SetExpression(ex)
+
+	b.cast().
+		Encap(`"`).
 		SetID(bindRuleID).
 		NoPadding(!RulePadding)
-
-	b = BindRule(c)
-	b.SetKeyword(kw)
-	b.SetOperator(op)
-	b.SetExpression(ex)
 
 	return
 }
@@ -203,7 +202,7 @@ shall be reused (perhaps in a repetative or looped manner), and if
 it would be desirable to 'wipe the slate clean' for some reason.
 */
 func (r *BindRule) Init() BindRule {
-	_r := castAsCondition(*r)
+	_r := r.cast()
 	if _r.IsZero() || !_r.IsInit() {
 		_r.Init()
 	}
@@ -338,7 +337,8 @@ func (r BindRule) Kind() string {
 Len does not perform any useful task, and exists only to satisfy Go's
 interface signature requirements and to convey this message.
 
-An integer value of one (1) is returned in any scenario.
+A value of zero (0) is returned if the receiver instance is nil. A
+value of one (1) otherwise.
 */
 func (r BindRule) Len() int {
 	if r.IsZero() {
@@ -361,7 +361,7 @@ func (r BindRule) IsNesting() bool {
 Paren wraps go-stackage's Condition.Paren method.
 */
 func (r BindRule) Paren(state ...bool) BindRule {
-	castAsCondition(r).Paren(state...)
+	r.cast().Paren(state...)
 	return r
 }
 
@@ -369,7 +369,7 @@ func (r BindRule) Paren(state ...bool) BindRule {
 IsParen wraps go-stackage's Condition.IsParen method.
 */
 func (r BindRule) IsParen() bool {
-	return castAsCondition(r).IsParen()
+	return r.cast().IsParen()
 }
 
 /*
@@ -381,8 +381,7 @@ func (r BindRule) Valid() (err error) {
 		return
 	}
 
-	_t := castAsCondition(r)
-	err = _t.Valid()
+	err = r.cast().Valid()
 	return
 }
 
@@ -393,7 +392,7 @@ func (r BindRule) ID() string {
 	if r.IsZero() {
 		return bindRuleID
 	}
-	return castAsCondition(r).ID()
+	return r.cast().ID()
 }
 
 /*
@@ -416,7 +415,7 @@ func (r BindRule) String() string {
 	if r.IsZero() {
 		return ``
 	}
-	return castAsCondition(r).String()
+	return r.cast().String()
 }
 
 /*
@@ -427,7 +426,7 @@ func (r BindRule) NoPadding(state ...bool) BindRule {
 		return r
 	}
 
-	castAsCondition(r).NoPadding(state...)
+	r.cast().NoPadding(state...)
 	return r
 }
 
@@ -437,7 +436,7 @@ resolves the raw value into a BindKeyword. Failure to do
 so will return a bogus Keyword.
 */
 func (r BindRule) Keyword() Keyword {
-	k := castAsCondition(r).Keyword()
+	k := r.cast().Keyword()
 	var kw any = matchBKW(k)
 	return kw.(BindKeyword)
 }
@@ -448,21 +447,21 @@ and casts the stackage.ComparisonOperator to the local
 aci.ComparisonOperator.
 */
 func (r BindRule) Operator() ComparisonOperator {
-	return castCop(castAsCondition(r).Operator())
+	return castCop(r.cast().Operator())
 }
 
 /*
 Expression wraps go-stackage's Condition.Expression method.
 */
 func (r BindRule) Expression() any {
-	return castAsCondition(r).Expression()
+	return r.cast().Expression()
 }
 
 /*
 IsZero wraps go-stackage's Condition.IsZero method.
 */
 func (r BindRule) IsZero() bool {
-	return castAsCondition(r).IsZero()
+	return r.cast().IsZero()
 }
 
 func (r BindRules) isBindContextQualifier() {}
@@ -644,17 +643,12 @@ func convertBindRulesHierarchy(stack any) (BindContext, bool) {
 
 	// Obtain the kind string from the
 	// original stack.
-	k := trimS(orig.Kind())
-
-	clean, ok := wordToStack(k)
-	if !ok {
-		return badBindRules, ok
-	}
+	clean, ok := wordToStack(orig.Kind())
 
 	// Iterate the newly-populated clean
 	// instance, performing type-casting
 	// as needed, possibly in recursion.
-	for i := 0; i < orig.Len(); i++ {
+	for i := 0; i < orig.Len() && ok; i++ {
 		slice, _ := orig.Index(i)
 
 		// perform a type switch upon the
@@ -688,11 +682,11 @@ func convertBindRulesHierarchy(stack any) (BindContext, bool) {
 			//   DistinguishedNames[<N1>] -> <dn1>
 			//                     [<N2>] -> <dn2>
 			//                     [<N3>] -> <dn3>
-			if err := ntv.assertExpressionValue(); err != nil {
-				return badBindRules, false
+			if err := ntv.assertExpressionValue(); err == nil {
+				clean.Push(ntv)
+				continue
 			}
-
-			clean.Push(ntv)
+			break
 
 		// slice is a stackage.Stack instance.
 		// We want to cast to a BindRules type
@@ -703,16 +697,15 @@ func convertBindRulesHierarchy(stack any) (BindContext, bool) {
 		case isStackageStack(slice):
 			stk, _ := castAsStack(slice)
 			paren := stk.IsParen()
-			sub, subok := convertBindRulesHierarchy(slice)
-			if !subok {
-				return badBindRules, subok
+			if sub, subok := convertBindRulesHierarchy(slice); subok {
+				if _, ok := sub.(BindRules); ok {
+					sub.(BindRules).Paren(paren)
+					uncloakBindRules(sub.(BindRules))
+				}
+				clean.Push(sub)
+				continue
 			}
-			if _, ok := sub.(BindRules); ok {
-				sub.(BindRules).Paren(paren)
-				uncloakBindRules(sub.(BindRules))
-			}
-			clean.Push(sub)
-
+			return badBindRules, false
 		}
 	}
 
@@ -795,7 +788,7 @@ func wordToStack(k string) (BindRules, bool) {
 SetKeyword wraps go-stackage's Condition.SetKeyword method.
 */
 func (r BindRule) SetKeyword(kw any) BindRule {
-	cac := castAsCondition(r)
+	cac := r.cast()
 	if !cac.IsInit() {
 		r.Init()
 	}
@@ -830,13 +823,13 @@ func (r BindRule) SetOperator(op any) BindRule {
 	}
 
 	// not initialized? bail out
-	if !castAsCondition(r).IsInit() {
+	if !r.cast().IsInit() {
 		return r
 	}
 
 	// cast to stackage.Condition and
 	// set operator value.
-	castAsCondition(r).SetOperator(cop)
+	r.cast().SetOperator(cop)
 
 	return r
 }
@@ -845,7 +838,7 @@ func (r BindRule) SetOperator(op any) BindRule {
 SetExpression wraps go-stackage's Condition.SetExpression method.
 */
 func (r BindRule) SetExpression(expr any) BindRule {
-	cac := castAsCondition(r)
+	cac := r.cast()
 	if !cac.IsInit() {
 		cac.Init()
 	}
@@ -881,7 +874,7 @@ func (r BindRule) SetQuoteStyle(style int) BindRule {
 			tv.setQuoteStyle(style)
 		}
 	default:
-		castAsCondition(r).Encap(`"`)
+		r.cast().Encap(`"`)
 		return r
 	}
 
@@ -898,9 +891,9 @@ func (r BindRule) SetQuoteStyle(style int) BindRule {
 	// will have the opposite setting imposed, which
 	// enables quotation for the individual values.
 	if style == MultivalSliceQuotes {
-		castAsCondition(r).Encap()
+		r.cast().Encap()
 	} else {
-		castAsCondition(r).Encap(`"`)
+		r.cast().Encap(`"`)
 	}
 
 	return r
@@ -914,16 +907,14 @@ representation of the receiver instance.
 This method wraps go-stackage's Stack.String method.
 */
 func (r BindRules) String() string {
-	_b, _ := castAsStack(r)
-	return _b.String()
+	return r.cast().String()
 }
 
 /*
 IsZero wraps go-stackage's Stack.IsZero method.
 */
 func (r BindRules) IsZero() bool {
-	_b, _ := castAsStack(r)
-	return _b.IsZero()
+	return r.cast().IsZero()
 }
 
 /*
@@ -931,19 +922,14 @@ reset wraps go-stackage's Stack.Reset method. This is a private
 method in go-aci.
 */
 func (r BindRules) reset() {
-	_b, _ := castAsStack(r)
-	_b.Reset()
+	r.cast().Reset()
 }
 
 /*
 ID wraps go-stackage's Stack.ID method.
 */
 func (r BindRules) ID() string {
-	if r.IsZero() {
-		return bindRuleID
-	}
-	_b, _ := castAsStack(r)
-	return _b.ID()
+	return bindRuleID
 }
 
 /*
@@ -951,10 +937,9 @@ Category wraps go-stackage's Stack.Category method.
 */
 func (r BindRules) Category() string {
 	if r.IsZero() {
-		return ``
+		return `<uninitialized_bindrules>`
 	}
-	_b, _ := castAsStack(r)
-	return _b.Category()
+	return r.cast().Category()
 }
 
 /*
@@ -964,8 +949,7 @@ func (r BindRules) Len() int {
 	if r.IsZero() {
 		return 0
 	}
-	_b, _ := castAsStack(r)
-	return _b.Len()
+	return r.cast().Len()
 }
 
 /*
@@ -975,8 +959,7 @@ func (r BindRules) IsNesting() bool {
 	if r.IsZero() {
 		return false
 	}
-	_b, _ := castAsStack(r)
-	return _b.IsNesting()
+	return r.cast().IsNesting()
 }
 
 /*
@@ -985,22 +968,15 @@ resolves the raw value into a BindKeyword. Failure to
 do so will return a bogus Keyword.
 */
 func (r BindRules) Keyword() Keyword {
-	_r, _ := castAsStack(r)
-	var kw any = matchBKW(_r.Category())
+	var kw any = matchBKW(r.cast().Category())
 	return kw.(BindKeyword)
 }
 
 /*
 Push wraps go-stackage's Stack.Push method.
 */
-func (r BindRules) Push(x ...BindContext) BindRules {
-	_r, _ := castAsStack(r)
-
-	// iterate variadic input arguments
-	for i := 0; i < len(x); i++ {
-		_r.Push(x[i])
-	}
-
+func (r BindRules) Push(x ...any) BindRules {
+	r.cast().Push(x...)
 	return r
 }
 
@@ -1025,10 +1001,8 @@ func (r BindRules) pop() (popped BindContext) {
 		return nil
 	}
 
-	_r, _ := castAsStack(r)
-	x, _ := _r.Pop()
-
-	switch tv := x.(type) {
+	_popped, _ := r.cast().Pop()
+	switch tv := _popped.(type) {
 	case BindRule:
 		popped = tv
 	case BindRules:
@@ -1041,10 +1015,9 @@ func (r BindRules) pop() (popped BindContext) {
 /*
 remove wraps go-stackage's Stack.Remove method.
 */
-func (r BindRules) remove(idx int) bool {
-	_b, _ := castAsStack(r)
-	_, ok := _b.Remove(idx)
-	return ok
+func (r BindRules) remove(idx int) (ok bool) {
+	_, ok = r.cast().Remove(idx)
+	return
 }
 
 /*
@@ -1059,42 +1032,34 @@ replace is a private method called by BindRules.Replace
 as well as certain ANTLR->ACI parsing procedures.
 */
 func (r BindRules) replace(x any, idx int) BindRules {
-	if r.IsZero() {
-		return r
+	if !r.IsZero() {
+		r.cast().Replace(x, idx)
 	}
 
-	_r, _ := castAsStack(r)
-	_r.Replace(x, idx)
 	return r
 }
 
 /*
 Index wraps go-stackage's Stack.Index method.
 */
-func (r BindRules) Index(idx int) BindContext {
-	_r, _ := castAsStack(r)
-	y, _ := _r.Index(idx)
+func (r BindRules) Index(idx int) (ctx BindContext) {
+	y, _ := r.cast().Index(idx)
 
-	var z any
 	switch tv := y.(type) {
 	case BindRule:
-		z = tv
-		return z.(BindRule)
+		ctx = tv
 	case BindRules:
-		z = tv
-		return z.(BindRules)
+		ctx = tv
 	}
 
-	return nil
+	return
 }
 
 /*
 ReadOnly wraps go-stackage's Stack.ReadOnly method.
 */
 func (r BindRules) ReadOnly(state ...bool) BindRules {
-	_r, _ := castAsStack(r)
-	_r.ReadOnly(state...)
-
+	r.cast().ReadOnly(state...)
 	return r
 }
 
@@ -1102,9 +1067,7 @@ func (r BindRules) ReadOnly(state ...bool) BindRules {
 Paren wraps go-stackage's Stack.Paren method.
 */
 func (r BindRules) Paren(state ...bool) BindRules {
-	_r, _ := castAsStack(r)
-	_r.Paren(state...)
-
+	r.cast().Paren(state...)
 	return r
 }
 
@@ -1112,8 +1075,7 @@ func (r BindRules) Paren(state ...bool) BindRules {
 IsParen wraps go-stackage's Stack.IsParen method.
 */
 func (r BindRules) IsParen() bool {
-	_r, _ := castAsStack(r)
-	return _r.IsParen()
+	return r.cast().IsParen()
 }
 
 /*
@@ -1123,9 +1085,7 @@ operators to 'and', 'or' and 'and not' respectively, or vice
 versa.
 */
 func (r BindRules) Fold(state ...bool) BindRules {
-	_r, _ := castAsStack(r)
-	_r.Fold(state...)
-
+	r.cast().Fold(state...)
 	return r
 }
 
@@ -1133,13 +1093,9 @@ func (r BindRules) Fold(state ...bool) BindRules {
 insert wraps go-stackage's Stack.Insert method.
 */
 func (r BindRules) insert(x any, left int) (ok bool) {
-	_t, _ := castAsStack(r)
-
 	switch tv := x.(type) {
 	case BindRule, BindRules:
-		ok = _t.Insert(tv, left)
-	default:
-		return
+		ok = r.cast().Insert(tv, left)
 	}
 
 	return
@@ -1149,9 +1105,7 @@ func (r BindRules) insert(x any, left int) (ok bool) {
 NoPadding wraps go-stackage's Stack.NoPadding method.
 */
 func (r BindRules) NoPadding(state ...bool) BindRules {
-	_b, _ := castAsStack(r)
-	_b.NoPadding(state...)
-
+	r.cast().NoPadding(state...)
 	return r
 }
 
@@ -1159,18 +1113,13 @@ func (r BindRules) NoPadding(state ...bool) BindRules {
 Traverse wraps go-stackage's Stack.Traverse method.
 */
 func (r BindRules) Traverse(indices ...int) (B BindContext) {
-	_b, _ := castAsStack(r)
-	br, ok := _b.Traverse(indices...)
+	br, ok := r.cast().Traverse(indices...)
 	if ok {
 		switch tv := br.(type) {
 		case BindContext:
 			B = tv
 		default:
-			if isStackageStack(tv) {
-				B = castAsBindRules(tv)
-			} else if isStackageCondition(tv) {
-				B = castAsBindRule(tv)
-			}
+			B = castAsBindRule(tv)
 		}
 	}
 
@@ -1185,14 +1134,7 @@ func (r BindRules) Traverse(indices ...int) (B BindContext) {
 Valid wraps go-stackage's Stack.Valid method.
 */
 func (r BindRules) Valid() (err error) {
-	_b, _ := castAsStack(r)
-	if r.ID() != bindRuleID {
-		err = generalErr(bindRuleID, errorf("Unidentified %T instance (ID:%s)",
-			r, r.ID()))
-		return err
-	}
-
-	err = _b.Valid()
+	err = r.cast().Valid()
 	return
 }
 
@@ -1205,13 +1147,6 @@ Stack alias) type instance.
 Only BindContext qualifiers are to be cleared for push.
 */
 func (r BindRules) pushPolicy(x ...any) (err error) {
-	if len(x) == 0 {
-		return
-	} else if x[0] == nil {
-		err = pushErrorNilOrZero(r, x, matchBKW(r.Category()))
-		return
-	}
-
 	// perform type switch upon input value
 	// x to determine suitability for push.
 	switch tv := x[0].(type) {
@@ -1224,13 +1159,11 @@ func (r BindRules) pushPolicy(x ...any) (err error) {
 			err = pushErrorNilOrZero(r, tv, matchBKW(r.Category()), err)
 		}
 
-		if tv.Keyword() == nil {
+		if tv.Keyword() != nil {
 			err = badPTBRuleKeywordErr(tv, `bind`, `bindkeyword`, tv.Keyword())
-			break
-		}
-
-		if matchBKW(tv.Keyword().String()) == BindKeyword(0x0) {
-			err = badPTBRuleKeywordErr(tv, `bind`, `bindkeyword`, tv.Keyword())
+			if matchBKW(tv.Keyword().String()) != BindKeyword(0x0) {
+				err = nil
+			}
 		}
 
 	default:

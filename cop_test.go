@@ -100,6 +100,7 @@ func TestComparisonOperator_codecov(t *testing.T) {
 	_ = lousyCop.Description()
 	_ = lousyCop.Valid()
 	_ = lousyCop.Compare(Eq)
+	_ = lousyCop.Compare(1)
 	_ = lousyCop.Compare(`=`)
 	_ = lousyCop.Compare(`eq`)
 	_ = lousyCop.Compare(`equal to`)

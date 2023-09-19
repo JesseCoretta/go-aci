@@ -24,7 +24,7 @@ value, the default go-stackage tag "<invalid_operator>" is returned.
 See the ComparisonOperator const definitions for details.
 */
 func (r ComparisonOperator) String() string {
-	return castAsCop(r).String()
+	return r.cast().String()
 }
 
 /*
@@ -162,7 +162,7 @@ for use in T/B rule instances.
 Certain keywords, such as TargetScope, allow only certain operators,
 while others, such as BindSSF, allow the use of ALL operators.
 */
-func keywordAllowsComparisonOperator(kw, op any) bool {
+func keywordAllowsComparisonOperator(kw, op any) (allowed bool) {
 	// identify the comparison operator,
 	// save as cop var.
 	var cop ComparisonOperator
@@ -174,7 +174,7 @@ func keywordAllowsComparisonOperator(kw, op any) bool {
 	case int:
 		cop = ComparisonOperator(tv)
 	default:
-		return false
+		return
 	}
 
 	// identify the keyword, and
@@ -183,18 +183,18 @@ func keywordAllowsComparisonOperator(kw, op any) bool {
 	switch tv := kw.(type) {
 	case string:
 		if bkw := matchBKW(tv); bkw != BindKeyword(0x0) {
-			return bindKeywordAllowsComparisonOperator(bkw, cop)
+			allowed = bindKeywordAllowsComparisonOperator(bkw, cop)
 
 		} else if tkw := matchTKW(tv); tkw != TargetKeyword(0x0) {
-			return targetKeywordAllowsComparisonOperator(tkw, cop)
+			allowed = targetKeywordAllowsComparisonOperator(tkw, cop)
 		}
 	case BindKeyword:
-		return bindKeywordAllowsComparisonOperator(tv, cop)
+		allowed = bindKeywordAllowsComparisonOperator(tv, cop)
 	case TargetKeyword:
-		return targetKeywordAllowsComparisonOperator(tv, cop)
+		allowed = targetKeywordAllowsComparisonOperator(tv, cop)
 	}
 
-	return false
+	return
 }
 
 /*
@@ -222,25 +222,23 @@ func matchCOP(op string) ComparisonOperator {
 /*
 bindKeywordAllowsComparisonOperator is a private function called by keywordAllowsCompariso9nOperator.
 */
-func bindKeywordAllowsComparisonOperator(key BindKeyword, cop ComparisonOperator) bool {
+func bindKeywordAllowsComparisonOperator(key BindKeyword, cop ComparisonOperator) (allowed bool) {
 	// look-up the keyword within the permitted cop
 	// map; if found, obtain slices of cops allowed
 	// by said keyword.
-	cops, found := permittedBindComparisonOperators[key]
-	if !found {
-		return false
-	}
-
-	// iterate the cops slice, attempting to perform
-	// a match of the input cop candidate value and
-	// the current cops slice [i].
-	for i := 0; i < len(cops); i++ {
-		if cop == cops[i] {
-			return true
+	if cops, found := permittedBindComparisonOperators[key]; found {
+		// iterate the cops slice, attempting to perform
+		// a match of the input cop candidate value and
+		// the current cops slice [i].
+		for i := 0; i < len(cops); i++ {
+			if cop == cops[i] {
+				allowed = true
+				break
+			}
 		}
 	}
 
-	return false
+	return
 }
 
 /*

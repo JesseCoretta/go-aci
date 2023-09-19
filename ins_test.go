@@ -28,9 +28,7 @@ func TestInstruction(t *testing.T) {
 	// with a DN syntax of "uid=<userid>,ou=People,dc=example,dc=com"
 	Tar := TDN(`uid=*,ou=People,dc=example,dc=com`).Eq()
 
-	badACL := ``
-
-	ACI(badACL, Tar, pbrule)
+	ACI(Tar, pbrule)
 	_ = Ins.Valid()
 	_ = Ins.IsZero()
 	_ = Ins.String()

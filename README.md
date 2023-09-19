@@ -52,16 +52,12 @@ DIT because it considers you a threat. 🤓
 
 ## About ACIs
 
-Within the context of ACIv3, An ACI[^1] is an expressive statement or "policy" that is used to define the disclosing or withholding of information
-for an X.500/LDAP[^2] DIT[^3] as it pertains to its userbase.
+Within the context of ACIv3, An [ACI](## "Access Control Instruction") is an expressive statement or "policy" that is used to define the disclosing or withholding of information
+for an [X.500](## "ITU-T X-Series 500")/[LDAP](Lightweight Directory Access Protocol) [DIT](## "Directory Information Tree") as it pertains to its userbase.
 
 In layperson's terms, ACIs are a specific and (largely) non-proprietary form of "LDAP permissions" that govern who can read, write, search, etc.
 
 Not all LDAP server implementations support the ACIv3 syntax, but several do. Check your vendor or reference material for compatibility information.
-
-[^1]: Access Control Instruction
-[^2]: ITU-T X-Series 500 / Lightweight Directory Access Protocol ([`X.500`](https://www.itu.int/rec/T-REC-X.500) and [RFC4510](https://datatracker.ietf.org/doc/html/rfc4510), et al)
-[^3]: Directory Information Tree
 
 ## Implementation Compatibility Notice
 
@@ -71,20 +67,17 @@ a few variations in terms of available keywords and features.
 Though this is not a comprehensive list, a few of these cases are listed below:
 
 - TargetRule scoping, through the `targetscope` keyword
-- BindRule DN[^4] roles, through the `roledn` keyword
+- BindRule [DN](## "LDAP Distinguished Name") roles, through the `roledn` keyword
 - Group attribute-based value matching, through the `groupattr` keyword
-- LDAP Extended Operation OID[^5] definitions, through the `extop` keyword
+- LDAP Extended Operation [OID](## "ASN.1 Object Identifier") definitions, through the `extop` keyword
 - LDAP Control OID definitions, through the `targetcontrol` keyword
 - Rights definitions, such as `import` and `export`
 - Number of supported 'levels' for inheritance value matching
 
 This package aims to support *ALL* of the facets of the ACIv3 syntax without exception. Users will need to verify, however,
 that any ACI definitions generated -- in part or in whole as a result of using this package -- are compatible with their
-particular X.500/LDAP DSA[^6] implementation; check the docs and always listen to your vendor!
-
-[^4]: (LDAP) Distinguished Name
-[^5]: (ASN.1) Object Identifier
-[^6]: Directory System Agent, i.e.: your LDAP server(s)
+particular X.500/LDAP [DSA](## "Directory System Agent; an LDAP server") implementation; check the docs and always listen
+to your vendor!
 
 # Features
 
@@ -131,8 +124,9 @@ particular X.500/LDAP DSA[^6] implementation; check the docs and always listen t
 
 ## Parsing vs. Assembly
 
-This package imports an ANTLR4[^7] parsing subsystem to facilitate the "conversion" of ACI textual definitions into proper type instances.
-This functionality is provided by the [`go-antlraci`](https://github.com/JesseCoretta/go-antlraci) package.
+This package imports an [ANTLR4](## "ANother Tool for Language Recognition, Version 4") parsing subsystem to facilitate the "conversion" of ACI
+textual definitions into proper type instances. This functionality is provided by the [`go-antlraci`](https://github.com/JesseCoretta/go-antlraci)
+package.
 
 The parser reads the user-provided textual expression, processes the components and generates a proper instance of the package-provided type.
 
@@ -176,8 +170,6 @@ Which technique is "better" depends on the use-case. For individuals writing ACI
 Then again, the same sentiment may not apply to situations in which there are no individuals, and the process is wholly automated: the "parsing"
 option may be far more appealing.
 
-[^7]: ANother Tool for Language Recognition, Version 4 (www.antlr.org)
-
 ## Potential Use Cases
 
 This package could conceivably be used in any of the following scenarios:
@@ -186,9 +178,7 @@ This package could conceivably be used in any of the following scenarios:
 - For Directory personnel in charge of authoring and/or managing rich documentation
 - For Directory personnel who desire a means to author and/or manage sets of ACIs in a more programmatic / automated manner, perhaps with the aid of a templating system
 - For use as an access control framework within an actual (Go-based) Directory System Agent implementation that honors the ACI syntax
-- For generalized experimentation within the realm of DSA access control design and even PEN[^8] testing
-
-[^8]: PENetration Testing
+- For generalized experimentation within the realm of DSA access control design
 
 ## Limitations
 
@@ -248,7 +238,7 @@ building statements that reference a multi-valued expression:
 
 In particular, these sorts of quotation schemes appear in the following scenarios:
 
-- `targetattr` TargetRules for lists of LDAP ATs[^9]
+- `targetattr` TargetRules for lists of LDAP [ATs](## "LDAP AttributeTypes")
 - `target`, `target_to` and `target_from` TargetRule DNs
 - `userdn` and `groupdn` BindRule DNs
 - `extop` and `targetcontrol` TargetRule OIDs
@@ -256,8 +246,6 @@ In particular, these sorts of quotation schemes appear in the following scenario
 Users are advised to honor the quotation scheme recommended by their vendor or product documentation. This package aims to
 support either of the above schemes with no variance in the end result, but has no official position as to which of these
 schemes should be honored by the user except that quotation should always be used _in some form_.
-
-[^9]: (LDAP) AttributeTypes
 
 ## Contribution Encouraged
 
@@ -289,7 +277,5 @@ By now, it is likely obvious this package aims to provide everything one could p
 not discriminate ACIs that may be overtly "broad" in their influence or entry-matching potential.
 
 One such example of this is careless use of the negated equality operator (`!=`), which (when used improperly) can disclose myriad attribute
-values unintentionally. This particular case is well-documented in vendor manuals for supporting directory products (likely for legal CYA[^10]
+values unintentionally. This particular case is well-documented in vendor manuals for supporting directory products (likely for legal CYA
 reasons). Users are advised to LEARN the syntax well enough to know when to take such risks.
-
-[^10]: Cover Your ~~_REDACTED_~~ **Gluteus Maximus**

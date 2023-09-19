@@ -388,21 +388,7 @@ func (r LDAPURI) makeBindRule(negate ...bool) BindRule {
 	}
 
 	// assemble our BindRule instance ...
-	var b BindRule = BR(kw, oper, r)
-
-	// temporarily cast as a stackage.Condition
-	// so we can apply some additional changes
-	// using methods we didn't wrap because it
-	// wouldn't be necessary otherwise.
-	/*
-		castAsCondition(b).
-			Encap(`"`).
-			SetID(bindRuleID).
-			NoPadding(!RulePadding).
-			SetCategory(kw.String())
-	*/
-
-	return b
+	return BR(kw, oper, r)
 }
 
 /*
@@ -492,10 +478,9 @@ func (r ldapURI) string() string {
 
 	var param string
 	if !r.filter.IsZero() {
+		param = "?"
 		if !r.attrs.IsZero() {
 			param = sprintf("?%s", r.attrs)
-		} else {
-			param = "?"
 		}
 
 		// Be sure to call the standard scope here,

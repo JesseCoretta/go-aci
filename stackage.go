@@ -186,20 +186,96 @@ func castAsCondition(x any) (c stackage.Condition) {
 	return
 }
 
+/*
+cast is a private convenience method intended to streamline
+the act of casting a BindRule instance to a stackage.Condition
+instance if access to unwrapped methods is needed.
+*/
+func (r BindRule) cast() stackage.Condition {
+	return castAsCondition(r)
+}
+
+/*
+cast is a private convenience method intended to streamline
+the act of casting a BindRules instance to a stackage.Stack
+instance if access to unwrapped methods is needed.
+*/
+func (r BindRules) cast() stackage.Stack {
+	x, _ := castAsStack(r)
+	return x
+}
+
+/*
+cast is a private convenience method intended to streamline
+the act of casting a TargetRule instance to a stackage.Condition
+instance if access to unwrapped methods is needed.
+*/
+func (r TargetRule) cast() stackage.Condition {
+	return castAsCondition(r)
+}
+
+/*
+cast is a private convenience method intended to streamline
+the act of casting a TargetRules instance to a stackage.Stack
+instance if access to unwrapped methods is needed.
+*/
+func (r TargetRules) cast() stackage.Stack {
+	x, _ := castAsStack(r)
+	return x
+}
+
+func (r AttributeTypes) cast() stackage.Stack {
+	x, _ := castAsStack(r)
+	return x
+}
+
+func (r BindDistinguishedNames) cast() stackage.Stack {
+	x, _ := castAsStack(r)
+	return x
+}
+
+func (r AttributeFilterOperation) cast() stackage.Stack {
+	x, _ := castAsStack(r)
+	return x
+}
+
+func (r AttributeFilterOperations) cast() stackage.Stack {
+	x, _ := castAsStack(r)
+	return x
+}
+
+func (r PermissionBindRules) cast() stackage.Stack {
+	x, _ := castAsStack(r)
+	return x
+}
+
+func (r Instructions) cast() stackage.Stack {
+	x, _ := castAsStack(r)
+	return x
+}
+
+func (r ObjectIdentifiers) cast() stackage.Stack {
+	x, _ := castAsStack(r)
+	return x
+}
+
+func (r TargetDistinguishedNames) cast() stackage.Stack {
+	x, _ := castAsStack(r)
+	return x
+}
+
+func (r ComparisonOperator) cast() stackage.ComparisonOperator {
+	return castAsCop(r)
+}
+
 func castAsBindRule(x any) BindRule {
-	assert, ok := x.(stackage.Condition)
-	if !ok {
-		return badBindRule
-	}
-	return BindRule(assert)
+	_b, _ := x.(stackage.Condition)
+	return BindRule(_b)
 }
 
 func castAsBindRules(x any) BindRules {
-	assert, ok := x.(stackage.Stack)
-	if !ok {
-		return badBindRules
-	}
-	return BindRules(assert)
+	_b, _ := x.(stackage.Stack)
+	return BindRules(_b)
 }
 
 /*

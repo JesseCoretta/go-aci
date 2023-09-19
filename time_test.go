@@ -224,6 +224,17 @@ func TestToD(t *testing.T) {
 			cops map[ComparisonOperator]func() BindRule
 		)
 
+		bunk := ToD(``)
+		_ = bunk.String()
+		_ = bunk.IsZero()
+		bunk = ToD(now())
+		_ = bunk.String()
+
+		var bunk2 TimeOfDay
+		bunk2.Set(nil)
+		_ = bunk2.String()
+		_ = bunk2.IsZero()
+
 		got := ToD(thyme)
 		if got.String() != thyme && want {
 			err = unexpectedStringResult(typ, thyme, got.String())

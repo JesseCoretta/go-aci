@@ -81,7 +81,8 @@ func TestTargetRule_bogus(t *testing.T) {
 	_ = tr.SetExpression(nil)
 
 	tr.Init()
-	tr.SetKeyword(BindUDN) // wrong class of kw
+	tr.SetKeyword(`binddn`) // wrong class of kw
+	tr.SetKeyword(BindUDN)  // wrong class of kw
 
 	if err := tr.Valid(); err == nil {
 		t.Errorf("%s failed: no error where one should be (bogus kw set for TR)",
@@ -93,6 +94,11 @@ func TestTargetRule_bogus(t *testing.T) {
 	tr.SetOperator(ComparisonOperator(99))
 	tr.SetOperator(`hello`)
 	tr.SetOperator(`=`)
+	tr.SetKeyword(`target`)
+	tr.SetKeyword(TargetScope)
+	_ = tr.NoPadding()
+	_ = tr.NoPadding(false)
+	_ = tr.NoPadding(true)
 }
 
 // mainly this exists to satisfy codecov, but also
@@ -109,6 +115,7 @@ func TestTargetRules_bogus(t *testing.T) {
 	_ = tr.Valid()
 	_ = tr.ReadOnly()
 	_ = tr.NoPadding()
+	_ = tr.NoPadding(false)
 	_ = tr.NoPadding(true)
 	_ = tr.String()
 	_ = tr.Push()
@@ -124,10 +131,16 @@ func TestTargetRules_bogus(t *testing.T) {
 	tr.NoPadding()
 	_ = tr.Push()
 	_ = tr.Push(``)
+	_ = tr.NoPadding()
+	_ = tr.NoPadding(false)
+	_ = tr.NoPadding(true)
 	_ = tr.Push(Target)
+	_ = tr.Push(TargetRule{})
 	_ = tr.Push(nil, nil)
 	_ = tr.Push('𝝅')
 	tr.Push(TDN(`uid=jesse,ou=People,dc=example,dc=com`).Eq())
+	tr.Contains(TDN(`uid=jesse,ou=People,dc=example,dc=com`).Eq())
+	tr.Contains(TDN(`uid=jesse,ou=People,dc=example,dc=com`).Eq().String())
 	tr.reset()
 }
 

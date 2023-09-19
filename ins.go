@@ -84,29 +84,15 @@ const (
 )
 
 func (r Instructions) pushPolicy(x ...any) (err error) {
-	if len(x) == 0 {
-		return
-	} else if x[0] == nil {
-		err = nilInstanceErr(x[0])
-		return
-	}
-
 	if r.contains(x[0]) {
 		err = pushErrorNotUnique(r, x[0], nil)
 		return
 	}
 
+	err = pushErrorBadType(Instructions{}, x[0], nil)
 	switch tv := x[0].(type) {
-	case string:
-		if len(tv) == 0 {
-			err = nilInstanceErr(tv)
-		}
 	case Instruction:
-		if tv.IsZero() {
-			err = nilInstanceErr(tv)
-		}
-	default:
-		err = pushErrorBadType(Instructions{}, tv, nil)
+		err = tv.Valid()
 	}
 
 	return
@@ -116,8 +102,7 @@ func (r Instructions) pushPolicy(x ...any) (err error) {
 Len wraps go-stackage's Stack.Len method.
 */
 func (r Instructions) Len() int {
-	_r, _ := castAsStack(r)
-	return _r.Len()
+	return r.cast().Len()
 }
 
 /*
@@ -163,8 +148,7 @@ func (r Instructions) contains(x any) bool {
 IsZero wraps go-stackage's Stack.IsZero method.
 */
 func (r Instructions) IsZero() bool {
-	_r, _ := castAsStack(r)
-	return _r.IsZero()
+	return r.cast().IsZero()
 }
 
 /*
@@ -174,8 +158,7 @@ representation of the receiver instance.
 This method wraps go-stackage's Stack.String method.
 */
 func (r Instructions) String() string {
-	_r, _ := castAsStack(r)
-	return _r.String()
+	return r.cast().String()
 }
 
 /*
@@ -203,7 +186,7 @@ instance of BindDistinguishedName using the appropriate keyword,
 so long as the raw string is of a non-zero length.
 */
 func (r Instructions) Push(x ...any) Instructions {
-	_r, _ := castAsStack(r)
+	_r := r.cast()
 
 	// iterate variadic input arguments
 	for i := 0; i < len(x); i++ {
@@ -225,9 +208,7 @@ func (r Instructions) Push(x ...any) Instructions {
 Pop wraps go-stackage's Stack.Pop method.
 */
 func (r Instructions) Pop() (x Instruction) {
-	_r, _ := castAsStack(r)
-	y, _ := _r.Pop()
-
+	y, _ := r.cast().Pop()
 	if assert, asserted := y.(Instruction); asserted {
 		x = assert
 	}
@@ -250,8 +231,7 @@ func (r Instructions) F() func(...any) Instruction {
 Valid wraps go-stackage's Stack.Valid method.
 */
 func (r Instructions) Valid() (err error) {
-	_b, _ := castAsStack(r)
-	err = _b.Valid()
+	err = r.cast().Valid()
 	return
 }
 
@@ -261,9 +241,7 @@ Boolean OK value returned by go-stackage by default will be
 shadowed and not obtainable by the caller.
 */
 func (r Instructions) Index(idx int) (x Instruction) {
-	_r, _ := castAsStack(r)
-	y, _ := _r.Index(idx)
-
+	y, _ := r.cast().Index(idx)
 	if assert, ok := y.(Instruction); ok {
 		x = assert
 	}
@@ -311,30 +289,7 @@ or deficiencies within the receiver instance.
 func (r Instruction) Valid() (err error) {
 	if r.IsZero() {
 		err = nilInstanceErr(r)
-		return
 	}
-
-	return r.instruction.valid()
-}
-
-/*
-valid is a private method called by instruction.Valid.
-*/
-func (r instruction) valid() (err error) {
-	if len(r.ACL) == 0 {
-		err = instructionNoLabelErr()
-		return
-	}
-
-	for _, valid := range []func() error{
-		r.TRs.Valid,
-		r.PBRs.Valid,
-	} {
-		if err = valid(); err != nil {
-			break
-		}
-	}
-
 	return
 }
 

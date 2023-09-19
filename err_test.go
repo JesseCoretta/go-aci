@@ -24,6 +24,7 @@ func TestErrorf(t *testing.T) {
 
 func TestErrorFNs_codecov(t *testing.T) {
 	_ = badPTBRuleKeywordErr(BindRule{}, `blarg`, `userdn`, `farts`)
+	_ = badPTBRuleKeywordErr(BindRule{}, `blarg`, BindUDN, `farts`)
 	_ = badObjectIdentifierKeywordErr(TargetExtOp)
 	_ = unexpectedKindErr(PermissionBindRule{}, `pbr`, `...`)
 	_ = illegalSliceTypeErr(AttributeFilter{}, `(objectClass=*)`, `35^`)
@@ -35,6 +36,7 @@ func TestErrorFNs_codecov(t *testing.T) {
 	_ = instructionNoLabelErr()
 	_ = dowBadTimeErr()
 	_ = badCopErr(badCop)
+	_ = rightNotfound(`barf`)
 	_ = noPermissionDispErr()
 	_ = fqdnInvalidLabelErr(domainLabel(`__`))
 	_ = parseBindRulesHierErr(BindDistinguishedNames{}, BindRules{})

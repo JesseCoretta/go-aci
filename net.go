@@ -418,9 +418,6 @@ func processLabel(label ...string) (dl labels, c int, ok bool) {
 				dl = append(dl, domainLabel(sp[j]))
 			}
 		} else {
-			if !validLabel(label[i]) {
-				return
-			}
 			c += len(label[i])
 			dl = append(dl, domainLabel(label[i]))
 		}
@@ -518,13 +515,6 @@ func (r FQDN) Valid() (err error) {
 	if !(0 < L && L <= fqdnMax) || len(*r.labels) < 2 {
 		err = fqdnInvalidLenErr(L)
 		return
-	}
-
-	for i := 0; i < len(*r.labels); i++ {
-		if !validLabel(string((*r.labels)[i])) {
-			err = fqdnInvalidLabelErr((*r.labels)[i])
-			return
-		}
 	}
 
 	// seems legit

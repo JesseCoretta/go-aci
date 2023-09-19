@@ -134,7 +134,7 @@ func TestTargetDistinguishedName_codecov(t *testing.T) {
 			}
 
 			O.Set(`159`)
-			O.Set(``)
+			O.Set(`_`)
 			_ = O.Valid()
 			O.Set(`#barf`, kw)
 
@@ -174,10 +174,10 @@ func TestBindDistinguishedNames_codecov(t *testing.T) {
 	_ = Os.Ne()
 	_ = Os.Push()
 	_ = Os.Push(``)
+	_ = Os.Push('a')
 	_ = Os.Push(`fhksjthg4`)
 	_ = Os.Push(`_1`)
 	_ = Os.Push(ctx)
-	_ = Os.Push(URI(`ldap:///ou=People,dc=example,dc=com?cn,sn,givenName?one?(&(objectClass=contractor)(status=active))`))
 
 	Os.reset()
 	_ = Os.setQuoteStyle(0)
@@ -226,13 +226,17 @@ func TestBindDistinguishedNames_codecov(t *testing.T) {
 			// process DN
 			O = Os.F()(dn)
 
+			Os.Push(AnyDN)
+			Os.Push(URI(`ldap:///?`))
+			Os.Push(URI(`l`))
+			Os.Push(URI(`ldap:///ou=People,dc=example,dc=com?cn,sn,givenName?one?(&(objectClass=contractor)(status=active))`))
 			Ol = Os.Len()
 			Os.Push(O)
 			Os.Push()
 			Os.Push(``)
 			Os.Push(nil)
 			Os.Push('a')
-			Os.Push(URI(`ldap:///ou=People,dc=example,dc=com?cn,sn,givenName?one?(&(objectClass=contractor)(status=active))`))
+			Os.Index(Os.Len() - 1)
 			Os.Contains(dn)
 			Os.Push(Os.Pop())
 			Os.Push(O) // try to introduce duplicate

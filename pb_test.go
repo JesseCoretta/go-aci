@@ -399,4 +399,6 @@ func TestPermissionBindRules_codecov(t *testing.T) {
 	pbs.Pop()
 	pbs.Push(rule5)
 	pbs.Push(rule5.String())
+	pbs.Contains(rule5)
+	pbs.Contains(rule5.String())
 }

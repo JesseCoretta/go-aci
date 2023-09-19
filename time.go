@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+var now func() time.Time = time.Now
+
 /*
 Day constants can be shifted into an instance of DayOfWeek, allowing effective expressions such as "Sun,Tues". See the DayOfWeek.Set method.
 */
@@ -253,10 +255,8 @@ String is a stringer method that returns the string representation of the receiv
 instance. At least one Day's bits should register as positive in order for a valid
 string return to ensue.
 */
-func (r DayOfWeek) String() string {
-	if r.IsZero() {
-		return badDoW
-	}
+func (r DayOfWeek) String() (s string) {
+	s = badDoW
 
 	var dows []string
 	for i := 0; i < bitSize(noDay); i++ {
@@ -266,11 +266,11 @@ func (r DayOfWeek) String() string {
 		}
 	}
 
-	if len(dows) == 0 {
-		return badDoW
+	if len(dows) > 0 {
+		s = join(dows, `,`)
 	}
 
-	return join(dows, `,`)
+	return
 }
 
 /*
@@ -600,17 +600,9 @@ Valid input types are string and time.Time. The effective hour and minute values
 should ALWAYS fall within the valid clock range of 0000 up to and including 2400.  Bogus values
 within said range, such as 0477, will return an error.
 */
-func (r *TimeOfDay) Set(t any) *TimeOfDay {
-	if r == nil {
-		*r = newTimeOfDay(t)
-		return r
-	} else if r.timeOfDay.isZero() {
-		*r = newTimeOfDay(t)
-		return r
-	}
-
-	r.timeOfDay.set(t)
-	return r
+func (r *TimeOfDay) Set(t any) TimeOfDay {
+	*r = newTimeOfDay(t)
+	return *r
 }
 
 func (r *timeOfDay) isZero() bool {
@@ -618,9 +610,6 @@ func (r *timeOfDay) isZero() bool {
 }
 
 func (r *timeOfDay) set(t any) {
-	if r.isZero() {
-		r = new(timeOfDay)
-	}
 	assertToD(r, t)
 }
 
@@ -636,10 +625,9 @@ func assertToD(r *timeOfDay, t any) {
 	case time.Time:
 		// time.Time input results in a recursive
 		// run of this method.
-		if tv.IsZero() {
-			break
+		if !tv.IsZero() {
+			r.set(sprintf("%02d%02d", tv.Hour(), tv.Minute()))
 		}
-		r.set(sprintf("%02d%02d", tv.Hour(), tv.Minute()))
 	case string:
 		// Handle discrepancy between ACI time, which ends
 		// at 2400, and Golang Time, which ends at 2359.

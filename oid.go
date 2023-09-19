@@ -157,11 +157,12 @@ Eq initializes and returns a new TargetRule instance configured to express the
 evaluation of the receiver value as Equal-To an `extop` or `targetcontrol`
 keyword context.
 */
-func (r ObjectIdentifier) Eq() TargetRule {
-	if err := r.Valid(); err != nil {
-		return badTargetRule
+func (r ObjectIdentifier) Eq() (t TargetRule) {
+	t = badTargetRule
+	if err := r.Valid(); err == nil {
+		t = TR(r.objectIdentifier.TargetKeyword, Eq, r)
 	}
-	return TR(r.objectIdentifier.TargetKeyword, Eq, r)
+	return
 }
 
 /*
@@ -171,11 +172,12 @@ keyword context.
 
 Negated equality TargetRule instances should be used with caution.
 */
-func (r ObjectIdentifier) Ne() TargetRule {
-	if err := r.Valid(); err != nil {
-		return badTargetRule
+func (r ObjectIdentifier) Ne() (t TargetRule) {
+	t = badTargetRule
+	if err := r.Valid(); err == nil {
+		t = TR(r.objectIdentifier.TargetKeyword, Ne, r)
 	}
-	return TR(r.objectIdentifier.TargetKeyword, Ne, r)
+	return
 }
 
 /*
@@ -314,8 +316,7 @@ func (r ObjectIdentifiers) TRM() TargetRuleMethods {
 IsZero wraps go-stackage's Stack.IsZero method.
 */
 func (r ObjectIdentifiers) IsZero() bool {
-	_r, _ := castAsStack(r)
-	return _r.IsZero()
+	return r.cast().IsZero()
 }
 
 /*
@@ -334,8 +335,7 @@ func (r ObjectIdentifiers) Valid() (err error) {
 Len wraps go-stackage's Stack.Len method.
 */
 func (r ObjectIdentifiers) Len() int {
-	_r, _ := castAsStack(r)
-	return _r.Len()
+	return r.cast().Len()
 }
 
 /*
@@ -344,9 +344,7 @@ Boolean OK value returned by go-stackage by default will be
 shadowed and not obtainable by the caller.
 */
 func (r ObjectIdentifiers) Index(idx int) (x ObjectIdentifier) {
-	_r, _ := castAsStack(r)
-	y, _ := _r.Index(idx)
-
+	y, _ := r.cast().Index(idx)
 	if assert, ok := y.(ObjectIdentifier); ok {
 		x = assert
 	}
@@ -362,8 +360,7 @@ representation of the receiver instance.
 This method wraps go-stackage's Stack.String method.
 */
 func (r ObjectIdentifiers) String() string {
-	_r, _ := castAsStack(r)
-	return _r.String()
+	return r.cast().String()
 }
 
 /*
@@ -378,13 +375,13 @@ func (r ObjectIdentifiers) Compare(x any) bool {
 Push wraps go-stackage's Stack.Push method.
 */
 func (r ObjectIdentifiers) Push(x ...any) ObjectIdentifiers {
-	_r, _ := castAsStack(r)
+	_r := r.cast()
 
 	for i := 0; i < len(x); i++ {
 		switch tv := x[i].(type) {
 		case string:
 			_r.Push(r.F()(tv))
-		case ObjectIdentifier:
+		default:
 			_r.Push(tv)
 		}
 	}
@@ -449,9 +446,7 @@ func (r ObjectIdentifiers) contains(x any) bool {
 Pop wraps go-stackage's Stack.Pop method.
 */
 func (r ObjectIdentifiers) Pop() (x ObjectIdentifier) {
-	_r, _ := castAsStack(r)
-	y, _ := _r.Pop()
-
+	y, _ := r.cast().Pop()
 	if assert, asserted := y.(ObjectIdentifier); asserted {
 		x = assert
 	}
@@ -464,7 +459,7 @@ setQuoteStyle shall set the receiver instance to the quotation
 scheme defined by integer i.
 */
 func (r ObjectIdentifiers) setQuoteStyle(style int) ObjectIdentifiers {
-	_r, _ := castAsStack(r)
+	_r := r.cast()
 	if _r.Len() < 2 {
 		_r.Encap() // not multivalued, force default
 		return r
@@ -522,12 +517,6 @@ executions, assuming they are keyword context-aligned with
 the destination stack.
 */
 func (r ObjectIdentifiers) extOpsPushPolicy(x ...any) error {
-	if len(x) == 0 {
-		return nil
-	} else if x[0] == nil {
-		return nilInstanceErr(x[0])
-	}
-
 	if r.contains(x[0]) {
 		return pushErrorNotUnique(r, x[0], r.Keyword())
 	}
@@ -546,12 +535,6 @@ executions, assuming they are keyword context-aligned with
 the destination stack.
 */
 func (r ObjectIdentifiers) ctrlsPushPolicy(x ...any) error {
-	if len(x) == 0 {
-		return nil
-	} else if x[0] == nil {
-		return nilInstanceErr(x[0])
-	}
-
 	if r.contains(x[0]) {
 		return pushErrorNotUnique(r, x[0], r.Keyword())
 	}
@@ -578,31 +561,27 @@ func (r ObjectIdentifiers) F() func(...any) ObjectIdentifier {
 }
 
 func (r ObjectIdentifiers) reset() {
-	_r, _ := castAsStack(r)
-	_r.Reset()
+	r.cast().Reset()
 }
 
 func (r ObjectIdentifiers) resetKeyword(x any) {
-	if r.Len() > 0 {
-		return
-	}
+	if r.Len() == 0 {
+		switch tv := x.(type) {
+		case TargetKeyword:
+			r.resetKeyword(tv.String())
 
-	switch tv := x.(type) {
-	case TargetKeyword:
-		r.resetKeyword(tv.String())
+		case string:
+			_r := r.cast()
 
-	case string:
-		_r, _ := castAsStack(r)
+			switch lc(tv) {
+			case TargetExtOp.String():
+				_r.SetCategory(TargetExtOp.String()).
+					SetPushPolicy(r.extOpsPushPolicy)
 
-		switch lc(tv) {
-		case TargetExtOp.String():
-			_r.SetCategory(TargetExtOp.String()).
-				SetPushPolicy(r.extOpsPushPolicy)
-
-		case TargetCtrl.String():
-			_r.SetCategory(TargetCtrl.String()).
-				SetPushPolicy(r.ctrlsPushPolicy)
-
+			case TargetCtrl.String():
+				_r.SetCategory(TargetCtrl.String()).
+					SetPushPolicy(r.ctrlsPushPolicy)
+			}
 		}
 	}
 }
@@ -637,9 +616,10 @@ func objectIdentifiersPushPolicy(r, x any, kw TargetKeyword) (err error) {
 		// case match is a proper instance of ObjectIdentifier
 		if err = tv.Valid(); err != nil {
 			break
-
-		} else if tv.Keyword() != kw {
-			err = badObjectIdentifierKeywordErr(tv.objectIdentifier.TargetKeyword)
+		}
+		err = badObjectIdentifierKeywordErr(tv.objectIdentifier.TargetKeyword)
+		if tv.Keyword() == kw {
+			err = nil
 		}
 
 	default:
@@ -758,13 +738,11 @@ func (r ObjectIdentifiers) Ne() TargetRule {
 /*
 ID wraps go-stackage's Stack.ID method.
 */
-func (r ObjectIdentifiers) ID() string {
-	if r.IsZero() {
-		return ``
+func (r ObjectIdentifiers) ID() (s string) {
+	if !r.IsZero() {
+		s = r.cast().ID()
 	}
-
-	_t, _ := castAsStack(r)
-	return _t.ID()
+	return
 }
 
 /*
@@ -775,8 +753,8 @@ func (r ObjectIdentifiers) Kind() (k string) {
 	if r.IsZero() {
 		return
 	}
-	_r, _ := castAsStack(r)
-	switch _k := lc(_r.Category()); _k {
+
+	switch _k := lc(r.cast().Category()); _k {
 	case TargetExtOp.String(),
 		TargetCtrl.String():
 		k = _k
