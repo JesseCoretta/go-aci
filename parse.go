@@ -952,10 +952,11 @@ func processPermissionBindRules(stack any) (pbrs PermissionBindRules, err error)
 		slice, _ := _pbrs.Index(i)
 		if _pbr, asserted := slice.(parser.PermissionBindRule); asserted {
 			var pbr PermissionBindRule
-			if pbr, err = processPermissionBindRule(_pbr); err != nil {
-				break
+			if pbr, err = processPermissionBindRule(_pbr); err == nil {
+				pbrs.Push(pbr)
+				continue
 			}
-			pbrs.Push(pbr)
+			break
 		}
 	}
 
