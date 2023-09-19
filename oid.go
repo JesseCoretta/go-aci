@@ -157,11 +157,12 @@ Eq initializes and returns a new TargetRule instance configured to express the
 evaluation of the receiver value as Equal-To an `extop` or `targetcontrol`
 keyword context.
 */
-func (r ObjectIdentifier) Eq() TargetRule {
-	if err := r.Valid(); err != nil {
-		return badTargetRule
+func (r ObjectIdentifier) Eq() (t TargetRule) {
+	t = badTargetRule
+	if err := r.Valid(); err == nil {
+		t = TR(r.objectIdentifier.TargetKeyword, Eq, r)
 	}
-	return TR(r.objectIdentifier.TargetKeyword, Eq, r)
+	return
 }
 
 /*
@@ -171,11 +172,12 @@ keyword context.
 
 Negated equality TargetRule instances should be used with caution.
 */
-func (r ObjectIdentifier) Ne() TargetRule {
-	if err := r.Valid(); err != nil {
-		return badTargetRule
+func (r ObjectIdentifier) Ne() (t TargetRule) {
+	t = badTargetRule
+	if err := r.Valid(); err == nil {
+		t = TR(r.objectIdentifier.TargetKeyword, Ne, r)
 	}
-	return TR(r.objectIdentifier.TargetKeyword, Ne, r)
+	return
 }
 
 /*
@@ -515,12 +517,6 @@ executions, assuming they are keyword context-aligned with
 the destination stack.
 */
 func (r ObjectIdentifiers) extOpsPushPolicy(x ...any) error {
-	if len(x) == 0 {
-		return nil
-	} else if x[0] == nil {
-		return nilInstanceErr(x[0])
-	}
-
 	if r.contains(x[0]) {
 		return pushErrorNotUnique(r, x[0], r.Keyword())
 	}
@@ -539,12 +535,6 @@ executions, assuming they are keyword context-aligned with
 the destination stack.
 */
 func (r ObjectIdentifiers) ctrlsPushPolicy(x ...any) error {
-	if len(x) == 0 {
-		return nil
-	} else if x[0] == nil {
-		return nilInstanceErr(x[0])
-	}
-
 	if r.contains(x[0]) {
 		return pushErrorNotUnique(r, x[0], r.Keyword())
 	}
@@ -575,26 +565,23 @@ func (r ObjectIdentifiers) reset() {
 }
 
 func (r ObjectIdentifiers) resetKeyword(x any) {
-	if r.Len() > 0 {
-		return
-	}
+	if r.Len() == 0 {
+		switch tv := x.(type) {
+		case TargetKeyword:
+			r.resetKeyword(tv.String())
 
-	switch tv := x.(type) {
-	case TargetKeyword:
-		r.resetKeyword(tv.String())
+		case string:
+			_r := r.cast()
 
-	case string:
-		_r := r.cast()
+			switch lc(tv) {
+			case TargetExtOp.String():
+				_r.SetCategory(TargetExtOp.String()).
+					SetPushPolicy(r.extOpsPushPolicy)
 
-		switch lc(tv) {
-		case TargetExtOp.String():
-			_r.SetCategory(TargetExtOp.String()).
-				SetPushPolicy(r.extOpsPushPolicy)
-
-		case TargetCtrl.String():
-			_r.SetCategory(TargetCtrl.String()).
-				SetPushPolicy(r.ctrlsPushPolicy)
-
+			case TargetCtrl.String():
+				_r.SetCategory(TargetCtrl.String()).
+					SetPushPolicy(r.ctrlsPushPolicy)
+			}
 		}
 	}
 }
@@ -629,9 +616,10 @@ func objectIdentifiersPushPolicy(r, x any, kw TargetKeyword) (err error) {
 		// case match is a proper instance of ObjectIdentifier
 		if err = tv.Valid(); err != nil {
 			break
-
-		} else if tv.Keyword() != kw {
-			err = badObjectIdentifierKeywordErr(tv.objectIdentifier.TargetKeyword)
+		}
+		err = badObjectIdentifierKeywordErr(tv.objectIdentifier.TargetKeyword)
+		if tv.Keyword() == kw {
+			err = nil
 		}
 
 	default:
@@ -750,12 +738,11 @@ func (r ObjectIdentifiers) Ne() TargetRule {
 /*
 ID wraps go-stackage's Stack.ID method.
 */
-func (r ObjectIdentifiers) ID() string {
-	if r.IsZero() {
-		return ``
+func (r ObjectIdentifiers) ID() (s string) {
+	if !r.IsZero() {
+		s = r.cast().ID()
 	}
-
-	return r.cast().ID()
+	return
 }
 
 /*
