@@ -289,30 +289,7 @@ or deficiencies within the receiver instance.
 func (r Instruction) Valid() (err error) {
 	if r.IsZero() {
 		err = nilInstanceErr(r)
-		return
 	}
-
-	return r.instruction.valid()
-}
-
-/*
-valid is a private method called by instruction.Valid.
-*/
-func (r instruction) valid() (err error) {
-	if len(r.ACL) == 0 {
-		err = instructionNoLabelErr()
-		return
-	}
-
-	for _, valid := range []func() error{
-		r.TRs.Valid,
-		r.PBRs.Valid,
-	} {
-		if err = valid(); err != nil {
-			break
-		}
-	}
-
 	return
 }
 
