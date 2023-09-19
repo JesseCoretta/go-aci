@@ -274,23 +274,31 @@ func isPowerOfTwo(x int) bool {
 
 /*
 Hash computes a SHA-1 hash value, derived from the String
-method output of input value x.
+method output (or string value) of input value x.
 
 The hash, if generated, is cast as a string prior to being
 returned alongside an error.
 
-If input value x lacks a String method, or if no string
-value was returned as a result of its execution, the error
-instance returned shall be non-nil.
+Input value x must qualify as one (1) of the following:
 
-Neither this function, nor any of the many 'Compare' methods
-extended through eligible types which make use of this very
-function, should be used to gauge "validity", "nilness" or
-"initialization status". In certain cases, two (2) dissimilar
-(and invalid!) instances of the same type shall evaluate as
-"equal". When the process of string representation yields the
-same effective value for two (2) type instances, this is both
-guaranteed and expected behavior.
+  - Must be a string in of itself, OR ...
+  - Must be a type instance that has its own stringer method
+
+Failing the above, a non-nil error instance is returned.
+
+This package-level function is the basis for all Compare
+methods extended by myriad types throughout this package.
+In most cases, using an available Compare method is easier
+than using this function directly.
+
+The hash evaluation offered by this package is meant to act
+as a supplement in a change review process or similar.  The
+return value should not be used to gauge "validity", "nilness"
+or "initialization status" of an instance. In certain cases,
+two (2) dissimilar (and invalid!) instances of the same type
+shall evaluate as "equal". When string representation yields
+the same effective value for two (2) type instances, this is
+both guaranteed and expected behavior.
 */
 func Hash(x any) (string, error) {
 	return hashInstance(x)

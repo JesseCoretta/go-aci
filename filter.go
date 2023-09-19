@@ -498,7 +498,7 @@ behavior, but can be set using the AttributeFilterOperationsCommaDelim
 integer constant (0), or when run in niladic fashion.
 */
 func (r AttributeFilterOperations) SetDelimiter(i ...int) AttributeFilterOperations {
-	_r, _ := castAsStack(r)
+	_r := r.cast()
 
 	var (
 		// default delimiter is a comma
@@ -543,8 +543,7 @@ func (r AttributeFilterOperations) Push(x ...any) AttributeFilterOperations {
 		return r
 	}
 
-	_r, _ := castAsStack(r)
-
+	_r := r.cast()
 	for i := 0; i < len(x); i++ {
 		switch tv := x[i].(type) {
 		case string:
@@ -553,10 +552,8 @@ func (r AttributeFilterOperations) Push(x ...any) AttributeFilterOperations {
 					_r.Push(afo)
 				}
 			}
-		case AttributeFilterOperation:
-			if tv.Len() > 0 {
-				_r.Push(tv)
-			}
+		default:
+			_r.Push(tv)
 		}
 	}
 
@@ -595,9 +592,7 @@ func (r *AttributeFilterOperations) Parse(raw string, delim ...int) (err error) 
 Pop wraps go-stackage's Stack.Pop method.
 */
 func (r AttributeFilterOperations) Pop() (afo AttributeFilterOperation) {
-	_r, _ := castAsStack(r)
-	slice, _ := _r.Pop()
-
+	slice, _ := r.cast().Pop()
 	if assert, ok := slice.(AttributeFilterOperation); ok {
 		afo = assert
 	}
@@ -609,8 +604,7 @@ func (r AttributeFilterOperations) Pop() (afo AttributeFilterOperation) {
 Len wraps go-stackage's Stack.Len method.
 */
 func (r AttributeFilterOperations) Len() int {
-	_r, _ := castAsStack(r)
-	return _r.Len()
+	return r.cast().Len()
 }
 
 /*
@@ -619,9 +613,7 @@ Boolean OK value returned by go-stackage by default will be
 shadowed and not obtainable by the caller.
 */
 func (r AttributeFilterOperations) Index(idx int) (afo AttributeFilterOperation) {
-	_r, _ := castAsStack(r)
-	slice, _ := _r.Index(idx)
-
+	slice, _ := r.cast().Index(idx)
 	if assert, ok := slice.(AttributeFilterOperation); ok {
 		afo = assert
 	}
@@ -633,8 +625,7 @@ func (r AttributeFilterOperations) Index(idx int) (afo AttributeFilterOperation)
 IsZero wraps go-stackage's Stack.IsZero method.
 */
 func (r AttributeFilterOperations) IsZero() bool {
-	_r, _ := castAsStack(r)
-	return _r.IsZero()
+	return r.cast().IsZero()
 }
 
 /*
@@ -649,7 +640,7 @@ func (r AttributeFilterOperations) Valid() error {
 	// to deceive the package - use the
 	// actual go-stackage index caller so
 	// it won't discriminate types.
-	_r, _ := castAsStack(r)
+	_r := r.cast()
 	for i := 0; i < _r.Len(); i++ {
 		slice, _ := _r.Index(i)
 		assert, _ := slice.(AttributeFilterOperation)
@@ -673,8 +664,7 @@ String is a stringer method that returns the string representation of
 the receiver instance.
 */
 func (r AttributeFilterOperations) String() string {
-	_r, _ := castAsStack(r)
-	return _r.String()
+	return r.cast().String()
 }
 
 /*
@@ -745,11 +735,6 @@ func (r AttributeFilterOperations) pushPolicy(x ...any) (err error) {
 	}
 
 	switch tv := x[0].(type) {
-	case string:
-		if len(tv) == 0 {
-			err = pushErrorNilOrZero(r, tv, TargetAttrFilters)
-		}
-
 	case AttributeFilterOperation:
 		// because codecov :/
 		xerr := tv.Valid()
@@ -789,9 +774,6 @@ func (r AttributeFilterOperation) pushPolicy(x ...any) (err error) {
 			err = pushErrorNilOrZero(r, tv, TargetAttrFilters)
 		}
 
-	case AttributeOperation:
-		r.setCategory(tv.makeLabel())
-
 	case AttributeFilter:
 		if err = tv.Valid(); err != nil {
 			err = pushErrorNilOrZero(r, tv, TargetAttrFilters, err)
@@ -819,14 +801,27 @@ func (r AttributeFilterOperation) Push(x ...any) AttributeFilterOperation {
 		return r
 	}
 
-	_r, _ := castAsStack(r)
+	_r := r.cast()
 	for i := 0; i < len(x); i++ {
 		switch tv := x[i].(type) {
 		case string:
 			if af, err := parseAttributeFilter(tv); err == nil {
 				_r.Push(af)
 			}
-		case AttributeFilter:
+
+		// Don't push AO; it was pushed just
+		// because its a convenient way to
+		// set the operation on the stack
+		// receiver instance. But we can't
+		// put it in our pushPolicy because
+		// we'd have to return a bogus error
+		// to prevent a push, which would
+		// almost definitely confuse people
+		// reading error logs ...
+		case AttributeOperation:
+			r.setCategory(tv.makeLabel())
+
+		default:
 			_r.Push(tv)
 		}
 	}
@@ -838,9 +833,7 @@ func (r AttributeFilterOperation) Push(x ...any) AttributeFilterOperation {
 Pop wraps go-stackage's Stack.Pop method.
 */
 func (r AttributeFilterOperation) Pop() (af AttributeFilter) {
-	_r, _ := castAsStack(r)
-	slice, _ := _r.Pop()
-
+	slice, _ := r.cast().Pop()
 	if assert, ok := slice.(AttributeFilter); ok {
 		af = assert
 	}
@@ -873,8 +866,7 @@ func (r AttributeFilterOperation) Keyword() Keyword {
 Len wraps go-stackage's Stack.Len method.
 */
 func (r AttributeFilterOperation) Len() int {
-	_r, _ := castAsStack(r)
-	return _r.Len()
+	return r.cast().Len()
 }
 
 /*
@@ -883,9 +875,7 @@ Boolean OK value returned by go-stackage by default will be
 shadowed and not obtainable by the caller.
 */
 func (r AttributeFilterOperation) Index(idx int) (af AttributeFilter) {
-	_r, _ := castAsStack(r)
-	slice, _ := _r.Index(idx)
-
+	slice, _ := r.cast().Index(idx)
 	if assert, ok := slice.(AttributeFilter); ok {
 		af = assert
 	}
@@ -940,8 +930,7 @@ func (r AttributeFilterOperation) contains(x any) bool {
 IsZero wraps go-stackage's Stack.IsZero method.
 */
 func (r AttributeFilterOperation) IsZero() bool {
-	_r, _ := castAsStack(r)
-	return _r.IsZero()
+	return r.cast().IsZero()
 }
 
 /*
@@ -949,7 +938,7 @@ Valid returns an error if the receiver (or any of its contents) is
 in an aberrant state.
 */
 func (r AttributeFilterOperation) Valid() error {
-	if r.IsZero() {
+	if r.IsZero() || r.Len() == 0 {
 		return nilInstanceErr(r)
 	}
 
@@ -962,7 +951,7 @@ func (r AttributeFilterOperation) Valid() error {
 	// to deceive the package - use the
 	// actual go-stackage index caller so
 	// it won't discriminate types.
-	_r, _ := castAsStack(r)
+	_r := r.cast()
 	for i := 0; i < _r.Len(); i++ {
 		slice, _ := _r.Index(i)
 		assert, ok := slice.(AttributeFilter)
@@ -990,27 +979,22 @@ func (r AttributeFilterOperation) Kind() string {
 }
 
 func (r AttributeFilterOperation) getCategory() string {
-	_r, _ := castAsStack(r)
-	return _r.Category()
+	return r.cast().Category()
 }
 
 /*
 String is a stringer method that returns the string representation of
 the receiver instance.
 */
-func (r AttributeFilterOperation) String() string {
+func (r AttributeFilterOperation) String() (s string) {
 	if r.IsZero() {
-		return ``
+		return
 	}
-	_r, _ := castAsStack(r)
+	_r := r.cast()
 	_r.SetPresentationPolicy(nil)
-
-	f := _r.String()
-	o := r.Operation()
-
+	s = sprintf("%s=%s", r.Operation(), _r.String())
 	_r.SetPresentationPolicy(r.presentationPolicy)
-
-	return sprintf("%s=%s", o, f)
+	return
 }
 
 /*
@@ -1077,15 +1061,18 @@ func (r AttributeFilterOperation) TRM() TargetRuleMethods {
 /*
 AFO returns a freshly initialized instance of AttributeFilterOperation, configured
 to store one (1) or more AttributeFilter instances for the purpose of crafting
-TargetRule instances which bear the `targattrfilters` keyword context.
+TargetRule instances which bear the `targattrfilters` keyword context. Instances of
+this design are not generally needed outside of that context.
 
 Optionally, the caller may choose to submit one (1) or more (valid) instances of the
 AttributeFilter type (or its string equivalent) during initialization. This is merely
 a more convenient alternative to separate init and push procedures.
 
-Instances of this design are not generally needed elsewhere.
+Multiple values are automatically ANDed using stackage.And() using the symbolic AND
+operator (&&).
 
-Values are automatically ANDed using stackage.And() in symbol (&&) mode.
+See also the AttributeFilterOperations type, and its AFOs function, for the multi-valued
+incarnation of this type.
 */
 func AFO(x ...any) (f AttributeFilterOperation) {
 	// create a native stackage.Stack
@@ -1096,24 +1083,9 @@ func AFO(x ...any) (f AttributeFilterOperation) {
 		NoPadding(!StackPadding).
 		SetCategory(TargetAttrFilters.String())
 
-	// cast _f as a proper AttributeFilterOperation
-	// instance (f). We do it this way to gain
-	// access to the method for the *specific
-	// instance* being created (f), thus allowing
-	// a custom presentation policy to be set.
 	f = AttributeFilterOperation(_f)
-
-	// Set custom Presentation/Push policies
-	// per go-stackage signatures.
 	_f.SetPresentationPolicy(f.presentationPolicy).
 		SetPushPolicy(f.pushPolicy)
-
-	// Assuming one (1) or more items were
-	// submitted during the call, (try to)
-	// push them into our initialized stack.
-	// Note that any failed push(es) will
-	// have no impact on the validity of
-	// the return instance.
 	f.Push(x...)
 
 	return
@@ -1145,8 +1117,7 @@ func (r AttributeOperation) makeLabel() string {
 setCategory assigns the categorical string label (cat) to the receiver.
 */
 func (r AttributeFilterOperation) setCategory(cat string) {
-	nx, _ := castAsStack(r)
-	nx.SetCategory(cat)
+	r.cast().SetCategory(cat)
 }
 
 /*

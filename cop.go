@@ -24,7 +24,7 @@ value, the default go-stackage tag "<invalid_operator>" is returned.
 See the ComparisonOperator const definitions for details.
 */
 func (r ComparisonOperator) String() string {
-	return castAsCop(r).String()
+	return r.cast().String()
 }
 
 /*

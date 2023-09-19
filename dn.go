@@ -201,16 +201,14 @@ func (r TargetDistinguishedName) Keyword() Keyword {
 Valid wraps go-stackage's Stack.Valid method.
 */
 func (r BindDistinguishedNames) Valid() error {
-	_r, _ := castAsStack(r)
-	return _r.Valid()
+	return r.cast().Valid()
 }
 
 /*
 Valid wraps go-stackage's Stack.Valid method.
 */
 func (r TargetDistinguishedNames) Valid() error {
-	_r, _ := castAsStack(r)
-	return _r.Valid()
+	return r.cast().Valid()
 }
 
 /*
@@ -504,8 +502,7 @@ func newDistinguishedName(x string, kw Keyword) (d *distinguishedName) {
 }
 
 func (r BindDistinguishedNames) reset() {
-	_r, _ := castAsStack(r)
-	_r.Reset()
+	r.cast().Reset()
 }
 
 /*
@@ -515,12 +512,13 @@ func (r BindDistinguishedNames) resetKeyword(x any) {
 		return
 	}
 
-	_r, _ := castAsStack(r)
 	switch tv := x.(type) {
 	case BindKeyword:
 		r.resetKeyword(tv.String())
 
 	case string:
+		_r := r.cast()
+
 		switch lc(tv) {
 		case BindUDN.String():
 			_r.SetCategory(BindUDN.String()).
@@ -536,8 +534,7 @@ func (r BindDistinguishedNames) resetKeyword(x any) {
 }
 
 func (r TargetDistinguishedNames) reset() {
-	_r, _ := castAsStack(r)
-	_r.Reset()
+	r.cast().Reset()
 }
 
 /*
@@ -547,12 +544,12 @@ func (r TargetDistinguishedNames) resetKeyword(x any) {
 		return
 	}
 
-	_r, _ := castAsStack(r)
 	switch tv := x.(type) {
 	case TargetKeyword:
 		r.resetKeyword(tv.String())
 
 	case string:
+		_r := r.cast()
 
 		switch lc(tv) {
 		case Target.String():
@@ -707,7 +704,7 @@ setQuoteStyle shall set the receiver instance to the quotation
 scheme defined by integer i.
 */
 func (r BindDistinguishedNames) setQuoteStyle(style int) BindDistinguishedNames {
-	_r, _ := castAsStack(r)
+	_r := r.cast()
 	if _r.Len() < 2 {
 		_r.Encap() // not multivalued, force default
 		return r
@@ -727,7 +724,7 @@ setQuoteStyle shall set the receiver instance to the quotation
 scheme defined by integer i.
 */
 func (r TargetDistinguishedNames) setQuoteStyle(style int) TargetDistinguishedNames {
-	_r, _ := castAsStack(r)
+	_r := r.cast()
 	if _r.Len() < 2 {
 		_r.Encap() // not multivalued, force default
 		return r
@@ -1060,32 +1057,28 @@ func (r TargetDistinguishedNames) setExpressionValues(key Keyword, values ...str
 IsZero wraps go-stackage's Stack.IsZero method.
 */
 func (r BindDistinguishedNames) IsZero() bool {
-	_r, _ := castAsStack(r)
-	return _r.IsZero()
+	return r.cast().IsZero()
 }
 
 /*
 IsZero wraps go-stackage's Stack.IsZero method.
 */
 func (r TargetDistinguishedNames) IsZero() bool {
-	_r, _ := castAsStack(r)
-	return _r.IsZero()
+	return r.cast().IsZero()
 }
 
 /*
 Len wraps go-stackage's Stack.Len method.
 */
 func (r BindDistinguishedNames) Len() int {
-	_r, _ := castAsStack(r)
-	return _r.Len()
+	return r.cast().Len()
 }
 
 /*
 Len wraps go-stackage's Stack.Len method.
 */
 func (r TargetDistinguishedNames) Len() int {
-	_r, _ := castAsStack(r)
-	return _r.Len()
+	return r.cast().Len()
 }
 
 /*
@@ -1100,9 +1093,10 @@ func (r BindDistinguishedNames) Index(idx int) (b DistinguishedNameContext) {
 		ok     bool
 	)
 
-	if assert, ok = distinguishedNameIndex(r, idx).(BindDistinguishedName); ok {
+	y, _ := r.cast().Index(idx)
+	if assert, ok = y.(BindDistinguishedName); ok {
 		b = assert.(BindDistinguishedName)
-	} else if assert, ok = distinguishedNameIndex(r, idx).(LDAPURI); ok {
+	} else if assert, ok = y.(LDAPURI); ok {
 		b = assert.(LDAPURI)
 	}
 
@@ -1116,26 +1110,9 @@ shadowed and not obtainable by the caller.
 */
 func (r TargetDistinguishedNames) Index(idx int) (t TargetDistinguishedName) {
 	t = badTargetDN
-	if assert, ok := distinguishedNameIndex(r, idx).(TargetDistinguishedName); ok {
+	y, _ := r.cast().Index(idx)
+	if assert, ok := y.(TargetDistinguishedName); ok {
 		t = assert
-	}
-
-	return
-}
-
-/*
-distinguishedNameIndex is a private index function called through instances
-of BindDistinguishedName and TargetDistinguishedName.
-*/
-func distinguishedNameIndex(r any, idx int) (i any) {
-	_r, _ := castAsStack(r)
-	y, _ := _r.Index(idx)
-	if assert, ok := y.(BindDistinguishedName); ok {
-		i = assert
-	} else if assert2, ok2 := y.(TargetDistinguishedName); ok2 {
-		i = assert2
-	} else if assert3, ok3 := y.(LDAPURI); ok3 {
-		i = assert3
 	}
 
 	return
@@ -1148,8 +1125,7 @@ representation of the receiver instance.
 This method wraps go-stackage's Stack.String method.
 */
 func (r BindDistinguishedNames) String() string {
-	_r, _ := castAsStack(r)
-	return _r.String()
+	return r.cast().String()
 }
 
 /*
@@ -1159,8 +1135,7 @@ representation of the receiver instance.
 This method wraps go-stackage's Stack.String method.
 */
 func (r TargetDistinguishedNames) String() string {
-	_r, _ := castAsStack(r)
-	return _r.String()
+	return r.cast().String()
 }
 
 /*
@@ -1173,8 +1148,7 @@ func (r BindDistinguishedNames) Keyword() (kw Keyword) {
 		return
 	}
 
-	_r, _ := castAsStack(r)
-	switch _k := lc(_r.Category()); _k {
+	switch _k := lc(r.cast().Category()); _k {
 	case BindUDN.String():
 		kw = BindUDN
 	case BindGDN.String():
@@ -1217,8 +1191,7 @@ func (r TargetDistinguishedNames) Keyword() (kw Keyword) {
 		return
 	}
 
-	_r, _ := castAsStack(r)
-	switch _k := lc(_r.Category()); _k {
+	switch _k := lc(r.cast().Category()); _k {
 	case Target.String():
 		kw = Target
 	case TargetTo.String():
@@ -1260,7 +1233,6 @@ instance of BindDistinguishedName using the appropriate keyword,
 so long as the raw string is of a non-zero length.
 */
 func (r BindDistinguishedNames) Push(x ...any) BindDistinguishedNames {
-	_r, _ := castAsStack(r)
 	kw := r.Keyword()
 	if kw == nil {
 		// not initialized?!
@@ -1268,6 +1240,7 @@ func (r BindDistinguishedNames) Push(x ...any) BindDistinguishedNames {
 	}
 
 	// iterate variadic input arguments
+	_r := r.cast()
 	for i := 0; i < len(x); i++ {
 		// verify DN or URI value and (possibly) cast
 		// from string->type automatically.
@@ -1330,7 +1303,6 @@ instance of TargetDistinguishedName using the appropriate keyword,
 so long as the raw string is of a non-zero length.
 */
 func (r TargetDistinguishedNames) Push(x ...any) TargetDistinguishedNames {
-	_r, _ := castAsStack(r)
 	kw := r.Keyword()
 	if kw == nil {
 		// not initialized?!
@@ -1338,6 +1310,7 @@ func (r TargetDistinguishedNames) Push(x ...any) TargetDistinguishedNames {
 	}
 
 	// iterate variadic input arguments
+	_r := r.cast()
 	for i := 0; i < len(x); i++ {
 		// verify DN value and (possibly) cast from
 		// string->dn automatically.
@@ -1461,8 +1434,7 @@ Pop wraps go-stackage's Stack.Pop method and performs type
 assertion to return a proper BindDistinguishedName instance.
 */
 func (r BindDistinguishedNames) Pop() (popped BindDistinguishedName) {
-	_r, _ := castAsStack(r)
-	y, _ := _r.Pop()
+	y, _ := r.cast().Pop()
 	popped = badBindDN
 
 	if assert, asserted := y.(BindDistinguishedName); asserted {
@@ -1477,8 +1449,7 @@ Pop wraps go-stackage's Stack.Pop method and performs type
 assertion to return a proper TargetDistinguishedName instance.
 */
 func (r TargetDistinguishedNames) Pop() (popped TargetDistinguishedName) {
-	_r, _ := castAsStack(r)
-	y, _ := _r.Pop()
+	y, _ := r.cast().Pop()
 	popped = badTargetDN
 
 	if assert, asserted := y.(TargetDistinguishedName); asserted {

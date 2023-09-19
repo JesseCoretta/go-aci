@@ -264,7 +264,7 @@ shall be reused (perhaps in a repetative or looped manner), and if
 it would be desirable to 'wipe the slate clean' for some reason.
 */
 func (r *TargetRule) Init() TargetRule {
-	_r := castAsCondition(*r)
+	_r := r.cast()
 	if _r.IsZero() || !_r.IsInit() {
 		_r.Init()
 	}
@@ -279,18 +279,15 @@ auto-executes -- among other things -- the stackage.Condition.Init
 method.
 */
 func newTargetRule(kw, op, ex any) (t TargetRule) {
-
-	c := castAsCondition(t)
-	c.Init()
-	c.Encap(`"`).
+	t.Init()
+	t.SetKeyword(kw).
+		SetOperator(op).
+		SetExpression(ex).
+		cast().
+		Encap(`"`).
 		Paren(true).
 		SetID(targetRuleID).
 		NoPadding(!RulePadding)
-
-	t = TargetRule(c)
-	t.SetKeyword(kw)
-	t.SetOperator(op)
-	t.SetExpression(ex)
 
 	return
 }
@@ -304,8 +301,7 @@ func (r TargetRule) Valid() (err error) {
 		return
 	}
 
-	_t := castAsCondition(r)
-
+	_t := r.cast()
 	if !keywordAllowsComparisonOperator(_t.Keyword(), _t.Operator()) {
 		err = badPTBRuleKeywordErr(
 			_t, `target`, `target_keyword`,
@@ -358,13 +354,10 @@ func (r TargetRule) Category() string {
 }
 
 /*
-ID wraps go-stackage's Condition.ID method.
+ID returns the string literal `target`.
 */
 func (r TargetRule) ID() string {
-	if r.IsZero() {
-		return ``
-	}
-	return castAsCondition(r).ID()
+	return targetRuleID
 }
 
 /*
@@ -378,7 +371,7 @@ func (r TargetRule) String() string {
 		return ``
 	}
 
-	tr := castAsCondition(r)
+	tr := r.cast()
 	if !tr.IsParen() {
 		tr.Paren(true)
 	}
@@ -394,7 +387,7 @@ func (r TargetRule) NoPadding(state ...bool) TargetRule {
 		return r
 	}
 
-	castAsCondition(r).NoPadding(state...)
+	r.cast().NoPadding(state...)
 	return r
 }
 
@@ -440,7 +433,7 @@ func (r TargetRule) SetQuoteStyle(style int) TargetRule {
 			tv.setQuoteStyle(style)
 		}
 	default:
-		castAsCondition(r).Encap(`"`)
+		r.cast().Encap(`"`)
 		return r
 	}
 
@@ -457,9 +450,9 @@ func (r TargetRule) SetQuoteStyle(style int) TargetRule {
 	// will have the opposite setting imposed, which
 	// enables quotation for the individual values.
 	if style == MultivalSliceQuotes {
-		castAsCondition(r).Encap()
+		r.cast().Encap()
 	} else {
-		castAsCondition(r).Encap(`"`)
+		r.cast().Encap(`"`)
 	}
 
 	return r
@@ -470,7 +463,7 @@ func (r TargetRule) SetQuoteStyle(style int) TargetRule {
 SetKeyword wraps go-stackage's Condition.SetKeyword method.
 */
 func (r TargetRule) SetKeyword(kw any) TargetRule {
-	castAsCondition(r).SetKeyword(kw)
+	r.cast().SetKeyword(kw)
 	return r
 }
 
@@ -506,13 +499,13 @@ func (r TargetRule) SetOperator(op any) TargetRule {
 	}
 
 	// not initialized? bail out
-	if !castAsCondition(r).IsInit() {
+	if !r.cast().IsInit() {
 		return r
 	}
 
 	// cast to stackage.Condition and
 	// set operator value.
-	castAsCondition(r).SetOperator(cop)
+	r.cast().SetOperator(cop)
 
 	return r
 }
@@ -521,7 +514,7 @@ func (r TargetRule) SetOperator(op any) TargetRule {
 SetExpression wraps go-stackage's Condition.SetExpression method.
 */
 func (r TargetRule) SetExpression(expr any) TargetRule {
-	cac := castAsCondition(r)
+	cac := r.cast()
 	if !cac.IsInit() {
 		cac.Init()
 	}
@@ -537,8 +530,7 @@ resolves the raw value into a TargetKeyword. Failure to do
 so will return a bogus Keyword.
 */
 func (r TargetRule) Keyword() Keyword {
-	k := castAsCondition(r).Keyword()
-	var kw any = matchTKW(k)
+	var kw any = matchTKW(r.cast().Keyword())
 	return kw.(TargetKeyword)
 }
 
@@ -546,21 +538,21 @@ func (r TargetRule) Keyword() Keyword {
 Operator wraps go-stackage's Condition.Operator method.
 */
 func (r TargetRule) Operator() ComparisonOperator {
-	return castCop(castAsCondition(r).Operator())
+	return castCop(r.cast().Operator())
 }
 
 /*
 Expression wraps go-stackage's Condition.Expression method.
 */
 func (r TargetRule) Expression() any {
-	return castAsCondition(r).Expression()
+	return r.cast().Expression()
 }
 
 /*
 IsZero wraps go-stackage's Condition.IsZero method.
 */
 func (r TargetRule) IsZero() bool {
-	return castAsCondition(r).IsZero()
+	return r.cast().IsZero()
 }
 
 /*
@@ -663,16 +655,14 @@ representation of the receiver instance.
 This method wraps go-stackage's Stack.String method.
 */
 func (r TargetRules) String() string {
-	_t, _ := castAsStack(r)
-	return _t.String()
+	return r.cast().String()
 }
 
 /*
 IsZero wraps go-stackage's Stack.IsZero method.
 */
 func (r TargetRules) IsZero() bool {
-	_t, _ := castAsStack(r)
-	return _t.IsZero()
+	return r.cast().IsZero()
 }
 
 /*
@@ -683,9 +673,7 @@ func (r TargetRules) reset() {
 	if r.IsZero() {
 		return
 	}
-
-	_t, _ := castAsStack(r)
-	_t.Reset()
+	r.cast().Reset()
 }
 
 /*
@@ -699,20 +687,14 @@ func (r TargetRules) Category() string {
 Len wraps go-stackage's Stack.Len method.
 */
 func (r TargetRules) Len() int {
-	_t, _ := castAsStack(r)
-	return _t.Len()
+	return r.cast().Len()
 }
 
 /*
 Push wraps go-stackage's Stack.Push method.
 */
 func (r TargetRules) Push(x ...any) TargetRules {
-	_r, _ := castAsStack(r)
-	// iterate variadic input arguments
-	for i := 0; i < len(x); i++ {
-		_r.Push(x[i])
-	}
-
+	r.cast().Push(x...)
 	return r
 }
 
@@ -724,9 +706,7 @@ Within the context of the receiver type, a RuleContext, if
 non-nil, can only represent a TargetRule instance.
 */
 func (r TargetRules) Pop() TargetRule {
-	_r, _ := castAsStack(r)
-	x, _ := _r.Pop()
-
+	x, _ := r.cast().Pop()
 	assert, _ := x.(TargetRule)
 	return assert
 }
@@ -735,8 +715,7 @@ func (r TargetRules) Pop() TargetRule {
 remove wraps go-stackage's Stack.Remove method.
 */
 func (r TargetRules) remove(idx int) bool {
-	_t, _ := castAsStack(r)
-	_, ok := _t.Remove(idx)
+	_, ok := r.cast().Remove(idx)
 	return ok
 }
 
@@ -744,9 +723,7 @@ func (r TargetRules) remove(idx int) bool {
 Index wraps go-stackage's Stack.Index method.
 */
 func (r TargetRules) Index(idx int) TargetRule {
-	_r, _ := castAsStack(r)
-	y, _ := _r.Index(idx)
-
+	y, _ := r.cast().Index(idx)
 	assert, _ := y.(TargetRule)
 	return assert
 }
@@ -755,19 +732,20 @@ func (r TargetRules) Index(idx int) TargetRule {
 ReadOnly wraps go-stackage's Stack.ReadOnly method.
 */
 func (r TargetRules) ReadOnly(state ...bool) TargetRules {
-	_t, _ := castAsStack(r)
-	_t.ReadOnly(state...)
+	r.cast().ReadOnly(state...)
 	return r
 }
 
 /*
-NoPadding wraps go-stackage's Stack.NoPadding method.
+NoPadding sets the delimiter to a SPACE (ASCII #32 ) or to
+a zero-string depending on the state input.
 */
 func (r TargetRules) NoPadding(state ...bool) TargetRules {
-	_t, _ := castAsStack(r)
+	_t := r.cast()
 	if !_t.IsInit() {
 		return badTargetRules
 	}
+
 	var st bool = false
 	if len(state) == 0 {
 		if len(_t.Delimiter()) != 0 {
@@ -787,8 +765,7 @@ func (r TargetRules) NoPadding(state ...bool) TargetRules {
 Valid wraps go-stackage's Stack.Valid method.
 */
 func (r TargetRules) Valid() (err error) {
-	_t, _ := castAsStack(r)
-	err = _t.Valid()
+	err = r.cast().Valid()
 	return
 }
 

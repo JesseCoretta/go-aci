@@ -782,10 +782,9 @@ func assertTargetAttrFilters(expr parser.RuleExpression) (ex AttributeFilterOper
 		// Still nothing? Try AttributeFilterOperation (whether
 		// multivalued or not).
 		var afo AttributeFilterOperation
-		if afo, err = parseAttributeFilterOperation(value); err != nil {
-			return
+		if afo, err = parseAttributeFilterOperation(value); err == nil {
+			ex = AFOs(afo)
 		}
-		ex = AFOs(afo)
 
 	} else {
 		// The only other thing it could be is a bare AttributeFilter.

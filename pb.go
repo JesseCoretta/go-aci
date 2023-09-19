@@ -200,8 +200,7 @@ func (r PermissionBindRule) string() (s string) {
 Valid wraps go-stackage's Stack.Valid method.
 */
 func (r PermissionBindRules) Valid() (err error) {
-	_t, _ := castAsStack(r)
-	err = _t.Valid()
+	err = r.cast().Valid()
 	return
 }
 
@@ -209,16 +208,14 @@ func (r PermissionBindRules) Valid() (err error) {
 IsZero wraps go-stackage's Stack.IsZero method.
 */
 func (r PermissionBindRules) IsZero() bool {
-	_r, _ := castAsStack(r)
-	return _r.IsZero()
+	return r.cast().IsZero()
 }
 
 /*
 Len wraps go-stackage's Stack.Len method.
 */
 func (r PermissionBindRules) Len() int {
-	_r, _ := castAsStack(r)
-	return _r.Len()
+	return r.cast().Len()
 }
 
 /*
@@ -233,9 +230,7 @@ Index wraps go-stackage's Stack.Index method and performs type
 assertion in order to return an instance of PermissionBindRule.
 */
 func (r PermissionBindRules) Index(idx int) (pbr PermissionBindRule) {
-	_r, _ := castAsStack(r)
-	x, _ := _r.Index(idx)
-
+	x, _ := r.cast().Index(idx)
 	if assert, asserted := x.(PermissionBindRule); asserted {
 		pbr = assert
 	}
@@ -250,8 +245,7 @@ representation of the receiver instance.
 This method wraps go-stackage's Stack.String method.
 */
 func (r PermissionBindRules) String() string {
-	_r, _ := castAsStack(r)
-	return _r.String()
+	return r.cast().String()
 }
 
 /*
@@ -266,7 +260,7 @@ func (r PermissionBindRules) Compare(x any) bool {
 Push wraps go-stackage's Stack.Push method.
 */
 func (r PermissionBindRules) Push(x ...any) PermissionBindRules {
-	_r, _ := castAsStack(r)
+	_r := r.cast()
 
 	// iterate variadic input arguments
 	for i := 0; i < len(x); i++ {
@@ -295,9 +289,7 @@ Within the context of the receiver type, a PermissionBindRule,
 if non-nil, can only represent a PermissionBindRule instance.
 */
 func (r PermissionBindRules) Pop() (pbr PermissionBindRule) {
-	_r, _ := castAsStack(r)
-	x, _ := _r.Pop()
-
+	x, _ := r.cast().Pop()
 	if assert, ok := x.(PermissionBindRule); ok {
 		pbr = assert
 	}

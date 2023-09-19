@@ -314,8 +314,7 @@ func (r ObjectIdentifiers) TRM() TargetRuleMethods {
 IsZero wraps go-stackage's Stack.IsZero method.
 */
 func (r ObjectIdentifiers) IsZero() bool {
-	_r, _ := castAsStack(r)
-	return _r.IsZero()
+	return r.cast().IsZero()
 }
 
 /*
@@ -334,8 +333,7 @@ func (r ObjectIdentifiers) Valid() (err error) {
 Len wraps go-stackage's Stack.Len method.
 */
 func (r ObjectIdentifiers) Len() int {
-	_r, _ := castAsStack(r)
-	return _r.Len()
+	return r.cast().Len()
 }
 
 /*
@@ -344,9 +342,7 @@ Boolean OK value returned by go-stackage by default will be
 shadowed and not obtainable by the caller.
 */
 func (r ObjectIdentifiers) Index(idx int) (x ObjectIdentifier) {
-	_r, _ := castAsStack(r)
-	y, _ := _r.Index(idx)
-
+	y, _ := r.cast().Index(idx)
 	if assert, ok := y.(ObjectIdentifier); ok {
 		x = assert
 	}
@@ -362,8 +358,7 @@ representation of the receiver instance.
 This method wraps go-stackage's Stack.String method.
 */
 func (r ObjectIdentifiers) String() string {
-	_r, _ := castAsStack(r)
-	return _r.String()
+	return r.cast().String()
 }
 
 /*
@@ -378,13 +373,13 @@ func (r ObjectIdentifiers) Compare(x any) bool {
 Push wraps go-stackage's Stack.Push method.
 */
 func (r ObjectIdentifiers) Push(x ...any) ObjectIdentifiers {
-	_r, _ := castAsStack(r)
+	_r := r.cast()
 
 	for i := 0; i < len(x); i++ {
 		switch tv := x[i].(type) {
 		case string:
 			_r.Push(r.F()(tv))
-		case ObjectIdentifier:
+		default:
 			_r.Push(tv)
 		}
 	}
@@ -449,9 +444,7 @@ func (r ObjectIdentifiers) contains(x any) bool {
 Pop wraps go-stackage's Stack.Pop method.
 */
 func (r ObjectIdentifiers) Pop() (x ObjectIdentifier) {
-	_r, _ := castAsStack(r)
-	y, _ := _r.Pop()
-
+	y, _ := r.cast().Pop()
 	if assert, asserted := y.(ObjectIdentifier); asserted {
 		x = assert
 	}
@@ -464,7 +457,7 @@ setQuoteStyle shall set the receiver instance to the quotation
 scheme defined by integer i.
 */
 func (r ObjectIdentifiers) setQuoteStyle(style int) ObjectIdentifiers {
-	_r, _ := castAsStack(r)
+	_r := r.cast()
 	if _r.Len() < 2 {
 		_r.Encap() // not multivalued, force default
 		return r
@@ -578,8 +571,7 @@ func (r ObjectIdentifiers) F() func(...any) ObjectIdentifier {
 }
 
 func (r ObjectIdentifiers) reset() {
-	_r, _ := castAsStack(r)
-	_r.Reset()
+	r.cast().Reset()
 }
 
 func (r ObjectIdentifiers) resetKeyword(x any) {
@@ -592,7 +584,7 @@ func (r ObjectIdentifiers) resetKeyword(x any) {
 		r.resetKeyword(tv.String())
 
 	case string:
-		_r, _ := castAsStack(r)
+		_r := r.cast()
 
 		switch lc(tv) {
 		case TargetExtOp.String():
@@ -763,8 +755,7 @@ func (r ObjectIdentifiers) ID() string {
 		return ``
 	}
 
-	_t, _ := castAsStack(r)
-	return _t.ID()
+	return r.cast().ID()
 }
 
 /*
@@ -775,8 +766,8 @@ func (r ObjectIdentifiers) Kind() (k string) {
 	if r.IsZero() {
 		return
 	}
-	_r, _ := castAsStack(r)
-	switch _k := lc(_r.Category()); _k {
+
+	switch _k := lc(r.cast().Category()); _k {
 	case TargetExtOp.String(),
 		TargetCtrl.String():
 		k = _k

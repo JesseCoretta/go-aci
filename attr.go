@@ -595,8 +595,7 @@ func (r AttributeTypes) Compare(x any) bool {
 }
 
 func (r AttributeTypes) reset() {
-	_r, _ := castAsStack(r)
-	_r.Reset()
+	r.cast().Reset()
 }
 
 func (r AttributeTypes) resetKeyword(x any) {
@@ -609,8 +608,7 @@ func (r AttributeTypes) resetKeyword(x any) {
 		r.resetKeyword(tv.String())
 
 	case string:
-		_r, _ := castAsStack(r)
-
+		_r := r.cast()
 		switch lc(tv) {
 		case TargetAttr.String():
 			_r.SetCategory(lc(tv)).
@@ -686,7 +684,7 @@ setQuoteStyle shall set the receiver instance to the quotation
 scheme defined by integer i.
 */
 func (r AttributeTypes) setQuoteStyle(style int) AttributeTypes {
-	_r, _ := castAsStack(r)
+	_r := r.cast()
 	if _r.Len() < 2 {
 		_r.Encap() // not multivalued, force default
 		return r
@@ -705,16 +703,14 @@ func (r AttributeTypes) setQuoteStyle(style int) AttributeTypes {
 IsZero wraps go-stackage's Stack.IsZero method.
 */
 func (r AttributeTypes) IsZero() bool {
-	_r, _ := castAsStack(r)
-	return _r.IsZero()
+	return r.cast().IsZero()
 }
 
 /*
 Len wraps go-stackage's Stack.Len method.
 */
 func (r AttributeTypes) Len() int {
-	_r, _ := castAsStack(r)
-	return _r.Len()
+	return r.cast().Len()
 }
 
 /*
@@ -723,9 +719,7 @@ Boolean OK value returned by go-stackage by default will be
 shadowed and not obtainable by the caller.
 */
 func (r AttributeTypes) Index(idx int) (x AttributeType) {
-	_r, _ := castAsStack(r)
-	z, _ := _r.Index(idx)
-
+	z, _ := r.cast().Index(idx)
 	if assert, asserted := z.(AttributeType); asserted {
 		x = assert
 	}
@@ -740,8 +734,7 @@ representation of the receiver instance.
 This method wraps go-stackage's Stack.String method.
 */
 func (r AttributeTypes) String() string {
-	_r, _ := castAsStack(r)
-	return _r.String()
+	return r.cast().String()
 }
 
 /*
@@ -752,8 +745,7 @@ func (r AttributeTypes) Kind() string {
 	if r.IsZero() {
 		return `<uninitialized>`
 	}
-	_r, _ := castAsStack(r)
-	return _r.Category()
+	return r.cast().Category()
 }
 
 /*
@@ -786,18 +778,16 @@ transfer will "copy" all slice references from the receiver
 instance into dest instance. PushPolicy controls may apply.
 */
 func (r AttributeTypes) transfer(dest AttributeTypes) {
-	_r, _ := castAsStack(r)
-	_dest, _ := castAsStack(dest)
-	_r.Transfer(_dest)
+	_r := r.cast()
+	_d := dest.cast()
+	_r.Transfer(_d)
 }
 
 /*
 Pop wraps go-stackage's Stack.Pop method.
 */
 func (r AttributeTypes) Pop() (x AttributeType) {
-	_r, _ := castAsStack(r)
-
-	z, _ := _r.Pop()
+	z, _ := r.cast().Pop()
 	if assert, asserted := z.(AttributeType); asserted {
 		x = assert
 	}
@@ -812,21 +802,15 @@ it is automatically cast as an instance of AttributeType, so
 long as the raw string is of a non-zero length.
 */
 func (r AttributeTypes) Push(x ...any) AttributeTypes {
-	_r, _ := castAsStack(r)
-
+	_r := r.cast()
 	for i := 0; i < len(x); i++ {
 		switch tv := x[i].(type) {
 		case string:
-			if len(tv) != 0 {
-				_r.Push(AT(tv))
-			}
-		case AttributeType:
-			if !tv.IsZero() {
-				_r.Push(tv)
-			}
+			_r.Push(AT(tv))
+		default:
+			_r.Push(tv)
 		}
 	}
-
 	return r
 }
 
@@ -914,42 +898,24 @@ TAs returns a freshly initialized instance of AttributeTypes, configured to
 store one (1) or more AttributeType instances for the purpose of TargetRule
 expression when using the `targetattr` keyword context.
 
-Optionally, the caller may choose to submit one (1) or more (valid) instances of the
-AttributeType type (or its string equivalent) during initialization. This is merely
-a more convenient alternative to separate initialization and push procedures.
+Optionally, the caller may choose to submit one (1) or more (valid) instances
+of the AttributeType type (or its string equivalent) during initialization.
+This is merely a more convenient alternative to separate initialization and
+push procedures.
 
-Values are automatically delimited using stackage.Stack.Symbol(`||`) in an
-ORed Boolean stack.
+Values are automatically delimited using stackage.Stack's Symbol method using
+the symbolic OR operator (`||`).
 */
 func TAs(x ...any) (a AttributeTypes) {
-	// create a native stackage.Stack
-	// and configure before typecast.
 	_a := stackOr().
 		Symbol(`||`).
 		NoNesting(true).
 		SetID(targetRuleID).
 		NoPadding(!StackPadding).
-		SetCategory(TargetAttr.String())
+		SetCategory(TargetAttr.String()).
+		SetPushPolicy(a.pushPolicy)
 
-	// cast _a as a proper AttributeTypes
-	// instance (a). We do it this way to
-	// gain access to the method for the
-	// *specific instance* being created (a),
-	// thus allowing things like uniqueness
-	// checks, etc., to occur during push
-	// attempts, providing more helpful
-	// and non-generalized feedback.
-	a = AttributeTypes(_a)
-	_a.SetPushPolicy(a.pushPolicy)
-
-	// Assuming one (1) or more items were
-	// submitted during the call, (try to)
-	// push them into our initialized stack.
-	// Note that any failed push(es) will
-	// have no impact on the validity of
-	// the return instance.
-	a.Push(x...)
-
+	a = AttributeTypes(_a).Push(x...)
 	return
 }
 
@@ -959,41 +925,23 @@ to store one (1) or more AttributeType instances for the purpose of LDAP
 Search URI specification of desired AttributeType names. Instances of
 this design are not generally needed elsewhere.
 
-Optionally, the caller may choose to submit one (1) or more (valid) instances of the
-AttributeType type (or its string equivalent) during initialization. This is merely
-a more convenient alternative to separate initialization and push procedures.
+Optionally, the caller may choose to push one (1) or more (valid) instances
+of the AttributeType type (or its string equivalent) during initialization.
+This is merely a more convenient alternative to separate initialization and
+push procedures.
 
-Values are automatically comma-delimited using stackage.Stack.SetDelimiter
-in List mode.
+Values are automatically comma-delimited (ASCII #44) using stackage.Stack's
+SetDelimiter method in List mode.
 */
 func UAs(x ...any) (a AttributeTypes) {
-	// create a native stackage.Stack
-	// and configure before typecast.
 	_a := stackList().
 		NoNesting(true).
-		SetID(bindRuleID).
-		SetDelimiter(rune(44)).
 		NoPadding(true).
-		SetCategory(`<uri_search_attributes>`) // URIs qualify for a few different KWs.
+		SetID(targetRuleID).
+		SetDelimiter(rune(44)).
+		SetCategory(`<uri_search_attributes>`). // URIs qualify for a few different KWs.
+		SetPushPolicy(a.pushPolicy)
 
-	// cast _a as a proper AttributeTypes
-	// instance (a). We do it this way to
-	// gain access to the method for the
-	// *specific instance* being created (a),
-	// thus allowing things like uniqueness
-	// checks, etc., to occur during push
-	// attempts, providing more helpful
-	// and non-generalized feedback.
-	a = AttributeTypes(_a)
-	_a.SetPushPolicy(a.pushPolicy)
-
-	// Assuming one (1) or more items were
-	// submitted during the call, (try to)
-	// push them into our initialized stack.
-	// Note that any failed push(es) will
-	// have no impact on the validity of
-	// the return instance.
-	a.Push(x...)
-
+	a = AttributeTypes(_a).Push(x...)
 	return
 }
