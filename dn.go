@@ -1001,11 +1001,11 @@ func (r BindDistinguishedNames) setExpressionValues(key Keyword, values ...strin
 		// syntax. If positive, push it and skip ahead.
 		if hasPfx(values[i], LocalScheme) && contains(values[i], `?`) {
 			var U LDAPURI
-			if U, err = parseLDAPURI(values[i], key.(BindKeyword)); err != nil {
-				return
+			if U, err = parseLDAPURI(values[i], key.(BindKeyword)); err == nil {
+				r.Push(U)
+				continue
 			}
-			r.Push(U)
-			continue
+			break
 		}
 
 		//
