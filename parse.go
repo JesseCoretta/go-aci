@@ -308,13 +308,11 @@ func assertBindUGRDN(expr parser.RuleExpression, key BindKeyword) (ex any, err e
 	// Assign the raw (DN) values to the
 	// return value. If nothing was found,
 	// bail out now.
-	if err = bdn.setExpressionValues(key, expr.Values...); err != nil {
-		return
+	if err = bdn.setExpressionValues(key, expr.Values...); err == nil {
+		// Envelope our DN stack within an
+		// 'any' instance, which is returned.
+		ex = bdn
 	}
-
-	// Envelope our DN stack within an
-	// 'any' instance, which is returned.
-	ex = bdn
 
 	return
 }
@@ -923,48 +921,45 @@ func parsePermissionBindRule(raw string) (PermissionBindRule, error) {
 	return processPermissionBindRule(pbr)
 }
 
-func processPermissionBindRule(pbr parser.PermissionBindRule) (PermissionBindRule, error) {
-	perm, err := unpackageAntlrPermission(pbr.P)
-	if err != nil {
-		return badPermissionBindRule, err
+func processPermissionBindRule(_pbr parser.PermissionBindRule) (pbr PermissionBindRule, err error) {
+	var perm *permission
+	pbr = badPermissionBindRule
+	if perm, err = unpackageAntlrPermission(_pbr.P); err == nil {
+		// traverse the native stackage.Stack instance returned
+		// by antlraci and marshal its contents into proper
+		// BindRule/BindRules instances, etc.
+		rules, ok := convertBindRulesHierarchy(_pbr.B)
+		err = parseBindRulesHierErr(_pbr.B, rules)
+		if ok {
+			err = nil
+			pbr = PermissionBindRule{
+				&permissionBindRule{
+					P: Permission{perm},
+					B: rules,
+				},
+			}
+		}
 	}
 
-	// traverse the native stackage.Stack instance returned
-	// by antlraci and marshal its contents into proper
-	// BindRule/BindRules instances, etc.
-	rules, ok := convertBindRulesHierarchy(pbr.B)
-	if !ok {
-		return badPermissionBindRule, parseBindRulesHierErr(pbr.B, rules)
-	}
-
-	return PermissionBindRule{
-		&permissionBindRule{
-			P: Permission{perm},
-			B: rules,
-		},
-	}, nil
+	return
 }
 
-func processPermissionBindRules(stack any) (PermissionBindRules, error) {
-	var err error
-
+func processPermissionBindRules(stack any) (pbrs PermissionBindRules, err error) {
 	_pbrs, _ := castAsStack(stack)
-	var pbrs PermissionBindRules = PBRs()
+	pbrs = PBRs()
+
 	for i := 0; i < _pbrs.Len(); i++ {
 		slice, _ := _pbrs.Index(i)
-		_pbr, asserted := slice.(parser.PermissionBindRule)
-		var pbr PermissionBindRule
-		if asserted {
-			pbr, err = processPermissionBindRule(_pbr)
+		if _pbr, asserted := slice.(parser.PermissionBindRule); asserted {
+			var pbr PermissionBindRule
+			if pbr, err = processPermissionBindRule(_pbr); err != nil {
+				break
+			}
+			pbrs.Push(pbr)
 		}
-
-		if err != nil {
-			return badPermissionBindRules, err
-		}
-		pbrs.Push(pbr)
 	}
 
-	return pbrs, nil
+	return
 }
 
 /*
@@ -1048,12 +1043,10 @@ func (r *Instruction) Parse(raw string) (err error) {
 		p,
 	)
 
-	if err = _i.Valid(); err != nil {
-		return
+	if err = _i.Valid(); err == nil {
+		// clobber receiver
+		*r = _i
 	}
-
-	// clobber receiver
-	*r = _i
 
 	return
 }
