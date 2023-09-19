@@ -643,27 +643,10 @@ func (r AttributeFilterOperations) IsZero() bool {
 }
 
 /*
-Valid returns an error if the receiver is in an aberrant state.
+Valid wraps go-stackage's Stack.Valid method.
 */
 func (r AttributeFilterOperations) Valid() error {
-	if r.IsZero() {
-		return nilInstanceErr(r)
-	}
-
-	// assume the object has been fashioned
-	// to deceive the package - use the
-	// actual go-stackage index caller so
-	// it won't discriminate types.
-	_r := r.cast()
-	for i := 0; i < _r.Len(); i++ {
-		slice, _ := _r.Index(i)
-		assert, _ := slice.(AttributeFilterOperation)
-		if err := assert.Valid(); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return r.cast().Valid()
 }
 
 /*
@@ -753,7 +736,7 @@ func (r AttributeFilterOperations) pushPolicy(x ...any) (err error) {
 		// because codecov :/
 		xerr := tv.Valid()
 		err = pushErrorNilOrZero(r, tv, TargetAttrFilters, xerr)
-		if xerr == nil {
+		if xerr == nil && tv.Len() > 0 {
 			err = nil
 		}
 	default:
@@ -948,29 +931,10 @@ func (r AttributeFilterOperation) IsZero() bool {
 }
 
 /*
-Valid returns an error if the receiver (or any of its contents) is
-in an aberrant state.
+Valid wraps go-stackage's Stack.Valid method.
 */
 func (r AttributeFilterOperation) Valid() (err error) {
-	if r.IsZero() || r.Len() == 0 {
-		err = nilInstanceErr(r)
-		return
-	}
-
-	// assume the object has been fashioned
-	// to deceive the package - use the
-	// actual go-stackage index caller so
-	// it won't discriminate types.
-	_r := r.cast()
-	for i := 0; i < _r.Len(); i++ {
-		slice, _ := _r.Index(i)
-		assert, _ := slice.(AttributeFilter)
-		if err = assert.Valid(); err != nil {
-			break
-		}
-	}
-
-	return
+	return r.cast().Valid()
 }
 
 /*
