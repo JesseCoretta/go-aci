@@ -108,8 +108,9 @@ func (r Inheritance) Valid() (err error) {
 		return nilInstanceErr(r)
 	}
 
-	if r.inheritance.AttributeBindTypeOrValue.IsZero() {
-		err = nilInstanceErr(r.inheritance.AttributeBindTypeOrValue)
+	err = nilInstanceErr(r.inheritance.AttributeBindTypeOrValue)
+	if !r.inheritance.AttributeBindTypeOrValue.IsZero() {
+		err = nil
 	}
 
 	return
@@ -526,20 +527,13 @@ func (r Levels) positive(x any) (posi bool) {
 	var lvl Level
 	switch tv := x.(type) {
 	case Level:
-		if tv == noLvl {
-			return
+		if tv != noLvl {
+			lvl = tv
 		}
-		lvl = tv
 	case int:
-		if lvl = assertIntInheritance(tv); lvl == noLvl {
-			return
-		}
+		lvl = assertIntInheritance(tv)
 	case string:
-		if lvl = assertStrInheritance(tv); lvl == noLvl {
-			return
-		}
-	default:
-		return
+		lvl = assertStrInheritance(tv)
 	}
 
 	posi = (r & Levels(lvl)) > 0
