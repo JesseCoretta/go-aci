@@ -249,8 +249,9 @@ func TestLevels_bogus(t *testing.T) {
 	_ = l1.String()
 	_ = l1.Positive(noLvl)
 	_ = l1.Positive(Level8)
-	_ = l1.Positive(8)
-	_ = l1.Positive(`8`)
+	_ = l1.positive(8)
+	_ = l1.positive(`1`)
+	_ = l1.positive(`this`)
 
 	var inh Inheritance
 	if err := inh.Valid(); err == nil {
@@ -353,7 +354,7 @@ func TestInheritance_parse(t *testing.T) {
 
 func TestInheritance_codecov(t *testing.T) {
 	var inh Inheritance
-	_ = inh.Levels()
+	_ = inh.Levels().Positive(`4`)
 	_ = inh.Keyword()
 	_ = inh.String()
 	_ = inh.Shift(1370)
@@ -367,6 +368,8 @@ func TestInheritance_codecov(t *testing.T) {
 	_ = inh.Positive(`fart`)
 	_ = inh.Positive(100000)
 	_ = inh.Positive(-1)
+	_ = inh.Levels().Positive(4)
+	_ = inh.Levels().Positive("something awful")
 	_ = inh.Positive(Level(^uint16(0)))
 	_ = inh.Positive(3.14159)
 }
