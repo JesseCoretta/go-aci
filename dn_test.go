@@ -134,7 +134,7 @@ func TestTargetDistinguishedName_codecov(t *testing.T) {
 			}
 
 			O.Set(`159`)
-			O.Set(``)
+			O.Set(`_`)
 			_ = O.Valid()
 			O.Set(`#barf`, kw)
 
