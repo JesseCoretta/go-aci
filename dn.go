@@ -1539,32 +1539,25 @@ handles any type of DN/URI.
 func distinguishedNamesPushPolicy(r, x any, kw Keyword) (err error) {
 	switch tv := x.(type) {
 
-	case string:
-		if len(tv) == 0 {
-			err = pushErrorNilOrZero(r, tv, kw)
-		}
-
 	case Keyword:
 		distinguishedNamesPushPolicyKeywordHandler(r, kw)
 
 	case LDAPURI:
-		if kw.Kind() != bindRuleID {
-			err = errorf("Only DN or value-matching %s rule conditions may contain %T instances",
-				kw.Kind(), tv)
-		} else {
+		err = errorf("Only DN or value-matching %s rule conditions may contain %T instances", kw.Kind(), tv)
+		if kw.Kind() == bindRuleID {
 			err = tv.Valid()
 		}
 
 	case DistinguishedNameContext:
-		if tv.IsZero() {
-			err = pushErrorNilOrZero(r, tv, kw)
-
-		} else if tv.Keyword() != kw {
+		err = pushErrorNilOrZero(r, tv, kw)
+		if !tv.IsZero() {
 			err = badPTBRuleKeywordErr(tv, kw.Kind(), kw, tv.Keyword())
+			if tv.Keyword() == kw {
+				err = nil
+			}
 		}
-
 	default:
-		err = pushErrorBadType(r, tv, kw)
+		err = pushErrorBadType(r, x, kw)
 	}
 
 	return
