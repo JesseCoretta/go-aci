@@ -610,9 +610,6 @@ func (r *timeOfDay) isZero() bool {
 }
 
 func (r *timeOfDay) set(t any) {
-	if r.isZero() {
-		r = new(timeOfDay)
-	}
 	assertToD(r, t)
 }
 
@@ -628,10 +625,9 @@ func assertToD(r *timeOfDay, t any) {
 	case time.Time:
 		// time.Time input results in a recursive
 		// run of this method.
-		if tv.IsZero() {
-			break
+		if !tv.IsZero() {
+			r.set(sprintf("%02d%02d", tv.Hour(), tv.Minute()))
 		}
-		r.set(sprintf("%02d%02d", tv.Hour(), tv.Minute()))
 	case string:
 		// Handle discrepancy between ACI time, which ends
 		// at 2400, and Golang Time, which ends at 2359.
