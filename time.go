@@ -255,10 +255,8 @@ String is a stringer method that returns the string representation of the receiv
 instance. At least one Day's bits should register as positive in order for a valid
 string return to ensue.
 */
-func (r DayOfWeek) String() string {
-	if r.IsZero() {
-		return badDoW
-	}
+func (r DayOfWeek) String() (s string) {
+	s = badDoW
 
 	var dows []string
 	for i := 0; i < bitSize(noDay); i++ {
@@ -268,11 +266,11 @@ func (r DayOfWeek) String() string {
 		}
 	}
 
-	if len(dows) == 0 {
-		return badDoW
+	if len(dows) > 0 {
+		s = join(dows, `,`)
 	}
 
-	return join(dows, `,`)
+	return
 }
 
 /*
