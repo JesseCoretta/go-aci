@@ -842,49 +842,6 @@ func unpackageAntlrPermission(perm parser.Permission) (*permission, error) {
 		Right: new(Right), // rights specifiers (ptr to uint8 alias)
 	}
 
-	// !! WARNING - EXTREME SECURITY RISK !!
-	//
-	// A disposition has two (2) official settings and, thus,
-	// is considered to be a MuTeX:
-	//
-	// - allow, which is expressed through a bool value of true
-	// - deny, which is expressed through a bool value of false
-	//
-	// Ones initial thinking might lead to the conclusion that
-	// a default of false is perfectly fine. But it shouldn't
-	// take long for them to rethink that position, given the
-	// following expression (or similar):
-	//
-	//   deny(none)
-	//
-	// Given the right (or wrong?) context, this could be bad.
-	// Really, really bad. The above expression could return
-	// as a result of parsing an instruction if a bogus, or
-	// outright absent disposition was perceived and (as a
-	// result of this failure) the default "Rights" specifiers
-	// default to "none", which is only logical, right?
-	//
-	// BUT, because Golang (and most languages) defines implicit
-	// defaults for certain types -- such as 0 for int and false
-	// for bool -- any default is a bad idea here.
-	//
-	// Therefore a POINTER to a bool is used, both here in go-aci
-	// AND within its sister package go-antlraci. go-antlraci will
-	// evaluate/set the pointer using a double MuTeX case statement,
-	// which allows only specific mutual-exclusion permutations that
-	// are certain to avoid the above scenario.
-	//
-	// The ultimate disposition decision made by go-antlraci in this
-	// case can be trusted, so long as the imported build is not some
-	// fork from a source you don't know and trust.
-	switch x := perm.Allow; x {
-	case nil:
-		// ambiguous result = fatal error
-		return nil, noPermissionDispErr()
-	default:
-		(*p.bool) = *x
-	}
-
 	// process each permission one at a time
 	var bits int // temporary storage for verification of bitshifted permission values
 	for i := 0; i < len(perm.Rights); i++ {
@@ -906,7 +863,46 @@ func unpackageAntlrPermission(perm parser.Permission) (*permission, error) {
 	// to be memory efficient.
 	err := unexpectedValueCountErr(`permission bits`, bits, int(*p.Right))
 	if bits == int(*p.Right) {
-		err = nil
+		// !! WARNING - EXTREME SECURITY RISK !!
+		//
+		// A disposition has two (2) official settings and, thus,
+		// is considered to be a MuTeX:
+		//
+		// - allow, which is expressed through a bool value of true
+		// - deny, which is expressed through a bool value of false
+		//
+		// Ones initial thinking might lead to the conclusion that
+		// a default of false is perfectly fine. But it shouldn't
+		// take long for them to rethink that position, given the
+		// following expression (or similar):
+		//
+		//   deny(none)
+		//
+		// Given the right (or wrong?) context, this could be bad.
+		// Really, really bad. The above expression could return
+		// as a result of parsing an instruction if a bogus, or
+		// outright absent disposition was perceived and (as a
+		// result of this failure) the default "Rights" specifiers
+		// default to "none", which is only logical, right?
+		//
+		// BUT, because Golang (and most languages) defines implicit
+		// defaults for certain types -- such as 0 for int and false
+		// for bool -- any default is a bad idea here.
+		//
+		// Therefore a POINTER to a bool is used, both here in go-aci
+		// AND within its sister package go-antlraci. go-antlraci will
+		// evaluate/set the pointer using a double MuTeX case statement,
+		// which allows only specific mutual-exclusion permutations that
+		// are certain to avoid the above scenario.
+		//
+		// The ultimate disposition decision made by go-antlraci in this
+		// case can be trusted, so long as the imported build is not some
+		// fork from a source you don't know and trust.
+		err = noPermissionDispErr()
+		if x := perm.Allow; x != nil {
+			(*p.bool) = *x
+			err = nil
+		}
 	}
 
 	return p, err
