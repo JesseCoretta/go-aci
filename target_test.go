@@ -139,6 +139,8 @@ func TestTargetRules_bogus(t *testing.T) {
 	_ = tr.Push(nil, nil)
 	_ = tr.Push('𝝅')
 	tr.Push(TDN(`uid=jesse,ou=People,dc=example,dc=com`).Eq())
+	tr.Contains(TDN(`uid=jesse,ou=People,dc=example,dc=com`).Eq())
+	tr.Contains(TDN(`uid=jesse,ou=People,dc=example,dc=com`).Eq().String())
 	tr.reset()
 }
 

@@ -781,26 +781,25 @@ stackage.Stack (or alias) type instance.
 Only TargetRule instances are to be cleared for push executions.
 */
 func (r TargetRules) pushPolicy(x ...any) (err error) {
-	if len(x) == 0 {
-		return
-	} else if x[0] == nil {
-		err = nilInstanceErr(x[0])
-		return
-	}
+	for i := 0; i < len(x); i++ {
+		switch tv := x[i].(type) {
+		case TargetRule:
+			if tv.IsZero() {
+				err = pushErrorNilOrZero(r, tv, tv.Keyword())
+			}
+			if matchTKW(tv.Keyword().String()) == TargetKeyword(0x0) {
+				err = badPTBRuleKeywordErr(tv, `target`, `targetkeyword`, tv.Keyword())
+			}
+			if r.contains(tv.Keyword()) {
+				err = pushErrorNilOrZero(r, tv, tv.Keyword())
+			}
+		default:
+			err = pushErrorBadType(r, tv, nil)
+		}
 
-	switch tv := x[0].(type) {
-	case TargetRule:
-		if tv.IsZero() {
-			err = pushErrorNilOrZero(r, tv, tv.Keyword())
+		if err != nil {
+			break
 		}
-		if matchTKW(tv.Keyword().String()) == TargetKeyword(0x0) {
-			err = badPTBRuleKeywordErr(tv, `target`, `targetkeyword`, tv.Keyword())
-		}
-		if r.contains(tv.Keyword()) {
-			err = pushErrorNilOrZero(r, tv, tv.Keyword())
-		}
-	default:
-		err = pushErrorBadType(r, tv, nil)
 	}
 
 	return
