@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+var now func() time.Time = time.Now
+
 /*
 Day constants can be shifted into an instance of DayOfWeek, allowing effective expressions such as "Sun,Tues". See the DayOfWeek.Set method.
 */
@@ -600,17 +602,9 @@ Valid input types are string and time.Time. The effective hour and minute values
 should ALWAYS fall within the valid clock range of 0000 up to and including 2400.  Bogus values
 within said range, such as 0477, will return an error.
 */
-func (r *TimeOfDay) Set(t any) *TimeOfDay {
-	if r == nil {
-		*r = newTimeOfDay(t)
-		return r
-	} else if r.timeOfDay.isZero() {
-		*r = newTimeOfDay(t)
-		return r
-	}
-
-	r.timeOfDay.set(t)
-	return r
+func (r *TimeOfDay) Set(t any) TimeOfDay {
+	*r = newTimeOfDay(t)
+	return *r
 }
 
 func (r *timeOfDay) isZero() bool {
