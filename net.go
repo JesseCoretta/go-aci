@@ -418,9 +418,6 @@ func processLabel(label ...string) (dl labels, c int, ok bool) {
 				dl = append(dl, domainLabel(sp[j]))
 			}
 		} else {
-			if !validLabel(label[i]) {
-				return
-			}
 			c += len(label[i])
 			dl = append(dl, domainLabel(label[i]))
 		}
