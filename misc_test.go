@@ -216,6 +216,8 @@ func TestOperator_codecov(t *testing.T) {
 		return
 	}
 
+	_ = unquote(`"quoted_string"`)
+
 	for i := 0; i < len(copMap); i++ {
 
 		// attempt to resolve the operator
