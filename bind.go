@@ -1038,11 +1038,10 @@ replace is a private method called by BindRules.Replace
 as well as certain ANTLR->ACI parsing procedures.
 */
 func (r BindRules) replace(x any, idx int) BindRules {
-	if r.IsZero() {
-		return r
+	if !r.IsZero() {
+		r.cast().Replace(x, idx)
 	}
 
-	r.cast().Replace(x, idx)
 	return r
 }
 
@@ -1126,11 +1125,7 @@ func (r BindRules) Traverse(indices ...int) (B BindContext) {
 		case BindContext:
 			B = tv
 		default:
-			if isStackageStack(tv) {
-				B = castAsBindRules(tv)
-			} else if isStackageCondition(tv) {
-				B = castAsBindRule(tv)
-			}
+			B = castAsBindRule(tv)
 		}
 	}
 
@@ -1158,13 +1153,6 @@ Stack alias) type instance.
 Only BindContext qualifiers are to be cleared for push.
 */
 func (r BindRules) pushPolicy(x ...any) (err error) {
-	if len(x) == 0 {
-		return
-	} else if x[0] == nil {
-		err = pushErrorNilOrZero(r, x, matchBKW(r.Category()))
-		return
-	}
-
 	// perform type switch upon input value
 	// x to determine suitability for push.
 	switch tv := x[0].(type) {
@@ -1177,13 +1165,11 @@ func (r BindRules) pushPolicy(x ...any) (err error) {
 			err = pushErrorNilOrZero(r, tv, matchBKW(r.Category()), err)
 		}
 
-		if tv.Keyword() == nil {
+		if tv.Keyword() != nil {
 			err = badPTBRuleKeywordErr(tv, `bind`, `bindkeyword`, tv.Keyword())
-			break
-		}
-
-		if matchBKW(tv.Keyword().String()) == BindKeyword(0x0) {
-			err = badPTBRuleKeywordErr(tv, `bind`, `bindkeyword`, tv.Keyword())
+			if matchBKW(tv.Keyword().String()) != BindKeyword(0x0) {
+				err = nil
+			}
 		}
 
 	default:
