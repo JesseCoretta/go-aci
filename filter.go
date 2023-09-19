@@ -1184,22 +1184,18 @@ func parseAttributeFilterOperations(raw string, delim int) (afos AttributeFilter
 		// an AttributeOperator prefix, which
 		// will be either `add=` or `delete=`.
 		// Bail out if we find otherwise.
-		if !hasAttributeFilterOperationPrefix(value) {
-			err = afoMissingPrefixErr()
-			return
+		err = afoMissingPrefixErr()
+		if hasAttributeFilterOperationPrefix(value) {
+			afo, err = parseAttributeFilterOperation(value)
 		}
-
-		// send parseAttributeFilterOperation
-		// the current slice iteration, returning
-		// an error if one ensues.
-		if afo, err = parseAttributeFilterOperation(value); err != nil {
-			return
+		if err == nil {
+			// Push the verified AttributeFilterOperation
+			// instance into our AttributeFilterOperations
+			// stack instance.
+			afos.Push(afo)
+			continue
 		}
-
-		// Push the verified AttributeFilterOperation
-		// instance into our AttributeFilterOperations
-		// stack instance.
-		afos.Push(afo)
+		break
 	}
 
 	return
@@ -1222,21 +1218,20 @@ func parseAttributeFilterOperation(raw string) (afo AttributeFilterOperation, er
 		return
 	}
 
-	if aop, val, err = parseAttrFilterOperPreamble(raw); err != nil {
-		return
-	}
+	if aop, val, err = parseAttrFilterOperPreamble(raw); err == nil {
+		afo = aop.AFO()
+		cat := sprintf("%s_%s", TargetAttrFilters, aop) // TODO: Find an alternative. I really don't like this.
+		afo.setCategory(cat)
+		seq = split(trimS(val), `&&`)
 
-	afo = aop.AFO()
-	cat := sprintf("%s_%s", TargetAttrFilters, aop) // TODO: Find an alternative. I really don't like this.
-	afo.setCategory(cat)
-	seq = split(trimS(val), `&&`)
-
-	for j := 0; j < len(seq); j++ {
-		var af AttributeFilter
-		if af, err = parseAttributeFilter(trimS(seq[j])); err != nil {
-			return
+		for j := 0; j < len(seq); j++ {
+			var af AttributeFilter
+			if af, err = parseAttributeFilter(trimS(seq[j])); err == nil {
+				afo.Push(af)
+				continue
+			}
+			break
 		}
-		afo.Push(af)
 	}
 
 	return
