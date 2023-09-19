@@ -355,26 +355,24 @@ getStringFunc uses reflect to obtain and return a given
 type instance's String method, if present. If not, nil
 is returned.
 */
-func getStringFunc(x any) func() string {
+func getStringFunc(x any) (meth func() string) {
 	if x == nil {
-		return nil
+		return
 	}
 
-	v := valOf(x)
-	if v.IsZero() {
-		return nil
+	if v := valOf(x); !v.IsZero() {
+
+		method := v.MethodByName(`String`)
+		if method.Kind() == reflect.Invalid {
+			return nil
+		}
+
+		if _meth, ok := method.Interface().(func() string); ok {
+			meth = _meth
+		}
 	}
 
-	method := v.MethodByName(`String`)
-	if method.Kind() == reflect.Invalid {
-		return nil
-	}
-
-	if meth, ok := method.Interface().(func() string); ok {
-		return meth
-	}
-
-	return nil
+	return
 }
 
 /*
