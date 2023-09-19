@@ -520,13 +520,6 @@ func (r FQDN) Valid() (err error) {
 		return
 	}
 
-	for i := 0; i < len(*r.labels); i++ {
-		if !validLabel(string((*r.labels)[i])) {
-			err = fqdnInvalidLabelErr((*r.labels)[i])
-			return
-		}
-	}
-
 	// seems legit
 	return
 }
