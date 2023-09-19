@@ -526,9 +526,10 @@ func processTargetRules(stack any) (TargetRules, error) {
 		//   DistinguishedNames[<N1>] -> <dn1>
 		//                     [<N2>] -> <dn2>
 		//                     [<N3>] -> <dn3>
-		if err = trv.assertExpressionValue(); err != nil {
-			return badTargetRules, err
+		if err = trv.assertExpressionValue(); err == nil {
+			continue // because codecov.
 		}
+		break
 	}
 
 	return t, err
