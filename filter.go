@@ -589,6 +589,20 @@ func (r *AttributeFilterOperations) Parse(raw string, delim ...int) (err error) 
 }
 
 /*
+Parse returns an error instance following an attempt to parse input
+raw into the receiver instance. A successful parse will clobber (or
+obliterate) any contents already present within the receiver.
+*/
+func (r *AttributeFilterOperation) Parse(raw string) error {
+	afo, err := parseAttributeFilterOperation(raw)
+	if err == nil {
+		*r = afo
+	}
+
+	return err
+}
+
+/*
 Pop wraps go-stackage's Stack.Pop method.
 */
 func (r AttributeFilterOperations) Pop() (afo AttributeFilterOperation) {
@@ -937,14 +951,10 @@ func (r AttributeFilterOperation) IsZero() bool {
 Valid returns an error if the receiver (or any of its contents) is
 in an aberrant state.
 */
-func (r AttributeFilterOperation) Valid() error {
+func (r AttributeFilterOperation) Valid() (err error) {
 	if r.IsZero() || r.Len() == 0 {
-		return nilInstanceErr(r)
-	}
-
-	if !hasPfx(r.getCategory(), TargetAttrFilters.String()) {
-		err := unexpectedKindErr(r, TargetAttrFilters.String(), r.getCategory())
-		return err
+		err = nilInstanceErr(r)
+		return
 	}
 
 	// assume the object has been fashioned
@@ -954,17 +964,13 @@ func (r AttributeFilterOperation) Valid() error {
 	_r := r.cast()
 	for i := 0; i < _r.Len(); i++ {
 		slice, _ := _r.Index(i)
-		assert, ok := slice.(AttributeFilter)
-		if !ok {
-			return illegalSliceTypeErr(r, assert, slice)
-		}
-
-		if err := assert.Valid(); err != nil {
-			return err
+		assert, _ := slice.(AttributeFilter)
+		if err = assert.Valid(); err != nil {
+			break
 		}
 	}
 
-	return nil
+	return
 }
 
 /*

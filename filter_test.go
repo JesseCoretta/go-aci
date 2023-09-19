@@ -335,6 +335,18 @@ func TestAttributeFilterOperations_toTargetRule(t *testing.T) {
 	_ = afos.Valid()
 	_ = afos.Eq()
 
+	var af AttributeFilter
+	var afo AttributeFilterOperation
+	_ = af.Parse(`        lies     `)
+	_ = afo.Parse(`        lies     `)
+	_ = afos.Parse(`        lies     `)
+	_ = af.IsZero()
+	_ = afo.IsZero()
+	_ = afos.IsZero()
+	_ = af.String()
+	_ = afo.String()
+	_ = afos.String()
+
 	// for codecov
 	if !afos.IsZero() {
 		t.Errorf("%s failed [%T.IsZero]:\nwant 'true'\ngot 'false'",
