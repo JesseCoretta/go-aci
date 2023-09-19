@@ -84,13 +84,6 @@ const (
 )
 
 func (r Instructions) pushPolicy(x ...any) (err error) {
-	if len(x) == 0 {
-		return
-	} else if x[0] == nil {
-		err = nilInstanceErr(x[0])
-		return
-	}
-
 	if r.contains(x[0]) {
 		err = pushErrorNotUnique(r, x[0], nil)
 		return
