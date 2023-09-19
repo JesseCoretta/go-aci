@@ -478,10 +478,9 @@ func (r ldapURI) string() string {
 
 	var param string
 	if !r.filter.IsZero() {
+		param = "?"
 		if !r.attrs.IsZero() {
 			param = sprintf("?%s", r.attrs)
-		} else {
-			param = "?"
 		}
 
 		// Be sure to call the standard scope here,

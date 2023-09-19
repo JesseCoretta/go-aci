@@ -268,20 +268,20 @@ func (r ComparisonOperator) cast() stackage.ComparisonOperator {
 	return castAsCop(r)
 }
 
-func castAsBindRule(x any) BindRule {
-	assert, ok := x.(stackage.Condition)
-	if !ok {
-		return badBindRule
+func castAsBindRule(x any) (b BindRule) {
+	b = badBindRule
+	if assert, ok := x.(stackage.Condition); ok {
+		b = BindRule(assert)
 	}
-	return BindRule(assert)
+	return
 }
 
-func castAsBindRules(x any) BindRules {
-	assert, ok := x.(stackage.Stack)
-	if !ok {
-		return badBindRules
+func castAsBindRules(x any) (b BindRules) {
+	b = badBindRules
+	if assert, ok := x.(stackage.Stack); ok {
+		b = BindRules(assert)
 	}
-	return BindRules(assert)
+	return
 }
 
 /*
