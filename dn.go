@@ -1465,10 +1465,6 @@ PushPolicy interface signature. This is called during Push attempts
 to a stack containing BindRule userdn distinguished name instances.
 */
 func (r BindDistinguishedNames) uDNPushPolicy(x ...any) error {
-	if len(x) == 0 {
-		return nil
-	}
-
 	if r.contains(x[0]) {
 		return pushErrorNotUnique(r, x[0], r.Keyword())
 	}
@@ -1481,10 +1477,6 @@ PushPolicy interface signature. This is called during Push attempts
 to a stack containing BindRule groupdn distinguished name instances.
 */
 func (r BindDistinguishedNames) gDNPushPolicy(x ...any) error {
-	if len(x) == 0 {
-		return nil
-	}
-
 	if r.contains(x[0]) {
 		return pushErrorNotUnique(r, x[0], r.Keyword())
 	}
@@ -1497,10 +1489,6 @@ PushPolicy interface signature. This is called during Push attempts
 to a stack containing BindRule roledn distinguished name instances.
 */
 func (r BindDistinguishedNames) rDNPushPolicy(x ...any) error {
-	if len(x) == 0 {
-		return nil
-	}
-
 	if r.contains(x[0]) {
 		return pushErrorNotUnique(r, x[0], r.Keyword())
 	}
@@ -1513,10 +1501,6 @@ PushPolicy interface signature. This is called during Push attempts
 to a stack containing TargetRule target_to distinguished name instances.
 */
 func (r TargetDistinguishedNames) tToDNPushPolicy(x ...any) error {
-	if len(x) == 0 {
-		return nil
-	}
-
 	if r.contains(x[0]) {
 		return pushErrorNotUnique(r, x[0], r.Keyword())
 	}
@@ -1529,10 +1513,6 @@ PushPolicy interface signature. This is called during Push attempts to
 a stack containing TargetRule target_from distinguished name instances.
 */
 func (r TargetDistinguishedNames) tFromDNPushPolicy(x ...any) error {
-	if len(x) == 0 {
-		return nil
-	}
-
 	if r.contains(x[0]) {
 		return pushErrorNotUnique(r, x[0], r.Keyword())
 	}
@@ -1545,10 +1525,6 @@ interface signature. This is called during Push attempts to a stack containing
 TargetRule target distinguished name instances.
 */
 func (r TargetDistinguishedNames) tDNPushPolicy(x ...any) error {
-	if len(x) == 0 {
-		return nil
-	}
-
 	if r.contains(x[0]) {
 		return pushErrorNotUnique(r, x[0], r.Keyword())
 	}
