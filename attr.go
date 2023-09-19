@@ -153,11 +153,11 @@ Eq initializes and returns a new BindRule instance configured to express the
 evaluation of the receiver value as Equal-To a `userattr` or `groupattr` Bind
 keyword context.
 */
-func (r AttributeBindTypeOrValue) Eq() BindRule {
-	if r.atbtv.isZero() {
-		return badBindRule
+func (r AttributeBindTypeOrValue) Eq() (b BindRule) {
+	if !r.atbtv.isZero() {
+		b = BR(r.BindKeyword, Eq, r)
 	}
-	return BR(r.BindKeyword, Eq, r)
+	return
 }
 
 /*
@@ -167,11 +167,11 @@ Bind keyword context.
 
 Negated equality BindRule instances should be used with caution.
 */
-func (r AttributeBindTypeOrValue) Ne() BindRule {
-	if r.atbtv.isZero() {
-		return badBindRule
+func (r AttributeBindTypeOrValue) Ne() (b BindRule) {
+	if !r.atbtv.isZero() {
+		b = BR(r.BindKeyword, Ne, r)
 	}
-	return BR(r.BindKeyword, Ne, r)
+	return
 }
 
 /*
