@@ -643,17 +643,12 @@ func convertBindRulesHierarchy(stack any) (BindContext, bool) {
 
 	// Obtain the kind string from the
 	// original stack.
-	k := trimS(orig.Kind())
-
-	clean, ok := wordToStack(k)
-	if !ok {
-		return badBindRules, ok
-	}
+	clean, ok := wordToStack(orig.Kind())
 
 	// Iterate the newly-populated clean
 	// instance, performing type-casting
 	// as needed, possibly in recursion.
-	for i := 0; i < orig.Len(); i++ {
+	for i := 0; i < orig.Len() && ok; i++ {
 		slice, _ := orig.Index(i)
 
 		// perform a type switch upon the
@@ -687,11 +682,11 @@ func convertBindRulesHierarchy(stack any) (BindContext, bool) {
 			//   DistinguishedNames[<N1>] -> <dn1>
 			//                     [<N2>] -> <dn2>
 			//                     [<N3>] -> <dn3>
-			if err := ntv.assertExpressionValue(); err != nil {
-				return badBindRules, false
+			if err := ntv.assertExpressionValue(); err == nil {
+				clean.Push(ntv)
+				continue
 			}
-
-			clean.Push(ntv)
+			break
 
 		// slice is a stackage.Stack instance.
 		// We want to cast to a BindRules type
@@ -702,16 +697,15 @@ func convertBindRulesHierarchy(stack any) (BindContext, bool) {
 		case isStackageStack(slice):
 			stk, _ := castAsStack(slice)
 			paren := stk.IsParen()
-			sub, subok := convertBindRulesHierarchy(slice)
-			if !subok {
-				return badBindRules, subok
+			if sub, subok := convertBindRulesHierarchy(slice); subok {
+				if _, ok := sub.(BindRules); ok {
+					sub.(BindRules).Paren(paren)
+					uncloakBindRules(sub.(BindRules))
+				}
+				clean.Push(sub)
+				continue
 			}
-			if _, ok := sub.(BindRules); ok {
-				sub.(BindRules).Paren(paren)
-				uncloakBindRules(sub.(BindRules))
-			}
-			clean.Push(sub)
-
+			return badBindRules, false
 		}
 	}
 
