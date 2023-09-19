@@ -230,11 +230,7 @@ func (r *atbtv) isZero() bool {
 String is a stringer method that returns the string representation of the
 receiver.
 */
-func (r atbtv) String() string {
-	// AttributeType will always
-	// be used.
-	var at AttributeType
-
+func (r atbtv) String() (s string) {
 	// Only one (1) of the following
 	// vars will be used.
 	var bt BindType
@@ -242,29 +238,29 @@ func (r atbtv) String() string {
 
 	// Assert the attributeType value
 	// or bail out.
-	at, assert := r[0].(AttributeType)
-	if !assert {
-		return ``
-	}
+	if at, assert := r[0].(AttributeType); assert {
+		// First see if the value is a BindType
+		// keyword, as those are few and easily
+		// identified.
+		if bt, assert = r[1].(BindType); !assert || bt == BindType(0x0) {
+			// If not a BindType kw, see if it
+			// appears to be an AttributeValue.
+			if av, assert = r[1].(AttributeValue); !assert || len(*av.string) == 0 {
+				// value is neither an AttributeValue
+				// nor BindType kw; bail out.
+				return
+			}
 
-	// First see if the value is a BindType
-	// keyword, as those are few and easily
-	// identified.
-	if bt, assert = r[1].(BindType); !assert || bt == BindType(0x0) {
-		// If not a BindType kw, see if it
-		// appears to be an AttributeValue.
-		if av, assert = r[1].(AttributeValue); !assert || len(*av.string) == 0 {
-			// value is neither an AttributeValue
-			// nor BindType kw; bail out.
-			return ``
+			// AttributeValue wins
+			s = sprintf("%s#%s", at, av)
+			return
 		}
 
-		// AttributeValue wins
-		return sprintf("%s#%s", at, av)
+		// BindType wins
+		s = sprintf("%s#%s", at, bt)
 	}
 
-	// BindType wins
-	return sprintf("%s#%s", at, bt)
+	return
 }
 
 /*
@@ -820,10 +816,6 @@ go-stackage. This private function is called during Push attempts to a
 AttributeTypes stack instance.
 */
 func (r AttributeTypes) pushPolicy(x ...any) (err error) {
-	if len(x) == 0 {
-		return nil
-	}
-
 	// verify uniqueness; bail out if Boolean
 	// false is return value.
 	if r.contains(x[0]) {
@@ -834,13 +826,6 @@ func (r AttributeTypes) pushPolicy(x ...any) (err error) {
 	// perform type switch upon input value
 	// x to determine suitability for push.
 	switch tv := x[0].(type) {
-
-	case string:
-		// case matches a string-based LDAP AttributeType
-		if len(tv) == 0 {
-			err = pushErrorNilOrZero(r, tv, matchTKW(r.Kind()))
-		}
-
 	case AttributeType:
 		// case matches an AttributeType instance
 		if tv.IsZero() {
