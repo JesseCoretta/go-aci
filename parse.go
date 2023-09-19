@@ -889,16 +889,12 @@ func unpackageAntlrPermission(perm parser.Permission) (*permission, error) {
 
 	// process each permission one at a time
 	var bits int // temporary storage for verification of bitshifted permission values
-	var err error
 	for i := 0; i < len(perm.Rights); i++ {
 		rite := lc(perm.Rights[i])
-		r, ok := rightsNames[rite]
-		if !ok {
-			err = rightNotfound(rite)
-			return nil, err
+		if r, ok := rightsNames[rite]; ok {
+			bits |= int(r)
+			p.shift(perm.Rights[i])
 		}
-		bits |= int(r)
-		p.shift(perm.Rights[i])
 	}
 
 	// The result of the above shifts MUST match the
@@ -910,12 +906,12 @@ func unpackageAntlrPermission(perm parser.Permission) (*permission, error) {
 	// rather through bit summation of the underlying
 	// values defined in go-aci as part of its attempt
 	// to be memory efficient.
-	if bits != int(*p.Right) {
-		err = unexpectedValueCountErr(`permission bits`, bits, int(*p.Right))
-		return nil, err
+	err := unexpectedValueCountErr(`permission bits`, bits, int(*p.Right))
+	if bits == int(*p.Right) {
+		err = nil
 	}
 
-	return p, nil
+	return p, err
 }
 
 func parsePermissionBindRule(raw string) (PermissionBindRule, error) {
@@ -957,12 +953,12 @@ func processPermissionBindRules(stack any) (PermissionBindRules, error) {
 	for i := 0; i < _pbrs.Len(); i++ {
 		slice, _ := _pbrs.Index(i)
 		_pbr, asserted := slice.(parser.PermissionBindRule)
-		if !asserted {
-			err = illegalSliceTypeErr(PermissionBindRules{}, `pbrs`, nil)
-			return badPermissionBindRules, err
-		}
 		var pbr PermissionBindRule
-		if pbr, err = processPermissionBindRule(_pbr); err != nil {
+		if asserted {
+			pbr, err = processPermissionBindRule(_pbr)
+		}
+
+		if err != nil {
 			return badPermissionBindRules, err
 		}
 		pbrs.Push(pbr)
@@ -998,10 +994,9 @@ func (r *PermissionBindRules) Parse(raw string) error {
 	}
 
 	var _r PermissionBindRules
-	if _r, err = processPermissionBindRules(_pbrs); err != nil {
-		return err
+	if _r, err = processPermissionBindRules(_pbrs); err == nil {
+		*r = _r
 	}
-	*r = _r
 
 	return err
 }
@@ -1035,22 +1030,14 @@ func (r *Instruction) Parse(raw string) (err error) {
 		return
 	}
 
-	// obtain the ACL (string) value; if not
-	// defined, fail the entire process.
-	if a = _r.L.String(); len(a) == 0 {
-		err = nilInstanceErr(_r.L)
-		return
-	}
+	// obtain the ACL (string) value
+	a = _r.L.String()
 
 	// process zero (0) or more TargetRules
-	if t, err = processTargetRules(_r.T); err != nil {
-		return
-	}
+	t, _ = processTargetRules(_r.T)
 
 	// process one (1) or more PermissionBindRules
-	if p, err = processPermissionBindRules(_r.PB); err != nil {
-		return
-	}
+	p, _ = processPermissionBindRules(_r.PB)
 
 	// set the target rules, acl and
 	// pbr(s) within the temporary
@@ -1060,6 +1047,10 @@ func (r *Instruction) Parse(raw string) (err error) {
 		a,
 		p,
 	)
+
+	if err = _i.Valid(); err != nil {
+		return
+	}
 
 	// clobber receiver
 	*r = _i
