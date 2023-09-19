@@ -98,10 +98,6 @@ func (r Instructions) pushPolicy(x ...any) (err error) {
 
 	err = pushErrorBadType(Instructions{}, x[0], nil)
 	switch tv := x[0].(type) {
-	case string:
-		if len(tv) > 0 {
-			err = nil
-		}
 	case Instruction:
 		err = tv.Valid()
 	}
