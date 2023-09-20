@@ -87,6 +87,8 @@ func (r AuthenticationMethod) Eq() BindRule {
 Ne initializes and returns a new BindRule instance configured to express the
 evaluation of the receiver value as Not-Equal-To the `authmethod` Bind keyword
 context.
+
+Negated equality BindRule instances should be used with caution.
 */
 func (r AuthenticationMethod) Ne() BindRule {
 	if r == noAuth {

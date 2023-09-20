@@ -156,6 +156,8 @@ func (r Inheritance) Eq() (b BindRule) {
 Ne initializes and returns a new BindRule instance configured to express the
 evaluation of the receiver value as Not-Equal-To the `userattr` or `groupattr`
 Bind keyword context.
+
+Negated equality BindRule instances should be used with caution.
 */
 func (r Inheritance) Ne() (b BindRule) {
 	if err := r.Valid(); err == nil {

@@ -789,6 +789,8 @@ keyword contexts:
 • `groupdn`
 
 • `roledn`
+
+Negated equality BindRule instances should be used with caution.
 */
 func (r BindDistinguishedName) Ne() BindRule {
 	x, ok := dnToCondition(r, Ne)
@@ -809,6 +811,8 @@ keyword contexts:
 • `target_to`
 
 • `target_from`
+
+Negated equality TargetRule instances should be used with caution.
 */
 func (r TargetDistinguishedName) Ne() TargetRule {
 	x, ok := dnToCondition(r, Ne)

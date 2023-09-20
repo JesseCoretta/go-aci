@@ -53,8 +53,7 @@ DIT because it considers you a threat. 🤓
 
 ## About ACIs
 
-Within the context of ACIv3, An [ACI](## "Access Control Instruction") is an expressive statement or "policy" that is used to define the disclosing or withholding of information
-for an [X.500](## "ITU-T X-Series 500")/[LDAP](Lightweight Directory Access Protocol) [DIT](## "Directory Information Tree") as it pertains to its userbase.
+Within the context of ACIv3, An [ACI](## "Access Control Instruction") is an expressive statement or "policy" that is used to define the disclosing or withholding of information for an [X.500](## "ITU-T X-Series 500")/[LDAP](## "Lightweight Directory Access Protocol") [DIT](## "Directory Information Tree") as it pertains to its userbase.
 
 In layperson's terms, ACIs are a specific and (largely) non-proprietary form of "LDAP permissions" that govern who can read, write, search, etc.
 
@@ -109,8 +108,9 @@ to your vendor!
   - A package-wide cyclomatic complexity factor limit of nine (9) is imposed
     - We realize the standard recommended maximum is fifteen (15); we feel we can do better!
     - The following imported packages also exercise this philosophy:
-      - [`go-stackage`](http://github.com/JesseCoretta/go-stackage)
-      - [`go-objectid`](http://github.com/JesseCoretta/go-objectid)
+      - [`go-objectid`](https://github.com/JesseCoretta/go-objectid)
+      - [`go-stackage`](https://github.com/JesseCoretta/go-stackage)
+      - [`go-shifty`](https://github.com/JesseCoretta/go-shifty)
 - Compatible
   - Overall package design is meant to honor all of the facets of the ACIv3 specification **_in its entirety_**
   - No single vendor implementation is catered-to exclusively
