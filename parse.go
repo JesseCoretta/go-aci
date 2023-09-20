@@ -839,8 +839,8 @@ func parsePermission(raw string) (*permission, error) {
 
 func unpackageAntlrPermission(perm parser.Permission) (*permission, error) {
 	p := &permission{
-		bool:  new(bool),  // disposition (ptr to bool)
-		Right: new(Right), // rights specifiers (ptr to uint8 alias)
+		bool:   new(bool),   // disposition (ptr to bool)
+		rights: newRights(), // rights specifiers (embedded shifty.BitValue)
 	}
 
 	// process each permission one at a time
@@ -862,8 +862,9 @@ func unpackageAntlrPermission(perm parser.Permission) (*permission, error) {
 	// rather through bit summation of the underlying
 	// values defined in go-aci as part of its attempt
 	// to be memory efficient.
-	err := unexpectedValueCountErr(`permission bits`, bits, int(*p.Right))
-	if bits == int(*p.Right) {
+	rint := p.rights.cast().Int()
+	err := unexpectedValueCountErr(`permission bits`, bits, rint)
+	if bits == rint {
 		// !! WARNING - EXTREME SECURITY RISK !!
 		//
 		// A disposition has two (2) official settings and, thus,

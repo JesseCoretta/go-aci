@@ -17,8 +17,9 @@ func newLvls() *levels {
 	return &l
 }
 
-func newRights() Rights {
-	return Rights(shifty.New(shifty.Uint16))
+func newRights() *rights {
+	r := rights(shifty.New(shifty.Uint16))
+	return &r
 }
 
 func (r DayOfWeek) cast() shifty.BitValue {
@@ -29,7 +30,7 @@ func (r levels) cast() shifty.BitValue {
 	return shifty.BitValue(r)
 }
 
-func (r Rights) cast() shifty.BitValue {
+func (r rights) cast() shifty.BitValue {
 	return shifty.BitValue(r)
 }
 
@@ -42,9 +43,9 @@ type (
 	// to construct a dayofweek BindRule.
 	DayOfWeek shifty.BitValue // 8-bit
 
-	// Rights is a type alias of shifty.BitValue, and is used in
-	// the construction an instance of Permission.
-	Rights shifty.BitValue // 16-bit
+	// rights is a private type alias of shifty.BitValue, and is
+	// used in the construction an instance of Permission.
+	rights shifty.BitValue // 16-bit
 
 	// levels is a private type alias of shifty.BitValue, and is
 	// used in the construction an inheritance-based userattr or
