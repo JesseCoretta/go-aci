@@ -73,14 +73,6 @@ func ExampleInheritance_Positive() {
 	// Output: Level 5 positive? false
 }
 
-func ExampleInheritance_Levels() {
-	attr := AT(`manager`)
-	uat := UAT(attr, AV(`uid=frank,ou=People,dc=example,dc=com`))
-	inh := Inherit(uat, 1, 3)
-	fmt.Printf("Levels: %s", inh.Levels())
-	// Output: Levels: 1,3
-}
-
 func ExampleInheritance_Shift() {
 	attr := AT(`manager`)
 	uat := UAT(attr, AV(`uid=frank,ou=People,dc=example,dc=com`))
@@ -97,8 +89,8 @@ func ExampleInheritance_Unshift() {
 	inh := Inherit(uat, 1, 3, 8)
 	inh.Unshift(1) // we changed our mind
 
-	fmt.Printf("Number of levels: %d [%s]", inh.Len(), inh.Levels())
-	// Output: Number of levels: 2 [3,8]
+	fmt.Printf("Number of levels: %d", inh.Len())
+	// Output: Number of levels: 2
 }
 
 func ExampleInheritance_Keyword() {
@@ -120,6 +112,7 @@ func ExampleInheritance_Keyword() {
 	// Output: Keyword: userattr
 }
 
+/*
 func ExampleLevels_IsZero() {
 	var l Levels
 	fmt.Printf("Zero: %t", l.IsZero())
@@ -177,6 +170,15 @@ func ExampleLevels_String() {
 	fmt.Printf("%d Levels: %s", l.Len(), l)
 	// Output: 10 Levels: 0,1,2,3,4,5,6,7,8,9
 }
+
+func ExampleLevels_Compare() {
+	var l1, l2 Levels
+	l1.Shift(Level1, 3)
+	l2.Shift(Level2, 3, 4)
+	fmt.Printf("Hashes are equal: %t", l1.Compare(l2))
+	// Output: Hashes are equal: false
+}
+*/
 
 func TestInheritance(t *testing.T) {
 	inh := Inherit(UAT(AT(`manager`), USERDN), Level0, Level1, Level2, Level8)
@@ -240,17 +242,6 @@ func ExampleLevel_Compare() {
 }
 
 /*
-This example demonstrates the SHA-1 hash comparison between two (2)
-Level instances using the Compare method.
-*/
-func ExampleLevels_Compare() {
-	var l1, l2 Levels
-	l1.Shift(Level1, 3)
-	l2.Shift(Level2, 3, 4)
-	fmt.Printf("Hashes are equal: %t", l1.Compare(l2))
-	// Output: Hashes are equal: false
-}
-
 func TestLevels_bogus(t *testing.T) {
 	var l1 Levels
 	_ = l1.String()
@@ -317,6 +308,7 @@ func TestLevels_bogus(t *testing.T) {
 		}
 	}
 }
+*/
 
 func TestInheritance_parse(t *testing.T) {
 	for _, raw := range []string{
@@ -361,7 +353,7 @@ func TestInheritance_parse(t *testing.T) {
 
 func TestInheritance_codecov(t *testing.T) {
 	var inh Inheritance
-	_ = inh.Levels().Positive(`4`)
+	_ = inh.Positive(`4`)
 	_ = inh.Keyword()
 	_ = inh.String()
 	_ = inh.Shift(1370)
@@ -375,61 +367,8 @@ func TestInheritance_codecov(t *testing.T) {
 	_ = inh.Positive(`fart`)
 	_ = inh.Positive(100000)
 	_ = inh.Positive(-1)
-	_ = inh.Levels().Positive(4)
-	_ = inh.Levels().Positive("something awful")
+	_ = inh.Positive(4)
+	_ = inh.Positive("something awful")
 	_ = inh.Positive(Level(^uint16(0)))
 	_ = inh.Positive(3.14159)
 }
-
-/*
-func TestInheritance_lrShift(t *testing.T) {
-        var p Inheritance
-
-        // three iterations, one per supported
-        // Level type
-        for i := 0; i < 3; i++ {
-
-                // iterate each of the levels in the
-                // levels/names map
-                for k, v := range levelMap {
-
-                        term, typ := testGetLevelsTermType(i, k, v.String())
-
-                        shifters := map[int]func(...any) Inheritance{
-                                0: p.Shift,
-                                1: p.Unshift,
-                        }
-
-                        for j := 0; j < len(shifters); j++ {
-                                mode, phase := testGetLevelsPhase(j)
-                                if shifters[j](term); p.Positive(term) != phase {
-                                        t.Errorf("%s failed: %T %s %s failed [key:%d; term:%v] (value:%v)",
-                                                t.Name(), p, typ, mode, k, term, p)
-                                }
-                        }
-                }
-        }
-}
-
-func testGetLevelsPhase(j int) (mode string, phase bool) {
-        mode = `shift`
-        if phase = (0 == j); !phase {
-                mode = `un` + mode
-        }
-
-        return
-}
-
-func testGetLevelsTermType(i,k int, v string) (term any, typ string) {
-        term = k // default
-        switch i {
-        case 1:
-                term = v // string name (e.g.: `0`)
-        case 2:
-                term = Level(k) // Level
-        }
-        typ = sprintf("%T", term) // label for err
-
-        return
-}
-*/

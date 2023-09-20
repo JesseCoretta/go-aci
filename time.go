@@ -33,36 +33,23 @@ as Sunday (1).
 type Day uint8
 
 /*
-DayOfWeek contains embedded left-shifted bits that collectively represent one or
-more days of the week in a "dayofweek" Bind Rule condition.
-*/
-type DayOfWeek struct {
-	*days
-}
-
-/*
-days is the private type for pointer embedding within
-instances of DayOfWeek.
-*/
-type days uint8
-
-/*
 iterate a comma-delimited list and verify
 each slice as a day of the week. return a
 DayOfWeek instance alongside a Boolean
 value indicative of success.
 */
-func parseDoW(d string) (D DayOfWeek, err error) {
-	X := split(repAll(d, ` `, ``), `,`)
+func parseDoW(dow string) (d DayOfWeek, err error) {
+	d = newDoW()
+	X := split(repAll(dow, ` `, ``), `,`)
 	for i := 0; i < len(X); i++ {
 		dw := matchStrDoW(X[i])
 		if dw == noDay {
 			err = dowBadDayErr(X[i])
 			return
 		}
-		D.Shift(dw)
+		d.Shift(dw)
 	}
-	err = D.Valid()
+	err = d.Valid()
 	return
 }
 
@@ -128,8 +115,8 @@ func matchIntDoW(d int) (D Day) {
 DoW initializes, shifts and returns a new instance of DayOfWeek in one shot. This
 function an alternative to separate assignment and set procedures.
 */
-func DoW(x ...any) (D DayOfWeek) {
-	d := DayOfWeek{new(days)}
+func DoW(x ...any) (d DayOfWeek) {
+	d = newDoW()
 
 	// assert each dow's type and analyze.
 	// If deemed a valid dow, left-shift
@@ -141,13 +128,10 @@ func DoW(x ...any) (D DayOfWeek) {
 				d.Shift(dw)
 			}
 		case Day:
-			if tv.String() != badDoW {
-				d.Shift(tv)
-			}
+			d.Shift(tv)
 		}
 	}
 
-	D.days = d.days
 	return
 }
 
@@ -163,8 +147,8 @@ would represent an abstract length of two (2).
 */
 func (r DayOfWeek) Len() int {
 	var D int
-	for i := 0; i < bitSize(noDay); i++ {
-		if d := Day(1 << i); r.Positive(d) {
+	for i := 0; i < r.cast().Size(); i++ {
+		if d := Day(1 << i); r.cast().Positive(d) {
 			D++
 		}
 	}
@@ -182,7 +166,6 @@ Supplying an invalid or nonapplicable ComparisonOperator to this method shall re
 BindRule instance.
 */
 func Weekdays(cop any) (b BindRule) {
-	b = badBindRule
 	if c, meth := DoW(Mon, Tues, Wed, Thur, Fri).BRM().index(cop); c.Valid() == nil {
 		b = meth()
 	}
@@ -199,7 +182,6 @@ Supplying an invalid or nonapplicable ComparisonOperator to this method shall re
 BindRule instance.
 */
 func Weekend(cop any) (b BindRule) {
-	b = badBindRule
 	if c, meth := DoW(Sun, Sat).BRM().index(cop); c.Valid() == nil {
 		b = meth()
 	}
@@ -207,47 +189,41 @@ func Weekend(cop any) (b BindRule) {
 }
 
 /*
-Shift shifts the first (1st) byte within the receiver instance of DayOfWeek to
-include Day x, if not already present.
+Shift wraps go-shifty's BitValue.Shift method.
 */
-func (r *DayOfWeek) Shift(x Day) *DayOfWeek {
+func (r *DayOfWeek) Shift(x Day) DayOfWeek {
 	if r.IsZero() {
-		r.days = new(days)
+		*r = newDoW()
 	}
-
-	(*r.days) |= days(x)
-	return r
+	r.cast().Shift(x)
+	return *r
 }
 
 /*
-Positive returns a Boolean value indicative of whether the receiver instance
-of DayOfWeek includes Day x.
+Positive wraps go-shifty's BitValue.Positive method.
 */
-func (r DayOfWeek) Positive(x Day) bool {
-	if r.IsZero() {
-		return false
+func (r DayOfWeek) Positive(x Day) (posi bool) {
+	if !r.IsZero() {
+		posi = r.cast().Positive(x)
 	}
-	return (*r.days)&days(x) > 0
+	return
 }
 
 /*
-Unshift right-shifts the first (1st) byte within the receiver instance of DayOfWeek
-to remove Day x, if present.
+Unshift wraps go-shifty's BitValue.Unshift method.
 */
-func (r *DayOfWeek) Unshift(x Day) *DayOfWeek {
-	if r.IsZero() {
-		return r
+func (r *DayOfWeek) Unshift(x Day) DayOfWeek {
+	if !r.IsZero() {
+		r.cast().Unshift(x)
 	}
-
-	(*r.days) = (*r.days) &^ days(x)
-	return r
+	return *r
 }
 
 /*
 IsZero returns a Boolean value indicative of whether the receiver is nil, or unset.
 */
 func (r DayOfWeek) IsZero() bool {
-	return r.days == nil
+	return r.cast().Kind() == 0x0
 }
 
 /*
@@ -259,9 +235,9 @@ func (r DayOfWeek) String() (s string) {
 	s = badDoW
 
 	var dows []string
-	for i := 0; i < bitSize(noDay); i++ {
+	for i := 0; i < r.cast().Size(); i++ {
 		day := Day(1 << i)
-		if r.Positive(day) {
+		if r.cast().Positive(day) {
 			dows = append(dows, day.String())
 		}
 	}
@@ -304,11 +280,11 @@ Eq initializes and returns a new BindRule instance configured to express the
 evaluation of the receiver value as Equal-To the `dayofweek` Bind keyword
 context.
 */
-func (r DayOfWeek) Eq() BindRule {
-	if err := r.Valid(); err != nil {
-		return badBindRule
+func (r DayOfWeek) Eq() (b BindRule) {
+	if err := r.Valid(); err == nil {
+		b = BR(BindDoW, Eq, r)
 	}
-	return BR(BindDoW, Eq, r)
+	return
 }
 
 /*
@@ -318,11 +294,11 @@ context.
 
 Negated equality BindRule instances should be used with caution.
 */
-func (r DayOfWeek) Ne() BindRule {
-	if err := r.Valid(); err != nil {
-		return badBindRule
+func (r DayOfWeek) Ne() (b BindRule) {
+	if err := r.Valid(); err == nil {
+		b = BR(BindDoW, Ne, r)
 	}
-	return BR(BindDoW, Ne, r)
+	return
 }
 
 /*

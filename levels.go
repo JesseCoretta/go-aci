@@ -7,7 +7,7 @@ within the ACIv3 standard.
 
 // Maps for resolving level instances
 var (
-	levelBitIter = bitSize(Levels(0)) - 4 // we don't use all of uint16, no sense iterating the whole thing
+	levelBitIter = bitSize(uint16(0)) - 4 // we don't use all of uint16, no sense iterating the whole thing
 	levelMap     = make(map[int]Level, 0)
 	levelNumbers = make(map[string]Level, 0)
 )
@@ -46,7 +46,7 @@ instances of Inheritance. It contains a Level bit container and
 an AttributeBindTypeOrValue instance.
 */
 type inheritance struct {
-	Levels
+	*levels
 	AttributeBindTypeOrValue
 }
 
@@ -75,22 +75,12 @@ func newInheritance(x AttributeBindTypeOrValue, lvl ...any) (i *inheritance) {
 /*
 Level describes a discrete numerical abstract of a subordinate level. Level
 describes any single Level definition. Level constants are intended for "storage"
-within an instance of Levels -- the compound counterpart of this type.
+within an instance of Inheritance.
 
 Valid Level constants are level zero (0) through level nine (9), though this
 will vary across implementations.
 */
 type Level uint16
-
-/*
-Levels is the compound (bitshifted) counterpart to the scalar Level type.
-
-Levels can express all combinations Level values; for example, if a Levels
-instance has an underlying value of three (3), this describes the presence
-of the individual Level0 (1) and Level1 (2) definitions within said value
-(i.e.: 1+2=3).
-*/
-type Levels uint16
 
 /*
 IsZero returns a Boolean value indicative of whether the receiver instance
@@ -155,11 +145,11 @@ Eq initializes and returns a new BindRule instance configured to express the
 evaluation of the receiver value as Equal-To the `userattr` or `groupattr`
 Bind keyword context.
 */
-func (r Inheritance) Eq() BindRule {
-	if err := r.Valid(); err != nil {
-		return badBindRule
+func (r Inheritance) Eq() (b BindRule) {
+	if err := r.Valid(); err == nil {
+		b = BR(r.inheritance.AttributeBindTypeOrValue.BindKeyword, Eq, r)
 	}
-	return BR(r.inheritance.AttributeBindTypeOrValue.BindKeyword, Eq, r)
+	return
 }
 
 /*
@@ -167,11 +157,11 @@ Ne initializes and returns a new BindRule instance configured to express the
 evaluation of the receiver value as Not-Equal-To the `userattr` or `groupattr`
 Bind keyword context.
 */
-func (r Inheritance) Ne() BindRule {
-	if err := r.Valid(); err != nil {
-		return badBindRule
+func (r Inheritance) Ne() (b BindRule) {
+	if err := r.Valid(); err == nil {
+		b = BR(r.inheritance.AttributeBindTypeOrValue.BindKeyword, Ne, r)
 	}
-	return BR(r.inheritance.AttributeBindTypeOrValue.BindKeyword, Ne, r)
+	return
 }
 
 /*
@@ -226,17 +216,18 @@ func parseInheritance(inh string) (I Inheritance, err error) {
 	// Initialize our return instance, as we're about
 	// to begin storing things in it.
 	I = Inheritance{new(inheritance)}
+	I.levels = newLvls()
 
 	// Iterate the split sequence of level identifiers.
 	// Also, obliterate any ASCII #32 (SPACE) chars
 	// (e.g.: ', ' -> ',').
 	for _, r := range split(repAll(raw[:idx], ` `, ``), `,`) {
-		I.inheritance.shift(r) // left shift
+		I.inheritance.shift(r)
 	}
 
 	// Bail if nothing was found (do not fall
 	// back to default when parsing).
-	if I.inheritance.Levels == Levels(noLvl) {
+	if I.inheritance.levels.cast().Int() == 0 {
 		// bogus or unsupported identifiers?
 		err = levelsNotFoundErr()
 		return
@@ -265,23 +256,13 @@ would represent an abstract length of two (2).
 */
 func (r Inheritance) Len() int {
 	var D int
-	for i := 0; i < bitSize(noLvl); i++ {
+	for i := 0; i < levelBitIter; i++ {
 		if d := Level(1 << i); r.Positive(d) {
 			D++
 		}
 	}
 
 	return D
-}
-
-/*
-Levels returns the compound Levels instance within the receiver.
-*/
-func (r Inheritance) Levels() Levels {
-	if r.IsZero() {
-		return Levels(noLvl)
-	}
-	return r.inheritance.Levels
 }
 
 /*
@@ -311,16 +292,15 @@ The return value(s) are enclosed within square-brackets, followed
 by comma delimitation and are prefixed with "parent" before being
 returned.
 */
-func (r Inheritance) String() string {
-	if err := r.Valid(); err != nil {
-		return badInheritance
+func (r Inheritance) String() (s string) {
+	s = badInheritance
+	if err := r.Valid(); err == nil {
+		// string representation of Levels sequence
+		lvls := r.inheritance.levels.String()
+		s = sprintf("parent[%s].%s", lvls,
+			r.inheritance.AttributeBindTypeOrValue)
 	}
-
-	// string representation of Levels sequence
-	lvls := r.inheritance.Levels.String()
-
-	return sprintf("parent[%s].%s", lvls,
-		r.inheritance.AttributeBindTypeOrValue)
+	return
 }
 
 /*
@@ -329,10 +309,9 @@ the number of Level instances currently being expressed. For example,
 if the receiver instance has its Level4 and Level7 bits enabled, this
 would represent an abstract length of two (2).
 */
-func (r Levels) Len() (l int) {
+func (r levels) Len() (l int) {
 	for i := 0; i < levelBitIter; i++ {
-		shift := Level(1 << i)
-		if r.Positive(shift) {
+		if shift := Level(1 << i); r.cast().Positive(shift) {
 			l++
 		}
 	}
@@ -344,15 +323,14 @@ func (r Levels) Len() (l int) {
 String is a string method that returns the string
 representation of the receiver instance.
 */
-func (r Levels) String() string {
+func (r levels) String() string {
 	var levels []string
-	if r == Levels(noLvl) {
+	if r.cast().Int() == 0 {
 		// No levels? default to level 0 (baseObject)
 		levels = append(levels, Level0.String())
 	} else {
 		for i := 0; i < levelBitIter; i++ {
-			shift := Level(1 << i)
-			if r.Positive(shift) {
+			if shift := Level(1 << i); r.cast().Positive(shift) {
 				levels = append(levels, shift.String())
 			}
 		}
@@ -384,51 +362,36 @@ func (r Level) Compare(x any) bool {
 }
 
 /*
-Shift wraps Levels.Shift via the underlying Levels value
-found within the receiver instance.
+Shift wraps go-shifty's BitValue.Shift method.
 */
 func (r Inheritance) Shift(x ...any) Inheritance {
 	if r.IsZero() {
 		r = Inheritance{new(inheritance)}
 	}
 
-	r.inheritance.Levels.shift(x...)
-	return r
-}
-
-/*
-Shift shifts the receiver instance of Levels to include Level
-x, if not already present.
-*/
-func (r *Levels) Shift(x ...any) *Levels {
-	r.shift(x...)
+	r.inheritance.shift(x...)
 	return r
 }
 
 /*
 shift is a private method called by the Shift method.
 */
-func (r *Levels) shift(x ...any) {
+func (r *inheritance) shift(x ...any) {
+	if r.levels == nil {
+		r.levels = newLvls()
+	}
+
 	for i := 0; i < len(x); i++ {
 		var lvl Level
 		switch tv := x[i].(type) {
 		case Level:
-			if tv != noLvl {
-				lvl = tv
-			}
+			lvl = tv
 		case int:
-			if lvl = assertIntInheritance(tv); lvl == noLvl {
-				continue
-			}
+			lvl = assertIntInheritance(tv)
 		case string:
-			if lvl = assertStrInheritance(tv); lvl == noLvl {
-				continue
-			}
-		default:
-			continue
+			lvl = assertStrInheritance(tv)
 		}
-
-		(*r) |= Levels(lvl)
+		(*r.levels).cast().Shift(lvl)
 	}
 }
 
@@ -439,7 +402,6 @@ user. Valid levels are zero (0) through four (4), else noLvl
 is returned.
 */
 func assertStrInheritance(x string) (lvl Level) {
-	lvl = noLvl
 	for k, v := range levelNumbers {
 		if x == k {
 			lvl = v
@@ -457,138 +419,75 @@ user. Valid levels are zero (0) through four (4), else noLvl
 is returned.
 */
 func assertIntInheritance(x int) (lvl Level) {
-	lvl = noLvl
 	if L, found := levelMap[x]; found {
 		lvl = L
-		return
 	}
 
 	return
 }
 
 /*
-Positive returns a Boolean value indicative of whether
-the receiver instance of Levels includes Level x.
+Positive wraps go-shifty's BitValue.Positive method.
 */
-func (r Inheritance) Positive(x any) bool {
-	if r.IsZero() {
-		r = Inheritance{new(inheritance)}
+func (r Inheritance) Positive(x any) (posi bool) {
+	if !r.IsZero() {
+		posi = r.inheritance.positive(x)
 	}
-	return r.inheritance.Levels.positive(x)
-}
-
-/*
-Positive returns a Boolean value indicative of whether
-the receiver has the appropriate bits enabled to include
-abstract value x, which describes a Level definition.
-*/
-func (r Levels) Positive(x any) bool {
-	return r.positive(x)
+	return
 }
 
 /*
 IsZero returns a Boolean value indicative of whether the
 receiver is in an aberrant state.
 */
-func (r Levels) IsZero() bool {
-	return int(r) == 0
-}
-
-/*
-Compare returns a Boolean value indicative of a SHA-1 comparison
-between the receiver (r) and input value x.
-*/
-func (r Levels) Compare(x any) bool {
-	return compareHashInstance(r, x)
-}
-
-/*
-Valid returns an error instance that describes the undesirable
-state of the receiver, if applicable. A nil error is returned
-otherwise.
-*/
-func (r Levels) Valid() (err error) {
-	if r.IsZero() {
-		err = nilInstanceErr(r)
-	}
-
-	// TODO: additional checks?
-	return
-}
+//func (r levels) IsZero() bool {
+//	return r.cast().Int() == 0
+//}
 
 /*
 positive is a private method executed by the Positive method.
 */
-func (r Levels) positive(x any) (posi bool) {
-	if r.IsZero() {
-		return
-	}
-
+func (r inheritance) positive(x any) (posi bool) {
 	var lvl Level
 	switch tv := x.(type) {
 	case Level:
-		if tv != noLvl {
-			lvl = tv
-		}
+		lvl = tv
 	case int:
 		lvl = assertIntInheritance(tv)
 	case string:
 		lvl = assertStrInheritance(tv)
 	}
+	posi = (*r.levels).cast().Positive(lvl)
 
-	posi = (r & Levels(lvl)) > 0
 	return
 }
 
 /*
-Unshift wraps Levels.Unshift via the underlying Levels value
-found within the receiver instance.
+Unshift wraps go-shifty's BitValue.Unshift method.
 */
 func (r Inheritance) Unshift(x ...any) Inheritance {
-	if r.IsZero() {
-		r = Inheritance{new(inheritance)}
+	if !r.IsZero() {
+		r.inheritance.unshift(x...)
 	}
-
-	r.inheritance.Levels.unshift(x...)
-	return r
-}
-
-/*
-Unshift right-shifts the receiver instance of Levels to
-remove Level x, if present.
-*/
-func (r *Levels) Unshift(x ...any) *Levels {
-	r.unshift(x...)
 	return r
 }
 
 /*
 unshift is a private method called by the Unshift method.
 */
-func (r *Levels) unshift(x ...any) {
+func (r *inheritance) unshift(x ...any) {
 	for i := 0; i < len(x); i++ {
 		var lvl Level
-		switch tv := x[0].(type) {
+		switch tv := x[i].(type) {
 		case Level:
-			if tv != noLvl {
-				lvl = tv
-			}
+			lvl = tv
 		case int:
-			if lvl = assertIntInheritance(tv); lvl == noLvl {
-				continue
-			}
+			lvl = assertIntInheritance(tv)
 		case string:
-			if lvl = assertStrInheritance(tv); lvl == noLvl {
-				continue
-			}
-		default:
-			continue
+			lvl = assertStrInheritance(tv)
 		}
-
-		(*r) = (*r) &^ Levels(lvl)
+		(*r.levels).cast().Unshift(lvl)
 	}
-
-	return
 }
 
 const badInheritance = `<invalid_inheritance>`
