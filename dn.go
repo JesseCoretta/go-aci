@@ -1003,26 +1003,31 @@ func (r BindDistinguishedNames) setExpressionValues(key Keyword, values ...strin
 			var U LDAPURI
 			if U, err = parseLDAPURI(values[i], key.(BindKeyword)); err == nil {
 				r.Push(U)
-				continue
 			}
+		} else {
+			//
+			// If the DN has the LocalScheme (ldap:///)
+			// prefix, we will chop it off as it is not
+			// needed in literal form any longer.
+			D := chopDNPfx(condenseWHSP(values[i]))
+			err = illegalSyntaxPerTypeErr(D, r.Keyword())
+			if !isInvalidDNSyntax(D) && !contains(D, `?`) {
+				err = nil
+				// Push DN into receiver
+				r.Push(BindDistinguishedName{newDistinguishedName(D, key)})
+			}
+		}
+
+		if err != nil {
 			break
 		}
-
-		//
-		// If the DN has the LocalScheme (ldap:///)
-		// prefix, we will chop it off as it is not
-		// needed in literal form any longer.
-		D := chopDNPfx(condenseWHSP(values[i]))
-		if len(D) < 3 || !(contains(D, `=`) || contains(D, `?`) || !isDNAlias(D)) {
-			err = illegalSyntaxPerTypeErr(D, r.Keyword())
-			return
-		}
-
-		// Push DN into receiver
-		r.Push(BindDistinguishedName{newDistinguishedName(D, key)})
 	}
 
 	return
+}
+
+func isInvalidDNSyntax(dn string) bool {
+	return (len(dn) < 3 || !(contains(dn, `=`) || !isDNAlias(dn)))
 }
 
 /*
@@ -1041,7 +1046,7 @@ func (r TargetDistinguishedNames) setExpressionValues(key Keyword, values ...str
 		// prefix, we will chop it off as it is not
 		// needed in literal form any longer.
 		D := chopDNPfx(condenseWHSP(values[i]))
-		if len(D) < 3 || !(contains(D, `=`) || !isDNAlias(D)) {
+		if isInvalidDNSyntax(D) {
 			err = illegalSyntaxPerTypeErr(D, r.Keyword())
 			return
 		}
