@@ -30,6 +30,7 @@ This package depends upon the following third-party packages:
   - [`go-antlraci`](https://github.com/JesseCoretta/go-antlraci)\*
   - [`go-objectid`](https://github.com/JesseCoretta/go-objectid)\*
   - [`go-stackage`](https://github.com/JesseCoretta/go-stackage)\*
+  - [`go-shifty`](https://github.com/JesseCoretta/go-shifty)\*
 
 _\* Conceived and maintained by same author_
 
