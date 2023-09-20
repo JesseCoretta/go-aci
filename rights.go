@@ -112,10 +112,6 @@ func (r *permission) unshift(x ...any) {
 	}
 }
 
-func rightsPowerOfTwo(x int) bool {
-	return isPowerOfTwo(x) && (0 <= x && x <= int(^uint16(0)))
-}
-
 func (r *permission) positive(x any) (posi bool) {
 	if !r.isZero() {
 		switch tv := x.(type) {
