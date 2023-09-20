@@ -200,7 +200,6 @@ func parseInheritance(inh string) (I Inheritance, err error) {
 	// the identifier sequence.
 	idx := idxr(raw, ']')
 	if idx == -1 {
-		// non conformant!
 		err = badInhErr(inh)
 		return
 	}
@@ -240,11 +239,10 @@ func parseInheritance(inh string) (I Inheritance, err error) {
 	// boundary (see above).
 	var abv AttributeBindTypeOrValue
 
-	if abv, err = parseATBTV(raw[idx+2:]); err != nil {
-		// non conformant ATBTV
-		return
+	if abv, err = parseATBTV(raw[idx+2:]); err == nil {
+		I.inheritance.AttributeBindTypeOrValue = abv
 	}
-	I.inheritance.AttributeBindTypeOrValue = abv
+
 	return
 }
 
@@ -296,7 +294,7 @@ func (r Inheritance) String() (s string) {
 	s = badInheritance
 	if err := r.Valid(); err == nil {
 		// string representation of Levels sequence
-		lvls := r.inheritance.levels.String()
+		lvls := r.inheritance.levels.string()
 		s = sprintf("parent[%s].%s", lvls,
 			r.inheritance.AttributeBindTypeOrValue)
 	}
@@ -304,31 +302,13 @@ func (r Inheritance) String() (s string) {
 }
 
 /*
-Len returns the abstract integer length of the receiver, quantifying
-the number of Level instances currently being expressed. For example,
-if the receiver instance has its Level4 and Level7 bits enabled, this
-would represent an abstract length of two (2).
-*/
-func (r levels) Len() (l int) {
-	for i := 0; i < levelBitIter; i++ {
-		if shift := Level(1 << i); r.cast().Positive(shift) {
-			l++
-		}
-	}
-
-	return
-}
-
-/*
 String is a string method that returns the string
 representation of the receiver instance.
 */
-func (r levels) String() string {
-	var levels []string
-	if r.cast().Int() == 0 {
-		// No levels? default to level 0 (baseObject)
-		levels = append(levels, Level0.String())
-	} else {
+func (r levels) string() string {
+	var levels []string = []string{Level0.String()}
+	if r.cast().Int() > 0 {
+		levels = make([]string, 0)
 		for i := 0; i < levelBitIter; i++ {
 			if shift := Level(1 << i); r.cast().Positive(shift) {
 				levels = append(levels, shift.String())
