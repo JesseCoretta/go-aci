@@ -635,11 +635,14 @@ parsing request through go-antlraci.
 */
 func convertBindRulesHierarchy(stack any) (BindContext, bool) {
 	orig, _ := castAsStack(stack)
-	if orig.Len() == 0 {
-		return badBindRules, false
-	}
+	/*
+		if orig.Len() == 0 {
+			return badBindRules, false
+		}
+	*/
 
 	var clean BindRules
+	var err error
 
 	// Obtain the kind string from the
 	// original stack.
@@ -648,7 +651,7 @@ func convertBindRulesHierarchy(stack any) (BindContext, bool) {
 	// Iterate the newly-populated clean
 	// instance, performing type-casting
 	// as needed, possibly in recursion.
-	for i := 0; i < orig.Len() && ok; i++ {
+	for i := 0; i < orig.Len() && ok && err == nil; i++ {
 		slice, _ := orig.Index(i)
 
 		// perform a type switch upon the
@@ -682,11 +685,9 @@ func convertBindRulesHierarchy(stack any) (BindContext, bool) {
 			//   DistinguishedNames[<N1>] -> <dn1>
 			//                     [<N2>] -> <dn2>
 			//                     [<N3>] -> <dn3>
-			if err := ntv.assertExpressionValue(); err == nil {
+			if err = ntv.assertExpressionValue(); err == nil {
 				clean.Push(ntv)
-				continue
 			}
-			break
 
 		// slice is a stackage.Stack instance.
 		// We want to cast to a BindRules type

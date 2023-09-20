@@ -45,7 +45,7 @@ type Permission struct {
 
 type permission struct {
 	*bool
-	*Right
+	*rights
 }
 
 /*
@@ -71,7 +71,7 @@ bearing the provided disposition and Right instance(s).
 func newPermission(disp bool, x ...any) (p *permission) {
 	p = new(permission)
 	p.bool = &disp
-	p.Right = new(Right)
+	p.rights = newRights()
 	p.shift(x...)
 	return p
 }
@@ -83,12 +83,12 @@ func (r *permission) shift(x ...any) {
 		// of a Right).
 		for i := 0; i < len(x); i++ {
 			switch tv := x[i].(type) {
-			case int:
-				r.shiftIntRight(tv)
+			case int, Right:
+				r.rights.cast().Shift(tv)
 			case string:
-				r.shiftStrRight(tv)
-			case Right:
-				r.shiftIntRight(int(tv))
+				if priv, found := rightsNames[lc(tv)]; found {
+					r.rights.cast().Shift(priv)
+				}
 			}
 		}
 	}
@@ -101,149 +101,35 @@ func (r *permission) unshift(x ...any) {
 		// of a Right).
 		for i := 0; i < len(x); i++ {
 			switch tv := x[i].(type) {
-			case int:
-				r.unshiftIntRight(tv)
+			case int, Right:
+				r.rights.cast().Unshift(tv)
 			case string:
-				r.unshiftStrRight(tv)
-			case Right:
-				r.unshiftIntRight(int(tv))
+				if priv, found := rightsNames[lc(tv)]; found {
+					r.rights.cast().Unshift(priv)
+				}
 			}
 		}
 	}
 }
 
-func (r *permission) shiftIntRight(i int) {
-	// avoid over/under flow
-	if !(0 <= i && i <= int(^uint16(0))) {
-		return
-	}
-
-	if _, matched := noneOrFullAccessRights(Right(i)); matched {
-		(*r.Right) = Right(i)
-		return
-	}
-
-	if rightsPowerOfTwo(i) {
-		(*r.Right) |= Right(i)
-	}
-}
-
-func (r *permission) unshiftIntRight(i int) {
-	// avoid over/under flow
-	if !(0 <= i && i <= int(^uint16(0))) {
-		return
-	}
-
-	if R, matched := noneOrFullAccessRights(Right(i)); matched {
-		(*r.Right) = (*r.Right) &^ R
-		return
-	}
-
-	if rightsPowerOfTwo(i) {
-		(*r.Right) = (*r.Right) &^ Right(i)
-	}
-}
-
-func (r *permission) shiftStrRight(s string) {
-	if priv, found := rightsNames[lc(s)]; found {
-		(*r.Right) |= priv
-	}
-}
-
-func (r *permission) unshiftStrRight(s string) {
-	if priv, found := rightsNames[lc(s)]; found {
-		(*r.Right) = (*r.Right) &^ priv
-	}
-}
-
-func rightsPowerOfTwo(x int) bool {
-	return isPowerOfTwo(x) && (0 <= x && x <= int(^uint16(0)))
-}
-
-func (r permission) positive(x any) (posi bool) {
+func (r *permission) positive(x any) (posi bool) {
 	if !r.isZero() {
 		switch tv := x.(type) {
 		case int:
-			posi = r.positiveIntRight(tv)
+			if posi = tv == 0 && r.rights.cast().Int() == tv; posi {
+				break
+			}
+			posi = r.rights.cast().Positive(tv)
 
 		case string:
-			posi = r.positiveStrRight(tv)
+			if priv, found := rightsNames[lc(tv)]; found {
+				posi = r.positive(priv)
+			}
 
 		case Right:
-			posi = r.positiveIntRight(int(tv))
+			posi = r.positive(int(tv))
 		}
 	}
-	return
-}
-
-func (r permission) positiveIntRight(i int) (posi bool) {
-	// avoid over/under flow
-	if !(0 <= i && i <= int(^uint16(0))) {
-		return
-	}
-
-	if _, matched := noneOrFullAccessRights(Right(i)); matched {
-		if i == 0 {
-			posi = int(*r.Right) == i
-		} else {
-			posi = ((*r.Right) & AllAccess) > 0
-		}
-		return
-	}
-
-	if rightsPowerOfTwo(i) {
-		posi = ((*r.Right) & Right(i)) > 0
-	}
-
-	return
-}
-
-func (r permission) positiveStrRight(s string) (posi bool) {
-	if R, matched := noneOrFullAccessString(lc(s), (*r.Right)); matched {
-		if R == NoAccess {
-			posi = int(*r.Right) == 0
-		} else {
-			posi = ((*r.Right) & AllAccess) > 0
-		}
-		return
-	}
-
-	// Resolve the name of a Right into a Right.
-	if priv, found := rightsNames[lc(s)]; found {
-		posi = ((*r.Right) & priv) > 0
-	}
-
-	return
-}
-
-func noneOrFullAccessRights(x Right) (Right, bool) {
-	var matched bool
-	if x == NoAccess {
-		// NoAccess should stop the party
-		// dead in its tracks, regardless
-		// of any other iterated value.
-		matched = true
-
-	} else if x == AllAccess {
-		// AllAccess should stop the party
-		// dead in its tracks, regardless
-		// of any other iterated value.
-		matched = true
-	}
-
-	return x, matched
-}
-
-func noneOrFullAccessString(x string, r Right) (R Right, matched bool) {
-	switch {
-	case x == NoAccess.String():
-		R = NoAccess
-		matched = int(r) == 0 // 0
-	case x == AllAccess.String():
-		R = AllAccess
-		matched = int(r) == 895 // *895
-	}
-
 	return
 }
 
@@ -278,18 +164,17 @@ the number of Right instances currently being expressed. For example,
 if the receiver instance has its Read and Delete Right bits enabled,
 this would represent an abstract length of two (2).
 */
-func (r Permission) Len() int {
-	if r.IsZero() {
-		return 0
+func (r Permission) Len() (l int) {
+	if !r.IsZero() {
+		l = r.permission.len()
 	}
-
-	return r.permission.len()
+	return
 }
 
 func (r permission) len() int {
 	var D int
-	for i := 0; i < bitSize(NoAccess); i++ {
-		if d := Right(1 << i); r.positive(d) {
+	for i := 0; i < r.rights.cast().Size(); i++ {
+		if d := Right(1 << i); r.rights.cast().Positive(d) {
 			D++
 		}
 	}
@@ -305,23 +190,24 @@ func (r Permission) String() string {
 	if r.IsZero() {
 		return badPerm
 	}
+	pint := r.permission.rights.cast().Int()
 
 	var rights []string
-	if (*r.permission.Right) == AllAccess {
+	if Right(pint) == AllAccess {
 		rights = append(rights, AllAccess.String())
 		return r.sprintf(rights)
-	} else if (*r.permission.Right) == Right(1023) {
+	} else if pint == 1023 {
 		rights = append(rights, AllAccess.String())
 		rights = append(rights, ProxyAccess.String())
 		return r.sprintf(rights)
-	} else if (*r.permission.Right) == NoAccess {
+	} else if Right(pint) == NoAccess {
 		rights = append(rights, NoAccess.String())
 		return r.sprintf(rights)
 	}
 
-	for i := 0; i < bitSize(NoAccess); i++ {
-		right := Right(1 << i)
-		if r.Positive(right) {
+	size := r.permission.rights.cast().Size()
+	for i := 0; i < size; i++ {
+		if right := Right(1 << i); r.Positive(right) {
 			rights = append(rights, right.String())
 		}
 	}
@@ -364,23 +250,21 @@ func (r permission) disposition() (disp string) {
 /*
 Positive returns a Boolean value indicative of whether a particular bit is positive (is set). Negation implies negative, or unset.
 */
-func (r Permission) Positive(x any) bool {
-	if err := r.Valid(); err != nil {
-		return false
+func (r Permission) Positive(x any) (posi bool) {
+	if err := r.Valid(); err == nil {
+		posi = r.permission.positive(x)
 	}
-	return r.permission.positive(x)
+	return
 }
 
 /*
 Shift left-shifts the receiver instance to include Right x, if not already present.
 */
 func (r Permission) Shift(x ...any) Permission {
-	if err := r.Valid(); err != nil {
-		return r
-	}
-
-	for i := 0; i < len(x); i++ {
-		r.permission.shift(x[i])
+	if err := r.Valid(); err == nil {
+		for i := 0; i < len(x); i++ {
+			r.permission.shift(x[i]) //rights.cast().Shift(x[i])
+		}
 	}
 	return r
 }
@@ -389,12 +273,10 @@ func (r Permission) Shift(x ...any) Permission {
 Unshift right-shifts the receiver instance to remove Right x, if present.
 */
 func (r Permission) Unshift(x ...any) Permission {
-	if err := r.Valid(); err != nil {
-		return r
-	}
-
-	for i := 0; i < len(x); i++ {
-		r.permission.unshift(x[i])
+	if err := r.Valid(); err == nil {
+		for i := 0; i < len(x); i++ {
+			r.permission.unshift(x[i]) //rights.cast().Unshift(x[i])
+		}
 	}
 	return r
 }
@@ -412,7 +294,7 @@ func (r *permission) isZero() bool {
 		return true
 	}
 
-	return r.bool == nil && r.Right == nil
+	return r.bool == nil && r.rights == nil
 }
 
 /*
@@ -422,11 +304,10 @@ if processing fails.
 */
 func (r *Permission) Parse(raw string) (err error) {
 	var perm *permission
-	if perm, err = parsePermission(raw); err != nil {
-		return
+	if perm, err = parsePermission(raw); err == nil {
+		r.permission = perm
 	}
 
-	r.permission = perm
 	return
 }
 
@@ -435,14 +316,12 @@ Valid returns a non-error instance if the receiver fails to pass
 basic validity checks.
 */
 func (r Permission) Valid() (err error) {
-	if r.IsZero() {
-		err = nilInstanceErr(r)
-		return
-	}
-
-	err = noPermissionDispErr()
-	if r.permission.bool != nil {
-		err = nil
+	err = nilInstanceErr(r)
+	if !r.IsZero() {
+		err = noPermissionDispErr()
+		if r.permission.bool != nil {
+			err = nil
+		}
 	}
 
 	return

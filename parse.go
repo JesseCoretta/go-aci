@@ -508,7 +508,7 @@ func processTargetRules(stack any) (TargetRules, error) {
 	// identifying each by integer index i. Try to
 	// marshal the parser.RuleExpression contents
 	// into the appropriate go-aci type.
-	for i := 0; i < t.Len(); i++ {
+	for i := 0; i < t.Len() && err == nil; i++ {
 		trv := t.Index(i)
 
 		// Extract individual expression value
@@ -526,10 +526,7 @@ func processTargetRules(stack any) (TargetRules, error) {
 		//   DistinguishedNames[<N1>] -> <dn1>
 		//                     [<N2>] -> <dn2>
 		//                     [<N3>] -> <dn3>
-		if err = trv.assertExpressionValue(); err == nil {
-			continue // because codecov.
-		}
-		break
+		err = trv.assertExpressionValue()
 	}
 
 	return t, err
@@ -839,8 +836,8 @@ func parsePermission(raw string) (*permission, error) {
 
 func unpackageAntlrPermission(perm parser.Permission) (*permission, error) {
 	p := &permission{
-		bool:  new(bool),  // disposition (ptr to bool)
-		Right: new(Right), // rights specifiers (ptr to uint8 alias)
+		bool:   new(bool),   // disposition (ptr to bool)
+		rights: newRights(), // rights specifiers (embedded shifty.BitValue)
 	}
 
 	// process each permission one at a time
@@ -862,8 +859,9 @@ func unpackageAntlrPermission(perm parser.Permission) (*permission, error) {
 	// rather through bit summation of the underlying
 	// values defined in go-aci as part of its attempt
 	// to be memory efficient.
-	err := unexpectedValueCountErr(`permission bits`, bits, int(*p.Right))
-	if bits == int(*p.Right) {
+	rint := p.rights.cast().Int()
+	err := unexpectedValueCountErr(`permission bits`, bits, rint)
+	if bits == rint {
 		// !! WARNING - EXTREME SECURITY RISK !!
 		//
 		// A disposition has two (2) official settings and, thus,
@@ -945,15 +943,13 @@ func processPermissionBindRules(stack any) (pbrs PermissionBindRules, err error)
 	_pbrs, _ := castAsStack(stack)
 	pbrs = PBRs()
 
-	for i := 0; i < _pbrs.Len(); i++ {
+	for i := 0; i < _pbrs.Len() && err == nil; i++ {
 		slice, _ := _pbrs.Index(i)
 		if _pbr, asserted := slice.(parser.PermissionBindRule); asserted {
 			var pbr PermissionBindRule
 			if pbr, err = processPermissionBindRule(_pbr); err == nil {
 				pbrs.Push(pbr)
-				continue
 			}
-			break
 		}
 	}
 

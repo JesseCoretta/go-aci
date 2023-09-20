@@ -1122,18 +1122,24 @@ func hasAttributeFilterOperationPrefix(raw string) bool {
 	return false
 }
 
-/*
-parseAttributeFilterOperations processes the raw input value into an instance of
-AttributeFilterOperations, which is returned alongside an error instance.
-*/
-func parseAttributeFilterOperations(raw string, delim int) (afos AttributeFilterOperations, err error) {
-	var char rune = rune(44) // ASCII #44 [comma, default]
+func afosDelim(delim int) (char rune) {
+	char = rune(44) // ASCII #44 [comma, default]
 
 	// If delim is anything except one (1)
 	// use the default, else use semicolon.
 	if delim == 1 {
 		char = rune(59) // ASCII #59 [semicolon]
 	}
+
+	return
+}
+
+/*
+parseAttributeFilterOperations processes the raw input value into an instance of
+AttributeFilterOperations, which is returned alongside an error instance.
+*/
+func parseAttributeFilterOperations(raw string, delim int) (afos AttributeFilterOperations, err error) {
+	char := afosDelim(delim)
 
 	// Scan the raw input value and count the number of
 	// occurrences of an AttributeOperation prefix.
@@ -1174,7 +1180,7 @@ func parseAttributeFilterOperations(raw string, delim int) (afos AttributeFilter
 	// is an AttributeFilterOperation instance
 	//
 	// e.g.: add=objectClass:(&(employeeStatus:active)(c=US))
-	for i := 0; i < len(vals); i++ {
+	for i := 0; i < len(vals) && err == nil; i++ {
 		var afo AttributeFilterOperation
 
 		value := unquote(condenseWHSP(vals[i]))
@@ -1193,9 +1199,7 @@ func parseAttributeFilterOperations(raw string, delim int) (afos AttributeFilter
 			// instance into our AttributeFilterOperations
 			// stack instance.
 			afos.Push(afo)
-			continue
 		}
-		break
 	}
 
 	return
@@ -1224,13 +1228,11 @@ func parseAttributeFilterOperation(raw string) (afo AttributeFilterOperation, er
 		afo.setCategory(cat)
 		seq = split(trimS(val), `&&`)
 
-		for j := 0; j < len(seq); j++ {
+		for j := 0; j < len(seq) && err == nil; j++ {
 			var af AttributeFilter
 			if af, err = parseAttributeFilter(trimS(seq[j])); err == nil {
 				afo.Push(af)
-				continue
 			}
-			break
 		}
 	}
 

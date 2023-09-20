@@ -7,6 +7,8 @@ import (
 
 func TestAllow(t *testing.T) {
 	G := Allow(ReadAccess, CompareAccess)
+	t.Logf("WHAT THE FUCK %d\n", G.permission.rights.cast().Int())
+
 	want := `allow(read,compare)`
 	got := G.String()
 	if want != got {
@@ -189,7 +191,7 @@ func TestRights_bogus(t *testing.T) {
 
 func TestRights_lrShift(t *testing.T) {
 	var p Permission = Allow(NoAccess)
-	if !p.Positive(0) || !p.Positive(`none`) {
+	if !p.Positive(0) || !p.Positive(`none`) || !p.positive(NoAccess) {
 		t.Errorf("%s failed: cannot identify 'none' permission", t.Name())
 		return
 	}

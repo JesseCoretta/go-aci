@@ -98,6 +98,13 @@ func ExampleDayOfWeek_Valid() {
 	// Output: Valid: false
 }
 
+func ExampleTimeOfDay_Set() {
+	var tod TimeOfDay
+	tod.Set(`1401`)
+	fmt.Printf("Time: %s", tod)
+	// Output: Time: 1401
+}
+
 func ExampleTimeOfDay_BRM() {
 	var tod TimeOfDay
 	fmt.Printf("%d available comparison operator methods", tod.BRM().Len())
