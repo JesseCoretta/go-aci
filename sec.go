@@ -28,11 +28,10 @@ a value of false (default) forces uppercase normalization.
 var AuthenticationMethodLowerCase bool
 
 /*
-AuthenticationMethod contants define the available LDAP authentication
-mechanisms that are recognized within the ACI syntax honored
-by this package.
+AuthenticationMethod constants define all of the available LDAP authentication
+mechanisms recognized within the ACI syntax honored by the package.
 
-NOTE: Supported SASL mechanisms vary per impl.
+Please note that supported SASL mechanisms vary per impl.
 */
 const (
 	noAuth    AuthenticationMethod = iota // invalid
