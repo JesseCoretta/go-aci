@@ -14,7 +14,7 @@ func ExampleDay_String() {
 func ExampleDayOfWeek_BRM() {
 	var dow DayOfWeek
 	fmt.Printf("%d available comparison operator methods", dow.BRM().Len())
-	// 2 available comparison operator methods
+	// Output: 2 available comparison operator methods
 }
 
 func ExampleDayOfWeek_Eq() {
@@ -108,7 +108,7 @@ func ExampleTimeOfDay_Set() {
 func ExampleTimeOfDay_BRM() {
 	var tod TimeOfDay
 	fmt.Printf("%d available comparison operator methods", tod.BRM().Len())
-	// 6 available comparison operator methods
+	// Output: 6 available comparison operator methods
 }
 
 func ExampleTimeOfDay_Eq() {
