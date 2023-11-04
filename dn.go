@@ -22,16 +22,16 @@ var (
 	// directly.
 	LocalScheme = `ldap:///`
 
-	// AllDN is the BindRule abstraction of all *known user* DNs; this does not imply ANONYMOUS DNs
+	// AllDN is the [BindRule] abstraction of all *known user* DNs; this does not imply ANONYMOUS DNs
 	AllDN BindDistinguishedName
 
-	// AnyDN is the BindRule abstraction of all user DNs, known or anonymous
+	// AnyDN is the [BindRule] abstraction of all user DNs, known or anonymous
 	AnyDN BindDistinguishedName
 
-	// SelfDN is the BindRule abstraction of a user's own DN
+	// SelfDN is the [BindRule] abstraction of a user's own DN
 	SelfDN BindDistinguishedName
 
-	// ParentDN is the BindRule abstraction of a user's superior DN
+	// ParentDN is the [BindRule] abstraction of a user's superior DN
 	ParentDN BindDistinguishedName
 
 	// badBindDN is an empty BindDistinguishedName struct returned when
@@ -58,17 +58,17 @@ will appear during string representation operations, e.g.:
 	ldap:///ou=People,dc=example,dc=com
 
 Instances of this kind can be crafted using the DN package-level function
-with the appropriate Bind keyword as the input argument:
+with the appropriate [BindKeyword] as the input argument:
 
-• DN(<dn>, BindUDN) for a `userdn` Distinguished Name
+• DN(<dn>, [BindUDN]) for a `userdn` Distinguished Name
 
-• DN(<dn>, BindGDN) for a `groupdn` Distinguished Name
+• DN(<dn>, [BindGDN]) for a `groupdn` Distinguished Name
 
-• DN(<dn>, BindRDN) for a `roledn` Distinguished Name
+• DN(<dn>, [BindRDN]) for a `roledn` Distinguished Name
 
-In order to fashion multi-valued BindRule instances using instances of this
+In order to fashion multi-valued [BindRule] instances using instances of this
 type, they must reside within an appropriate stack type instance. See the
-BindDistinguishedNames and TargetDistinguishedNames types for details.
+[BindDistinguishedNames] and [TargetDistinguishedNames] types for details.
 */
 type BindDistinguishedName struct {
 	*distinguishedName
@@ -89,15 +89,15 @@ will appear during string representation operations, e.g.:
 Instances of this kind can be crafted using the DN package-level function
 with the appropriate Target keyword as the input argument:
 
-• DN(<dn>, Target) for a `target` Distinguished Name
+• DN(<dn>, [Target]) for a `target` Distinguished Name
 
-• DN(<dn>, TargetTo) for a `target_to` Distinguished Name
+• DN(<dn>, [TargetTo]) for a `target_to` Distinguished Name
 
-• DN(<dn>, TargetFrom) for a `target_from` Distinguished Name
+• DN(<dn>, [TargetFrom]) for a `target_from` Distinguished Name
 
-In order to fashion multi-valued TargetRule instances using values of this type,
+In order to fashion multi-valued [TargetRule] instances using values of this type,
 they must reside within an appropriate stack type instance. For further details,
-see the BindDistinguishedNames and TargetDistinguishedNames types.
+see the [BindDistinguishedNames] and [TargetDistinguishedNames] types.
 */
 type TargetDistinguishedName struct {
 	*distinguishedName
@@ -107,7 +107,7 @@ type TargetDistinguishedName struct {
 distinguishedName is the embedded type (as a pointer!) within instances of
 DistinguishedName.
 
-The following TargetRule keywords allow the (indirect) use of instances
+The following [TargetRule] keywords allow the (indirect) use of instances
 of this type:
 
 • target
@@ -116,7 +116,7 @@ of this type:
 
 • target_from
 
-The following BindRule keywords allow the (indirect) use of instances
+The following [BindRule] keywords allow the (indirect) use of instances
 of this type:
 
 • userdn
@@ -131,7 +131,7 @@ type distinguishedName struct {
 }
 
 /*
-Valid returns an instance of error that reflects whether certain
+Valid returns an instance of [error that reflects whether certai].
 required elements or value combinations were present and deemed
 valid. A non-nil error indicates an undesirable receiver state.
 */
@@ -141,7 +141,7 @@ func (r BindDistinguishedName) Valid() (err error) {
 
 /*
 isDistinguishedNameContext exists to prevent false positive qualifiers
-of the DistinguishedNameContext interface.
+of the [DistinguishedNameContext] interface.
 */
 func (r BindDistinguishedName) isDistinguishedNameContext() {}
 
@@ -154,7 +154,7 @@ func (r BindDistinguishedName) Compare(x any) bool {
 }
 
 /*
-Valid returns an instance of error that reflects whether certain
+Valid returns an instance of [error that reflects whether certai].
 required elements or value combinations were present and deemed
 valid. A non-nil error indicates an undesirable receiver state.
 */
@@ -178,7 +178,7 @@ func validDistinguishedName(x any) (err error) {
 }
 
 /*
-Keyword returns the Keyword (interface) assigned to the receiver instance. This shall be the keyword that appears in a BindRule bearing the receiver as a condition value.
+Keyword returns the [Keyword] assigned to the receiver instance. This shall be the keyword that appears in a [BindRule] bearing the receiver as a condition value.
 */
 func (r BindDistinguishedName) Keyword() Keyword {
 	if r.isZero() {
@@ -188,7 +188,7 @@ func (r BindDistinguishedName) Keyword() Keyword {
 }
 
 /*
-Keyword returns the Keyword (interface) assigned to the receiver instance. This shall be the keyword that appears in a TargetRule bearing the receiver as a condition value.
+Keyword returns the [Keyword] assigned to the receiver instance. This shall be the keyword that appears in a [TargetRule] bearing the receiver as a condition value.
 */
 func (r TargetDistinguishedName) Keyword() Keyword {
 	if err := r.Valid(); err != nil {
@@ -318,7 +318,7 @@ func (r TargetDistinguishedName) IsZero() bool {
 
 /*
 Set assigns value x to the receiver to represent an LDAP distinguished name in
-the context of a BindRule.
+the context of a [BindRule].
 
 This method presents an opportunity for setting a DN at a later point versus
 doing so during the initialization process alone and is totally optional.
@@ -354,7 +354,7 @@ func (r *BindDistinguishedName) Set(x string, kw ...BindKeyword) BindDistinguish
 
 /*
 Set assigns value x to the receiver to represent an LDAP distinguished name in
-the context of a TargetRule.
+the context of a [TargetRule].
 
 This method presents an opportunity for setting a DN at a later point versus
 doing so during the initialization process alone and is totally optional.
@@ -413,43 +413,40 @@ func (r *distinguishedName) set(x string, kw Keyword) {
 }
 
 /*
-UDN initializes, sets and returns an instance of DistinguishedName in one shot.
+UDN initializes, sets and returns an instance of [DistinguishedName].
 
-An LDAP distinguished name, in string form and WITHOUT the leading `ldap:///` scheme, is required.
+An LDAP distinguished name in string form is required.
 
-The return value shall be suitable for use in creating a Bind Rule Condition that bears the
-`userdn` keyword.
+The return value shall be suitable for use in creating a [BindRule] that bears the [BindUDN] [Keyword].
 */
 func UDN(x string) BindDistinguishedName {
 	return BindDistinguishedName{newDistinguishedName(x, BindUDN)}
 }
 
 /*
-RDN initializes, sets and returns an instance of DistinguishedName in one shot.
+RDN initializes, sets and returns an instance of [DistinguishedName].
 
-An LDAP distinguished name, in string form and WITHOUT the leading `ldap:///` scheme, is required.
+An LDAP distinguished name in string form is required.
 
-The return value shall be suitable for use in creating a Bind Rule Condition that bears the
-`roledn` keyword.
+The return value shall be suitable for use in creating a [BindRule] that bears the [BindRDN] [Keyword].
 */
 func RDN(x string) BindDistinguishedName {
 	return BindDistinguishedName{newDistinguishedName(x, BindRDN)}
 }
 
 /*
-GDN initializes, sets and returns an instance of DistinguishedName in one shot.
+GDN initializes, sets and returns an instance of [DistinguishedName].
 
 An LDAP distinguished name, in string form and WITHOUT the leading `ldap:///` scheme, is required.
 
-The return value shall be suitable for use in creating a Bind Rule Condition that bears the
-`groupdn` keyword.
+The return value shall be suitable for use in creating a [BindRule] that bears the [BindGDN] [Keyword].
 */
 func GDN(x string) BindDistinguishedName {
 	return BindDistinguishedName{newDistinguishedName(x, BindGDN)}
 }
 
 /*
-TDN initializes, sets and returns an instance of DistinguishedName in one shot.
+TDN initializes, sets and returns an instance of [DistinguishedName] in one shot.
 
 An LDAP distinguished name, in string form and WITHOUT the leading `ldap:///` scheme, is required.
 
@@ -461,7 +458,7 @@ func TDN(x string) TargetDistinguishedName {
 }
 
 /*
-TTDN initializes, sets and returns an instance of DistinguishedName in one shot.
+TTDN initializes, sets and returns an instance of [DistinguishedName] in one shot.
 
 An LDAP distinguished name, in string form and WITHOUT the leading `ldap:///` scheme, is required.
 
@@ -473,7 +470,7 @@ func TTDN(x string) TargetDistinguishedName {
 }
 
 /*
-TFDN initializes, sets and returns an instance of DistinguishedName in one shot.
+TFDN initializes, sets and returns an instance of [DistinguishedName] in one shot.
 
 An LDAP distinguished name, in string form and WITHOUT the leading `ldap:///` scheme, is required.
 
@@ -582,21 +579,21 @@ func (r TargetDistinguishedNames) Compare(x any) bool {
 }
 
 /*
-BRM returns an instance of BindRuleMethods.
+BRM returns an instance of [BindRuleMethods].
 
 Each of the return instance's key values represent a single instance of the
-ComparisonOperator type that is allowed for use in the creation of BindRule
+[ComparisonOperator] type that is allowed for use in the creation of [BindRule]
 instances which bear the receiver instance as an expression value. The value
-for each key is the actual BindRuleMethod instance for OPTIONAL use in the
-creation of a BindRule instance.
+for each key is the actual [BindRuleMethod] instance for OPTIONAL use in the
+creation of a [BindRule] instance.
 
 This is merely a convenient alternative to maintaining knowledge of which
-ComparisonOperator instances apply to which types. Instances of this type
+[ComparisonOperator] instances apply to which types. Instances of this type
 are also used to streamline package unit tests.
 
 Please note that if the receiver is in an aberrant state, or if it has not
 yet been initialized, the execution of ANY of the return instance's value
-methods will return bogus BindRule instances. While this is useful in unit
+methods will return bogus [BindRule] instances. While this is useful in unit
 testing, the end user must only execute this method IF and WHEN the receiver
 has been properly populated and prepared for such activity.
 */
@@ -608,21 +605,21 @@ func (r BindDistinguishedName) BRM() BindRuleMethods {
 }
 
 /*
-BRM returns an instance of BindRuleMethods.
+BRM returns an instance of [BindRuleMethods].
 
 Each of the return instance's key values represent a single instance of the
-ComparisonOperator type that is allowed for use in the creation of BindRule
+[ComparisonOperator] type that is allowed for use in the creation of BindRule
 instances which bear the receiver instance as an expression value. The value
-for each key is the actual BindRuleMethod instance for OPTIONAL use in the
-creation of a BindRule instance.
+for each key is the actual [BindRuleMethod] instance for OPTIONAL use in the
+creation of a [BindRule] instance.
 
 This is merely a convenient alternative to maintaining knowledge of which
-ComparisonOperator instances apply to which types. Instances of this type
+[ComparisonOperator] instances apply to which types. Instances of this type
 are also used to streamline package unit tests.
 
 Please note that if the receiver is in an aberrant state, or if it has not
 yet been initialized, the execution of ANY of the return instance's value
-methods will return bogus BindRule instances. While this is useful in unit
+methods will return bogus [BindRule] instances. While this is useful in unit
 testing, the end user must only execute this method IF and WHEN the receiver
 has been properly populated and prepared for such activity.
 */
@@ -634,21 +631,21 @@ func (r BindDistinguishedNames) BRM() BindRuleMethods {
 }
 
 /*
-TRM returns an instance of TargetRuleMethods.
+TRM returns an instance of [TargetRuleMethods].
 
 Each of the return instance's key values represent a single instance of the
-ComparisonOperator type that is allowed for use in the creation of TargetRule
+[ComparisonOperator] type that is allowed for use in the creation of [TargetRule]
 instances which bear the receiver instance as an expression value. The value
-for each key is the actual TargetRuleMethod instance for OPTIONAL use in the
-creation of a TargetRule instance.
+for each key is the actual [TargetRuleMethod] instance for OPTIONAL use in the
+creation of a [TargetRule] instance.
 
 This is merely a convenient alternative to maintaining knowledge of which
-ComparisonOperator instances apply to which types. Instances of this type
+[ComparisonOperator] instances apply to which types. Instances of this type
 are also used to streamline package unit tests.
 
 Please note that if the receiver is in an aberrant state, or if it has not
 yet been initialized, the execution of ANY of the return instance's value
-methods will return bogus TargetRule instances. While this is useful in unit
+methods will return bogus [TargetRule] instances. While this is useful in unit
 testing, the end user must only execute this method IF and WHEN the receiver
 has been properly populated and prepared for such activity.
 */
@@ -660,21 +657,21 @@ func (r TargetDistinguishedName) TRM() TargetRuleMethods {
 }
 
 /*
-TRM returns an instance of TargetRuleMethods.
+TRM returns an instance of [TargetRuleMethods].
 
 Each of the return instance's key values represent a single instance of the
-ComparisonOperator type that is allowed for use in the creation of TargetRule
+[ComparisonOperator] type that is allowed for use in the creation of TargetRule
 instances which bear the receiver instance as an expression value. The value
-for each key is the actual TargetRuleMethod instance for OPTIONAL use in the
-creation of a TargetRule instance.
+for each key is the actual [TargetRuleMethod] instance for OPTIONAL use in the
+creation of a [TargetRule] instance.
 
 This is merely a convenient alternative to maintaining knowledge of which
-ComparisonOperator instances apply to which types. Instances of this type
+[ComparisonOperator] instances apply to which types. Instances of this type
 are also used to streamline package unit tests.
 
 Please note that if the receiver is in an aberrant state, or if it has not
 yet been initialized, the execution of ANY of the return instance's value
-methods will return bogus TargetRule instances. While this is useful in unit
+methods will return bogus [TargetRule] instances. While this is useful in unit
 testing, the end user must only execute this method IF and WHEN the receiver
 has been properly populated and prepared for such activity.
 */
@@ -740,7 +737,7 @@ func (r TargetDistinguishedNames) setQuoteStyle(style int) TargetDistinguishedNa
 }
 
 /*
-Eq initializes and returns a new BindRule instance configured to express the
+Eq initializes and returns a new [BindRule] instance configured to express the
 evaluation of the receiver value as Equal-To one (1) of the following keyword
 contexts:
 
@@ -760,7 +757,7 @@ func (r BindDistinguishedName) Eq() BindRule {
 }
 
 /*
-Eq initializes and returns a new TargetRule instance configured to express the
+Eq initializes and returns a new [TargetRule] instance configured to express the
 evaluation of the receiver value as Equal-To one (1) of the following keyword
 contexts:
 
@@ -780,7 +777,7 @@ func (r TargetDistinguishedName) Eq() TargetRule {
 }
 
 /*
-Ne initializes and returns a new BindRule instance configured to express the
+Ne initializes and returns a new [BindRule] instance configured to express the
 evaluation of the receiver value as Not-Equal-To one (1) of the following
 keyword contexts:
 
@@ -790,7 +787,7 @@ keyword contexts:
 
 • `roledn`
 
-Negated equality BindRule instances should be used with caution.
+Negated equality [BindRule] instances should be used with caution.
 */
 func (r BindDistinguishedName) Ne() BindRule {
 	x, ok := dnToCondition(r, Ne)
@@ -802,7 +799,7 @@ func (r BindDistinguishedName) Ne() BindRule {
 }
 
 /*
-Ne initializes and returns a new BindRule instance configured to express the
+Ne initializes and returns a new [BindRule] instance configured to express the
 evaluation of the receiver value as Not-Equal-To one (1) of the following
 keyword contexts:
 
@@ -812,7 +809,7 @@ keyword contexts:
 
 • `target_from`
 
-Negated equality TargetRule instances should be used with caution.
+Negated equality [TargetRule] instances should be used with caution.
 */
 func (r TargetDistinguishedName) Ne() TargetRule {
 	x, ok := dnToCondition(r, Ne)
@@ -824,7 +821,7 @@ func (r TargetDistinguishedName) Ne() TargetRule {
 }
 
 /*
-Eq initializes and returns a new BindRule instance configured to express the
+Eq initializes and returns a new [BindRule] instance configured to express the
 evaluation of the receiver value as Equal-To one (1) of the following keyword
 contexts:
 
@@ -844,7 +841,7 @@ func (r BindDistinguishedNames) Eq() BindRule {
 }
 
 /*
-Eq initializes and returns a new TargetRule instance configured to express the
+Eq initializes and returns a new [TargetRule] instance configured to express the
 evaluation of the receiver value as Equal-To one (1) of the following keyword
 contexts:
 
@@ -864,7 +861,7 @@ func (r TargetDistinguishedNames) Eq() TargetRule {
 }
 
 /*
-Ne initializes and returns a new BindRule instance configured to express the
+Ne initializes and returns a new [BindRule] instance configured to express the
 evaluation of the receiver value as Not-Equal-To one (1) of the following
 keyword contexts:
 
@@ -874,7 +871,7 @@ keyword contexts:
 
 • `roledn`
 
-Negated equality BindRule instances should be used with caution.
+Negated equality [BindRule] instances should be used with caution.
 */
 func (r BindDistinguishedNames) Ne() BindRule {
 	x, ok := dnToCondition(r, Ne)
@@ -886,17 +883,15 @@ func (r BindDistinguishedNames) Ne() BindRule {
 }
 
 /*
-Ne initializes and returns a new TargetRule instance configured to express the
+Ne initializes and returns a new [TargetRule] instance configured to express the
 evaluation of the receiver value as Not-Equal-To one (1) of the following
 keyword contexts:
 
-• `target`
+ - [Target]
+ - [TargetTo]
+ - [TargetFrom]
 
-• `target_to`
-
-• `target_from`
-
-Negated equality TargetRule instances should be used with caution.
+Negated equality [TargetRule] instances should be used with caution.
 */
 func (r TargetDistinguishedNames) Ne() TargetRule {
 	x, ok := dnToCondition(r, Ne)
@@ -1149,7 +1144,7 @@ func (r TargetDistinguishedNames) String() string {
 
 /*
 Keyword returns the Keyword (interface) assigned to the receiver instance.
-This shall be the keyword that appears in a BindRule bearing the receiver
+This shall be the keyword that appears in a [BindRule] bearing the receiver
 as a condition value.
 */
 func (r BindDistinguishedNames) Keyword() (kw Keyword) {
@@ -1171,13 +1166,13 @@ func (r BindDistinguishedNames) Keyword() (kw Keyword) {
 
 /*
 F returns the appropriate instance creator function for crafting individual
-BindDistinguishedName instances for submission to the receiver. This is merely
+[BindDistinguishedName] instances for submission to the receiver. This is merely
 a convenient alternative to maintaining knowledge as to which function applies
 to the current receiver instance.
 
-The default is UDN, and will be returned if the receiver is uninitialized,
+The default is [UDN], and will be returned if the receiver is uninitialized,
 or if the Keyword associated with the receiver is invalid somehow. Otherwise,
-GDN is returned for BindGDN, and RDN for BindRDN.
+[GDN] is returned for [BindGDN], and [RDN] for [BindRDN].
 */
 func (r BindDistinguishedNames) F() func(string) BindDistinguishedName {
 	switch r.Keyword() {
@@ -1192,7 +1187,7 @@ func (r BindDistinguishedNames) F() func(string) BindDistinguishedName {
 
 /*
 Keyword returns the Keyword (interface) assigned to the receiver instance.
-This shall be the keyword that appears in a BindRule bearing the receiver
+This shall be the keyword that appears in a [BindRule] bearing the receiver
 as a condition value.
 */
 func (r TargetDistinguishedNames) Keyword() (kw Keyword) {
@@ -1214,13 +1209,13 @@ func (r TargetDistinguishedNames) Keyword() (kw Keyword) {
 
 /*
 F returns the appropriate instance creator function for crafting individual
-TargetDistinguishedName instances for submission to the receiver. This is merely
+[TargetDistinguishedName] instances for submission to the receiver. This is merely
 a convenient alternative to maintaining knowledge as to which function applies
 to the current receiver instance.
 
-The default is TDN, and will be returned if the receiver is uninitialized,
-or if the Keyword associated with the receiver is invalid somehow. Otherwise,
-TTDN is returned for TargetTo, and TFDN for TargetFrom.
+The default is [TDN], and will be returned if the receiver is uninitialized,
+or if the [Keyword] associated with the receiver is invalid somehow. Otherwise,
+[TTDN] is returned for [TargetTo], and [TFDN] for [TargetFrom].
 */
 func (r TargetDistinguishedNames) F() func(string) TargetDistinguishedName {
 	switch r.Keyword() {
@@ -1235,10 +1230,10 @@ func (r TargetDistinguishedNames) F() func(string) TargetDistinguishedName {
 
 /*
 Push wraps go-stackage's Stack.Push method. Valid input types
-are string and BindDistinguishedName.
+are string and [BindDistinguishedName].
 
 In the case of a string value, it is automatically cast as an
-instance of BindDistinguishedName using the appropriate keyword,
+instance of [BindDistinguishedName] using the appropriate keyword,
 so long as the raw string is of a non-zero length.
 */
 func (r BindDistinguishedNames) Push(x ...any) BindDistinguishedNames {
@@ -1266,7 +1261,7 @@ func (r BindDistinguishedNames) Push(x ...any) BindDistinguishedNames {
 
 /*
 Contains returns a Boolean value indicative of whether value x,
-if a string or BindDistinguishedName instance, already resides
+if a string or [BindDistinguishedName] instance, already resides
 within the receiver instance.
 
 Case is not significant in the matching process.
@@ -1305,10 +1300,10 @@ func (r BindDistinguishedNames) contains(x any) bool {
 
 /*
 Push wraps go-stackage's Stack.Push method. Valid input types
-are string and TargetDistinguishedName.
+are string and [TargetDistinguishedName].
 
 In the case of a string value, it is automatically cast as an
-instance of TargetDistinguishedName using the appropriate keyword,
+instance of [TargetDistinguishedName] using the appropriate keyword,
 so long as the raw string is of a non-zero length.
 */
 func (r TargetDistinguishedNames) Push(x ...any) TargetDistinguishedNames {
@@ -1337,7 +1332,7 @@ func (r TargetDistinguishedNames) Push(x ...any) TargetDistinguishedNames {
 
 /*
 Contains returns a Boolean value indicative of whether value x,
-if a string or TargetDistinguishedName instance, already resides
+if a string or [TargetDistinguishedName] instance, already resides
 within the receiver instance.
 
 Case is not significant in the matching process.
@@ -1347,7 +1342,7 @@ func (r TargetDistinguishedNames) Contains(x any) bool {
 }
 
 /*
-contains is a private method called by TargetDistinguishedNames.Contains.
+contains is a private method called by [TargetDistinguishedNames] Contains method.
 */
 func (r TargetDistinguishedNames) contains(x any) bool {
 	if r.Len() == 0 {
@@ -1391,7 +1386,7 @@ func pushBindDistinguishedNames(kw Keyword, x any) (ctx DistinguishedNameContext
 			ok = true
 		}
 
-	// case match is a proper BindDistinguishedName instance.
+	// case match is a proper [BindDistinguishedName] instance.
 	// Both keywords (that of the BindDistinguishedName, and
 	// that of the destination receiver) must match.
 	case BindDistinguishedName:
@@ -1425,7 +1420,7 @@ func pushTargetDistinguishedNames(kw Keyword, x any) (tdn TargetDistinguishedNam
 			ok = true
 		}
 
-	// case match is a proper TargetDistinguishedName instance.
+	// case match is a proper [TargetDistinguishedName] instance.
 	// Both keywords (that of the TargetDistinguishedName, and
 	// that of the destination receiver) must match.
 	case TargetDistinguishedName:
@@ -1440,7 +1435,7 @@ func pushTargetDistinguishedNames(kw Keyword, x any) (tdn TargetDistinguishedNam
 
 /*
 Pop wraps go-stackage's Stack.Pop method and performs type
-assertion to return a proper BindDistinguishedName instance.
+assertion to return a proper [BindDistinguishedName] instance.
 */
 func (r BindDistinguishedNames) Pop() (popped BindDistinguishedName) {
 	y, _ := r.cast().Pop()
@@ -1455,7 +1450,7 @@ func (r BindDistinguishedNames) Pop() (popped BindDistinguishedName) {
 
 /*
 Pop wraps go-stackage's Stack.Pop method and performs type
-assertion to return a proper TargetDistinguishedName instance.
+assertion to return a proper [TargetDistinguishedName] instance.
 */
 func (r TargetDistinguishedNames) Pop() (popped TargetDistinguishedName) {
 	y, _ := r.cast().Pop()
@@ -1586,17 +1581,17 @@ func distinguishedNamesPushPolicyKeywordHandler(r any, kw Keyword) {
 }
 
 /*
-UDNs returns a new instance of BindDistinguishedNames with an initialized
+UDNs returns a new instance of [BindDistinguishedNames] with an initialized
 embedded stack configured to function as a simple ORed list containing
 a single level of LDAP distinguished names. The BindUDN (userdn) keyword
 is automatically assigned to the return value.
 
-Only valid instances of BindDistinguishedName which bear the BindUDN keyword
+Only valid instances of [BindDistinguishedName] which bear the BindUDN keyword
 are to be considered eligible for push requests. If the input value is a
 string, it will be accepted and properly branded with the keyword.
 
 Optionally, the caller may choose to submit one (1) or more (valid) instances of the
-BindDistinguishedName type (or its string equivalent) for push during initialization.
+[BindDistinguishedName] type (or its string equivalent) for push during initialization.
 This is merely a more convenient alternative to separate init and push procedures.
 
 See also the RDNs and GDNs functions for BindRDN and BindGDN keywords
@@ -1634,17 +1629,17 @@ func UDNs(x ...any) (d BindDistinguishedNames) {
 }
 
 /*
-RDNs returns a new instance of BindDistinguishedNames with an initialized
+RDNs returns a new instance of [BindDistinguishedNames] with an initialized
 embedded stack configured to function as a simple ORed list containing
 a single level of LDAP distinguished names. The BindRDN (roledn) keyword
 is automatically assigned to the return value.
 
-Only valid instances of BindDistinguishedName which bear the BindRDN keyword
+Only valid instances of [BindDistinguishedName] which bear the BindRDN keyword
 are to be considered eligible for push requests. If the input value is a
 string, it will be accepted and properly branded with the keyword.
 
 Optionally, the caller may choose to submit one (1) or more (valid) instances of the
-BindDistinguishedName type (or its string equivalent) for push during initialization.
+[BindDistinguishedName] type (or its string equivalent) for push during initialization.
 This is merely a more convenient alternative to separate init and push procedures.
 
 See also the UDNs and GDNs functions for BindUDN and BindGDN keywords
@@ -1682,17 +1677,17 @@ func RDNs(x ...any) (d BindDistinguishedNames) {
 }
 
 /*
-GDNs returns a new instance of BindDistinguishedNames with an initialized
+GDNs returns a new instance of [BindDistinguishedNames] with an initialized
 embedded stack configured to function as a simple ORed list containing
 a single level of LDAP distinguished names. The BindGDN (groupdn) keyword
 is automatically assigned to the return value.
 
-Only valid instances of BindDistinguishedName which bear the BindGDN keyword
+Only valid instances of [BindDistinguishedName] which bear the BindGDN keyword
 are to be considered eligible for push requests. If the input value is a
 string, it will be accepted and properly branded with the keyword.
 
 Optionally, the caller may choose to submit one (1) or more (valid) instances of the
-BindDistinguishedName type (or its string equivalent) for push during initialization.
+[BindDistinguishedName] type (or its string equivalent) for push during initialization.
 This is merely a more convenient alternative to separate init and push procedures.
 
 See also the UDNs and RDNs functions for BindUDN and BindRDN keywords
@@ -1730,17 +1725,17 @@ func GDNs(x ...any) (d BindDistinguishedNames) {
 }
 
 /*
-TDNs returns a new instance of TargetDistinguishedNames with an initialized
+TDNs returns a new instance of [TargetDistinguishedNames] with an initialized
 embedded stack configured to function as a simple ORed list containing
 a single level of LDAP distinguished names. The Target (target) keyword is
 automatically assigned to the return value.
 
-Only valid instances of TargetDistinguishedName which bear the Target keyword
+Only valid instances of [TargetDistinguishedName] which bear the Target keyword
 are to be considered eligible for push requests. If the input value is a
 string, it will be accepted and properly branded with the keyword.
 
 Optionally, the caller may choose to submit one (1) or more (valid) instances of the
-TargetDistinguishedName type (or its string equivalent) for push during initialization.
+[TargetDistinguishedName] type (or its string equivalent) for push during initialization.
 This is merely a more convenient alternative to separate init and push procedures.
 
 See also the TTDNs and TFDNs functions for TargetTo and TargetFrom keywords
@@ -1778,17 +1773,17 @@ func TDNs(x ...any) (d TargetDistinguishedNames) {
 }
 
 /*
-TTDNs returns a new instance of TargetDistinguishedNames with an initialized
+TTDNs returns a new instance of [TargetDistinguishedNames] with an initialized
 embedded stack configured to function as a simple ORed list containing
 a single level of LDAP distinguished names. The TargetTo (target_to) keyword
 is automatically assigned to the return value.
 
-Only valid instances of TargetDistinguishedName which bear the TargetTo keyword
+Only valid instances of [TargetDistinguishedName] which bear the TargetTo keyword
 are to be considered eligible for push requests. If the input value is a
 string, it will be accepted and properly branded with the keyword.
 
 Optionally, the caller may choose to submit one (1) or more (valid) instances of the
-TargetDistinguishedName type (or its string equivalent) for push during initialization.
+[TargetDistinguishedName] type (or its string equivalent) for push during initialization.
 This is merely a more convenient alternative to separate init and push procedures.
 
 See also the TDNs and TFDNs functions for Target and TargetFrom keywords
@@ -1826,21 +1821,21 @@ func TTDNs(x ...any) (d TargetDistinguishedNames) {
 }
 
 /*
-TFDNs returns a new instance of TargetDistinguishedNames with an initialized
+TFDNs returns a new instance of [TargetDistinguishedNames] with an initialized
 embedded stack configured to function as a simple ORed list containing a single
-level of LDAP distinguished names. The TargetFrom (target_from) keyword will be
+level of LDAP distinguished names. The [TargetFrom] (target_from) [Keyword] will be
 automatically assigned to the return value.
 
 Optionally, the caller may choose to submit one (1) or more (valid) instances of the
-TargetDistinguishedName type (or its string equivalent) for push during initialization.
+[TargetDistinguishedName] type (or its string equivalent) for push during initialization.
 This is merely a more convenient alternative to separate init and push procedures.
 
-Only valid instances of TargetDistinguishedName which bear the TargetFrom
-keyword are to be considered eligible for push requests. If the input value
+Only valid instances of [TargetDistinguishedName] which bear the [TargetFrom]
+[Keyword] are to be considered eligible for push requests. If the input value
 is a string, it will be accepted and properly branded with the keyword.
 
-See also the TDNs and TTDNs functions for Target and TargetTo keywords
-respectively.
+See also the [TDNs] and [TTDNs] package level functions for [Target] and [TargetTo]
+[Keyword] instances respectively.
 */
 func TFDNs(x ...any) (d TargetDistinguishedNames) {
 	// create a native stackage.Stack
@@ -1877,11 +1872,11 @@ func TFDNs(x ...any) (d TargetDistinguishedNames) {
 DistinguishedNameContext is a convenient interface type that is
 qualified by the following types:
 
-• LDAPURI (as its only required parameter is a BindDistinguishedName)
+• [LDAPURI] (as its only required parameter is a [BindDistinguishedName])
 
-• BindDistinguishedName
+• [BindDistinguishedName]
 
-• TargetDistinguishedName
+• [TargetDistinguishedName]
 
 The qualifying methods shown below are intended to make the
 generalized handling of distinguished names slightly easier

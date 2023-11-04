@@ -3,7 +3,7 @@ package aci
 /*
 filter.go contains types, functions, methods and constants that pertain to basic
 LDAP Search Filter concepts, as well as TargetRule filter-related abstracts that
-bear the targattrfilters or targetfilters keyword contexts.
+bear the TargetAttrFilters or TargetFilter Keyword contexts.
 */
 
 var (
@@ -13,7 +13,7 @@ var (
 
 /*
 SearchFilter is a struct type that embeds an LDAP search filter. Instances of this type
-may be used in a variety of areas, from LDAPURI composition to targetfilter rules.
+may be used in a variety of areas, from [LDAPURI] composition to [TargetFilter] rules.
 */
 type SearchFilter struct {
 	*searchFilter
@@ -55,21 +55,21 @@ func (r SearchFilter) Valid() (err error) {
 }
 
 /*
-TRM returns an instance of TargetRuleMethods.
+TRM returns an instance of [TargetRuleMethods].
 
 Each of the return instance's key values represent a single instance of
-the ComparisonOperator type that is allowed for use in the creation of
-TargetRule instances which bear the receiver instance as an expression
-value. The value for each key is the actual TargetRuleMethod instance for
-OPTIONAL use in the creation of a TargetRule instance.
+the [ComparisonOperator] type that is allowed for use in the creation of
+[TargetRule] instances which bear the receiver instance as an expression
+value. The value for each key is the actual [TargetRuleMethod] instance for
+OPTIONAL use in the creation of a [TargetRule] instance.
 
 This is merely a convenient alternative to maintaining knowledge of which
-ComparisonOperator instances apply to which types. Instances of this type
+[ComparisonOperator] instances apply to which types. Instances of this type
 are also used to streamline package unit tests.
 
 Please note that if the receiver is in an aberrant state, or if it has not
 yet been initialized, the execution of ANY of the return instance's value
-methods will return bogus TargetRule instances. While this is useful in unit
+methods will return bogus [TargetRule] instances. While this is useful in unit
 testing, the end user must only execute this method IF and WHEN the receiver
 has been properly populated and prepared for such activity.
 */
@@ -81,9 +81,9 @@ func (r SearchFilter) TRM() TargetRuleMethods {
 }
 
 /*
-Filter initializes (and optionally sets) a new instance of SearchFilter.
-Instances of this kind are used in LDAPURIs, as well as certain target
-rules.
+Filter initializes (and optionally sets) a new instance of [SearchFilter].
+Instances of this kind are used in [LDAPURI] instances, as well as certain
+target rules.
 */
 func Filter(x ...string) (r SearchFilter) {
 	r = SearchFilter{newSearchFilter()}
@@ -105,8 +105,8 @@ func newSearchFilter() (f *searchFilter) {
 }
 
 /*
-Keyword returns the Keyword associated with the receiver instance. In
-the context of this type instance, the Keyword returned is always TargetFilter.
+Keyword returns the [Keyword] associated with the receiver instance. In
+the context of this type instance, the [Keyword] returned is always [TargetFilter].
 */
 func (r SearchFilter) Keyword() Keyword {
 	return TargetFilter
@@ -157,9 +157,8 @@ func (r *searchFilter) set(x string) {
 }
 
 /*
-Eq initializes and returns a new TargetRule instance configured to express the
-evaluation of the receiver value as Equal-To a `targetfilter` Target Keyword
-context.
+Eq initializes and returns a new [TargetRule] instance configured to express the
+evaluation of the receiver value as Equal-To a [TargetFilter] [Keyword] context.
 */
 func (r SearchFilter) Eq() TargetRule {
 	if r.IsZero() {
@@ -169,11 +168,10 @@ func (r SearchFilter) Eq() TargetRule {
 }
 
 /*
-Ne initializes and returns a new TargetRule instance configured to express the
-evaluation of the receiver value as Not-Equal-To a `targetfilter` Target Keyword
-context.
+Ne initializes and returns a new [TargetRule] instance configured to express the
+evaluation of the receiver value as Not-Equal-To a [TargetFilter] [Keyword] context.
 
-Negated equality TargetRule instances should be used with caution.
+Negated equality [TargetRule] instances should be used with caution.
 */
 func (r SearchFilter) Ne() TargetRule {
 	if r.IsZero() {
@@ -183,9 +181,9 @@ func (r SearchFilter) Ne() TargetRule {
 }
 
 /*
-AttributeFilter is a struct type that embeds an AttributeTyp and filter-style Rule.
+AttributeFilter is a struct type that embeds an [AttributeType] and filter-style Rule.
 Instances of this type are a component in the creation of Target Rule definitions
-based upon the targattrfilters keyword.
+based upon the [TargetAttrFilters] keyword.
 */
 type AttributeFilter struct {
 	*atf
@@ -202,12 +200,12 @@ type atf struct {
 /*
 AttributeOperation defines either an Add Operation or a Delete Operation.
 
-Constants of this type are used in AttributeFilters instances.
+Constants of this type are used in [AttributeFilterOperation] instances.
 */
 type AttributeOperation uint8
 
 /*
-AttributeOperation constants are used to initialize and return AttributeFilters
+[AttributeOperation] constants are used to initialize and return [AttributeFilters]
 instances based on one (1) of the possible two (2) constants defined below.
 */
 const (
@@ -217,10 +215,10 @@ const (
 )
 
 /*
-AF initializes, optionally sets and returns a new instance of AttributeFilter,
-which is a critical component of the `targattrfilters` Target Rule.
+AF initializes, optionally sets and returns a new instance of [AttributeFilter],
+which is a critical component of the [TargetAttrFilters] Target Rule.
 
-Input values must be either a SearchFilter or an AttributeType.
+Input values must be either a [SearchFilter] or an [AttributeType].
 */
 func AF(x ...any) AttributeFilter {
 	return AttributeFilter{newAttrFilter(x...)}
@@ -252,8 +250,8 @@ func (r *AttributeFilter) Set(x ...any) *AttributeFilter {
 }
 
 /*
-AttributeType returns the underlying instance of AttributeType, or
-a bogus AttributeType if unset.
+AttributeType returns the underlying instance of [AttributeType], or
+a bogus [AttributeType] if unset.
 */
 func (r AttributeFilter) AttributeType() AttributeType {
 	if r.IsZero() {
@@ -264,8 +262,8 @@ func (r AttributeFilter) AttributeType() AttributeType {
 }
 
 /*
-SearchFilter returns the underlying instance of SearchFilter, or
-a bogus SearchFilter if unset.
+SearchFilter returns the underlying instance of [SearchFilter], or
+a bogus [SearchFilter] if unset.
 */
 func (r AttributeFilter) SearchFilter() SearchFilter {
 	if r.IsZero() {
@@ -316,8 +314,9 @@ func (r AttributeFilter) String() string {
 }
 
 /*
-Keyword returns the Keyword associated with the receiver instance. In
-the context of this type instance, the Keyword returned is always TargetFilter.
+Keyword returns the [Keyword] associated with the receiver instance. In
+the context of this type instance, the [Keyword] returned is always
+[TargetFilter].
 */
 func (r AttributeFilter) Keyword() Keyword {
 	return TargetAttrFilters
@@ -365,18 +364,18 @@ func (r AttributeOperation) String() string {
 }
 
 /*
-AFOs returns a freshly initialized instance of AttributeFilterOperations, configured
-to store one (1) or more AttributeFilterOperation instances for the purpose of crafting
-TargetRule instances which bear the `targattrfilters` keyword context.
+AFOs returns a freshly initialized instance of [AttributeFilterOperations], configured
+to store one (1) or more [AttributeFilterOperation] instances for the purpose of crafting
+[TargetRule] instances which bear the [TargetAttrFilters] [Keyword] context.
 
 Optionally, the caller may choose to submit one (1) or more (valid) instances of the
-AttributeFilterOperation type (or its string equivalent) during initialization. This
+[AttributeFilterOperation] type (or its string equivalent) during initialization. This
 is merely a more convenient alternative to separate initialization and push procedures.
 
 Instances of this design are not generally needed elsewhere.
 
 Values are automatically joined using stackage.List() with SetDelimiter for comma
-delimitation by default. See SetDelimiter method if semicolon delimitation is
+delimitation by default. See the SetDelimiter method if semicolon delimitation is
 preferred.
 */
 func AFOs(x ...any) (f AttributeFilterOperations) {
@@ -413,11 +412,11 @@ func AFOs(x ...any) (f AttributeFilterOperations) {
 
 /*
 F returns the appropriate instance creator function for crafting individual
-AttributeFilterOperation instances for submission to the receiver. This is merely
+[AttributeFilterOperation] instances for submission to the receiver. This is merely
 a convenient alternative to maintaining knowledge as to which function applies
 to the current receiver instance.
 
-As there is only one possibility for instances of this design, the AFO function
+As there is only one possibility for instances of this design, the [AFO] function
 is returned.
 */
 func (r AttributeFilterOperations) F() func(...any) AttributeFilterOperation {
@@ -425,8 +424,9 @@ func (r AttributeFilterOperations) F() func(...any) AttributeFilterOperation {
 }
 
 /*
-Keyword returns the Keyword associated with the receiver instance. In
-the context of this type instance, the Keyword returned is always TargetFilter.
+Keyword returns the [Keyword] associated with the receiver instance. In
+the context of this type instance, the [Keyword] returned is always
+[TargetFilter].
 */
 func (r AttributeFilterOperations) Keyword() Keyword {
 	return TargetAttrFilters
@@ -444,7 +444,7 @@ func (r AttributeFilterOperations) Compare(x any) bool {
 Contains returns a Boolean value indicative of whether the type
 and its value were located within the receiver.
 
-Valid input types are AttributeFilterOperation or a valid string
+Valid input types are [AttributeFilterOperation] or a valid string
 equivalent.
 
 Case is significant in the matching process.
@@ -454,7 +454,7 @@ func (r AttributeFilterOperations) Contains(x any) bool {
 }
 
 /*
-contains is a private method called by the AttributeFilterOperations
+contains is a private method called by the [AttributeFilterOperations]
 Contains method, et al.
 
 Case is significant in the matching process.
@@ -490,11 +490,11 @@ SetDelimiter controls the delimitation scheme employed by the receiver.
 
 Some vendors use semicolon (ASCII #59) for delimitation for expressions
 that include values of this kind. This alternative scheme can be set using
-the AttributeFilterOperationsSemiDelim integer constant (1).
+the [AttributeFilterOperationsSemiDelim] integer constant (1).
 
 Other vendors use a comma (ASCII #44) for delimitation of the same form of
 expression. This delimitation scheme represents the default (most common)
-behavior, but can be set using the AttributeFilterOperationsCommaDelim
+behavior, but can be set using the [AttributeFilterOperationsCommaDelim]
 integer constant (0), or when run in niladic fashion.
 */
 func (r AttributeFilterOperations) SetDelimiter(i ...int) AttributeFilterOperations {
@@ -535,7 +535,7 @@ func (r AttributeFilterOperations) SetDelimiter(i ...int) AttributeFilterOperati
 /*
 Push wraps go-stackage's Stack.Push method. This method shall attempt to
 add the provided input values (x) -- which may contain one (1) or more
-instances of AttributeFilterOperation or its string equivalent -- to the
+instances of [AttributeFilterOperation] or its string equivalent -- to the
 receiver instance.
 */
 func (r AttributeFilterOperations) Push(x ...any) AttributeFilterOperations {
@@ -568,8 +568,8 @@ An error is returned if the parsing attempt fails for some reason. If successful
 receiver pointer is updated (clobbered) with new information.
 
 Parse will process the input string (raw) and attempt to split the value using a
-delimiter integer identifier, if specified. See AttributeFilterOperationsCommaDelim
-(default) and AttributeFilterOperationsSemiDelim const definitions for details.
+delimiter integer identifier, if specified. See [AttributeFilterOperationsCommaDelim]
+(default) and [AttributeFilterOperationsSemiDelim] const definitions for details.
 */
 func (r *AttributeFilterOperations) Parse(raw string, delim ...int) (err error) {
 	var d int = AttributeFilterOperationsCommaDelim
@@ -665,8 +665,8 @@ func (r AttributeFilterOperations) String() string {
 }
 
 /*
-Eq initializes and returns a new TargetRule instance configured to express the
-evaluation of the receiver value as Equal-To a `targattrfilters` keyword context.
+Eq initializes and returns a new [TargetRule] instance configured to express the
+evaluation of the receiver value as Equal-To a [TargetAttrFilters] [Keyword] context.
 */
 func (r AttributeFilterOperations) Eq() TargetRule {
 	if r.IsZero() {
@@ -677,31 +677,31 @@ func (r AttributeFilterOperations) Eq() TargetRule {
 
 /*
 Ne performs no useful task, as negated equality comparison does not apply
-to TargetRule instances that bear the `targattrfilters` keyword context.
+to [TargetRule] instances that bear the [TargetAttrFilters] [Keyword] context.
 
 This method exists solely to convey this message and conform to Go's interface
-qualifying signature. When executed, this method will return a bogus TargetRule.
+qualifying signature. When executed, this method will return a bogus [TargetRule].
 
-Negated equality TargetRule instances should be used with caution.
+Negated equality [TargetRule] instances should be used with caution.
 */
 func (r AttributeFilterOperations) Ne() TargetRule { return badTargetRule }
 
 /*
-TRM returns an instance of TargetRuleMethods.
+TRM returns an instance of [TargetRuleMethods].
 
 Each of the return instance's key values represent a single instance of
-the ComparisonOperator type that is allowed for use in the creation of
-TargetRule instances which bear the receiver instance as an expression
-value. The value for each key is the actual TargetRuleMethod instance for
-OPTIONAL use in the creation of a TargetRule instance.
+the [ComparisonOperator] type that is allowed for use in the creation of
+[TargetRule] instances which bear the receiver instance as an expression
+value. The value for each key is the actual [TargetRuleMethod] instance for
+OPTIONAL use in the creation of a [TargetRule] instance.
 
 This is merely a convenient alternative to maintaining knowledge of which
-ComparisonOperator instances apply to which types. Instances of this type
+[ComparisonOperator] instances apply to which types. Instances of this type
 are also used to streamline package unit tests.
 
 Please note that if the receiver is in an aberrant state, or if it has not
 yet been initialized, the execution of ANY of the return instance's value
-methods will return bogus TargetRule instances. While this is useful in unit
+methods will return bogus [TargetRule] instances. While this is useful in unit
 testing, the end user must only execute this method IF and WHEN the receiver
 has been properly populated and prepared for such activity.
 */
@@ -840,11 +840,11 @@ func (r AttributeFilterOperation) Pop() (af AttributeFilter) {
 
 /*
 F returns the appropriate instance creator function for crafting individual
-AttributeFilter instances for submission to the receiver. This is merely a
+[AttributeFilter] instances for submission to the receiver. This is merely a
 convenient alternative to maintaining knowledge as to which function applies
 to the current receiver instance.
 
-As there is only one possibility for instances of this design, the AF function
+As there is only one possibility for instances of this design, the [AF] function
 is always returned.
 */
 func (r AttributeFilterOperation) F() func(...any) AttributeFilter {
@@ -852,8 +852,8 @@ func (r AttributeFilterOperation) F() func(...any) AttributeFilter {
 }
 
 /*
-Keyword returns the Keyword associated with the receiver instance. In
-the context of this type instance, the TargetAttrFilters keyword context
+Keyword returns the [Keyword] associated with the receiver instance. In
+the context of this type instance, the [TargetAttrFilters] [Keyword] context
 is always returned.
 */
 func (r AttributeFilterOperation) Keyword() Keyword {
@@ -884,7 +884,7 @@ func (r AttributeFilterOperation) Index(idx int) (af AttributeFilter) {
 Contains returns a Boolean value indicative of whether the type
 and its value were located within the receiver.
 
-Valid input types are AttributeFilter or a valid string equivalent.
+Valid input types are [AttributeFilter] or a valid string equivalent.
 
 Case is significant in the matching process.
 */
@@ -982,8 +982,8 @@ func (r AttributeFilterOperation) presentationPolicy(_ ...any) string {
 }
 
 /*
-Eq initializes and returns a new TargetRule instance configured to express the
-evaluation of the receiver value as Equal-To a `targattrfilters` keyword context.
+Eq initializes and returns a new [TargetRule] instance configured to express the
+evaluation of the receiver value as Equal-To a [TargetAttrFilters] [Keyword] context.
 */
 func (r AttributeFilterOperation) Eq() TargetRule {
 	if r.IsZero() {
@@ -994,31 +994,31 @@ func (r AttributeFilterOperation) Eq() TargetRule {
 
 /*
 Ne performs no useful task, as negated equality comparison does not apply
-to TargetRule instances that bear the `targattrfilters` keyword context.
+to [TargetRule] instances that bear the [TargetAttrFilters] [Keyword] context.
 
 This method exists solely to convey this message and conform to Go's interface
 qualifying signature. When executed, this method will return a bogus TargetRule.
 
-Negated equality TargetRule instances should be used with caution.
+Negated equality [TargetRule] instances should be used with caution.
 */
 func (r AttributeFilterOperation) Ne() TargetRule { return badTargetRule }
 
 /*
-TRM returns an instance of TargetRuleMethods.
+TRM returns an instance of [TargetRuleMethods].
 
 Each of the return instance's key values represent a single instance of
-the ComparisonOperator type that is allowed for use in the creation of
-TargetRule instances which bear the receiver instance as an expression
-value. The value for each key is the actual TargetRuleMethod instance for
-OPTIONAL use in the creation of a TargetRule instance.
+the [ComparisonOperator] type that is allowed for use in the creation of
+[TargetRule] instances which bear the receiver instance as an expression
+value. The value for each key is the actual [TargetRuleMethod] instance for
+OPTIONAL use in the creation of a [TargetRule] instance.
 
 This is merely a convenient alternative to maintaining knowledge of which
-ComparisonOperator instances apply to which types. Instances of this type
+[ComparisonOperator] instances apply to which types. Instances of this type
 are also used to streamline package unit tests.
 
 Please note that if the receiver is in an aberrant state, or if it has not
 yet been initialized, the execution of ANY of the return instance's value
-methods will return bogus TargetRule instances. While this is useful in unit
+methods will return bogus [TargetRule] instances. While this is useful in unit
 testing, the end user must only execute this method IF and WHEN the receiver
 has been properly populated and prepared for such activity.
 */
@@ -1030,19 +1030,19 @@ func (r AttributeFilterOperation) TRM() TargetRuleMethods {
 }
 
 /*
-AFO returns a freshly initialized instance of AttributeFilterOperation, configured
-to store one (1) or more AttributeFilter instances for the purpose of crafting
-TargetRule instances which bear the `targattrfilters` keyword context. Instances of
+AFO returns a freshly initialized instance of [AttributeFilterOperation], configured
+to store one (1) or more [AttributeFilter] instances for the purpose of crafting
+[TargetRule] instances which bear the [TargetAttrFilters] [Keyword] context. Instances of
 this design are not generally needed outside of that context.
 
 Optionally, the caller may choose to submit one (1) or more (valid) instances of the
-AttributeFilter type (or its string equivalent) during initialization. This is merely
+[AttributeFilter] type (or its string equivalent) during initialization. This is merely
 a more convenient alternative to separate init and push procedures.
 
 Multiple values are automatically ANDed using stackage.And() using the symbolic AND
 operator (&&).
 
-See also the AttributeFilterOperations type, and its AFOs function, for the multi-valued
+See also the [AttributeFilterOperations] type, and its [AFOs] function, for the multi-valued
 incarnation of this type.
 */
 func AFO(x ...any) (f AttributeFilterOperation) {
@@ -1063,10 +1063,10 @@ func AFO(x ...any) (f AttributeFilterOperation) {
 }
 
 /*
-AFO returns an instance of AttributeFilterOperation based upon the input AttributeFilter
+AFO returns an instance of [AttributeFilterOperation] based upon the input [AttributeFilter]
 instances.
 
-The instance of AttributeFilterOperation contains an ANDed Rule instance using symbols (`&&`).
+The instance of [AttributeFilterOperation] contains an ANDed Rule instance using symbols (`&&`).
 */
 func (r AttributeOperation) AFO(x ...any) (afo AttributeFilterOperation) {
 	afo = AFO()
@@ -1092,8 +1092,8 @@ func (r AttributeFilterOperation) setCategory(cat string) {
 }
 
 /*
-Operation returns AddOp or DelOp as extracted from the receiver's categorical
-label. If invalid, an invalid AttributeOperation value is returned.
+Operation returns [AddOp] or [DelOp] as extracted from the receiver's categorical
+label. If invalid, an invalid [AttributeOperation] value is returned.
 */
 func (r AttributeFilterOperation) Operation() AttributeOperation {
 	switch x := trimPfx(r.getCategory(), TargetAttrFilters.String()+`_`); lc(x) {

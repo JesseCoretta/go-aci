@@ -390,13 +390,13 @@ func TestAttributeFilterOperations_toTargetRule(t *testing.T) {
 }
 
 /*
-This example demonstrates the creation of an instance of AttributeFilter, which
-is strictly intended for use within instances of AttributeFilterOperation.
+This example demonstrates the creation of an instance of [AttributeFilter], which
+is strictly intended for use within instances of [AttributeFilterOperation].
 
-In this example, proper type instances are fed to the package level AF function
-to form a complete AttributeFilter instance.
+In this example, proper type instances are fed to the package level [AF] function
+to form a complete [AttributeFilter] instance.
 
-The return type, AttributeFilter, is then shown in string representation.
+The return type, [AttributeFilter], is then shown in string representation.
 */
 func ExampleAF() {
 	af := AF(
@@ -410,13 +410,13 @@ func ExampleAF() {
 
 /*
 This example demonstrates the creation of an instance of AttributeFilter, which
-is strictly intended for use within instances of AttributeFilterOperation.
+is strictly intended for use within instances of [AttributeFilterOperation].
 
-In this example, a raw string representation of an AttributeFilter is used for
+In this example, a raw string representation of an [AttributeFilter] is used for
 parser input.
 
-The return type, AttributeFilter, is then interrogated by way of the AttributeType
-and SearchFilter methods it makes available to the user. An alternative to this
+The return type, AttributeFilter, is then interrogated by way of the [AttributeType]
+and [SearchFilter] methods it makes available to the user. An alternative to this
 approach is to simply use its String method to get the whole value, if desired.
 */
 func ExampleAttributeFilter_Parse() {
@@ -435,7 +435,7 @@ func ExampleAttributeFilter_Parse() {
 
 /*
 This example demonstrates the creation of an instance of AttributeFilter, which
-is strictly intended for use within instances of AttributeFilterOperation.
+is strictly intended for use within instances of [AttributeFilterOperation].
 
 In this example, proper type instances are fed to the Set method to form a
 complete AttributeFilter instance.
@@ -542,10 +542,10 @@ func ExampleAttributeFilter_Valid() {
 
 /*
 This example demonstrates the creation of an instance of AttributeFilterOperation,
-which is strictly intended for use within instances of AttributeFilterOperations.
+which is strictly intended for use within instances of [AttributeFilterOperations].
 
 In this example, proper type instances are fed to the package level AFO function
-to form a complete AttributeFilterOperation instance.
+to form a complete [AttributeFilterOperation] instance.
 
 The return type, AttributeFilterOperation, is then shown in string representation.
 */
@@ -603,7 +603,7 @@ func ExampleAttributeFilterOperation_byAttributeOperationConstants() {
 This example demonstrates the use of the AttributeFilterOperation type's Contains
 method, allowing for basic text searches of the receiver.
 
-Note that case is significant in the matching process for instances of this type.
+Note that case is significant in the matching process for instances of [this type].
 */
 func ExampleAttributeFilterOperation_Contains() {
 	attr := AT(`homeDirectory`)
@@ -641,8 +641,7 @@ func ExampleAttributeFilterOperation_Eq() {
 }
 
 /*
-This example demonstrates the use of the AttributeFilterOperation type's F
-method, which returns the appropriate slice building function for convenience.
+This example demonstrates the use of the AttributeFilterOperation type's F method, which returns the appropriate slice building function for convenience.
 */
 func ExampleAttributeFilterOperation_F() {
 	var aFO AttributeFilterOperation
@@ -659,8 +658,7 @@ func ExampleAttributeFilterOperation_F() {
 }
 
 /*
-This example demonstrates the use of the AttributeFilterOperation type's Index
-method to allow iteration of the receiver's contents.
+This example demonstrates the use of the AttributeFilterOperation type's Index method to allow iteration of the receiver's contents.
 */
 func ExampleAttributeFilterOperation_Index() {
 	attr := AT(`homeDirectory`)
@@ -680,8 +678,7 @@ func ExampleAttributeFilterOperation_Index() {
 }
 
 /*
-This example demonstrates a check of the receiver for "nilness" using the
-AttributeFilterOperation type's IsZero method.
+This example demonstrates a check of the receiver for "nilness" using the AttributeFilterOperation type's IsZero method.
 */
 func ExampleAttributeFilterOperation_IsZero() {
 	attr := AT(`homeDirectory`)
@@ -694,8 +691,7 @@ func ExampleAttributeFilterOperation_IsZero() {
 }
 
 /*
-This example demonstrates the use of the AttributeFilterOperation type's Len
-method to report the integer length of the receiver.
+This example demonstrates the use of the AttributeFilterOperation type's Len method to report the integer length of the receiver.
 */
 func ExampleAttributeFilterOperation_Len() {
 	attr := AT(`homeDirectory`)
@@ -713,8 +709,7 @@ func ExampleAttributeFilterOperation_Len() {
 }
 
 /*
-This example demonstrates the use of the AttributeFilterOperation type's Keyword
-method.
+This example demonstrates the use of the AttributeFilterOperation type's Keyword method.
 */
 func ExampleAttributeFilterOperation_Keyword() {
 	var aFO AttributeFilterOperation
@@ -724,8 +719,7 @@ func ExampleAttributeFilterOperation_Keyword() {
 }
 
 /*
-This example demonstrates the use of the AttributeFilterOperation type's Kind
-method.
+This example demonstrates the use of the AttributeFilterOperation type's Kind method.
 */
 func ExampleAttributeFilterOperation_Kind() {
 	var aFO AttributeFilterOperation
@@ -752,8 +746,7 @@ func ExampleAttributeFilterOperation_Ne() {
 }
 
 /*
-This example demonstrates a check of the receiver's operational disposition
-using the Operation method.
+This example demonstrates a check of the receiver's operational disposition using the Operation method.
 */
 func ExampleAttributeFilterOperation_Operation() {
 	attr := AT(`homeDirectory`)
@@ -766,8 +759,7 @@ func ExampleAttributeFilterOperation_Operation() {
 }
 
 /*
-This example demonstrates the use of the AttributeFilterOperation type's Pop
-method to remove the last stack slice per LIFO ordering.
+This example demonstrates the use of the AttributeFilterOperation type's Pop method to remove the last stack slice per LIFO ordering.
 */
 func ExampleAttributeFilterOperation_Pop() {
 	attr := AT(`homeDirectory`)
@@ -787,8 +779,7 @@ func ExampleAttributeFilterOperation_Pop() {
 }
 
 /*
-This example demonstrates the use of the AttributeFilterOperation type's Push
-method to append a new (eligible) instance to the receiver.
+This example demonstrates the use of the AttributeFilterOperation type's Push method to append a new (eligible) instance to the receiver.
 */
 func ExampleAttributeFilterOperation_Push() {
 	attr := AT(`homeDirectory`)
@@ -855,7 +846,7 @@ This example demonstrates the creation of an instance of AttributeFilterOperatio
 which is used to store individual AttributeFilterOperation instances.
 
 In this example, proper type instances are fed to the package level AFOs function
-to form a complete AttributeFilterOperations instance.
+to form a complete [AttributeFilterOperations] instance.
 
 The return type, AttributeFilterOperations, is then shown in string representation.
 */
@@ -888,7 +879,7 @@ This example demonstrates the creation of an instance of AttributeFilterOperatio
 which is used to store individual AttributeFilterOperation instances.
 
 In this example, proper type instances are fed to the package level AFOs function
-to form a complete AttributeFilterOperations instance.
+to form a complete [AttributeFilterOperations] instance.
 
 The return type, AttributeFilterOperations, is then shown in string representation.
 */
@@ -984,8 +975,7 @@ func ExampleAttributeFilterOperations_Ne() {
 }
 
 /*
-This example demonstrates the use of the AttributeFilterOperations type's F
-method, which returns the appropriate slice building function for convenience.
+This example demonstrates the use of the AttributeFilterOperations type's F method, which returns the appropriate slice building function for convenience.
 */
 func ExampleAttributeFilterOperations_F() {
 	var aFOs AttributeFilterOperations
@@ -1003,8 +993,7 @@ func ExampleAttributeFilterOperations_F() {
 }
 
 /*
-This example demonstrates the use of the AttributeFilterOperations type's Index
-method to allow iteration of the receiver's contents.
+This example demonstrates the use of the AttributeFilterOperations type's Index method to allow iteration of the receiver's contents.
 */
 func ExampleAttributeFilterOperations_Index() {
 	// define the desired attributeType
@@ -1046,8 +1035,7 @@ func ExampleAttributeFilterOperations_Index() {
 }
 
 /*
-This example demonstrates a check of the receiver for "nilness" using the
-AttributeFilterOperations type's IsZero method.
+This example demonstrates a check of the receiver for "nilness" using the AttributeFilterOperations type's IsZero method.
 */
 func ExampleAttributeFilterOperations_IsZero() {
 	var afo AttributeFilterOperations
@@ -1056,8 +1044,7 @@ func ExampleAttributeFilterOperations_IsZero() {
 }
 
 /*
-This example demonstrates the use of the AttributeFilterOperation type's Len
-method to report the integer length of the receiver.
+This example demonstrates the use of the AttributeFilterOperation type's Len method to report the integer length of the receiver.
 */
 func ExampleAttributeFilterOperations_Len() {
 	attr := AT(`homeDirectory`)
@@ -1075,8 +1062,7 @@ func ExampleAttributeFilterOperations_Len() {
 }
 
 /*
-This example demonstrates the use of the AttributeFilterOperations type's Keyword
-method.
+This example demonstrates the use of the AttributeFilterOperations type's Keyword method.
 */
 func ExampleAttributeFilterOperations_Keyword() {
 	var afos AttributeFilterOperations
@@ -1086,8 +1072,7 @@ func ExampleAttributeFilterOperations_Keyword() {
 }
 
 /*
-This example demonstrates the use of the AttributeFilterOperations type's Kind
-method.
+This example demonstrates the use of the AttributeFilterOperations type's Kind method.
 */
 func ExampleAttributeFilterOperations_Kind() {
 	var aFOs AttributeFilterOperations
@@ -1142,8 +1127,7 @@ func ExampleAttributeFilterOperation_Parse() {
 }
 
 /*
-This example demonstrates the use of the AttributeFilterOperations type's Push
-method to append a new (eligible) instance to the receiver.
+This example demonstrates the use of the AttributeFilterOperations type's Push method to append a new (eligible) instance to the receiver.
 */
 func ExampleAttributeFilterOperations_Push() {
 	attr := AT(`homeDirectory`)
@@ -1162,8 +1146,7 @@ func ExampleAttributeFilterOperations_Push() {
 }
 
 /*
-This example demonstrates the use of the AttributeFilterOperations type's Push
-method to append a new (eligible) instance to the receiver.
+This example demonstrates the use of the AttributeFilterOperations type's Push method to append a new (eligible) instance to the receiver.
 */
 func ExampleAttributeFilterOperations_Push_byString() {
 	attr := AT(`homeDirectory`)
@@ -1183,8 +1166,7 @@ func ExampleAttributeFilterOperations_Push_byString() {
 }
 
 /*
-This example demonstrates the use of the AttributeFilterOperations type's Pop
-method to remove the last stack slice per LIFO ordering.
+This example demonstrates the use of the AttributeFilterOperations type's Pop method to remove the last stack slice per LIFO ordering.
 */
 func ExampleAttributeFilterOperations_Pop() {
 	attr := AT(`homeDirectory`)
@@ -1280,8 +1262,7 @@ func ExampleAttributeFilterOperations_String() {
 }
 
 /*
-This example demonstrates the creation of an instance of AttributeFilterOperations
-followed by a call of its Valid method for the purpose of sanity checking the receiver.
+This example demonstrates the creation of an instance of AttributeFilterOperations followed by a call of its Valid method for the purpose of sanity checking the receiver.
 */
 func ExampleAttributeFilterOperations_Valid() {
 	attr := AT(`uidNumber`)
@@ -1302,14 +1283,11 @@ func ExampleAttributeFilterOperations_Valid() {
 }
 
 /*
-This example demonstrates the creation of an instance of AttributeFilterOperation,
-which is strictly intended for use within instances of AttributeFilterOperations.
+This example demonstrates the creation of an instance of [AttributeFilterOperation], which is strictly intended for use within instances of [AttributeFilterOperations].
 
-In this example, proper type instances are fed to the AttributeOperation AFO method
-to form a complete AttributeFilterOperation instance.
+In this example, proper type instances are fed to the [AttributeOperation] AFO method to form a complete [AttributeFilterOperation] instance.
 
-The return type, AttributeFilterOperation, has its type shown in text, along with
-the current stack length.
+The return type, [AttributeFilterOperation], has its type shown in text, along with the current stack length.
 */
 func ExampleAttributeOperation_AFO() {
 	attr := AT(`gecos`)
@@ -1325,8 +1303,7 @@ func ExampleAttributeOperation_AFO() {
 }
 
 /*
-This example demonstrates the SHA-1 hash comparison between two (2) AttributeFilterOperation
-instances using the Compare method.
+This example demonstrates the SHA-1 hash comparison between two (2) [AttributeFilterOperation] instances using the Compare method.
 */
 func ExampleAttributeFilterOperation_Compare() {
 	attr := AT(`uidNumber`)
@@ -1344,8 +1321,7 @@ func ExampleAttributeFilterOperation_Compare() {
 }
 
 /*
-This example demonstrates the SHA-1 hash comparison between two (2) AttributeFilterOperations
-instances using the Compare method.
+This example demonstrates the SHA-1 hash comparison between two (2) [AttributeFilterOperations] instances using the Compare method.
 
 The comparison returns false, as the compared instances are ordered differently.
 */
@@ -1373,10 +1349,7 @@ func ExampleAttributeFilterOperations_Compare() {
 }
 
 /*
-This example demonstrates the string representation of an AttributeOperation
-constant.
-
-In this example, the instance is shown in string representation.
+This example demonstrates the string representation of an [AttributeOperation] constant. In this example, the instance is shown in string representation.
 */
 func ExampleAttributeOperation_String() {
 	fmt.Printf("%s and %s", AddOp, DelOp)
@@ -1437,8 +1410,7 @@ func ExampleSearchFilter_Valid() {
 }
 
 /*
-This example demonstrates the SHA-1 hash comparison between two (2) SearchFilter
-instances using the Compare method.
+This example demonstrates the SHA-1 hash comparison between two (2) [SearchFilter] instances using the Compare method.
 */
 func ExampleSearchFilter_Compare() {
 	f1 := Filter(`(|(objectClass=contractor)(objectClass=intern))`)
@@ -1449,8 +1421,7 @@ func ExampleSearchFilter_Compare() {
 }
 
 /*
-This example demonstrates the SHA-1 hash comparison between two (2) AttributeFilter
-instances using the Compare method.
+This example demonstrates the SHA-1 hash comparison between two (2) [AttributeFilter] instances using the Compare method.
 */
 func ExampleAttributeFilter_Compare() {
 	f1 := AF(`objectClass`, `(|(objectClass=contractor)(objectClass=intern))`)
