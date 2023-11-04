@@ -845,7 +845,7 @@ convenient alternative to maintaining knowledge as to which function applies
 to the current receiver instance.
 
 As there is only one possibility for instances of this design, the AF function
-is returned.
+is always returned.
 */
 func (r AttributeFilterOperation) F() func(...any) AttributeFilter {
 	return AF
@@ -853,7 +853,8 @@ func (r AttributeFilterOperation) F() func(...any) AttributeFilter {
 
 /*
 Keyword returns the Keyword associated with the receiver instance. In
-the context of this type instance, the Keyword returned is always TargetFilter.
+the context of this type instance, the TargetAttrFilters keyword context
+is always returned.
 */
 func (r AttributeFilterOperation) Keyword() Keyword {
 	return TargetAttrFilters
