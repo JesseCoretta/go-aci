@@ -522,42 +522,6 @@ func (r AttributeFilterOperations) Push(x ...any) AttributeFilterOperations {
 }
 
 /*
-Parse is a convenient alternative to building the receiver instance using individual instances of the needed types. This method does not use go-antlraci.
-
-An error is returned if the parsing attempt fails for some reason. If successful, the receiver pointer is updated (clobbered) with new information.
-
-Parse will process the input string (raw) and attempt to split the value using a delimiter integer identifier, if specified. See [AttributeFilterOperationsCommaDelim] (default) and [AttributeFilterOperationsSemiDelim] constant definitions for details.
-*/
-func (r *AttributeFilterOperations) Parse(raw string, delim ...int) (err error) {
-	var d int = AttributeFilterOperationsCommaDelim
-	if len(delim) > 0 {
-		if delim[0] == AttributeFilterOperationsSemiDelim {
-			d = delim[0]
-		}
-	}
-
-	var R AttributeFilterOperations
-	if R, err = parseAttributeFilterOperations(raw, d); err != nil {
-		return
-	}
-	*r = R
-
-	return
-}
-
-/*
-Parse returns an error instance following an attempt to parse input raw into the receiver instance. A successful parse will clobber (or obliterate) any contents already present within the receiver.
-*/
-func (r *AttributeFilterOperation) Parse(raw string) error {
-	afo, err := parseAttributeFilterOperation(raw)
-	if err == nil {
-		*r = afo
-	}
-
-	return err
-}
-
-/*
 Pop wraps the [stackage.Stack.Pop] method.
 */
 func (r AttributeFilterOperations) Pop() (afo AttributeFilterOperation) {
@@ -1124,23 +1088,6 @@ func parseAttributeFilterOperation(raw string) (afo AttributeFilterOperation, er
 				afo.Push(af)
 			}
 		}
-	}
-
-	return
-}
-
-/*
-Parse parses the string input value (raw) and attempts to marshal its contents into the receiver instance. An error is returned if the attempt should fail for some reason.
-*/
-func (r *AttributeFilter) Parse(raw string) (err error) {
-	if raw = unquote(condenseWHSP(raw)); len(raw) < 5 {
-		err = nilInstanceErr(r)
-		return
-	}
-
-	var _r AttributeFilter
-	if _r, err = parseAttributeFilter(raw); err == nil {
-		*r = _r
 	}
 
 	return

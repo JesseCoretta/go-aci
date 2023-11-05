@@ -117,7 +117,7 @@ func rangeBindRuleFuncMap(candidate string, fm *bindRuleFuncMap) (cop Comparison
 }
 
 /*
-BR wraps go-stackage's Cond package-level function. In this context, it is wrapped here to assemble and return a [BindRule] instance using the so-called "one-shot" procedure. This is an option only when ALL information necessary for the process is in-hand and ready for user input: the [BindKeyword], [ComparisonOperator] and the appropriate value(s) expression.
+BR wraps the [stackage.Cond] package-level function. In this context, it is wrapped here to assemble and return a [BindRule] instance using the so-called "one-shot" procedure. This is an option only when ALL information necessary for the process is in-hand and ready for user input: the [BindKeyword], [ComparisonOperator] and the appropriate value(s) expression.
 
 Use of this function shall not require a subsequent call of [BindRule]'s Init method, which is needed only for so-called "piecemeal" [BindRule] assembly.
 
@@ -415,7 +415,7 @@ And returns an instance of [BindRule] configured to express Boolean AND logical 
 
 Optionally, the caller may choose to submit one (1) or more (valid) instances of these types during initialization. This is merely a more convenient alternative to separate initialization and push procedures.
 
-The embedded type within the return is stackage.Stack via the go-stackage package's And function.
+The embedded type within the return is stackage.Stack via the [stackage.And] package-level function.
 */
 func And(x ...any) (b BindRules) {
 	// create a native stackage.Stack
@@ -454,7 +454,7 @@ Or returns an instance of [BindRule] configured to express Boolean OR logical op
 
 Optionally, the caller may choose to submit one (1) or more (valid) instances of these types during initialization. This is merely a more convenient alternative to separate initialization and push procedures.
 
-The embedded type within the return is stackage.Stack via the go-stackage package's Or function.
+The embedded type within the return is stackage.Stack via the [stackage.Or] package-level function.
 */
 func Or(x ...any) (b BindRules) {
 	// create a native stackage.Stack
@@ -493,7 +493,7 @@ Not returns an instance of [BindRule] configured to express Boolean NOT logical 
 
 Optionally, the caller may choose to submit one (1) or more (valid) instances of these types during initialization. This is merely a more convenient alternative to separate initialization and push procedures.
 
-The embedded type within the return is stackage.Stack via the go-stackage package's Not function.
+The embedded type within the return is stackage.Stack via the [stackage.Not] package-level function.
 */
 func Not(x ...any) (b BindRules) {
 	// create a native stackage.Stack
@@ -538,7 +538,7 @@ The hierarchy is traversed thoroughly and will handle nested contexts
 seamlessly.
 
 This function is called following an apparently successful BindRules
-parsing request through go-antlraci.
+parsing request through the [parser] package.
 */
 func convertBindRulesHierarchy(stack any) (BindContext, bool) {
 	orig, _ := castAsStack(stack)
@@ -572,7 +572,7 @@ func convertBindRulesHierarchy(stack any) (BindContext, bool) {
 		// instance, and update the string
 		// value(s) to be housed within a
 		// value-appropriate type defined
-		// by go-aci.
+		// by the aci package.
 		case isStackageCondition(slice):
 			deref := derefC(slice)
 			ntv := BindRule(deref).
@@ -640,7 +640,7 @@ func uncloakBindRules(ctx BindRules) {
 }
 
 /*
-BUG: testing cornercase for go-antlraci. Temporary, do not remove yet.
+BUG: testing cornercase for [parser]. Temporary, do not remove yet.
 */
 func uncloak(ctx BindRules) BindRules {
 	stack := ctx.Index(0)
@@ -652,7 +652,7 @@ func uncloak(ctx BindRules) BindRules {
 }
 
 /*
-BUG: testing cornercase for go-antlraci. Temporary, do not remove yet.
+BUG: testing cornercase for [parser]. Temporary, do not remove yet.
 */
 func isCloaked(x BindContext) bool {
 	switch tv := x.(type) {
@@ -818,7 +818,7 @@ func (r BindRules) IsZero() bool {
 }
 
 /*
-reset wraps the [stackage.Stack.Reset method. This is a private] method in go-aci.
+reset wraps the [stackage.Stack.Reset method. This is a private] method in aci.
 */
 func (r BindRules) reset() {
 	r.cast().Reset()
@@ -1028,7 +1028,7 @@ func (r BindRules) Valid() (err error) {
 }
 
 /*
-pushPolicy conforms to the PushPolicy signature defined within go-stackage. This function will be called privately whenever an instance is pushed into a particular Stack (or Stack alias) type instance.
+pushPolicy conforms to the PushPolicy signature defined within [stackage]. This function will be called privately whenever an instance is pushed into a particular [stackage.Stack] (or alias) type instance.
 
 Only [BindContext] qualifiers are to be cleared for push.
 */

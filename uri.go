@@ -80,53 +80,6 @@ func (r LDAPURI) Len() int {
 }
 
 /*
-Parse is a convenient alternative to building the receiver instance using individual instances of the needed types. This method does not use go-antlraci.
-
-An error is returned if the parsing attempt fails for some reason. If successful, the receiver pointer is updated (clobbered) with new information.
-*/
-func (r *LDAPURI) Parse(raw string) (err error) {
-	var L LDAPURI
-	if L, err = parseLDAPURI(raw); err != nil {
-		return
-	}
-	*r = L
-
-	return
-}
-
-/*
-parseLDAPURI reads input string x and produces an instance of LDAPURI (L), which is returned alongside an error instance (err).
-
-An optional Bind Keyword may be provided to supplant BindUAT in the event of an AttributeBindTypeOrValue instance being present. Note that only BindGAT is supported as an alternative.
-*/
-func parseLDAPURI(x string, bkw ...BindKeyword) (L LDAPURI, err error) {
-	// URI absolutely MUST begin with the local
-	// LDAP scheme (e.g.: ldap:///). If it does
-	// not, fail immediately.
-	if !hasPfx(x, LocalScheme) {
-		err = uriBadPrefixErr()
-		return
-	}
-
-	// Chop the scheme off the string, since
-	// it is no longer needed.
-	uri := x[len(LocalScheme):]
-
-	// initialize our embedded uri type
-	l := newLDAPURI()
-
-	// iterate each value produced through split
-	// on question mark and massage values into
-	// LDAP URI appropriate component values ...
-	err = l.assertURIComponents(split(uri, `?`), bkw...)
-
-	// Envelope ldapURI instance and send it off
-	L = LDAPURI{l}
-
-	return
-}
-
-/*
 assertURIComponents is intended to reduce cyclomatic complexity factors associated with the parseLDAPURI function, which is the sole caller of this function.
 */
 func (r *ldapURI) assertURIComponents(vals []string, kw ...BindKeyword) (err error) {

@@ -178,7 +178,7 @@ func Weekend(cop any) (b BindRule) {
 }
 
 /*
-Shift wraps go-shifty's BitValue.Shift method.
+Shift wraps the [shifty.BitValue.Shift] method.
 */
 func (r *DayOfWeek) Shift(x Day) DayOfWeek {
 	if r.IsZero() {
@@ -189,7 +189,7 @@ func (r *DayOfWeek) Shift(x Day) DayOfWeek {
 }
 
 /*
-Positive wraps go-shifty's BitValue.Positive method.
+Positive wraps the [shifty.BitValue.Positive] method.
 */
 func (r DayOfWeek) Positive(x Day) (posi bool) {
 	if !r.IsZero() {
@@ -199,7 +199,7 @@ func (r DayOfWeek) Positive(x Day) (posi bool) {
 }
 
 /*
-Unshift wraps go-shifty's BitValue.Unshift method.
+Unshift wraps the [shifty.BitValue.Unshift] method.
 */
 func (r *DayOfWeek) Unshift(x Day) DayOfWeek {
 	if !r.IsZero() {

@@ -273,7 +273,7 @@ func (r PermissionBindRules) Pop() (pbr PermissionBindRule) {
 }
 
 /*
-permissionBindRulesPushPolicy conforms to the PushPolicy interface signature defined within the go-stackage package. This private function is called during Push attempts to a PermissionBindRules instance.
+permissionBindRulesPushPolicy conforms to the PushPolicy interface signature defined within the [stackage] package. This private function is called during Push attempts to a PermissionBindRules instance.
 */
 func (r PermissionBindRules) pushPolicy(x ...any) (err error) {
 	if len(x) == 0 {

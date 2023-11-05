@@ -194,7 +194,7 @@ func ExampleBindRule_Parse() {
 /////////////////////////////////////////////////////////////////////
 
 /*
-This example demonstrates the imported ANTLR4-based go-antlraci parser capabilities as
+This example demonstrates the imported ANTLR4-based [parser] package's capabilities as
 they pertain to the handling of raw target rule text.
 */
 func ExampleParseTargetRule() {
@@ -213,7 +213,7 @@ func ExampleParseTargetRule() {
 }
 
 /*
-This example demonstrates the imported ANTLR4-based go-antlraci parser capabilities as
+This example demonstrates the imported ANTLR4-based [parser] package's capabilities as
 they pertain to the handling of raw target rule text that contains multiple values with
 specific delimiters and standard quotation.
 
@@ -232,7 +232,7 @@ func ExampleParseTargetRule_multiValuedWithStandardQuotation() {
 }
 
 /*
-This example demonstrates the imported ANTLR4-based go-antlraci parser capabilities as
+This example demonstrates the imported ANTLR4-based [parser] package's capabilities as
 they pertain to the handling of raw target rule text that contains multiple values with
 specific delimiters and alternative quotation.
 */
@@ -249,11 +249,7 @@ func ExampleParseTargetRule_multiValuedWithAlternativeQuotation() {
 }
 
 /*
-This example demonstrates the imported ANTLR4-based go-antlraci parser capabilities as
-they pertain to the handling of a sequence of raw target rule text values. Note in this
-example, we've added awkward spacing mixed-in with fair attempts to make the sequence of
-TargetRule expressions easier to read. This includes newline characters (ASCII #10) to
-really try and mess things up. 😈
+This example demonstrates the imported ANTLR4-based [parser] capabilities as they pertain to the handling of a sequence of raw target rule text values. Note in this example, we've added awkward spacing mixed-in with fair attempts to make the sequence of [TargetRule] expressions easier to read. This includes newline characters (ASCII #10) to really try and mess things up. 😈
 */
 func ExampleParseTargetRules() {
 

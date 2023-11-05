@@ -223,7 +223,7 @@ func (r Instructions) Valid() (err error) {
 }
 
 /*
-Index wraps the [stackage.Stack.Index] method. Note that the Boolean OK value returned by go-stackage by default will be shadowed and not obtainable by the caller.
+Index wraps the [stackage.Stack.Index] method. Note that the Boolean OK value returned by [stackage] by default will be shadowed and not obtainable by the caller.
 */
 func (r Instructions) Index(idx int) (x Instruction) {
 	y, _ := r.cast().Index(idx)

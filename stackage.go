@@ -57,7 +57,7 @@ type (
 	// expression within a [TargetRule] instance.
 	ObjectIdentifiers stackage.Stack
 
-	// Instructions is a go-stackage Stack alias type intended to store slices of
+	// Instructions is a [stackage.Stack] alias type intended to store slices of
 	// [Instruction] instances.
 	//
 	// Note that the concept of a "collection" of [Instruction] instances does not
@@ -146,7 +146,7 @@ type (
 	// See also the [AttributeFilterOperations] type and its methods.
 	AttributeFilterOperation stackage.Stack
 
-	// AttributeFilterOperations is a go-stackage Stack alias type, used for the
+	// AttributeFilterOperations is a [stackage.Stack] alias type, used for the
 	// storage of individual [AttributeFilterOperation] instances.
 	//
 	// Instances of this design are used in [TargetRule] instances which bear the
@@ -158,7 +158,7 @@ type (
 castAsCondition merely wraps (casts, converts) and returns an
 instance of BindRule -OR- TargetRule as a [stackage.Condition]
 instance. This is useful for calling methods that have not been
-extended (wrapped) in this package via go-stackage, as it may not
+extended (wrapped) in this package via [stackage], as it may not
 be needed in many cases ...
 
 An instance submitted as x that is neither a BindRule or TargetRule

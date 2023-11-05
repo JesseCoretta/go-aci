@@ -304,7 +304,7 @@ func (r Level) Compare(x any) bool {
 }
 
 /*
-Shift wraps go-shifty's BitValue.Shift method.
+Shift wraps the [shifty.BitValue.Shift] method.
 */
 func (r Inheritance) Shift(x ...any) Inheritance {
 	if r.IsZero() {
@@ -363,7 +363,7 @@ func assertIntInheritance(x int) (lvl Level) {
 }
 
 /*
-Positive wraps go-shifty's BitValue.Positive method.
+Positive wraps the [shifty.BitValue.Positive] method.
 */
 func (r Inheritance) Positive(x any) (posi bool) {
 	if !r.IsZero() {
@@ -398,7 +398,7 @@ func (r inheritance) positive(x any) (posi bool) {
 }
 
 /*
-Unshift wraps go-shifty's BitValue.Unshift method.
+Unshift wraps the [shifty.BitValue.Unshift] method.
 */
 func (r Inheritance) Unshift(x ...any) Inheritance {
 	if !r.IsZero() {

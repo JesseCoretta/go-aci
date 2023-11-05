@@ -629,9 +629,7 @@ func (r AttributeTypes) Len() int {
 }
 
 /*
-Index wraps the [stackage.Stack.Index] method. Note that the
-Boolean OK value returned by go-stackage by default will be
-shadowed and not obtainable by the caller.
+Index wraps the [stackage.Stack.Index] method. Note that the Boolean OK value returned by [stackage] by default will be shadowed and not obtainable by the caller.
 */
 func (r AttributeTypes) Index(idx int) (x AttributeType) {
 	z, _ := r.cast().Index(idx)
@@ -724,7 +722,7 @@ func (r AttributeTypes) Push(x ...any) AttributeTypes {
 }
 
 /*
-pushPolicy conforms to the PushPolicy interface signature defined within go-stackage. This private function is called during Push attempts to a [AttributeTypes] stack instance.
+pushPolicy conforms to the PushPolicy interface signature defined within [stackage]. This private function is called during Push attempts to a [AttributeTypes] stack instance.
 */
 func (r AttributeTypes) pushPolicy(x ...any) (err error) {
 	// verify uniqueness; bail out if Boolean
