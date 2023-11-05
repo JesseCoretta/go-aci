@@ -150,9 +150,8 @@ an alternative means of quotation demonstrated. Additionally, string primitives 
 of proper ExtOp style OIDs.
 */
 func ExampleExtOps_alternativeQuotationScheme() {
-	// Here we set double-quote encapsulation
-	// upon the Rule instance created by the
-	// ExtOps function.
+	// Here we set double-quote encapsulation  upon the TargetRule
+	// instance created by the ExtOps function.
 	ext := ExtOps().Push(
 		// These aren't real control OIDs.
 		`1.3.6.1.4.1.56521.999.5`,
@@ -188,7 +187,7 @@ func TestAttrs_attrList(t *testing.T) {
 }
 
 /*
-This example demonstrates how to create a Target Attributes Rule using a list of AttributeType instances.
+This example demonstrates how to create a TargetAttr TargetRule using a list of AttributeType instances.
 */
 func ExampleTAs() {
 	attrs := TAs().Push(
@@ -201,7 +200,7 @@ func ExampleTAs() {
 }
 
 /*
-This example demonstrates how to create a Target Attributes Rule Equality Condition using a list of
+This example demonstrates how to create a TargetAttr TargetRule Equality Condition using a list of
 AttributeType instances.
 */
 func ExampleAttributeTypes_Eq_targetAttributes() {
@@ -215,7 +214,7 @@ func ExampleAttributeTypes_Eq_targetAttributes() {
 }
 
 /*
-This example demonstrates how to craft a Target Scope Rule Condition for a onelevel Search Scope.
+This example demonstrates how to craft a TargetScope TargetRule for a onelevel Search Scope.
 */
 func ExampleSearchScope_Eq_targetScopeOneLevel() {
 	fmt.Printf("%s", SingleLevel.Eq())
@@ -223,7 +222,7 @@ func ExampleSearchScope_Eq_targetScopeOneLevel() {
 }
 
 /*
-This example demonstrates how to craft a Target Rule Condition bearing the `targetfilter` keyword
+This example demonstrates how to craft a TargetRule bearing the `targetfilter` keyword
 and an LDAP Search Filter.
 */
 func ExampleFilter() {
@@ -233,7 +232,7 @@ func ExampleFilter() {
 }
 
 /*
-This example demonstrates how to craft a set of Target Rule Conditions.
+This example demonstrates how to craft a TargetRules instance.
 */
 func ExampleTRs() {
 	t := TRs().Push(

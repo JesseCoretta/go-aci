@@ -290,7 +290,7 @@ func assertBindUGRDN(expr parser.RuleExpression, key BindKeyword) (ex any, err e
 	}
 
 	// create an appropriate container based on the
-	// Bind Rule keyword.
+	// BindKeyword.
 	var bdn BindDistinguishedNames
 	switch key {
 	case BindRDN:
@@ -386,21 +386,14 @@ func (r BindRule) assertExpressionValue() (err error) {
 }
 
 /*
-ParseTargetRule processes the raw input string value,
-which should represent a single Target Rule expressive
-statement, into an instance of [TargetRule]. This, along
-with an error instance, are returned upon completion
-of processing.
+ParseTargetRule processes the raw input string value, which should represent a single [TargetRule] expressive statement, into an instance of [TargetRule]. This, along with an error instance, are returned upon completion of processing.
 */
 func ParseTargetRule(raw string) (TargetRule, error) {
 	return parseTargetRule(raw)
 }
 
 /*
-parseTargetRule is a private function which converts the
-stock stackage.Condition instance assembled by go-antlraci
-and casts as a go-aci [TargetRule] instance, which will be
-returned alongside an error upon completion of processing.
+parseTargetRule is a private function which converts the stock stackage.Condition instance assembled by go-antlraci and casts as a go-aci [TargetRule] instance, which will be returned alongside an error upon completion of processing.
 */
 func parseTargetRule(raw string) (TargetRule, error) {
 	_t, err := parser.ParseTargetRule(raw)
@@ -410,15 +403,9 @@ func parseTargetRule(raw string) (TargetRule, error) {
 }
 
 /*
-Parse returns an error based upon an attempt to parse the raw input
-value into the receiver instance. If successful, any contents within
-the receiver instance would be obliterated, replaced irrevocably by
-the freshly parsed values.
+Parse returns an error based upon an attempt to parse the raw input value into the receiver instance. If successful, any contents within the receiver instance would be obliterated, replaced irrevocably by the freshly parsed values. 
 
-Both this method, and the package-level [ParseTargetRule] function,
-call antlraci's ParseTargetRule function in similar fashion. The only
-real difference here is the process of writing to a receiver, versus
-writing to an uninitialized variable declaration.
+Both this method, and the package-level [ParseTargetRule] function, call antlraci's ParseTargetRule function in similar fashion. The only real difference here is the process of writing to a receiver, versus writing to an uninitialized variable declaration.
 */
 func (r *TargetRule) Parse(raw string) error {
 	_r, err := parseTargetRule(raw)
@@ -431,15 +418,9 @@ func (r *TargetRule) Parse(raw string) error {
 }
 
 /*
-Parse returns an error based upon an attempt to parse the raw input
-value into the receiver instance. If successful, any contents within
-the receiver instance would be obliterated, replaced irrevocably by
-the freshly parsed values.
+Parse returns an error based upon an attempt to parse the raw input value into the receiver instance. If successful, any contents within the receiver instance would be obliterated, replaced irrevocably by the freshly parsed values.
 
-Both this method, and the package-level [ParseTargetRules] function,
-call antlraci's ParseTargetRules function in similar fashion. The only
-real difference here is the process of writing to a receiver, versus
-writing to an uninitialized variable declaration.
+Both this method, and the package-level [ParseTargetRules] function, call antlraci's ParseTargetRules function in similar fashion. The only real difference here is the process of writing to a receiver, versus writing to an uninitialized variable declaration.
 */
 func (r *TargetRules) Parse(raw string) error {
 	_r, err := parseTargetRules(raw)
@@ -452,21 +433,14 @@ func (r *TargetRules) Parse(raw string) error {
 }
 
 /*
-ParseTargetRules processes the raw input string value,
-which should represent one (1) or more valid Target Rule
-expressive statements, into an instance of [TargetRules].
-This, alongside an error instance, are returned at the
-completion of processing.
+ParseTargetRules processes the raw input string value, which should represent one (1) or more valid [TargetRule] expressive statements, into an instance of [TargetRules]. This, alongside an error instance, are returned at the completion of processing.
 */
 func ParseTargetRules(raw string) (TargetRules, error) {
 	return parseTargetRules(raw)
 }
 
 /*
-parseTargetRules is a private function which converts the
-stock stackage.Stack instance assembled by go-antlraci and
-coaxes the raw string values into proper value-appropriate
-type instances made available by go-aci.
+parseTargetRules is a private function which converts the stock stackage.Stack instance assembled by go-antlraci and coaxes the raw string values into proper value-appropriate type instances made available by go-aci.
 */
 func parseTargetRules(raw string) (TargetRules, error) {
 	// In case the input has bizarre
@@ -515,7 +489,7 @@ func processTargetRules(stack any) (TargetRules, error) {
 		// from TargetRule (ntv), and recreate it
 		// using the proper type, replacing the
 		// original. For example, a `target_to`
-		// (DN) Target Rule with a RuleExpression
+		// (DN) TargetRule with a RuleExpression
 		// value of:
 		//
 		//   []string{<dn1>,<dn2>,<dn3>}
@@ -625,7 +599,7 @@ func assertTargetFilter(expr parser.RuleExpression) (ex SearchFilter, err error)
 }
 
 /*
-assertTargetOID is handler for all possible OID values used within Target Rule expressive
+assertTargetOID is handler for all possible OID values used within [TargetRule] expressive
 statements. In particular, this handles `targetcontrol` and `extop`.
 
 An ObjectIdentifiers instance is returned in the event that the raw value(s) represent one
@@ -643,7 +617,7 @@ func assertTargetOID(expr parser.RuleExpression, key TargetKeyword) (ex ObjectId
 	}
 
 	// create an appropriate container based on the
-	// Target Rule keyword.
+	// TargetRule keyword.
 	switch key {
 	case TargetExtOp:
 		ex = ExtOps()
@@ -667,7 +641,7 @@ func assertTargetOID(expr parser.RuleExpression, key TargetKeyword) (ex ObjectId
 }
 
 /*
-assertTargetTFDN is handler for all possible DN values used within Target Rule expressive
+assertTargetTFDN is handler for all possible DN values used within [TargetRule] expressive
 statements. In particular, this handles `target`, `target_to` and `target_from` keyword
 contexts.
 
@@ -686,7 +660,7 @@ func assertTargetTFDN(expr parser.RuleExpression, key TargetKeyword) (ex any, er
 	}
 
 	// create an appropriate container based on the
-	// Target Rule keyword.
+	// TargetRule keyword.
 	var tdn TargetDistinguishedNames
 	switch key {
 	case TargetTo:

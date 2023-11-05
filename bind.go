@@ -447,7 +447,7 @@ func And(x ...any) (b BindRules) {
 }
 
 /*
-Or returns an instance of Rule configured to express Boolean OR logical operations. Instances of this design contain [BindContext] instances, which are qualified through instances of the following types:
+Or returns an instance of [BindRule] configured to express Boolean OR logical operations. Instances of this design contain [BindContext] instances, which are qualified through instances of the following types:
 
   - [BindRule]
   - [BindRules]
@@ -486,7 +486,7 @@ func Or(x ...any) (b BindRules) {
 }
 
 /*
-Not returns an instance of Rule configured to express Boolean NOT logical operations. Instances of this design contain [BindContext] instances, which are qualified through instances of the following types:
+Not returns an instance of [BindRule] configured to express Boolean NOT logical operations. Instances of this design contain [BindContext] instances, which are qualified through instances of the following types:
 
   - [BindRule]
   - [BindRules]
@@ -582,7 +582,7 @@ func convertBindRulesHierarchy(stack any) (BindContext, bool) {
 			// from BindRule (ntv), and recreate it
 			// using the proper type, replacing the
 			// original. For example, a User DN Bind
-			// Rule with a RuleExpression value of:
+			// [BindRule] with an expression value of:
 			//
 			//   []string{<dn1>,<dn2>,<dn3>}
 			//

@@ -249,7 +249,7 @@ func ExampleObjectIdentifiers_Compare() {
 
 /*
 This example demonstrates the creation of a multi-valued targetcontrol (LDAP Control)
-Target Rule expression.
+[TargetRule] expression.
 */
 func ExampleCtrls() {
 	// note: these are phony OIDs
@@ -266,7 +266,7 @@ func ExampleCtrls() {
 
 /*
 This example demonstrates the creation of a multi-valued extop (LDAP Extended
-Operation) TargetRule expression.
+Operation) [TargetRule] expression.
 */
 func ExampleExtOps() {
 	// note: these are phony OIDs

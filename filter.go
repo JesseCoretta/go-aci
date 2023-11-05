@@ -181,7 +181,7 @@ func (r SearchFilter) Ne() TargetRule {
 /*
 AttributeFilter is a struct type that embeds an [AttributeType] and filter-style [TargetRule].
 
-Instances of this type are a component in the creation of Target Rule definitions based upon the [TargetAttrFilters] [TargetKeyword] context.
+Instances of this type are a component in the creation of [TargetRule] definitions based upon the [TargetAttrFilters] [TargetKeyword] context.
 */
 type AttributeFilter struct {
 	*atf
@@ -203,7 +203,7 @@ Constants of this type are used in [AttributeFilterOperation] instances.
 type AttributeOperation uint8
 
 /*
-[AttributeOperation] constants are used to initialize and return [AttributeFilters] instances based on one (1) of the possible two (2) constants defined below.
+[AttributeOperation] constants are used to initialize and return [AttributeFilter] instances based on one (1) of the possible two (2) constants defined below.
 */
 const (
 	noAOp AttributeOperation = iota
@@ -526,7 +526,7 @@ Parse is a convenient alternative to building the receiver instance using indivi
 
 An error is returned if the parsing attempt fails for some reason. If successful, the receiver pointer is updated (clobbered) with new information.
 
-Parse will process the input string (raw) and attempt to split the value using a delimiter integer identifier, if specified. See [AttributeFilterOperationsCommaDelim] (default) and [AttributeFilterOperationsSemiDelim] const definitions for details.
+Parse will process the input string (raw) and attempt to split the value using a delimiter integer identifier, if specified. See [AttributeFilterOperationsCommaDelim] (default) and [AttributeFilterOperationsSemiDelim] constant definitions for details.
 */
 func (r *AttributeFilterOperations) Parse(raw string, delim ...int) (err error) {
 	var d int = AttributeFilterOperationsCommaDelim
@@ -962,7 +962,7 @@ func AFO(x ...any) (f AttributeFilterOperation) {
 /*
 AFO returns an instance of [AttributeFilterOperation] based upon the input [AttributeFilter] instances.
 
-The instance of [AttributeFilterOperation] contains an ANDed Rule instance using symbols (`&&`).
+The instance of [AttributeFilterOperation] contains an ANDed [TargetRule] instance using symbols (`&&`).
 */
 func (r AttributeOperation) AFO(x ...any) (afo AttributeFilterOperation) {
 	afo = AFO()

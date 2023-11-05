@@ -528,7 +528,7 @@ func (r *timeOfDay) set(t any) {
 }
 
 /*
-assertToD is called by timeOfDay.set for the purpose of handling a potential clock time value for use in a Bind Rule statement.
+assertToD is called by timeOfDay.set for the purpose of handling a potential clock time value for use in a [BindRule] statement.
 */
 func assertToD(r *timeOfDay, t any) {
 	switch tv := t.(type) {
