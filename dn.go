@@ -417,9 +417,7 @@ func UDN(x string) BindDistinguishedName {
 }
 
 /*
-RDN initializes, sets and returns an instance of [BindDistinguishedName].
-
-An LDAP distinguished name in string form is required.
+RDN initializes, sets and returns an instance of [BindDistinguishedName]. An LDAP distinguished name in string form is required.
 
 The return value shall be suitable for use in creating a [BindRule] that bears the [BindRDN] [BindKeyword].
 */
@@ -428,9 +426,7 @@ func RDN(x string) BindDistinguishedName {
 }
 
 /*
-GDN initializes, sets and returns an instance of [BindDistinguishedName].
-
-An LDAP distinguished name, in string form and WITHOUT the leading `ldap:///` scheme, is required.
+GDN initializes, sets and returns an instance of [BindDistinguishedName]. An LDAP distinguished name in string form is required.
 
 The return value shall be suitable for use in creating a [BindRule] that bears the [BindGDN] [BindKeyword].
 */
@@ -439,9 +435,7 @@ func GDN(x string) BindDistinguishedName {
 }
 
 /*
-TDN initializes, sets and returns an instance of [TargetDistinguishedName] in one shot.
-
-An LDAP distinguished name, in string form and WITHOUT the leading `ldap:///` scheme, is required.
+TDN initializes, sets and returns an instance of [TargetDistinguishedName] in one shot. An LDAP distinguished name in string form is required.
 
 The return value shall be suitable for use in creating a [TargetRule] instance that bears the [Target] [TargetKeyword].
 */
@@ -450,9 +444,7 @@ func TDN(x string) TargetDistinguishedName {
 }
 
 /*
-TTDN initializes, sets and returns an instance of [TargetDistinguishedName] in one shot.
-
-An LDAP distinguished name, in string form and WITHOUT the leading `ldap:///` scheme, is required.
+TTDN initializes, sets and returns an instance of [TargetDistinguishedName] in one shot. An LDAP distinguished name in string form is required.
 
 The return value shall be suitable for use in creating a [TargetRule] instance that bears the [TargetTo] [TargetKeyword].
 */
@@ -461,9 +453,7 @@ func TTDN(x string) TargetDistinguishedName {
 }
 
 /*
-TFDN initializes, sets and returns an instance of [TargetDistinguishedName] in one shot.
-
-An LDAP distinguished name, in string form and WITHOUT the leading `ldap:///` scheme, is required.
+TFDN initializes, sets and returns an instance of [TargetDistinguishedName] in one shot. An LDAP distinguished name in string form is required.
 
 The return value shall be suitable for use in creating a TargetRule instance that bears the [TargetFrom] [TargetKeyword].
 */
