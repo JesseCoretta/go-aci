@@ -190,7 +190,7 @@ This package could conceivably be used in any of the following scenarios:
 
 The go-aci package (straight out of the box, so to speak) is not an access control decision-making framework unto itself -- that particular functionality would reside in the X.500/LDAP server to be protected *through the use of ACIs*.
 
-However this package could be leveraged to craft such a framework, given all of the syntax-defined types are made available to the end user. If users wish to approach this concept, they are advised to leverage the underlying [`go-stackage`](https://github.com/JesseCoretta/go-stackage) Stack type's methods for implementing evaluatory capabilities, such as attribute value assertion checks and the like. This would conceivably allow the use of `matchingRule` and `ldapSyntax` operations that precede attribute value disclosure/withholding (hint: take a look at [`go-schemax`](https://github.com/JesseCoretta/go-schemax) if this capability interests you).
+However this package could be leveraged to craft such a framework, given all of the syntax-defined types are made available to the end user. If users wish to approach this concept, they are advised to leverage the underlying [`stackage.Stack`](https://github.com/JesseCoretta/go-stackage) type's methods for implementing evaluatory capabilities, such as attribute value assertion checks and the like. This would conceivably allow the use of `matchingRule` and `ldapSyntax` operations that precede attribute value disclosure/withholding (hint: take a look at [`go-schemax`](https://github.com/JesseCoretta/go-schemax) if this capability interests you).
 
 ## Comparison Operators
 
