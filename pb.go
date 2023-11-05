@@ -23,7 +23,7 @@ var (
 /*
 PermissionBindRule contains one (1) [Permission] instance and one (1) [BindRules] instance. Instances of this type are used within an [Instruction] instance.
 
-Users may compose instances of this type manually, or using the [PB] package level function, which automatically invokes value checks.
+Users may create instances of this type using the [PBR] package level function.
 */
 type PermissionBindRule struct {
 	*permissionBindRule
