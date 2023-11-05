@@ -50,7 +50,7 @@ Case is not significant in the string matching process.
 
 Please note that use of this method by way of integer or [ComparisonOperator] values utilizes fewer resources than a string lookup.
 
-See the [ComparisonOperator] type's Context, String and Description methods for accessing the above string values easily.
+See the [ComparisonOperator.Context], [ComparisonOperator.String] and [ComparisonOperator.Description] methods for accessing the above string values easily.
 
 If the index was not matched, an invalid [ComparisonOperator] is returned alongside a nil [TargetRuleMethod]. This will also apply to situations in which the type instance which crafted the receiver is uninitialized, or is in an otherwise aberrant state.
 */
@@ -133,7 +133,7 @@ func (r TargetRuleMethods) IsZero() bool {
 }
 
 /*
-Valid returns the first encountered error returned as a result of execution of the first available [TargetRuleMethod] instance. This is useful in cases where a user wants to see if the desired instance(s) of [TargetRuleMethod]0 will produce a usable result.
+Valid returns the first encountered error returned as a result of execution of the first available [TargetRuleMethod] instance. This is useful in cases where a user wants to see if the desired instance(s) of [TargetRuleMethod] will produce a usable result.
 */
 func (r TargetRuleMethods) Valid() (err error) {
 	if r.IsZero() {
@@ -179,7 +179,7 @@ targetRuleFuncMap is a private type intended to be used within instances of Targ
 type targetRuleFuncMap map[ComparisonOperator]TargetRuleMethod
 
 /*
-TR wraps go-stackage's Cond package-level function. In this context, it is wrapped here to assemble and return a [TargetRule] instance using the so-called "one-shot" procedure. This is an option only when ALL information necessary for the process is in-hand and ready for user input: the [TargetKeyword], [ComparisonOperator] and the appropriate value(s) expression.
+TR wraps the [stackage.Cond] package-level function. In this context, it is wrapped here to assemble and return a [TargetRule] instance using the so-called "one-shot" procedure. This is an option only when ALL information necessary for the process is in-hand and ready for user input: the [TargetKeyword], [ComparisonOperator] and the appropriate value(s) expression.
 
 Use of this function shall not require a subsequent call of [TargetRule]'s Init method, which is needed only for so-called "piecemeal" [TargetRule] assembly.
 
@@ -190,7 +190,7 @@ func TR(kw, op, ex any) TargetRule {
 }
 
 /*
-Init wraps stackage.Condition's Init method. This is a required method for situations involving the piecemeal (step-by-step) assembly of an instance of [TargetRule] as opposed to a one-shot creation using the [TR] package-level function. It is also an ideal means for the creation of a [TargetRule] instance when one does not immediately possess all of the needed pieces of information (i.e.: uncertain which [TargetKeyword] to use, or when an expression value has not yet been determined, etc).
+Init wraps the [stackage.Condition.Init] method. This is a required method for situations involving the piecemeal (step-by-step) assembly of an instance of [TargetRule] as opposed to a one-shot creation using the [TR] package-level function. It is also an ideal means for the creation of a [TargetRule] instance when one does not immediately possess all of the needed pieces of information (i.e.: uncertain which [TargetKeyword] to use, or when an expression value has not yet been determined, etc).
 
 Call this method after a variable declaration but before your first change, e.g.:
 
@@ -234,7 +234,7 @@ func newTargetRule(kw, op, ex any) (t TargetRule) {
 }
 
 /*
-Valid wraps go-stackage's Condition.Valid method.
+Valid wraps the [stackage.Condition.Valid] method.
 */
 func (r TargetRule) Valid() (err error) {
 	if r.IsZero() {
@@ -266,7 +266,7 @@ func (r TargetRule) Len() int {
 }
 
 /*
-Kind returns the string literal `condition` to identify the receiver as a stackage.Condition type alias.
+Kind returns the string literal `condition` to identify the receiver as a [stackage.Condition] type alias.
 */
 func (r TargetRule) Kind() string {
 	return `condition`
@@ -280,7 +280,7 @@ func (r TargetRule) Compare(x any) bool {
 }
 
 /*
-Category wraps go-stackage's Condition.Category method.
+Category wraps the [stackage.Condition.Category] method.
 */
 func (r TargetRule) Category() string {
 	if r.IsZero() {
@@ -299,7 +299,7 @@ func (r TargetRule) ID() string {
 /*
 String is a stringer method that returns the string representation of the receiver instance.
 
-This method wraps go-stackage's Condition.String method.
+This method wraps the [stackage.Condition.String] method.
 */
 func (r TargetRule) String() string {
 	if r.IsZero() {
@@ -315,7 +315,7 @@ func (r TargetRule) String() string {
 }
 
 /*
-NoPadding wraps go-stackage's Condition.NoPadding method.
+NoPadding wraps the [stackage.Condition.NoPadding] method.
 */
 func (r TargetRule) NoPadding(state ...bool) TargetRule {
 	if r.IsZero() {
@@ -387,7 +387,7 @@ func (r TargetRule) SetQuoteStyle(style int) TargetRule {
 }
 
 /*
-SetKeyword wraps go-stackage's Condition.SetKeyword method.
+SetKeyword wraps the [stackage.Condition.SetKeyword] method.
 */
 func (r TargetRule) SetKeyword(kw any) TargetRule {
 	switch tv := kw.(type) {
@@ -401,7 +401,7 @@ func (r TargetRule) SetKeyword(kw any) TargetRule {
 }
 
 /*
-SetOperator wraps go-stackage's Condition.SetOperator method. Valid input types are [ComparisonOperator] or its string value equivalent (e.g.: `>=` for Ge).
+SetOperator wraps the [stackage.Condition.SetOperator] method. Valid input types are [ComparisonOperator] or its string value equivalent (e.g.: `>=` for Ge).
 */
 func (r TargetRule) SetOperator(op any) TargetRule {
 	var cop ComparisonOperator
@@ -440,7 +440,7 @@ func (r TargetRule) SetOperator(op any) TargetRule {
 }
 
 /*
-SetExpression wraps go-stackage's Condition.SetExpression method.
+SetExpression wraps the [stackage.Condition.SetExpression] method.
 */
 func (r TargetRule) SetExpression(expr any) TargetRule {
 	cac := r.cast()
@@ -454,7 +454,7 @@ func (r TargetRule) SetExpression(expr any) TargetRule {
 }
 
 /*
-Keyword wraps go-stackage's Condition.Keyword method and resolves the raw value into a [TargetKeyword]. Failure to do so will return a bogus [TargetKeyword].
+Keyword wraps the [stackage.Condition.Keyword] method and resolves the raw value into a [TargetKeyword]. Failure to do so will return a bogus [TargetKeyword].
 */
 func (r TargetRule) Keyword() Keyword {
 	var kw any = matchTKW(r.cast().Keyword())
@@ -462,28 +462,28 @@ func (r TargetRule) Keyword() Keyword {
 }
 
 /*
-Operator wraps go-stackage's Condition.Operator method.
+Operator wraps the [stackage.Condition.Operator] method.
 */
 func (r TargetRule) Operator() ComparisonOperator {
 	return castCop(r.cast().Operator())
 }
 
 /*
-Expression wraps go-stackage's Condition.Expression method.
+Expression wraps the [stackage.Condition.Expression] method.
 */
 func (r TargetRule) Expression() any {
 	return r.cast().Expression()
 }
 
 /*
-IsZero wraps go-stackage's Condition.IsZero method.
+IsZero wraps the [stackage.Condition.IsZero] method.
 */
 func (r TargetRule) IsZero() bool {
 	return r.cast().IsZero()
 }
 
 /*
-Kind returns the string literal `stack` to identify the receiver as a stackage.Stack type alias.
+Kind returns the string literal `stack` to identify the receiver as a [stackage.Stack] type alias.
 */
 func (r TargetRules) Kind() string {
 	return `stack`
@@ -499,15 +499,15 @@ func (r TargetRules) Compare(x any) bool {
 /*
 TRs creates and returns a new instance of [TargetRules] with an initialized embedded stack configured to function as a collection that is meant to contain one (1) or more [TargetRule] instances, each of which bear one (1) of the following [TargetKeyword] constants:
 
-  - Target
-  - TargetTo
-  - TargetFrom
-  - TargetAttr
-  - TargetCtrl
-  - TargetScope
-  - TargetFilter
-  - TargetAttrFilters
-  - TargetExtOp
+  - [Target]
+  - [TargetTo]
+  - [TargetFrom]
+  - [TargetAttr]
+  - [TargetCtrl]
+  - [TargetScope]
+  - [TargetFilter]
+  - [TargetAttrFilters]
+  - [TargetExtOp]
 
 Optionally, the caller may choose to submit one (1) or more (valid) instances of the [TargetRule] type (or its string equivalent) during initialization. This is merely a more convenient alternative to separate initialization and push procedures.
 
@@ -517,7 +517,7 @@ Please note that instances of this design are set with a maximum capacity of nin
 
 • Individual [TargetKeyword] contexts can only be used once per ACI; in other words, one cannot specify multiple `target` conditions within the same [TargetRules] instance.
 
-Instances of this design generally are assigned to top-level instances of [Instruction], and never allow nesting elements (e.g.: other stackage.Stack derived type aliases).
+Instances of this design generally are assigned to top-level instances of [Instruction], and never allow nesting elements (e.g.: other [stackage.Stack] derived type aliases).
 
 Padding is disabled by default, meaning there shall be no whitespace residing between individual [TargetRule] instances. This behavior can be altered using the NoPadding method.
 */
@@ -555,21 +555,21 @@ func TRs(x ...any) (t TargetRules) {
 /*
 String is a stringer method that returns the string representation of the receiver instance.
 
-This method wraps go-stackage's Stack.String method.
+This method wraps the [stackage.Stack.String] method.
 */
 func (r TargetRules) String() string {
 	return r.cast().String()
 }
 
 /*
-IsZero wraps go-stackage's Stack.IsZero method.
+IsZero wraps the [stackage.Stack.IsZero] method.
 */
 func (r TargetRules) IsZero() bool {
 	return r.cast().IsZero()
 }
 
 /*
-reset wraps go-stackage's Stack.Reset method. This is a private method in go-aci.
+reset wraps the [stackage.Stack.Reset method. This is a private] method in go-aci.
 */
 func (r TargetRules) reset() {
 	if r.IsZero() {
@@ -586,14 +586,14 @@ func (r TargetRules) Category() string {
 }
 
 /*
-Len wraps go-stackage's Stack.Len method.
+Len wraps the [stackage.Stack.Len] method.
 */
 func (r TargetRules) Len() int {
 	return r.cast().Len()
 }
 
 /*
-Push wraps go-stackage's Stack.Push method.
+Push wraps the [stackage.Stack.Push] method.
 */
 func (r TargetRules) Push(x ...any) TargetRules {
 	r.cast().Push(x...)
@@ -601,7 +601,7 @@ func (r TargetRules) Push(x ...any) TargetRules {
 }
 
 /*
-Pop wraps go-stackage's Stack.Pop method. An instance of [TargetRule] is returned following a call of this method.
+Pop wraps the [stackage.Stack.Pop] method. An instance of [TargetRule] is returned following a call of this method.
 
 Within the context of the receiver type, if non-nil, can only represent a [TargetRule] instance.
 */
@@ -612,7 +612,7 @@ func (r TargetRules) Pop() TargetRule {
 }
 
 /*
-remove wraps go-stackage's Stack.Remove method.
+remove wraps the [stackage.Stack.Remove] method.
 */
 func (r TargetRules) remove(idx int) bool {
 	_, ok := r.cast().Remove(idx)
@@ -620,7 +620,7 @@ func (r TargetRules) remove(idx int) bool {
 }
 
 /*
-Index wraps go-stackage's Stack.Index method.
+Index wraps the [stackage.Stack.Index] method.
 */
 func (r TargetRules) Index(idx int) TargetRule {
 	y, _ := r.cast().Index(idx)
@@ -629,7 +629,7 @@ func (r TargetRules) Index(idx int) TargetRule {
 }
 
 /*
-ReadOnly wraps go-stackage's Stack.ReadOnly method.
+ReadOnly wraps the [stackage.Stack.ReadOnly] method.
 */
 func (r TargetRules) ReadOnly(state ...bool) TargetRules {
 	r.cast().ReadOnly(state...)
@@ -660,7 +660,7 @@ func (r TargetRules) NoPadding(state ...bool) TargetRules {
 }
 
 /*
-Valid wraps go-stackage's Stack.Valid method.
+Valid wraps the [stackage.Stack.Valid] method.
 */
 func (r TargetRules) Valid() (err error) {
 	err = r.cast().Valid()
@@ -668,7 +668,7 @@ func (r TargetRules) Valid() (err error) {
 }
 
 /*
-targetRulesPushPolicy conforms to the PushPolicy signature defined within go-stackage.  This function will be called privately whenever an instance is pushed into a particular stackage.Stack (or alias) type instance.
+targetRulesPushPolicy conforms to the [stackage.PushPolicy] signature.  This function will be called privately whenever an instance is pushed into a particular [stackage.Stack] (or alias) type instance.
 
 Only [TargetRule] instances are to be cleared for push executions.
 */

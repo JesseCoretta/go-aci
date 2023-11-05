@@ -40,8 +40,7 @@ func ExampleDayOfWeek_String() {
 }
 
 /*
-This example demonstrates the SHA-1 hash comparison between two (2) DayOfWeek
-instances using the Compare method.
+This example demonstrates the SHA-1 hash comparison between two (2) DayOfWeek instances using the [DayOfWeek.Compare] method.
 */
 func ExampleDayOfWeek_Compare() {
 	d1 := DoW(Thur, `Sat`, 1)
@@ -165,8 +164,7 @@ func ExampleDay_Compare() {
 }
 
 /*
-This example demonstrates the SHA-1 hash comparison between two (2) TimeOfDay
-instances using the Compare method.
+This example demonstrates the SHA-1 hash comparison between two (2) [TimeOfDay] instances using the [TimeOfDay.Compare] method.
 */
 func ExampleTimeOfDay_Compare() {
 	d1 := ToD(`1134`)

@@ -415,8 +415,8 @@ is strictly intended for use within instances of [AttributeFilterOperation].
 In this example, a raw string representation of an [AttributeFilter] is used for
 parser input.
 
-The return type, AttributeFilter, is then interrogated by way of the [AttributeType]
-and [SearchFilter] methods it makes available to the user. An alternative to this
+The return type, AttributeFilter, is then interrogated by way of the [AttributeFilter.AttributeType]
+and [AttributeFilter.SearchFilter] methods it makes available to the user. An alternative to this
 approach is to simply use its String method to get the whole value, if desired.
 */
 func ExampleAttributeFilter_Parse() {
@@ -603,7 +603,7 @@ func ExampleAttributeFilterOperation_byAttributeOperationConstants() {
 This example demonstrates the use of the AttributeFilterOperation type's Contains
 method, allowing for basic text searches of the receiver.
 
-Note that case is significant in the matching process for instances of [this type].
+Note that case is significant in the matching process for instances of this type.
 */
 func ExampleAttributeFilterOperation_Contains() {
 	attr := AT(`homeDirectory`)

@@ -47,7 +47,7 @@ Case is not significant in the string matching process.
 
 Please note that use of this method by way of integer or [ComparisonOperator] values utilizes fewer resources than a string lookup.
 
-See the [ComparisonOperator] type's Context, String and Description methods for accessing the above string values easily.
+See the [ComparisonOperator.Context], [ComparisonOperator.String] and [ComparisonOperator.Description] methods for accessing the above string values easily.
 
 If the index was not matched, an invalid [ComparisonOperator] is returned alongside a nil [BindRuleMethod]. This will also apply to situations in which the type instance which crafted the receiver is uninitialized, or is in an otherwise aberrant state.
 */
@@ -290,7 +290,7 @@ func (r BindRule) IsNesting() bool {
 }
 
 /*
-Paren wraps go-stackage's Condition.Paren method.
+Paren wraps the [stackage.Condition.Paren] method.
 */
 func (r BindRule) Paren(state ...bool) BindRule {
 	r.cast().Paren(state...)
@@ -298,14 +298,14 @@ func (r BindRule) Paren(state ...bool) BindRule {
 }
 
 /*
-IsParen wraps go-stackage's Condition.IsParen method.
+IsParen wraps the [stackage.Condition.IsParen] method.
 */
 func (r BindRule) IsParen() bool {
 	return r.cast().IsParen()
 }
 
 /*
-Valid wraps go-stackage's Condition.Valid method.
+Valid wraps the [stackage.Condition.Valid] method.
 */
 func (r BindRule) Valid() (err error) {
 	if r.IsZero() {
@@ -318,7 +318,7 @@ func (r BindRule) Valid() (err error) {
 }
 
 /*
-ID wraps go-stackage's Stack.ID method.
+ID wraps the [stackage.Stack.ID] method.
 */
 func (r BindRule) ID() string {
 	if r.IsZero() {
@@ -328,7 +328,7 @@ func (r BindRule) ID() string {
 }
 
 /*
-Category wraps go-stackage's Stack.Category method.
+Category wraps the [stackage.Stack.Category] method.
 */
 func (r BindRule) Category() string {
 	if r.IsZero() {
@@ -340,7 +340,7 @@ func (r BindRule) Category() string {
 /*
 String is a stringer method that returns the string representation of the receiver instance.
 
-This method wraps go-stackage's Condition.String method.
+This method wraps the [stackage.Condition.String] method.
 */
 func (r BindRule) String() string {
 	if r.IsZero() {
@@ -350,7 +350,7 @@ func (r BindRule) String() string {
 }
 
 /*
-NoPadding wraps go-stackage's Condition.NoPadding method.
+NoPadding wraps the [stackage.Condition.NoPadding] method.
 */
 func (r BindRule) NoPadding(state ...bool) BindRule {
 	if r.IsZero() {
@@ -362,7 +362,7 @@ func (r BindRule) NoPadding(state ...bool) BindRule {
 }
 
 /*
-Keyword wraps go-stackage's Condition.Keyword method and resolves the raw value into a [BindKeyword]. Failure to do so will return a bogus [Keyword].
+Keyword wraps the [stackage.Condition.Keyword] method and resolves the raw value into a [BindKeyword]. Failure to do so will return a bogus [Keyword].
 */
 func (r BindRule) Keyword() Keyword {
 	k := r.cast().Keyword()
@@ -371,21 +371,21 @@ func (r BindRule) Keyword() Keyword {
 }
 
 /*
-Operator wraps go-stackage's Condition.Operator method and casts the stackage.ComparisonOperator to the local [ComparisonOperator].
+Operator wraps the [stackage.Condition.Operator] method and casts the stackage.ComparisonOperator to the local [ComparisonOperator].
 */
 func (r BindRule) Operator() ComparisonOperator {
 	return castCop(r.cast().Operator())
 }
 
 /*
-Expression wraps go-stackage's Condition.Expression method.
+Expression wraps the [stackage.Condition.Expression] method.
 */
 func (r BindRule) Expression() any {
 	return r.cast().Expression()
 }
 
 /*
-IsZero wraps go-stackage's Condition.IsZero method.
+IsZero wraps the [stackage.Condition.IsZero] method.
 */
 func (r BindRule) IsZero() bool {
 	return r.cast().IsZero()
@@ -693,7 +693,7 @@ func wordToStack(k string) (BindRules, bool) {
 }
 
 /*
-SetKeyword wraps go-stackage's Condition.SetKeyword method.
+SetKeyword wraps the [stackage.Condition.SetKeyword] method.
 */
 func (r BindRule) SetKeyword(kw any) BindRule {
 	cac := r.cast()
@@ -705,7 +705,7 @@ func (r BindRule) SetKeyword(kw any) BindRule {
 }
 
 /*
-SetOperator wraps go-stackage's Condition.SetOperator method.
+SetOperator wraps the [stackage.Condition.SetOperator] method.
 */
 func (r BindRule) SetOperator(op any) BindRule {
 	var cop ComparisonOperator
@@ -743,7 +743,7 @@ func (r BindRule) SetOperator(op any) BindRule {
 }
 
 /*
-SetExpression wraps go-stackage's Condition.SetExpression method.
+SetExpression wraps the [stackage.Condition.SetExpression] method.
 */
 func (r BindRule) SetExpression(expr any) BindRule {
 	cac := r.cast()
@@ -804,35 +804,35 @@ func (r BindRule) SetQuoteStyle(style int) BindRule {
 /*
 String is a stringer method that returns the string representation of the receiver instance.
 
-This method wraps go-stackage's Stack.String method.
+This method wraps the [stackage.Stack.String] method.
 */
 func (r BindRules) String() string {
 	return r.cast().String()
 }
 
 /*
-IsZero wraps go-stackage's Stack.IsZero method.
+IsZero wraps the [stackage.Stack.IsZero] method.
 */
 func (r BindRules) IsZero() bool {
 	return r.cast().IsZero()
 }
 
 /*
-reset wraps go-stackage's Stack.Reset method. This is a private method in go-aci.
+reset wraps the [stackage.Stack.Reset method. This is a private] method in go-aci.
 */
 func (r BindRules) reset() {
 	r.cast().Reset()
 }
 
 /*
-ID wraps go-stackage's Stack.ID method.
+ID wraps the [stackage.Stack.ID] method.
 */
 func (r BindRules) ID() string {
 	return bindRuleID
 }
 
 /*
-Category wraps go-stackage's Stack.Category method.
+Category wraps the [stackage.Stack.Category] method.
 */
 func (r BindRules) Category() string {
 	if r.IsZero() {
@@ -842,7 +842,7 @@ func (r BindRules) Category() string {
 }
 
 /*
-Len wraps go-stackage's Stack.Len method.
+Len wraps the [stackage.Stack.Len] method.
 */
 func (r BindRules) Len() int {
 	if r.IsZero() {
@@ -852,7 +852,7 @@ func (r BindRules) Len() int {
 }
 
 /*
-IsNesting wraps go-stackage's Stack.IsNesting method.
+IsNesting wraps the [stackage.Stack.IsNesting] method.
 */
 func (r BindRules) IsNesting() bool {
 	if r.IsZero() {
@@ -862,7 +862,7 @@ func (r BindRules) IsNesting() bool {
 }
 
 /*
-Keyword wraps go-stackage's Stack.Category method and resolves the raw value into a [BindKeyword]. Failure to do so will return a bogus [Keyword].
+Keyword wraps the [stackage.Stack.Category] method and resolves the raw value into a [BindKeyword]. Failure to do so will return a bogus [Keyword].
 */
 func (r BindRules) Keyword() Keyword {
 	var kw any = matchBKW(r.cast().Category())
@@ -870,7 +870,7 @@ func (r BindRules) Keyword() Keyword {
 }
 
 /*
-Push wraps go-stackage's Stack.Push method.
+Push wraps the [stackage.Stack.Push] method.
 */
 func (r BindRules) Push(x ...any) BindRules {
 	r.cast().Push(x...)
@@ -878,7 +878,7 @@ func (r BindRules) Push(x ...any) BindRules {
 }
 
 /*
-Pop wraps go-stackage's Stack.Pop method. An instance of [BindContext], which may or may not be nil, is returned following a call of this method.
+Pop wraps the [stackage.Stack.Pop] method. An instance of [BindContext], which may or may not be nil, is returned following a call of this method.
 
 Within the context of the receiver type, a [BindContext], if non-nil, can represent any of the following instance types:
 
@@ -906,7 +906,7 @@ func (r BindRules) pop() (popped BindContext) {
 }
 
 /*
-remove wraps go-stackage's Stack.Remove method.
+remove wraps the [stackage.Stack.Remove] method.
 */
 func (r BindRules) remove(idx int) (ok bool) {
 	_, ok = r.cast().Remove(idx)
@@ -914,7 +914,7 @@ func (r BindRules) remove(idx int) (ok bool) {
 }
 
 /*
-Replace wraps go-stackage's Stack.Replace method.
+Replace wraps the [stackage.Stack.Replace] method.
 */
 func (r BindRules) Replace(x any, idx int) BindRules {
 	return r.replace(x, idx)
@@ -932,7 +932,7 @@ func (r BindRules) replace(x any, idx int) BindRules {
 }
 
 /*
-Index wraps go-stackage's Stack.Index method.
+Index wraps the [stackage.Stack.Index] method.
 */
 func (r BindRules) Index(idx int) (ctx BindContext) {
 	y, _ := r.cast().Index(idx)
@@ -948,7 +948,7 @@ func (r BindRules) Index(idx int) (ctx BindContext) {
 }
 
 /*
-ReadOnly wraps go-stackage's Stack.ReadOnly method.
+ReadOnly wraps the [stackage.Stack.ReadOnly] method.
 */
 func (r BindRules) ReadOnly(state ...bool) BindRules {
 	r.cast().ReadOnly(state...)
@@ -956,7 +956,7 @@ func (r BindRules) ReadOnly(state ...bool) BindRules {
 }
 
 /*
-Paren wraps go-stackage's Stack.Paren method.
+Paren wraps the [stackage.Stack.Paren] method.
 */
 func (r BindRules) Paren(state ...bool) BindRules {
 	r.cast().Paren(state...)
@@ -964,14 +964,14 @@ func (r BindRules) Paren(state ...bool) BindRules {
 }
 
 /*
-IsParen wraps go-stackage's Stack.IsParen method.
+IsParen wraps the [stackage.Stack.IsParen] method.
 */
 func (r BindRules) IsParen() bool {
 	return r.cast().IsParen()
 }
 
 /*
-Fold wraps go-stackage's Stack.Fold method to allow the case folding of logical Boolean 'AND', 'OR' and 'AND NOT' WORD operators to 'and', 'or' and 'and not' respectively, or vice versa.
+Fold wraps the [stackage.Stack.Fold] method to allow the case folding of logical Boolean 'AND', 'OR' and 'AND NOT' WORD operators to 'and', 'or' and 'and not' respectively, or vice versa.
 */
 func (r BindRules) Fold(state ...bool) BindRules {
 	r.cast().Fold(state...)
@@ -979,7 +979,7 @@ func (r BindRules) Fold(state ...bool) BindRules {
 }
 
 /*
-insert wraps go-stackage's Stack.Insert method.
+insert wraps the [stackage.Stack.Insert] method.
 */
 func (r BindRules) insert(x any, left int) (ok bool) {
 	switch tv := x.(type) {
@@ -991,7 +991,7 @@ func (r BindRules) insert(x any, left int) (ok bool) {
 }
 
 /*
-NoPadding wraps go-stackage's Stack.NoPadding method.
+NoPadding wraps the [stackage.Stack.NoPadding] method.
 */
 func (r BindRules) NoPadding(state ...bool) BindRules {
 	r.cast().NoPadding(state...)
@@ -999,7 +999,7 @@ func (r BindRules) NoPadding(state ...bool) BindRules {
 }
 
 /*
-Traverse wraps go-stackage's Stack.Traverse method.
+Traverse wraps the [stackage.Stack.Traverse] method.
 */
 func (r BindRules) Traverse(indices ...int) (B BindContext) {
 	br, ok := r.cast().Traverse(indices...)
@@ -1020,7 +1020,7 @@ func (r BindRules) Traverse(indices ...int) (B BindContext) {
 }
 
 /*
-Valid wraps go-stackage's Stack.Valid method.
+Valid wraps the [stackage.Stack.Valid] method.
 */
 func (r BindRules) Valid() (err error) {
 	err = r.cast().Valid()

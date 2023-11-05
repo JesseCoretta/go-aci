@@ -355,7 +355,7 @@ Optionally, the caller may choose to submit one (1) or more (valid) instances of
 
 Instances of this design are not generally needed elsewhere.
 
-Values are automatically joined using stackage.List() with SetDelimiter for comma delimitation by default. See the SetDelimiter method if semicolon delimitation is preferred.
+Values are automatically joined using [stackage.List] with [AttributeFilterOperations.SetDelimiter] for comma delimitation by default, though semicolon delimitation is also permitted.
 */
 func AFOs(x ...any) (f AttributeFilterOperations) {
 	// create a native stackage.Stack
@@ -424,7 +424,7 @@ func (r AttributeFilterOperations) Contains(x any) bool {
 }
 
 /*
-contains is a private method called by the [AttributeFilterOperations] Contains method, et al.
+contains is a private method called by the [AttributeFilterOperations.Contains] method, et al.
 
 Case is significant in the matching process.
 */
@@ -497,7 +497,7 @@ func (r AttributeFilterOperations) SetDelimiter(i ...int) AttributeFilterOperati
 }
 
 /*
-Push wraps go-stackage's Stack.Push method. This method shall attempt to add the provided input values (x) -- which may contain one (1) or more  instances of [AttributeFilterOperation] or its string equivalent -- to the receiver instance.
+Push wraps the [stackage.Stack.Push] method. This method shall attempt to add the provided input values (x) -- which may contain one (1) or more instances of [AttributeFilterOperation] or its string equivalent -- to the receiver instance.
 */
 func (r AttributeFilterOperations) Push(x ...any) AttributeFilterOperations {
 	if len(x) == 0 {
@@ -558,7 +558,7 @@ func (r *AttributeFilterOperation) Parse(raw string) error {
 }
 
 /*
-Pop wraps go-stackage's Stack.Pop method.
+Pop wraps the [stackage.Stack.Pop] method.
 */
 func (r AttributeFilterOperations) Pop() (afo AttributeFilterOperation) {
 	slice, _ := r.cast().Pop()
@@ -570,14 +570,14 @@ func (r AttributeFilterOperations) Pop() (afo AttributeFilterOperation) {
 }
 
 /*
-Len wraps go-stackage's Stack.Len method.
+Len wraps the [stackage.Stack.Len] method.
 */
 func (r AttributeFilterOperations) Len() int {
 	return r.cast().Len()
 }
 
 /*
-Index wraps go-stackage's Stack.Index method. Note that the Boolean OK value returned by go-stackage by default will be  shadowed and not obtainable by the caller.
+Index wraps the [stackage.Stack.Index] method. Note that the Boolean OK value returned by [stackage] by default will be  shadowed and not obtainable by the caller.
 */
 func (r AttributeFilterOperations) Index(idx int) (afo AttributeFilterOperation) {
 	slice, _ := r.cast().Index(idx)
@@ -589,14 +589,14 @@ func (r AttributeFilterOperations) Index(idx int) (afo AttributeFilterOperation)
 }
 
 /*
-IsZero wraps go-stackage's Stack.IsZero method.
+IsZero wraps the [stackage.Stack.IsZero] method.
 */
 func (r AttributeFilterOperations) IsZero() bool {
 	return r.cast().IsZero()
 }
 
 /*
-Valid wraps go-stackage's Stack.Valid method.
+Valid wraps the [stackage.Stack.Valid] method.
 */
 func (r AttributeFilterOperations) Valid() error {
 	return r.cast().Valid()
@@ -642,7 +642,7 @@ Each of the return instance's key values represent a single instance of the [Com
 
 This is merely a convenient alternative to maintaining knowledge of which [ComparisonOperator] instances apply to which types. Instances of this type  are also used to streamline package unit tests.
 
-Please note that if the receiver is in an aberrant state, or if it has not yet been initialized, the execution of ANY of the return instance's value  methods will return bogus [TargetRule] instances. While this is useful in unit  testing, the end user must only execute this method IF and WHEN the receiver has been properly populated and prepared for such activity.
+Please note that if the receiver is in an aberrant state, or if it has not yet been initialized, the execution of ANY of the return instance's value methods will return bogus [TargetRule] instances. While this is useful in unit  testing, the end user must only execute this method IF and WHEN the receiver has been properly populated and prepared for such activity.
 */
 func (r AttributeFilterOperations) TRM() TargetRuleMethods {
 	return newTargetRuleMethods(targetRuleFuncMap{
@@ -652,7 +652,7 @@ func (r AttributeFilterOperations) TRM() TargetRuleMethods {
 }
 
 /*
-pushPolicy conforms to go-stackage's PushPolicy closure signature. This method is used to govern attempts to push instances into a stack, allowing or rejecting  attempts based upon instance type and other conditions. An error is returned to the caller revealing the outcome of the attempt.
+pushPolicy conforms to [stackage.PushPolicy] closure signature. This method is used to govern attempts to push instances into a stack, allowing or rejecting  attempts based upon instance type and other conditions. An error is returned to the caller revealing the outcome of the attempt.
 */
 func (r AttributeFilterOperations) pushPolicy(x ...any) (err error) {
 	if len(x) == 0 {
@@ -683,7 +683,7 @@ func (r AttributeFilterOperations) pushPolicy(x ...any) (err error) {
 }
 
 /*
-pushPolicy conforms to go-stackage's PushPolicy closure signature. This method is used to govern attempts to push instances into a stack, allowing or rejecting attempts based upon instance type and other conditions. An error is returned to the caller revealing the outcome of the attempt.
+pushPolicy conforms to [stackage.PushPolicy] closure signature. This method is used to govern attempts to push instances into a stack, allowing or rejecting attempts based upon instance type and other conditions. An error is returned to the caller revealing the outcome of the attempt.
 */
 func (r AttributeFilterOperation) pushPolicy(x ...any) (err error) {
 	if len(x) == 0 {
@@ -723,7 +723,7 @@ func (r AttributeFilterOperation) Compare(x any) bool {
 }
 
 /*
-Push wraps go-stackage's Stack.Push method.
+Push wraps the [stackage.Stack.Push] method.
 */
 func (r AttributeFilterOperation) Push(x ...any) AttributeFilterOperation {
 	if len(x) == 0 {
@@ -759,7 +759,7 @@ func (r AttributeFilterOperation) Push(x ...any) AttributeFilterOperation {
 }
 
 /*
-Pop wraps go-stackage's Stack.Pop method.
+Pop wraps the [stackage.Stack.Pop] method.
 */
 func (r AttributeFilterOperation) Pop() (af AttributeFilter) {
 	slice, _ := r.cast().Pop()
@@ -787,14 +787,14 @@ func (r AttributeFilterOperation) Keyword() Keyword {
 }
 
 /*
-Len wraps go-stackage's Stack.Len method.
+Len wraps the [stackage.Stack.Len] method.
 */
 func (r AttributeFilterOperation) Len() int {
 	return r.cast().Len()
 }
 
 /*
-Index wraps go-stackage's Stack.Index method. Note that the Boolean OK value returned by go-stackage by default will be shadowed and not obtainable by the caller.
+Index wraps the [stackage.Stack.Index] method. Note that the Boolean OK value returned by [stackage] by default will be shadowed and not obtainable by the caller.
 */
 func (r AttributeFilterOperation) Index(idx int) (af AttributeFilter) {
 	slice, _ := r.cast().Index(idx)
@@ -847,14 +847,14 @@ func (r AttributeFilterOperation) contains(x any) bool {
 }
 
 /*
-IsZero wraps go-stackage's Stack.IsZero method.
+IsZero wraps the [stackage.Stack.IsZero] method.
 */
 func (r AttributeFilterOperation) IsZero() bool {
 	return r.cast().IsZero()
 }
 
 /*
-Valid wraps go-stackage's Stack.Valid method.
+Valid wraps the [stackage.Stack.Valid] method.
 */
 func (r AttributeFilterOperation) Valid() (err error) {
 	return r.cast().Valid()
@@ -890,9 +890,9 @@ func (r AttributeFilterOperation) String() (s string) {
 }
 
 /*
-presentationPolicy -- when set via go-stackage's Stack.SetPresentationPolicy method -- shall usurp the standard String method behavior exhibited by the receiver in favor of the provided closure's own Stringer implementation. It can be necessary to do this at times if go-stackage's basic String method generates output text in a way other than what is desired.
+presentationPolicy -- when set via the [stackage.Stack.SetPresentationPolicy] method -- shall usurp the standard String method behavior exhibited by the receiver in favor of the provided closure's own Stringer implementation. It can be necessary to do this at times if [stackage]'s basic stringer method generates output text in a way other than what is desired.
 
-See go-stackage's PresentationPolicy documentation for details.
+See [stackage.PresentationPolicy] documentation for details.
 */
 func (r AttributeFilterOperation) presentationPolicy(_ ...any) string {
 	return r.String()
@@ -938,7 +938,7 @@ AFO returns a freshly initialized instance of [AttributeFilterOperation], config
 
 Optionally, the caller may choose to submit one (1) or more (valid) instances of the [AttributeFilter] type (or its string equivalent) during initialization. This is merely a more convenient alternative to separate init and push procedures.
 
-Multiple values are automatically ANDed using stackage.And() using the symbolic AND operator (&&).
+Multiple values are automatically ANDed using [stackage.And] using the symbolic AND operator (&&).
 
 See also the [AttributeFilterOperations] type, and its [AFOs] function, for the multi-valued incarnation of this type.
 */

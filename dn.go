@@ -22,16 +22,16 @@ var (
 	// directly.
 	LocalScheme = `ldap:///`
 
-	// AllDN is the [BindRule] abstraction of all *known user* DNs; this does not imply ANONYMOUS DNs
+	// AllDN is the BindRule abstraction of all *known user* DNs; this does not imply ANONYMOUS DNs
 	AllDN BindDistinguishedName
 
-	// AnyDN is the [BindRule] abstraction of all user DNs, known or anonymous
+	// AnyDN is the BindRule abstraction of all user DNs, known or anonymous
 	AnyDN BindDistinguishedName
 
-	// SelfDN is the [BindRule] abstraction of a user's own DN
+	// SelfDN is the BindRule abstraction of a user's own DN
 	SelfDN BindDistinguishedName
 
-	// ParentDN is the [BindRule] abstraction of a user's superior DN
+	// ParentDN is the BindRule abstraction of a user's superior DN
 	ParentDN BindDistinguishedName
 
 	// badBindDN is an empty BindDistinguishedName struct returned when
@@ -191,14 +191,14 @@ func (r TargetDistinguishedName) Keyword() Keyword {
 }
 
 /*
-Valid wraps go-stackage's Stack.Valid method.
+Valid wraps the [stackage.Stack.Valid] method.
 */
 func (r BindDistinguishedNames) Valid() error {
 	return r.cast().Valid()
 }
 
 /*
-Valid wraps go-stackage's Stack.Valid method.
+Valid wraps the [stackage.Stack.Valid] method.
 */
 func (r TargetDistinguishedNames) Valid() error {
 	return r.cast().Valid()
@@ -583,7 +583,7 @@ func (r BindDistinguishedName) BRM() BindRuleMethods {
 /*
 BRM returns an instance of [BindRuleMethods].
 
-Each of the return instance's key values represent a single instance of the [ComparisonOperator] type that is allowed for use in the creation of BindRule instances which bear the receiver instance as an expression value. The value for each key is the actual [BindRuleMethod] instance for OPTIONAL use in the creation of a [BindRule] instance.
+Each of the return instance's key values represent a single instance of the [ComparisonOperator] type that is allowed for use in the creation of [BindRule] instances which bear the receiver instance as an expression value. The value for each key is the actual [BindRuleMethod] instance for OPTIONAL use in the creation of a [BindRule] instance.
 
 This is merely a convenient alternative to maintaining knowledge of which [ComparisonOperator] instances apply to which types. Instances of this type are also used to streamline package unit tests.
 
@@ -970,35 +970,35 @@ func (r TargetDistinguishedNames) setExpressionValues(key Keyword, values ...str
 }
 
 /*
-IsZero wraps go-stackage's Stack.IsZero method.
+IsZero wraps the [stackage.Stack.IsZero] method.
 */
 func (r BindDistinguishedNames) IsZero() bool {
 	return r.cast().IsZero()
 }
 
 /*
-IsZero wraps go-stackage's Stack.IsZero method.
+IsZero wraps the [stackage.Stack.IsZero] method.
 */
 func (r TargetDistinguishedNames) IsZero() bool {
 	return r.cast().IsZero()
 }
 
 /*
-Len wraps go-stackage's Stack.Len method.
+Len wraps the [stackage.Stack.Len] method.
 */
 func (r BindDistinguishedNames) Len() int {
 	return r.cast().Len()
 }
 
 /*
-Len wraps go-stackage's Stack.Len method.
+Len wraps the [stackage.Stack.Len] method.
 */
 func (r TargetDistinguishedNames) Len() int {
 	return r.cast().Len()
 }
 
 /*
-Index wraps go-stackage's Stack.Index method. Note that the Boolean OK value returned by go-stackage's Stack.Index method by default will be shadowed and not obtainable by the caller.
+Index wraps the [stackage.Stack.Index] method. Note that the Boolean OK value returned by [stackage.Stack.Index] method by default will be shadowed and not obtainable by the caller.
 */
 func (r BindDistinguishedNames) Index(idx int) (b DistinguishedNameContext) {
 	b = badBindDN
@@ -1018,7 +1018,7 @@ func (r BindDistinguishedNames) Index(idx int) (b DistinguishedNameContext) {
 }
 
 /*
-Index wraps go-stackage's Stack.Index method. Note that the Boolean OK value returned by go-stackage by default will be shadowed and not obtainable by the caller.
+Index wraps the [stackage.Stack.Index] method. Note that the Boolean OK value returned by [stackage] by default will be shadowed and not obtainable by the caller.
 */
 func (r TargetDistinguishedNames) Index(idx int) (t TargetDistinguishedName) {
 	t = badTargetDN
@@ -1033,7 +1033,7 @@ func (r TargetDistinguishedNames) Index(idx int) (t TargetDistinguishedName) {
 /*
 String is a stringer method that returns the string representation of the receiver instance.
 
-This method wraps go-stackage's Stack.String method.
+This method wraps the [stackage.Stack.String] method.
 */
 func (r BindDistinguishedNames) String() string {
 	return r.cast().String()
@@ -1042,7 +1042,7 @@ func (r BindDistinguishedNames) String() string {
 /*
 String is a stringer method that returns the string representation of the receiver instance.
 
-This method wraps go-stackage's Stack.String method.
+This method wraps the [stackage.Stack.String] method.
 */
 func (r TargetDistinguishedNames) String() string {
 	return r.cast().String()
@@ -1085,7 +1085,7 @@ func (r BindDistinguishedNames) F() func(string) BindDistinguishedName {
 }
 
 /*
-Keyword returns the [TargetKeyword] (interface) assigned to the receiver instance enveloped as a [Keyword]. This shall be the [TargetKeyword] that appears in a [TargetRule] bearing the receiver value.
+Keyword returns the [TargetKeyword] (interface) assigned to the receiver instance enveloped as a [Keyword]. This shall be the [TargetKeyword] that appears in a [TargetRule] bearing the receiver value
 */
 func (r TargetDistinguishedNames) Keyword() (kw Keyword) {
 	if r.IsZero() {
@@ -1121,7 +1121,7 @@ func (r TargetDistinguishedNames) F() func(string) TargetDistinguishedName {
 }
 
 /*
-Push wraps go-stackage's Stack.Push method. Valid input types are string and [BindDistinguishedName].
+Push wraps the [stackage.Stack.Push] method. Valid input types are string and [BindDistinguishedName].
 
 In the case of a string value, it is automatically cast as an instance of [BindDistinguishedName] using the appropriate [BindKeyword], so long as the raw string is of a non-zero length.
 */
@@ -1186,7 +1186,7 @@ func (r BindDistinguishedNames) contains(x any) bool {
 }
 
 /*
-Push wraps go-stackage's Stack.Push method. Valid input types are string and [TargetDistinguishedName].
+Push wraps the [stackage.Stack.Push] method. Valid input types are string and [TargetDistinguishedName].
 
 In the case of a string value, it is automatically cast as an instance of [TargetDistinguishedName] using the appropriate [TargetKeyword], so long as the raw string is of a non-zero length.
 */
@@ -1316,7 +1316,7 @@ func pushTargetDistinguishedNames(kw Keyword, x any) (tdn TargetDistinguishedNam
 }
 
 /*
-Pop wraps go-stackage's Stack.Pop method and performs type assertion to return a proper [BindDistinguishedName] instance.
+Pop wraps the [stackage.Stack.Pop] method and performs type assertion to return a proper [BindDistinguishedName] instance.
 */
 func (r BindDistinguishedNames) Pop() (popped BindDistinguishedName) {
 	y, _ := r.cast().Pop()
@@ -1330,7 +1330,7 @@ func (r BindDistinguishedNames) Pop() (popped BindDistinguishedName) {
 }
 
 /*
-Pop wraps go-stackage's Stack.Pop method and performs type assertion to return a proper [TargetDistinguishedName] instance.
+Pop wraps the [stackage.Stack.Pop] method and performs type assertion to return a proper [TargetDistinguishedName] instance.
 */
 func (r TargetDistinguishedNames) Pop() (popped TargetDistinguishedName) {
 	y, _ := r.cast().Pop()
@@ -1344,7 +1344,7 @@ func (r TargetDistinguishedNames) Pop() (popped TargetDistinguishedName) {
 }
 
 /*
-uDNPushPolicy is a private function that conforms to go-stackage's PushPolicy interface signature. This is called during Push attempts to a stack containing [BindRule] [BindUDN] distinguished name instances.
+uDNPushPolicy is a private function that conforms to [stackage.PushPolicy] interface signature. This is called during Push attempts to a stack containing [BindRule] [BindUDN] distinguished name instances.
 */
 func (r BindDistinguishedNames) uDNPushPolicy(x ...any) error {
 	if r.contains(x[0]) {
@@ -1354,7 +1354,7 @@ func (r BindDistinguishedNames) uDNPushPolicy(x ...any) error {
 }
 
 /*
-gDNPushPolicy is a private function that conforms to go-stackage's PushPolicy interface signature. This is called during Push attempts to a stack containing [BindRule] [BindGDN] distinguished name instances.
+gDNPushPolicy is a private function that conforms to [stackage.PushPolicy] interface signature. This is called during Push attempts to a stack containing [BindRule] [BindGDN] distinguished name instances.
 */
 func (r BindDistinguishedNames) gDNPushPolicy(x ...any) error {
 	if r.contains(x[0]) {
@@ -1364,7 +1364,7 @@ func (r BindDistinguishedNames) gDNPushPolicy(x ...any) error {
 }
 
 /*
-rDNPushPolicy is a private function that conforms to go-stackage's PushPolicy interface signature. This is called during Push attempts to a stack containing [BindRule] [BindRDN] distinguished name instances.
+rDNPushPolicy is a private function that conforms to [stackage.PushPolicy] interface signature. This is called during Push attempts to a stack containing [BindRule] [BindRDN] distinguished name instances.
 */
 func (r BindDistinguishedNames) rDNPushPolicy(x ...any) error {
 	if r.contains(x[0]) {
@@ -1374,7 +1374,7 @@ func (r BindDistinguishedNames) rDNPushPolicy(x ...any) error {
 }
 
 /*
-tToDNPushPolicy is a private function that conforms to go-stackage's PushPolicy interface signature. This is called during Push attempts to a stack containing [TargetRule] [TargetTo] distinguished name instances.
+tToDNPushPolicy is a private function that conforms to [stackage.PushPolicy] interface signature. This is called during Push attempts to a stack containing [TargetRule] [TargetTo] distinguished name instances.
 */
 func (r TargetDistinguishedNames) tToDNPushPolicy(x ...any) error {
 	if r.contains(x[0]) {
@@ -1384,7 +1384,7 @@ func (r TargetDistinguishedNames) tToDNPushPolicy(x ...any) error {
 }
 
 /*
-tFromDNPushPolicy is a private function that conforms to go-stackage's PushPolicy interface signature. This is called during Push attempts to a stack containing [TargetRule] [TargetFrom] distinguished name instances.
+tFromDNPushPolicy is a private function that conforms to [stackage.PushPolicy] interface signature. This is called during Push attempts to a stack containing [TargetRule] [TargetFrom] distinguished name instances.
 */
 func (r TargetDistinguishedNames) tFromDNPushPolicy(x ...any) error {
 	if r.contains(x[0]) {
@@ -1394,7 +1394,7 @@ func (r TargetDistinguishedNames) tFromDNPushPolicy(x ...any) error {
 }
 
 /*
-tDNPushPolicy is a private function that conforms to go-stackage's PushPolicy interface signature. This is called during Push attempts to a stack containing TargetRule target distinguished name instances.
+tDNPushPolicy is a private function that conforms to [stackage.PushPolicy] interface signature. This is called during Push attempts to a stack containing TargetRule target distinguished name instances.
 */
 func (r TargetDistinguishedNames) tDNPushPolicy(x ...any) error {
 	if r.contains(x[0]) {

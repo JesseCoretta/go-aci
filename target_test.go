@@ -391,9 +391,7 @@ func ExampleTargetRuleMethod() {
 }
 
 /*
-This example demonstrates the creation of a TargetRule in a completely manual way. Users
-will almost certainly want to use the (far easier) methods for Eq, Ne, etc., extended via
-the very type instances intended for representation within a rule.
+This example demonstrates the creation of a [TargetRule] instance in a completely manual way. Users will almost certainly want to use the (far easier) methods for Eq, Ne, etc., extended via the very type instances intended for representation within a rule.
 */
 func ExampleTR() {
 	var rule TargetRule = TR(TargetScope, Eq, SingleLevel)
@@ -402,12 +400,7 @@ func ExampleTR() {
 }
 
 /*
-This example demonstrates the assembly and interrogation of a TargetRules
-instance using the TRs function's variadic expression to submit two (2)
-components for storage within the receiver. The `target` context value as
-well as the `targetscope` context value are pushed successfully, at which
-point we conduct a check to determine whether a `targetscope` rule was in
-fact written to the underlying stack.
+This example demonstrates the assembly and interrogation of a [TargetRules] instance using the [TRs] function's variadic expression to submit two (2) components for storage within the receiver. The `target` context value as well as the `targetscope` context value are pushed successfully, at which point we conduct a check to determine whether a `targetscope` rule was in fact written to the underlying stack.
 */
 func ExampleTargetRules_Contains() {
 	tdns := TRs(

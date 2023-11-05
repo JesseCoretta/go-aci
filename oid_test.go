@@ -213,9 +213,7 @@ func testEmptyOidContext(t *testing.T, kw Keyword, oid ObjectIdentifier, oids Ob
 }
 
 /*
-This example demonstrates the creation of a single LDAP Extended Operation
-Object Identifier, intended for use in the creation of extop TargetRule
-expressions.
+This example demonstrates the creation of a single LDAP Extended Operation [ObjectIdentifier], intended for use in the creation of [TargetExtOp] [TargetRule] expressions.
 */
 func ExampleExtOp() {
 	o := ExtOp(`1.3.6.1.4.1.56521.999.5`)
@@ -248,8 +246,7 @@ func ExampleObjectIdentifiers_Compare() {
 }
 
 /*
-This example demonstrates the creation of a multi-valued targetcontrol (LDAP Control)
-[TargetRule] expression.
+This example demonstrates the creation of a multi-valued targetcontrol (LDAP Control) [TargetRule] expression.
 */
 func ExampleCtrls() {
 	// note: these are phony OIDs
@@ -265,8 +262,7 @@ func ExampleCtrls() {
 }
 
 /*
-This example demonstrates the creation of a multi-valued extop (LDAP Extended
-Operation) [TargetRule] expression.
+This example demonstrates the creation of a multi-valued extop (LDAP Extended Operation) [TargetRule] expression.
 */
 func ExampleExtOps() {
 	// note: these are phony OIDs
@@ -282,9 +278,7 @@ func ExampleExtOps() {
 }
 
 /*
-This example demonstrates the manual creation of an ObjectIdentifier instance using the
-string representation of an ASN.1 Object Identifier in dot notation, and a valid keyword
-context for a TargetRule.
+This example demonstrates the manual creation of an [ObjectIdentifier] instance using the string representation of an ASN.1 Object Identifier in dot notation, and a valid [TargetKeyword] context for a [TargetRule].
 */
 func ExampleOID() {
 	o1 := `1.3.6.1.4.1.56521.999.5` // note: phony OID
@@ -297,9 +291,7 @@ func ExampleOID() {
 }
 
 /*
-This example demonstrates the creation of a multi-valued extop (LDAP Extended
-Operation) equality TargetRule expression. Push is used to submit the instances
-of ObjectIdentifier to the stack.
+This example demonstrates the creation of a multi-valued extop (LDAP Extended Operation) equality [TargetRule] expression. [ObjectIdentifiers.Push] is used to submit the instances of [ObjectIdentifier] to the stack.
 */
 func ExampleObjectIdentifiers_Push() {
 	// note: these are phony OIDs
@@ -315,7 +307,7 @@ func ExampleObjectIdentifiers_Push() {
 }
 
 /*
-This is an example of a LIFO stack slice removal using the Pop method.
+This is an example of a LIFO stack slice removal using the [ObjectIdentifiers.Pop] method.
 */
 func ExampleObjectIdentifiers_Pop() {
 	// note: these are phony OIDs
@@ -333,8 +325,7 @@ func ExampleObjectIdentifiers_Pop() {
 }
 
 /*
-This example demonstrates the creation of a multi-valued extop (LDAP Extended
-Operation) equality TargetRule expression.
+This example demonstrates the creation of a multi-valued extop (LDAP Extended Operation) equality [TargetRule] expression.
 */
 func ExampleObjectIdentifiers_Eq() {
 	// note: these are phony OIDs
@@ -350,8 +341,7 @@ func ExampleObjectIdentifiers_Eq() {
 }
 
 /*
-This example demonstrates the creation of a multi-valued extop (LDAP Extended
-Operation) equality TargetRule expression.
+This example demonstrates the creation of a multi-valued extop (LDAP Extended Operation) equality [TargetRule] expression.
 */
 func ExampleObjectIdentifier_Eq() {
 	fmt.Printf("%s", ExtOp(`1.3.6.1.4.1.56521.999.5`).Eq())
@@ -359,8 +349,7 @@ func ExampleObjectIdentifier_Eq() {
 }
 
 /*
-This example demonstrates the creation of a multi-valued targetcontrol (LDAP Controls)
-negated equality TargetRule expression.
+This example demonstrates the creation of a multi-valued targetcontrol (LDAP Controls) negated equality [TargetRule] expression.
 */
 func ExampleObjectIdentifiers_Ne() {
 	// note: these are phony OIDs
@@ -376,8 +365,7 @@ func ExampleObjectIdentifiers_Ne() {
 }
 
 /*
-This example demonstrates the creation of a multi-valued extop (LDAP Extended
-Operation) negated equality TargetRule expression.
+This example demonstrates the creation of a multi-valued extop (LDAP Extended Operation) negated equality [TargetRule] expression.
 */
 func ExampleObjectIdentifier_Ne() {
 	fmt.Printf("%s", ExtOp(`1.3.6.1.4.1.56521.999.5`).Ne())
@@ -393,8 +381,7 @@ func ExampleObjectIdentifier_String() {
 }
 
 /*
-This example demonstrates the (mostly) useless nature of the Len method,
-which only exists to satisfy Go's interface signature requirements.
+This example demonstrates the (mostly) useless nature of the [ObjectIdentifier.Len] method, which only exists to satisfy Go's interface signature requirements.
 */
 func ExampleObjectIdentifier_Len() {
 	fmt.Printf("%d", ExtOp(`1.3.6.1.4.1.56521.999.5`).Len())
@@ -402,8 +389,7 @@ func ExampleObjectIdentifier_Len() {
 }
 
 /*
-This example demonstrates use of the Len method to return the number
-of slices present within the receiver as an integer.
+This example demonstrates use of the [ObjectIdentifiers.Len] method to return the number of slices present within the receiver as an integer.
 */
 func ExampleObjectIdentifiers_Len() {
 	ctrls := Ctrls().Push(
@@ -416,8 +402,7 @@ func ExampleObjectIdentifiers_Len() {
 }
 
 /*
-This example demonstrates use of the Keyword method to obtain the
-current Keyword context from the receiver.
+This example demonstrates use of the [ObjectIdentifiers.Keyword] method to obtain the current [TargetKeyword] context from the receiver.
 */
 func ExampleObjectIdentifiers_Keyword() {
 	ctrls := Ctrls().Push(
@@ -430,8 +415,7 @@ func ExampleObjectIdentifiers_Keyword() {
 }
 
 /*
-This example demonstrates use of the Kind method to obtain the
-string form of the current Keyword context from the receiver.
+This example demonstrates use of the [ObjectIdentifiers.Kind] method to obtain the string form of the current [ObjectIdentifiers.Keyword] context from the receiver.
 */
 func ExampleObjectIdentifiers_Kind() {
 	ctrls := Ctrls().Push(
@@ -444,8 +428,7 @@ func ExampleObjectIdentifiers_Kind() {
 }
 
 /*
-This example demonstrates use of the Keyword method to obtain the
-current Keyword context from the receiver.
+This example demonstrates use of the [ObjectIdentifier.Keyword] method to obtain the current [TargetKeyword] context from the receiver.
 */
 func ExampleObjectIdentifier_Keyword() {
 	fmt.Printf("%s", ExtOp(`1.3.6.1.4.1.56521.999.5`).Keyword())
@@ -453,8 +436,7 @@ func ExampleObjectIdentifier_Keyword() {
 }
 
 /*
-This example demonstrates use of the Kind method to obtain the
-string form of the current Keyword context from the receiver.
+This example demonstrates use of the [ObjectIdentifier.Kind] method to obtain the string form of the current [TargetKeyword] context from the receiver.
 */
 func ExampleObjectIdentifier_Kind() {
 	fmt.Printf("%s", ExtOp(`1.3.6.1.4.1.56521.999.5`).Kind())
@@ -478,7 +460,7 @@ func ExampleObjectIdentifiers_String() {
 }
 
 /*
-This example demonstrates the use of the IsZero method upon a nil receiver.
+This example demonstrates the use of the [ObjectIdentifier.IsZero] method upon a nil receiver.
 */
 func ExampleObjectIdentifier_IsZero() {
 	var oid ObjectIdentifier
@@ -487,7 +469,7 @@ func ExampleObjectIdentifier_IsZero() {
 }
 
 /*
-This example demonstrates the use of the IsZero method upon a nil receiver.
+This example demonstrates the use of the [ObjectIdentifiers.IsZero] method upon a nil receiver.
 */
 func ExampleObjectIdentifiers_IsZero() {
 	var oids ObjectIdentifiers
@@ -496,7 +478,7 @@ func ExampleObjectIdentifiers_IsZero() {
 }
 
 /*
-This example demonstrates the use of the ID method.
+This example demonstrates the use of the [ObjectIdentifiers.ID] method.
 */
 func ExampleObjectIdentifiers_ID() {
 	var oids ObjectIdentifiers = ExtOps() // must be initialized, as there are two (2) types of OIDs here
@@ -505,7 +487,7 @@ func ExampleObjectIdentifiers_ID() {
 }
 
 /*
-This example demonstrates the use of the Valid method upon a nil receiver.
+This example demonstrates the use of the [ObjectIdentifier.Valid] method upon a nil receiver.
 */
 func ExampleObjectIdentifier_Valid() {
 	var oid ObjectIdentifier
@@ -514,7 +496,7 @@ func ExampleObjectIdentifier_Valid() {
 }
 
 /*
-This example demonstrates the use of the Valid method upon a nil receiver.
+This example demonstrates the use of the [ObjectIdentifier.Valid] method upon a nil receiver.
 */
 func ExampleObjectIdentifiers_Valid() {
 	var oids ObjectIdentifiers
@@ -523,8 +505,7 @@ func ExampleObjectIdentifiers_Valid() {
 }
 
 /*
-This example demonstrates the population of an object identifier stack
-and a subsequent presence check of one of its members.
+This example demonstrates the population of an object identifier stack and a subsequent presence check of one of its members.
 */
 func ExampleObjectIdentifiers_Contains() {
 	ctrls := Ctrls(
@@ -538,8 +519,7 @@ func ExampleObjectIdentifiers_Contains() {
 }
 
 /*
-This example demonstrates the use of the Index method to obtain a single
-slice and print its Keyword value.
+This example demonstrates the use of the Index method to obtain a single slice and print its [ObjectIdentifier.Keyword] value.
 */
 func ExampleObjectIdentifiers_Index() {
 	ctrls := Ctrls(
@@ -553,9 +533,7 @@ func ExampleObjectIdentifiers_Index() {
 }
 
 /*
-This example demonstrates the use of the TRM method to obtain a list of available
-comparison operator identifiers and methods, and a subsequent call of Contains
-to determine whether Greater Than (Gt) is among them.
+This example demonstrates the use of the [ObjectIdentifiers.TRM] method to obtain a list of available [ComparisonOperator] identifiers and methods, and a subsequent call of [TargetRuleMethods.Contains] to determine whether Greater Than (Gt) is among them.
 */
 func ExampleObjectIdentifiers_TRM() {
 	var oids ObjectIdentifiers
@@ -564,9 +542,7 @@ func ExampleObjectIdentifiers_TRM() {
 }
 
 /*
-This example demonstrates the use of the F method to obtain the appropriate
-package level function to be used to craft additional slices for push into
-the receiver.
+This example demonstrates the use of the [ObjectIdentifiers.F] method to obtain the appropriate package level function to be used to craft additional slices for push into the receiver.
 */
 func ExampleObjectIdentifiers_F() {
 	var oids ObjectIdentifiers = Ctrls()
@@ -577,9 +553,7 @@ func ExampleObjectIdentifiers_F() {
 }
 
 /*
-This example demonstrates the use of the TRM method to obtain a list of available
-comparison operator identifiers and methods, and a subsequent call of Contains
-to determine whether Greater Than (Gt) is among them.
+This example demonstrates the use of the [ObjectIdentifier.TRM] method to obtain a list of available [ComparisonOperator] identifiers and methods, and a subsequent call of [TargetRuleMethods.Contains] to determine whether Greater Than (Gt) is among them.
 */
 func ExampleObjectIdentifier_TRM() {
 	var oid ObjectIdentifier

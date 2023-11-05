@@ -379,7 +379,7 @@ func Timeframe(notBefore, notAfter TimeOfDay) (window BindRules) {
 }
 
 /*
-Keyword wraps go-stackage's Condition.Keyword method and resolves the raw value into a [BindKeyword]. Failure to do so will return a bogus [Keyword].
+Keyword wraps the [stackage.Condition.Keyword] method and resolves the raw value into a [BindKeyword]. Failure to do so will return a bogus [Keyword].
 */
 func (r TimeOfDay) Keyword() Keyword {
 	return BindToD

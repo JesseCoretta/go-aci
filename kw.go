@@ -54,7 +54,7 @@ const (
 )
 
 /*
-BindType keyword constants are used in value matching definitions that utilizes either the [BindUAT[ (userattr) or [BindGAT] (groupattr) [BindKeyword] constant within a [BindRule] instance.
+BindType keyword constants are used in value matching definitions that utilizes either the [BindUAT] (userattr) or [BindGAT] (groupattr) [BindKeyword] constant within a [BindRule] instance.
 */
 const (
 	_ BindType = iota // <invalid_bind_type>

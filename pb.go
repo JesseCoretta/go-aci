@@ -1,9 +1,7 @@
 package aci
 
 /*
-pb.go contains PermissionBindRules types and methods. PermissionBindRules combine
-Permissions with BindRules, and are a key component in the formation of a complete
-ACI.
+pb.go contains PermissionBindRules types and methods. PermissionBindRules combine Permissions with BindRules, and are a key component in the formation of a complete Instruction.
 */
 
 /*
@@ -42,7 +40,7 @@ func newPBR(P Permission, B BindContext) *permissionBindRule {
 }
 
 /*
-PBR returns an instance of [PermissionBindRule], bearing the [Permission] P and the [BindRule] B. The values P and B shall undergo validity checks per the conditions of the [PermissionBindRule] Valid method automatically. A bogus [PermissionBindRule] is returned if such checks fail. 
+PBR returns an instance of [PermissionBindRule], bearing the [Permission] P and the [BindRule] B. The values P and B shall undergo validity checks per the conditions of the [PermissionBindRule] Valid method automatically. A bogus [PermissionBindRule] is returned if such checks fail.
 
 Instances of this kind are intended for submission (via Push) into instances of [PermissionBindRules].
 
@@ -180,7 +178,7 @@ func (r PermissionBindRule) string() (s string) {
 }
 
 /*
-Valid wraps go-stackage's Stack.Valid method.
+Valid wraps the [stackage.Stack.Valid] method.
 */
 func (r PermissionBindRules) Valid() (err error) {
 	err = r.cast().Valid()
@@ -188,28 +186,28 @@ func (r PermissionBindRules) Valid() (err error) {
 }
 
 /*
-IsZero wraps go-stackage's Stack.IsZero method.
+IsZero wraps the [stackage.Stack.IsZero] method.
 */
 func (r PermissionBindRules) IsZero() bool {
 	return r.cast().IsZero()
 }
 
 /*
-Len wraps go-stackage's Stack.Len method.
+Len wraps the [stackage.Stack.Len] method.
 */
 func (r PermissionBindRules) Len() int {
 	return r.cast().Len()
 }
 
 /*
-Category wraps go-stackage's Stack.ID method.
+Category wraps the [stackage.Stack.ID] method.
 */
 func (r PermissionBindRules) Kind() string {
 	return pbrsRuleID
 }
 
 /*
-Index wraps go-stackage's Stack.Index method and performs type assertion in order to return an instance of [PermissionBindRule].
+Index wraps the [stackage.Stack.Index] method and performs type assertion in order to return an instance of [PermissionBindRule].
 */
 func (r PermissionBindRules) Index(idx int) (pbr PermissionBindRule) {
 	x, _ := r.cast().Index(idx)
@@ -223,7 +221,7 @@ func (r PermissionBindRules) Index(idx int) (pbr PermissionBindRule) {
 /*
 String is a stringer method that returns the string representation of the receiver instance.
 
-This method wraps go-stackage's Stack.String method.
+This method wraps the [stackage.Stack.String] method.
 */
 func (r PermissionBindRules) String() string {
 	return r.cast().String()
@@ -237,7 +235,7 @@ func (r PermissionBindRules) Compare(x any) bool {
 }
 
 /*
-Push wraps go-stackage's Stack.Push method.
+Push wraps the [stackage.Stack.Push] method.
 */
 func (r PermissionBindRules) Push(x ...any) PermissionBindRules {
 	_r := r.cast()
@@ -261,7 +259,7 @@ func (r PermissionBindRules) Push(x ...any) PermissionBindRules {
 }
 
 /*
-Pop wraps go-stackage's Stack.Pop method. An instance of [PermissionBindRule], which may or may not be nil, is returned following a call of this method.
+Pop wraps the [stackage.Stack.Pop] method. An instance of [PermissionBindRule], which may or may not be nil, is returned following a call of this method.
 
 Within the context of the receiver type, a [PermissionBindRule], if non-nil, can only represent a [PermissionBindRule] instance.
 */

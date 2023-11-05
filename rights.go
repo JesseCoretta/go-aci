@@ -30,7 +30,7 @@ var rightsMap map[Right]string
 var rightsNames map[string]Right
 
 /*
-Right contains the specific bit value of a single user privilege. Constants of this type are intended for submission to the [Permission] Shift ,Unshift and Positive methods.
+Right contains the specific bit value of a single user privilege. Constants of this type are intended for submission to the [Permission.Shift], [Permission.Unshift] and [Permission.Positive] methods.
 */
 type Right uint16
 
@@ -282,18 +282,6 @@ func (r *permission) isZero() bool {
 	}
 
 	return r.bool == nil && r.rights == nil
-}
-
-/*
-Parse wraps go-antlraci's ParsePermission function, writing valid data into the receiver, or returning an error instance if processing fails.
-*/
-func (r *Permission) Parse(raw string) (err error) {
-	var perm *permission
-	if perm, err = parsePermission(raw); err == nil {
-		r.permission = perm
-	}
-
-	return
 }
 
 /*

@@ -95,7 +95,7 @@ func (r Instructions) pushPolicy(x ...any) (err error) {
 }
 
 /*
-Len wraps go-stackage's Stack.Len method.
+Len wraps the [stackage.Stack.Len] method.
 */
 func (r Instructions) Len() int {
 	return r.cast().Len()
@@ -139,7 +139,7 @@ func (r Instructions) contains(x any) bool {
 }
 
 /*
-IsZero wraps go-stackage's Stack.IsZero method.
+IsZero wraps the [stackage.Stack.IsZero] method.
 */
 func (r Instructions) IsZero() bool {
 	return r.cast().IsZero()
@@ -148,7 +148,7 @@ func (r Instructions) IsZero() bool {
 /*
 String is a stringer method that returns the string representation of the receiver instance.
 
-This method wraps go-stackage's Stack.String method.
+This method wraps the [stackage.Stack.String] method.
 */
 func (r Instructions) String() string {
 	return r.cast().String()
@@ -170,7 +170,7 @@ func (r Instruction) String() string {
 }
 
 /*
-Push wraps go-stackage's Stack.Push method. Only [Instruction] instances are permitted for push.
+Push wraps the [stackage.Stack.Push] method. Only [Instruction] instances are permitted for push.
 
 In the case of a string value, it is automatically cast as an instance of [BindDistinguishedName] using the appropriate [BindKeyword], so long as the raw string is of a non-zero length.
 */
@@ -194,7 +194,7 @@ func (r Instructions) Push(x ...any) Instructions {
 }
 
 /*
-Pop wraps go-stackage's Stack.Pop method.
+Pop wraps the [stackage.Stack.Pop] method.
 */
 func (r Instructions) Pop() (x Instruction) {
 	y, _ := r.cast().Pop()
@@ -215,7 +215,7 @@ func (r Instructions) F() func(...any) Instruction {
 }
 
 /*
-Valid wraps go-stackage's Stack.Valid method.
+Valid wraps the [stackage.Stack.Valid] method.
 */
 func (r Instructions) Valid() (err error) {
 	err = r.cast().Valid()
@@ -223,7 +223,7 @@ func (r Instructions) Valid() (err error) {
 }
 
 /*
-Index wraps go-stackage's Stack.Index method. Note that the Boolean OK value returned by go-stackage by default will be shadowed and not obtainable by the caller.
+Index wraps the [stackage.Stack.Index] method. Note that the Boolean OK value returned by go-stackage by default will be shadowed and not obtainable by the caller.
 */
 func (r Instructions) Index(idx int) (x Instruction) {
 	y, _ := r.cast().Index(idx)

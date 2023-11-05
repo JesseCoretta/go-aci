@@ -11,11 +11,11 @@ var (
 )
 
 /*
-String wraps go-stackage ComparisonOperator's String method. This will return the comparison operator character(s) required by the ACIv3 syntax for a particular expressive statement.
+String wraps [stackage.ComparisonOperator.String] method. This will return the comparison operator character(s) required by the ACIv3 syntax for a particular expressive statement.
 
 For example, if the receiver is the Eq [ComparisonOperator] constant, the returned string value shall be `=`.
 
-If the receiver is bogus, or describes an unknown [ComparisonOperator] value, the default go-stackage tag "<invalid_operator>" is returned.
+If the receiver is bogus, or describes an unknown [ComparisonOperator] value, the default [stackage] tag "<invalid_operator>" is returned.
 
 See the [ComparisonOperator] constant definitions for details.
 */
@@ -28,7 +28,7 @@ Context returns the "name" of the [ComparisonOperator] constant.
 
 For example, if the receiver represents the Eq [ComparisonOperator] constant, the returned string value shall be `Eq`.
 
-If the receiver is bogus, or describes an unknown [ComparisonOperator] value, the default go-stackage tag "<invalid_operator>" is returned.
+If the receiver is bogus, or describes an unknown [ComparisonOperator] value, the default [stackage] tag "<invalid_operator>" is returned.
 
 See the [ComparisonOperator] constant definitions for details.
 */
@@ -48,7 +48,7 @@ func (r ComparisonOperator) Context() string {
 		return `Ge`
 	}
 
-	return r.String() // go-stackage "<invalid_operator>"
+	return r.String() // [stackage] "<invalid_operator>"
 }
 
 /*
@@ -56,7 +56,7 @@ Description returns a short description of the receiver instance's context.
 
 For instance, if the receiver is the Eq [ComparisonOperator] constant, the returned string value shall be `Equal To`.
 
-If the receiver is bogus, or describes an unknown [ComparisonOperator] value, the default go-stackage tag "<invalid_operator>" is returned.
+If the receiver is bogus, or describes an unknown [ComparisonOperator] value, the default [stackage] tag "<invalid_operator>" is returned.
 
 This method is largely for convenience, and many individuals may feel it only has any practical applications in the areas of documentation, diagram creation or some other similar activity.
 
@@ -82,7 +82,7 @@ func (r ComparisonOperator) Description() string {
 		return `Greater Than Or Equal`
 	}
 
-	return r.String() // go-stackage "<invalid_operator>"
+	return r.String() // [stackage] "<invalid_operator>"
 }
 
 /*

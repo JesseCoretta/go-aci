@@ -11,7 +11,7 @@ import (
 /*
 ParseBindRule returns an instance of [BindRule] alongside an error instance.
 
-This function calls the imported antlraci.ParseBindRule function, delegating
+This function calls the imported [parser.ParseBindRule] function, delegating
 parsing responsibilities there.
 */
 func ParseBindRule(raw string) (BindRule, error) {
@@ -100,6 +100,18 @@ func parseBindRules(raw string) (BindContext, error) {
 	}
 
 	return n, err
+}
+
+/*
+Parse wraps the [parser.ParsePermission] function, writing valid data into the receiver, or returning an error instance if processing fails.
+*/
+func (r *Permission) Parse(raw string) (err error) {
+	var perm *permission
+	if perm, err = parsePermission(raw); err == nil {
+		r.permission = perm
+	}
+
+	return
 }
 
 /*
@@ -403,7 +415,7 @@ func parseTargetRule(raw string) (TargetRule, error) {
 }
 
 /*
-Parse returns an error based upon an attempt to parse the raw input value into the receiver instance. If successful, any contents within the receiver instance would be obliterated, replaced irrevocably by the freshly parsed values. 
+Parse returns an error based upon an attempt to parse the raw input value into the receiver instance. If successful, any contents within the receiver instance would be obliterated, replaced irrevocably by the freshly parsed values.
 
 Both this method, and the package-level [ParseTargetRule] function, call antlraci's ParseTargetRule function in similar fashion. The only real difference here is the process of writing to a receiver, versus writing to an uninitialized variable declaration.
 */
@@ -931,7 +943,7 @@ func processPermissionBindRules(stack any) (pbrs PermissionBindRules, err error)
 }
 
 /*
-Parse wraps go-antlraci's ParsePermissionBindRule function, writing
+Parse wraps the [parser.ParsePermissionBindRule] function, writing
 valid data into the receiver, or returning an error instance should
 processing fail.
 */
@@ -946,7 +958,7 @@ func (r *PermissionBindRule) Parse(raw string) error {
 }
 
 /*
-Parse wraps go-antlraci's ParsePermissionBindRules function, writing
+Parse wraps the [parser.ParsePermissionBindRules] function, writing
 valid data into the receiver, or returning an error instance should
 processing fail.
 */
@@ -965,7 +977,7 @@ func (r *PermissionBindRules) Parse(raw string) error {
 }
 
 /*
-Parse wraps go-antlraci's ParseInstruction package-level function,
+Parse wraps the [parser.ParseInstruction] package-level function,
 writing data into the receiver, or returning a non-nil instance of
 error if processing should fail.
 

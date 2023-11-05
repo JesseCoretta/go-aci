@@ -47,7 +47,7 @@ type objectIdentifier struct {
 }
 
 /*
-String wraps go-objectid's DotNotation.String method.
+String wraps [objectid.DotNotation.String] method.
 */
 func (r ObjectIdentifier) String() string {
 	if err := r.Valid(); err != nil {
@@ -112,7 +112,7 @@ func (r ObjectIdentifier) TRM() TargetRuleMethods {
 }
 
 /*
-IsZero wraps go-objectid's DotNotation.IsZero method.
+IsZero wraps [objectid.DotNotation.IsZero] method.
 */
 func (r ObjectIdentifier) IsZero() bool {
 	if r.objectIdentifier == nil {
@@ -176,7 +176,7 @@ func (r ObjectIdentifier) Valid() (err error) {
 /*
 OID returns a new instance of [ObjectIdentifier]. Instances of this type are used in the following scenarios:
 
-• For appending (by Push) to an instance of [ObjectIdentifers] when crafting a multi-valued [TargetRule] instance containing a sequence of [ObjectIdentifier] instances, OR ...
+• For appending (by Push) to an instance of [ObjectIdentifiers] when crafting a multi-valued [TargetRule] instance containing a sequence of [ObjectIdentifier] instances, OR ...
 • For use directly in creating a unary [TargetRule] instance
 
 In either case, valid [TargetKeyword] contexts are [TargetExtOp] and [TargetCtrl].
@@ -257,7 +257,7 @@ func (r ObjectIdentifiers) TRM() TargetRuleMethods {
 }
 
 /*
-IsZero wraps go-stackage's Stack.IsZero method.
+IsZero wraps the [stackage.Stack.IsZero] method.
 */
 func (r ObjectIdentifiers) IsZero() bool {
 	return r.cast().IsZero()
@@ -275,14 +275,14 @@ func (r ObjectIdentifiers) Valid() (err error) {
 }
 
 /*
-Len wraps go-stackage's Stack.Len method.
+Len wraps the [stackage.Stack.Len] method.
 */
 func (r ObjectIdentifiers) Len() int {
 	return r.cast().Len()
 }
 
 /*
-Index wraps go-stackage's Stack.Index method. Note that the Boolean OK value returned by go-stackage by default will be shadowed and not obtainable by the caller.
+Index wraps the [stackage.Stack.Index] method. Note that the Boolean OK value returned by [stackage] by default will be shadowed and not obtainable by the caller.
 */
 func (r ObjectIdentifiers) Index(idx int) (x ObjectIdentifier) {
 	y, _ := r.cast().Index(idx)
@@ -297,7 +297,7 @@ func (r ObjectIdentifiers) isObjectIdentifierContext() {}
 /*
 String is a stringer method that returns the string representation of the receiver instance.
 
-This method wraps go-stackage's Stack.String method.
+This method wraps the [stackage.Stack.String] method.
 */
 func (r ObjectIdentifiers) String() string {
 	return r.cast().String()
@@ -311,7 +311,7 @@ func (r ObjectIdentifiers) Compare(x any) bool {
 }
 
 /*
-Push wraps go-stackage's Stack.Push method.
+Push wraps the [stackage.Stack.Push] method.
 */
 func (r ObjectIdentifiers) Push(x ...any) ObjectIdentifiers {
 	_r := r.cast()
@@ -383,7 +383,7 @@ func (r ObjectIdentifiers) contains(x any) bool {
 }
 
 /*
-Pop wraps go-stackage's Stack.Pop method.
+Pop wraps the [stackage.Stack.Pop] method.
 */
 func (r ObjectIdentifiers) Pop() (x ObjectIdentifier) {
 	y, _ := r.cast().Pop()
@@ -444,7 +444,7 @@ func (r ObjectIdentifiers) setExpressionValues(key TargetKeyword, values ...stri
 }
 
 /*
-extOpsPushPolicy conforms to the PushPolicy signature defined within go-stackage.  This function will be called privately whenever an instance is pushed into a particular stackage.Stack (or alias) type instance when the Target keyword `extop` is involved.
+extOpsPushPolicy conforms to the PushPolicy signature defined within [stackage].  This function will be called privately whenever an instance is pushed into a particular stackage.Stack (or alias) type instance when the [TargetKeyword] `extop` is involved.
 
 Only ObjectIdentifier instances are to be cleared for push executions, assuming they are keyword context-aligned with the destination stack.
 */
@@ -456,7 +456,7 @@ func (r ObjectIdentifiers) extOpsPushPolicy(x ...any) error {
 }
 
 /*
-ctrlsPushPolicy conforms to the PushPolicy signature defined within go-stackage.  This function will be called privately whenever an instance is pushed into a particular stackage.Stack (or alias) type instance when the Target keyword `targetcontrol` is involved.
+ctrlsPushPolicy conforms to the PushPolicy signature defined within [stackage].  This function will be called privately whenever an instance is pushed into a particular stackage.Stack (or alias) type instance when the [TargetKeyword] `targetcontrol` is involved.
 
 Only ObjectIdentifier instances are to be cleared for push executions, assuming they are keyword context-aligned with the destination stack.
 */
@@ -641,7 +641,7 @@ func (r ObjectIdentifiers) Ne() TargetRule {
 }
 
 /*
-ID wraps go-stackage's Stack.ID method.
+ID wraps the [stackage.Stack.ID] method.
 */
 func (r ObjectIdentifiers) ID() (s string) {
 	if !r.IsZero() {
@@ -651,7 +651,7 @@ func (r ObjectIdentifiers) ID() (s string) {
 }
 
 /*
-Category wraps go-stackage's Stack.Category method.
+Category wraps the [stackage.Stack.Category] method.
 */
 func (r ObjectIdentifiers) Kind() (k string) {
 	k = `<uninitialized>`

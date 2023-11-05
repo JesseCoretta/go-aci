@@ -40,7 +40,7 @@ func ExampleAttributeType_Compare() {
 
 /*
 This example demonstrates the use of the useless [Keyword] method, as [AttributeType]
-instances do not have any knowledge of [Keyword]s at this time.
+instances do not have any knowledge of [Keyword] instances at this time.
 */
 func ExampleAttributeType_Keyword() {
 	fmt.Printf("%v", AT(`owner`).Keyword())
@@ -83,8 +83,7 @@ func ExampleAttributeType_Valid() {
 }
 
 /*
-This example demonstrates how a caller can determine the number of comparison
-operator methods are available for use by the receiver instance.
+This example demonstrates how a caller can determine the number of [ComparisonOperator]-related methods are available for use by the receiver instance.
 */
 func ExampleAttributeType_TRM() {
 	var at AttributeType
@@ -309,9 +308,7 @@ func ExampleAttributeTypes_String() {
 }
 
 /*
-This example demonstrates the use of the receiver's TRM
-method in order to determine available [ComparisonOperator]
-driven methods available in this context.
+This example demonstrates the use of the receiver's TRM method in order to determine available [ComparisonOperator]-related methods available in this context.
 */
 func ExampleAttributeTypes_TRM_targetAttributes() {
 	attrs := TAs(

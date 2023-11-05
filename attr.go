@@ -615,21 +615,21 @@ func (r AttributeTypes) setQuoteStyle(style int) AttributeTypes {
 }
 
 /*
-IsZero wraps go-stackage's Stack.IsZero method.
+IsZero wraps the [stackage.Stack.IsZero] method.
 */
 func (r AttributeTypes) IsZero() bool {
 	return r.cast().IsZero()
 }
 
 /*
-Len wraps go-stackage's Stack.Len method.
+Len wraps the [stackage.Stack.Len] method.
 */
 func (r AttributeTypes) Len() int {
 	return r.cast().Len()
 }
 
 /*
-Index wraps go-stackage's Stack.Index method. Note that the
+Index wraps the [stackage.Stack.Index] method. Note that the
 Boolean OK value returned by go-stackage by default will be
 shadowed and not obtainable by the caller.
 */
@@ -646,14 +646,14 @@ func (r AttributeTypes) Index(idx int) (x AttributeType) {
 String is a stringer method that returns the string
 representation of the receiver instance.
 
-This method wraps go-stackage's Stack.String method.
+This method wraps the [stackage.Stack.String] method.
 */
 func (r AttributeTypes) String() string {
 	return r.cast().String()
 }
 
 /*
-Kind wraps go-stackage's Stack.Category method for the
+Kind wraps the [stackage.Stack.Category] method for the
 purpose of identifying the context of the receiver instance.
 */
 func (r AttributeTypes) Kind() string {
@@ -696,7 +696,7 @@ func (r AttributeTypes) transfer(dest AttributeTypes) {
 }
 
 /*
-Pop wraps go-stackage's Stack.Pop method.
+Pop wraps the [stackage.Stack.Pop] method.
 */
 func (r AttributeTypes) Pop() (x AttributeType) {
 	z, _ := r.cast().Pop()
@@ -708,7 +708,7 @@ func (r AttributeTypes) Pop() (x AttributeType) {
 }
 
 /*
-Push wraps go-stackage's Stack.Push method. Valid input types are string and [AttributeType]. In the case of a string value, it is automatically cast as an instance of [AttributeType], so long as the raw string is of a non-zero length.
+Push wraps the [stackage.Stack.Push] method. Valid input types are string and [AttributeType]. In the case of a string value, it is automatically cast as an instance of [AttributeType], so long as the raw string is of a non-zero length.
 */
 func (r AttributeTypes) Push(x ...any) AttributeTypes {
 	_r := r.cast()

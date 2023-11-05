@@ -281,8 +281,7 @@ func ExampleNot() {
 }
 
 /*
-This example demonstrates the indexing, iteration and execution of the available
-comparison operator methods for the BindDistinguishedName type.
+This example demonstrates the indexing, iteration and execution of the available [ComparisonOperator] methods for the [BindDistinguishedName] type.
 */
 func ExampleBindRuleMethods() {
 	var dn BindDistinguishedName = GDN(`cn=X.500 Administrators,ou=Groups,dc=example,dc=com`)
