@@ -153,7 +153,7 @@ func (r Right) Compare(x any) bool {
 }
 
 /*
-Len returns the abstract integer length of the receiver, quantifying the number of [Right] instances currently being expressed. For example, if the receiver instance has its [Read] and [Delete] [Right] bits enabled, this would represent an abstract length of two (2).
+Len returns the abstract integer length of the receiver, quantifying the number of [Right] instances currently being expressed. For example, if the receiver instance has its [ReadAccess] and [DeleteAccess] [Right] bits enabled, this would represent an abstract length of two (2).
 */
 func (r Permission) Len() (l int) {
 	if !r.IsZero() {
