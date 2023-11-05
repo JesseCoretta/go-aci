@@ -51,8 +51,8 @@ func TestACIs(t *testing.T) {
 	// with a DN syntax of "uid=<userid>,ou=People,dc=example,dc=com"
 	C := TDN(`uid=*,ou=People,dc=example,dc=com`).Eq()
 
-	// push into a new instance of Rule automatically
-	// configured to store Target Rule Condition instances.
+	// push into a new instance of TargetRules automatically
+	// configured to store TargetRule instances.
 	tgt := TRs(C)
 
 	// define a timeframe for our PermissionBindRule
@@ -125,8 +125,8 @@ func ExampleInstruction_build() {
 	// with a DN syntax of "uid=<userid>,ou=People,dc=example,dc=com"
 	C := TDN(`uid=*,ou=People,dc=example,dc=com`).Eq()
 
-	// push into a new instance of Rule automatically
-	// configured to store Target Rule Condition instances.
+	// push into a new instance of TargetRules automatically
+	// configured to store TargetRule instances.
 	tgt := TRs(C).Push(C)
 
 	// define a timeframe for our PermissionBindRule
@@ -158,8 +158,8 @@ func ExampleInstruction_buildNested() {
 	// with a DN syntax of "uid=<userid>,ou=People,dc=example,dc=com"
 	C := TDN(`uid=*,ou=People,dc=example,dc=com`).Eq()
 
-	// push into a new instance of Rule automatically
-	// configured to store Target Rule Condition instances.
+	// push into a new instance of TargetRules automatically
+	// configured to store TargetRule instances.
 	tgt := TRs().Push(C)
 
 	// create an ORed stack, pushing the two specified

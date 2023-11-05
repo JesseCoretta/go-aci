@@ -14,7 +14,7 @@ func ExampleDay_String() {
 func ExampleDayOfWeek_BRM() {
 	var dow DayOfWeek
 	fmt.Printf("%d available comparison operator methods", dow.BRM().Len())
-	// 2 available comparison operator methods
+	// Output: 2 available comparison operator methods
 }
 
 func ExampleDayOfWeek_Eq() {
@@ -40,8 +40,7 @@ func ExampleDayOfWeek_String() {
 }
 
 /*
-This example demonstrates the SHA-1 hash comparison between two (2) DayOfWeek
-instances using the Compare method.
+This example demonstrates the SHA-1 hash comparison between two (2) DayOfWeek instances using the [DayOfWeek.Compare] method.
 */
 func ExampleDayOfWeek_Compare() {
 	d1 := DoW(Thur, `Sat`, 1)
@@ -108,7 +107,7 @@ func ExampleTimeOfDay_Set() {
 func ExampleTimeOfDay_BRM() {
 	var tod TimeOfDay
 	fmt.Printf("%d available comparison operator methods", tod.BRM().Len())
-	// 6 available comparison operator methods
+	// Output: 6 available comparison operator methods
 }
 
 func ExampleTimeOfDay_Eq() {
@@ -165,8 +164,7 @@ func ExampleDay_Compare() {
 }
 
 /*
-This example demonstrates the SHA-1 hash comparison between two (2) TimeOfDay
-instances using the Compare method.
+This example demonstrates the SHA-1 hash comparison between two (2) [TimeOfDay] instances using the [TimeOfDay.Compare] method.
 */
 func ExampleTimeOfDay_Compare() {
 	d1 := ToD(`1134`)

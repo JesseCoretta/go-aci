@@ -17,3 +17,5 @@ require (
 retract [v0.0.0-alpha.0, v0.0.0-alpha.2]
 
 retract [v1.0.0-stable.0, v1.0.0-stable.2]
+
+retract [v1.0.0, v1.0.1]

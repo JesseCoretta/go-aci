@@ -9,15 +9,19 @@ import (
 )
 
 /*
-ParseBindRule returns an instance of BindRule alongside an error instance.
+ParseBindRule returns an instance of [BindRule] alongside an error instance.
 
-This function calls the imported antlraci.ParseBindRule function, delegating
+This function calls the imported [parser.ParseBindRule] function, delegating
 parsing responsibilities there.
 */
 func ParseBindRule(raw string) (BindRule, error) {
 	return parseBindRule(raw)
 }
 
+/*
+Parse returns an error instance following an attempt to parse the raw input value
+into the receiver instance.
+*/
 func (r *BindRule) Parse(raw string) error {
 	_r, err := parseBindRule(raw)
 	if err != nil {
@@ -34,24 +38,16 @@ func parseBindRule(raw string) (BindRule, error) {
 }
 
 /*
-ParseBindRules returns an instance of BindContext alongside an error
-instance. BindContext may represent either a BindRule or BindRules
-instance, depending on that which was parsed.
+ParseBindRules returns an instance of [BindContext] alongside an error instance. [BindContext] may represent either a [BindRule] or [BindRules] instance, depending on that which was parsed.
 */
 func ParseBindRules(raw string) (BindContext, error) {
 	return parseBindRules(raw)
 }
 
 /*
-Parse returns an error based upon an attempt to parse the raw input
-value into the receiver instance. If successful, any contents within
-the receiver instance would be obliterated, replaced irrevocably by
-the freshly parsed values.
+Parse returns an error based upon an attempt to parse the raw input value into the receiver instance. If successful, any contents within the receiver instance would be obliterated, replaced irrevocably by the freshly parsed values.
 
-Both this method, and the package-level ParseBindRule function, call
-antlraci's ParseBindRule function in similar fashion. The only real
-difference here is the process of writing to a receiver, versus writing
-to an uninitialized variable declaration.
+Both this method, and the package-level [ParseBindRules] function, call [parser.ParseBindRule] function in similar fashion. The only real difference here is the process of writing to a receiver, versus writing to an uninitialized variable declaration.
 */
 func (r *BindRules) Parse(raw string) error {
 	_r, err := parseBindRules(raw)
@@ -68,9 +64,7 @@ func (r *BindRules) Parse(raw string) error {
 }
 
 /*
-parseBindRules communicates with the backend parser (antlraci)
-package for the purpose of parsing an instance of BindRules,
-which is returned alongside an error.
+parseBindRules communicates with the imported [parser] package for the purpose of parsing an instance of [BindRules], which is returned alongside an error.
 */
 func parseBindRules(raw string) (BindContext, error) {
 	// In case the input has bizarre
@@ -80,7 +74,7 @@ func parseBindRules(raw string) (BindContext, error) {
 
 	// send the raw textual bind rules
 	// statement(s) to our sister package
-	// go-antlraci, call ParseBindRules.
+	// antlraci, call ParseBindRules.
 	_b, err := parser.ParseBindRules(raw)
 	if err != nil {
 		return badBindRules, err
@@ -100,6 +94,18 @@ func parseBindRules(raw string) (BindContext, error) {
 	}
 
 	return n, err
+}
+
+/*
+Parse wraps the [parser.ParsePermission] function, writing valid data into the receiver, or returning an error instance if processing fails.
+*/
+func (r *Permission) Parse(raw string) (err error) {
+	var perm *permission
+	if perm, err = parsePermission(raw); err == nil {
+		r.permission = perm
+	}
+
+	return
 }
 
 /*
@@ -263,11 +269,11 @@ assertBindUGRDN is handler for all possible DN and URI values used within Bind R
 expressive statements. In particular, this handles `userdn`, `groupdn` and `roledn`
 keyword contexts.
 
-An any-enveloped DistinguishedNames instance is returned in the event that the raw value(s)
+An any-enveloped [BindDistinguishedNames] instance is returned in the event that the raw value(s)
 represent one (1) or more legal LDAP Distinguished Name value.
 
 In the event that a legal LDAP URI is found, it is returned as an instance of (any-enveloped)
-LDAPURI.
+[LDAPURI].
 
 Quotation schemes are supported seamlessly and either scheme shall be honored per the ANTLR4
 parsed content.
@@ -290,7 +296,7 @@ func assertBindUGRDN(expr parser.RuleExpression, key BindKeyword) (ex any, err e
 	}
 
 	// create an appropriate container based on the
-	// Bind Rule keyword.
+	// BindKeyword.
 	var bdn BindDistinguishedNames
 	switch key {
 	case BindRDN:
@@ -318,7 +324,7 @@ func assertBindUGRDN(expr parser.RuleExpression, key BindKeyword) (ex any, err e
 }
 
 /*
-assertExpressionValue will update the underlying go-antlraci temporary type with a
+assertExpressionValue will update the underlying antlraci temporary type with a
 proper value-appropriate type defined within the go-aci package. An error is returned
 upon processing completion.
 */
@@ -386,21 +392,14 @@ func (r BindRule) assertExpressionValue() (err error) {
 }
 
 /*
-ParseTargetRule processes the raw input string value,
-which should represent a single Target Rule expressive
-statement, into an instance of TargetRule. This, along
-with an error instance, are returned upom completion
-of processing.
+ParseTargetRule processes the raw input string value, which should represent a single [TargetRule] expressive statement, into an instance of [TargetRule]. This, along with an error instance, are returned upon completion of processing.
 */
 func ParseTargetRule(raw string) (TargetRule, error) {
 	return parseTargetRule(raw)
 }
 
 /*
-parseTargetRule is a private function which converts the
-stock stackage.Condition instance assembled by go-antlraci
-and casts as a go-aci TargetRule instance, which will be
-returned alongside an error upon completion of processing.
+parseTargetRule is a private function which converts the stock stackage.Condition instance assembled by antlraci and casts as a go-aci [TargetRule] instance, which will be returned alongside an error upon completion of processing.
 */
 func parseTargetRule(raw string) (TargetRule, error) {
 	_t, err := parser.ParseTargetRule(raw)
@@ -410,15 +409,9 @@ func parseTargetRule(raw string) (TargetRule, error) {
 }
 
 /*
-Parse returns an error based upon an attempt to parse the raw input
-value into the receiver instance. If successful, any contents within
-the receiver instance would be obliterated, replaced irrevocably by
-the freshly parsed values.
+Parse returns an error based upon an attempt to parse the raw input value into the receiver instance. If successful, any contents within the receiver instance would be obliterated, replaced irrevocably by the freshly parsed values.
 
-Both this method, and the package-level ParseTargetRule function,
-call antlraci's ParseTargetRule function in similar fashion. The only
-real difference here is the process of writing to a receiver, versus
-writing to an uninitialized variable declaration.
+Both this method, and the package-level [ParseTargetRule] function, call the [parser.ParseTargetRule] function in similar fashion. The only real difference here is the process of writing to a receiver, versus writing to an uninitialized variable declaration.
 */
 func (r *TargetRule) Parse(raw string) error {
 	_r, err := parseTargetRule(raw)
@@ -431,15 +424,9 @@ func (r *TargetRule) Parse(raw string) error {
 }
 
 /*
-Parse returns an error based upon an attempt to parse the raw input
-value into the receiver instance. If successful, any contents within
-the receiver instance would be obliterated, replaced irrevocably by
-the freshly parsed values.
+Parse returns an error based upon an attempt to parse the raw input value into the receiver instance. If successful, any contents within the receiver instance would be obliterated, replaced irrevocably by the freshly parsed values.
 
-Both this method, and the package-level ParseTargetRules function,
-call antlraci's ParseTargetRules function in similar fashion. The only
-real difference here is the process of writing to a receiver, versus
-writing to an uninitialized variable declaration.
+Both this method, and the package-level [ParseTargetRules] function, call the [parser.ParseTargetRules] function in similar fashion. The only real difference here is the process of writing to a receiver, versus writing to an uninitialized variable declaration.
 */
 func (r *TargetRules) Parse(raw string) error {
 	_r, err := parseTargetRules(raw)
@@ -452,21 +439,14 @@ func (r *TargetRules) Parse(raw string) error {
 }
 
 /*
-ParseTargetRules processes the raw input string value,
-which should represent one (1) or more valid Target Rule
-expressive statements, into an instance of TargetRules.
-This, alongside an error instance, are returned at the
-completion of processing.
+ParseTargetRules processes the raw input string value, which should represent one (1) or more valid [TargetRule] expressive statements, into an instance of [TargetRules]. This, alongside an error instance, are returned at the completion of processing.
 */
 func ParseTargetRules(raw string) (TargetRules, error) {
 	return parseTargetRules(raw)
 }
 
 /*
-parseTargetRules is a private function which converts the
-stock stackage.Stack instance assembled by go-antlraci and
-coaxes the raw string values into proper value-appropriate
-type instances made available by go-aci.
+parseTargetRules is a private function which converts the stock stackage.Stack instance assembled by the [parser] package and coaxes the raw string values into proper value-appropriate type instances made available by go-aci.
 */
 func parseTargetRules(raw string) (TargetRules, error) {
 	// In case the input has bizarre
@@ -474,7 +454,7 @@ func parseTargetRules(raw string) (TargetRules, error) {
 	// it safely.
 	raw = condenseWHSP(raw)
 
-	// Call our go-antlraci (parser) package's
+	// Call our antlraci (parser) package's
 	// ParseTargetRules function, and get the
 	// results (or bail if error).
 	_t, err := parser.ParseTargetRules(raw)
@@ -515,7 +495,7 @@ func processTargetRules(stack any) (TargetRules, error) {
 		// from TargetRule (ntv), and recreate it
 		// using the proper type, replacing the
 		// original. For example, a `target_to`
-		// (DN) Target Rule with a RuleExpression
+		// (DN) TargetRule with a RuleExpression
 		// value of:
 		//
 		//   []string{<dn1>,<dn2>,<dn3>}
@@ -533,8 +513,8 @@ func processTargetRules(stack any) (TargetRules, error) {
 }
 
 /*
-assertExpressionValue will update the underlying go-antlraci temporary expression type
-with a proper value-appropriate type defined within the go-aci package.
+assertExpressionValue will update the underlying antlraci temporary expression type
+with a proper value-appropriate type defined within the [aci] package.
 
 An error is returned upon processing completion.
 */
@@ -625,7 +605,7 @@ func assertTargetFilter(expr parser.RuleExpression) (ex SearchFilter, err error)
 }
 
 /*
-assertTargetOID is handler for all possible OID values used within Target Rule expressive
+assertTargetOID is handler for all possible OID values used within [TargetRule] expressive
 statements. In particular, this handles `targetcontrol` and `extop`.
 
 An ObjectIdentifiers instance is returned in the event that the raw value(s) represent one
@@ -643,7 +623,7 @@ func assertTargetOID(expr parser.RuleExpression, key TargetKeyword) (ex ObjectId
 	}
 
 	// create an appropriate container based on the
-	// Target Rule keyword.
+	// TargetRule keyword.
 	switch key {
 	case TargetExtOp:
 		ex = ExtOps()
@@ -667,7 +647,7 @@ func assertTargetOID(expr parser.RuleExpression, key TargetKeyword) (ex ObjectId
 }
 
 /*
-assertTargetTFDN is handler for all possible DN values used within Target Rule expressive
+assertTargetTFDN is handler for all possible DN values used within [TargetRule] expressive
 statements. In particular, this handles `target`, `target_to` and `target_from` keyword
 contexts.
 
@@ -686,7 +666,7 @@ func assertTargetTFDN(expr parser.RuleExpression, key TargetKeyword) (ex any, er
 	}
 
 	// create an appropriate container based on the
-	// Target Rule keyword.
+	// TargetRule keyword.
 	var tdn TargetDistinguishedNames
 	switch key {
 	case TargetTo:
@@ -793,7 +773,7 @@ func assertTargetAttrFilters(expr parser.RuleExpression) (ex AttributeFilterOper
 }
 
 /*
-assertTargetScope processes the raw expression value (expr) provided by go-antlraci
+assertTargetScope processes the raw expression value (expr) provided by antlraci
 into a proper instance of SearchScope (ex), which is returned alongside an instance of
 error (err).
 */
@@ -855,9 +835,9 @@ func unpackageAntlrPermission(perm parser.Permission) (*permission, error) {
 	// parsing was not involved. This accounts for
 	// special values like 'none' and 'all' -- not
 	// by simply looking for their presence as the
-	// string literals that go-antlraci returns, but
+	// string literals that antlraci returns, but
 	// rather through bit summation of the underlying
-	// values defined in go-aci as part of its attempt
+	// values defined in aci as part of its attempt
 	// to be memory efficient.
 	rint := p.rights.cast().Int()
 	err := unexpectedValueCountErr(`permission bits`, bits, rint)
@@ -888,13 +868,13 @@ func unpackageAntlrPermission(perm parser.Permission) (*permission, error) {
 		// defaults for certain types -- such as 0 for int and false
 		// for bool -- any default is a bad idea here.
 		//
-		// Therefore a POINTER to a bool is used, both here in go-aci
-		// AND within its sister package go-antlraci. go-antlraci will
+		// Therefore a POINTER to a bool is used, both here in aci
+		// AND within its sister package antlraci. antlraci will
 		// evaluate/set the pointer using a double MuTeX case statement,
 		// which allows only specific mutual-exclusion permutations that
 		// are certain to avoid the above scenario.
 		//
-		// The ultimate disposition decision made by go-antlraci in this
+		// The ultimate disposition decision made by antlraci in this
 		// case can be trusted, so long as the imported build is not some
 		// fork from a source you don't know and trust.
 		err = noPermissionDispErr()
@@ -957,7 +937,7 @@ func processPermissionBindRules(stack any) (pbrs PermissionBindRules, err error)
 }
 
 /*
-Parse wraps go-antlraci's ParsePermissionBindRule function, writing
+Parse wraps the [parser.ParsePermissionBindRule] function, writing
 valid data into the receiver, or returning an error instance should
 processing fail.
 */
@@ -972,7 +952,7 @@ func (r *PermissionBindRule) Parse(raw string) error {
 }
 
 /*
-Parse wraps go-antlraci's ParsePermissionBindRules function, writing
+Parse wraps the [parser.ParsePermissionBindRules] function, writing
 valid data into the receiver, or returning an error instance should
 processing fail.
 */
@@ -991,7 +971,7 @@ func (r *PermissionBindRules) Parse(raw string) error {
 }
 
 /*
-Parse wraps go-antlraci's ParseInstruction package-level function,
+Parse wraps the [parser.ParseInstruction] package-level function,
 writing data into the receiver, or returning a non-nil instance of
 error if processing should fail.
 
@@ -1010,7 +990,7 @@ func (r *Instruction) Parse(raw string) (err error) {
 		p  PermissionBindRules // stack for one (1) or more PermissionBindRule instances
 	)
 
-	// hand the raw content to go-antlraci, where
+	// hand the raw content to antlraci, where
 	// the top-level instruction parser shall be
 	// invoked, returning a struct containing the
 	// three (2+) critical components for our new
@@ -1040,6 +1020,106 @@ func (r *Instruction) Parse(raw string) (err error) {
 	if err = _i.Valid(); err == nil {
 		// clobber receiver
 		*r = _i
+	}
+
+	return
+}
+
+/*
+Parse is a convenient alternative to building the receiver instance using individual instances of the needed types. This method does not use [parser] package.
+
+An error is returned if the parsing attempt fails for some reason. If successful, the receiver pointer is updated (clobbered) with new information.
+*/
+func (r *LDAPURI) Parse(raw string) (err error) {
+	var L LDAPURI
+	if L, err = parseLDAPURI(raw); err != nil {
+		return
+	}
+	*r = L
+
+	return
+}
+
+/*
+parseLDAPURI reads input string x and produces an instance of LDAPURI (L), which is returned alongside an error instance (err).
+
+An optional Bind Keyword may be provided to supplant BindUAT in the event of an AttributeBindTypeOrValue instance being present. Note that only BindGAT is supported as an alternative.
+*/
+func parseLDAPURI(x string, bkw ...BindKeyword) (L LDAPURI, err error) {
+	// URI absolutely MUST begin with the local
+	// LDAP scheme (e.g.: ldap:///). If it does
+	// not, fail immediately.
+	if !hasPfx(x, LocalScheme) {
+		err = uriBadPrefixErr()
+		return
+	}
+
+	// Chop the scheme off the string, since
+	// it is no longer needed.
+	uri := x[len(LocalScheme):]
+
+	// initialize our embedded uri type
+	l := newLDAPURI()
+
+	// iterate each value produced through split
+	// on question mark and massage values into
+	// LDAP URI appropriate component values ...
+	err = l.assertURIComponents(split(uri, `?`), bkw...)
+
+	// Envelope ldapURI instance and send it off
+	L = LDAPURI{l}
+
+	return
+}
+
+/*
+Parse is a convenient alternative to building the receiver instance using individual instances of the needed types. This method does not use the [parser] package.
+
+An error is returned if the parsing attempt fails for some reason. If successful, the receiver pointer is updated (clobbered) with new information.
+
+Parse will process the input string (raw) and attempt to split the value using a delimiter integer identifier, if specified. See [AttributeFilterOperationsCommaDelim] (default) and [AttributeFilterOperationsSemiDelim] constant definitions for details.
+*/
+func (r *AttributeFilterOperations) Parse(raw string, delim ...int) (err error) {
+	var d int = AttributeFilterOperationsCommaDelim
+	if len(delim) > 0 {
+		if delim[0] == AttributeFilterOperationsSemiDelim {
+			d = delim[0]
+		}
+	}
+
+	var R AttributeFilterOperations
+	if R, err = parseAttributeFilterOperations(raw, d); err != nil {
+		return
+	}
+	*r = R
+
+	return
+}
+
+/*
+Parse returns an error instance following an attempt to parse input raw into the receiver instance. A successful parse will clobber (or obliterate) any contents already present within the receiver.
+*/
+func (r *AttributeFilterOperation) Parse(raw string) error {
+	afo, err := parseAttributeFilterOperation(raw)
+	if err == nil {
+		*r = afo
+	}
+
+	return err
+}
+
+/*
+Parse parses the string input value (raw) and attempts to marshal its contents into the receiver instance. An error is returned if the attempt should fail for some reason.
+*/
+func (r *AttributeFilter) Parse(raw string) (err error) {
+	if raw = unquote(condenseWHSP(raw)); len(raw) < 5 {
+		err = nilInstanceErr(r)
+		return
+	}
+
+	var _r AttributeFilter
+	if _r, err = parseAttributeFilter(raw); err == nil {
+		*r = _r
 	}
 
 	return

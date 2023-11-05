@@ -17,107 +17,62 @@ import (
 )
 
 /*
-AttributeFilterOperationsCommaDelim shall invoke the default
-delimitation character offered by this package for use within
-instances of the AttributeFilterOperations type.
+AttributeFilterOperationsCommaDelim shall invoke the default delimitation character offered by this package for use within instances of the [AttributeFilterOperations] type.
 
-In cases where the AttributeFilterOperations type is used to
-represent any TargetRule bearing the targattrfilters keyword
-context, one (1) of two (2) different delimiter characters
-MAY be permitted for use, depending on which directory product
-is in use.
+In cases where the [AttributeFilterOperations] type is used to represent any [TargetRule] bearing the [TargetAttrFilters] [TargetKeyword] context, one (1) of two (2) different delimiter characters MAY be permitted for use, depending on which directory product is in use.
 
-Use of this constant allows the use of a comma (ASCII #44) to
-delimit the slices in an AttributeFilterOperations instance as
-opposed to the alternative delimiter (semicolon, ASCII #59).
+Use of this constant allows the use of a comma (ASCII #44) to delimit the slices in an [AttributeFilterOperations] instance as opposed to the alternative delimiter (semicolon, ASCII #59).
 
-This constant may be fed to the SetDelimiter method that is
-extended through the AttributeFilterOperations type.
+This constant may be fed to the SetDelimiter method that is extended through the [AttributeFilterOperations] type.
 
-This is the default setting for the above scenario, and likely
-need to be specified manually unless reverting back from the
-alternative character.
+This is the default setting for the above scenario, and likely need to be specified manually unless reverting back from the alternative character.
 */
 const AttributeFilterOperationsCommaDelim = 0
 
 /*
-AttributeFilterOperationsSemiDelim invokes the alternative
-delimitation character offered by this package for use within
-instances of the AttributeFilterOperations type.
+[AttributeFilterOperationsSemiDelim] invokes the alternative delimitation character offered by this package for use within instances of the [AttributeFilterOperations] type.
 
-In cases where the AttributeFilterOperations type is used
-to represent any TargetRule bearing the targattrfilters
-keyword context, one (1) of two (2) different delimiter
-characters MAY be permitted for use, depending on which
-directory product is in use.
+In cases where the [AttributeFilterOperations] type is used to represent any [TargetRule] bearing the [TargetAttrFilters] [TargetKeyword] context, one (1) of two (2) different delimiter characters MAY be permitted for use, depending on which directory product is in use.
 
-Use of this constant allows the use of a semicolon (ASCII
-#59) to delimit the slices in an AttributeFilterOperations
-instance as opposed to the default delimiter (comma, ASCII
-#44).
+Use of this constant allows the use of a semicolon (ASCII #59) to delimit the slices in an [AttributeFilterOperations] instance as opposed to the default delimiter (comma, ASCII #44).
 
-This constant may be fed to the SetDelimiter method that is
-extended through the AttributeFilterOperations type.
+This constant may be fed to the SetDelimiter method that is extended through the [AttributeFilterOperations] type.
 */
 const AttributeFilterOperationsSemiDelim = 1
 
 /*
-MultivalOuterQuotes represents the alternate quotation style
-used by this package. In cases where a multi-valued BindRule
-or TargetRule expression involving LDAP distinguished names,
-ASN.1 Object Identifiers (in dot notation) and LDAP Attribute
-Type names is being created, this constant will enforce only
-outer-most double-quotation of the whole sequence of values,
-including the delimiters.
+MultivalOuterQuotes represents the alternate quotation style used by this package. In cases where a multi-valued [BindRule] or [TargetRule] expression involving LDAP distinguished names, ASN.1 Object Identifiers (in dot notation) and LDAP Attribute Type names is being created, this constant will enforce only outer-most double-quotation of the whole sequence of values, including the delimiters.
 
 	Example: keyword = "<val> || <val> || <val>"
 
-This constant may be fed to the SetQuoteStyle method that is
-extended through eligible types.
+This constant may be fed to the SetQuoteStyle method that is extended through eligible types.
 */
 const MultivalOuterQuotes = 1
 
 /*
-MultivalSliceQuotes represents the standard quotation scheme
-offered by this package. In cases where a multi-valued BindRule
-or TargetRule expression involving LDAP distinguished names,
-ASN.1 Object Identifiers (in dot notation) and LDAP Attribute
-Type names is being created, this constant shall disable outermost
-quotation and will, instead, quote individual values. This will
-NOT enclose symbolic OR (||) delimiters within quotations.
+MultivalSliceQuotes represents the standard quotation scheme offered by this package. In cases where a multi-valued [BindRule] or [TargetRule] expression involving LDAP distinguished names, ASN.1 Object Identifiers (in dot notation) and LDAP Attribute Type names is being created, this constant shall disable outermost quotation and will, instead, quote individual values. This will NOT enclose symbolic OR (||) delimiters within quotations.
 
 	Example: keyword = "<val>" || "<val>" || "<val>"
 
-This constant may be fed to the SetQuoteStyle method that is
-extended through eligible types.
+This constant may be fed to the SetQuoteStyle method that is extended through eligible types.
 */
 const MultivalSliceQuotes = 0
 
 /*
-RulePadding is a global variable that will be applies to ALL
-TargetRule and Bindrule instances assembled during package operations.
-This is a convenient alternative to manually invoking the NoPadding
-method on a case-by-case basis.
+RulePadding is a global variable that will be applies to ALL [TargetRule] and [BindRule] instances assembled during package operations. This is a convenient alternative to manually invoking the NoPadding method on a case-by-case basis.
 
-Padding is enabled by default, and can be disabled here globally,
-or overridden for individual TargetRule/BindRule instances as needed.
+Padding is enabled by default, and can be disabled here globally, or overridden for individual [TargetRule]/[BindRule] instances as needed.
 
-Note that altering this value will not impact instances that were
-already created; this only impacts the creation of new instances.
+Note that altering this value will not impact instances that were already created; this only impacts the creation of new instances.
 */
 var RulePadding bool = true
 
 /*
-StackPadding is a global variable that will be applies to ALL Stack
-instances assembled during package operations. This is a convenient
-alternative to manually invoking the NoPadding method on a case by
-case basis.
+StackPadding is a global variable that will be applies to ALL Stack instances assembled during package operations. This is a convenient alternative to manually invoking the NoPadding method on a case by case basis.
 
-Padding is enabled by default, and can be disabled here globally,
-or overridden for individual Stack instances as needed.
+Padding is enabled by default, and can be disabled here globally, or overridden for individual Stack instances as needed.
 
-Note that altering this value will not impact instances that were
-already created; this only impacts the creation of new instances.
+Note that altering this value will not impact instances that were already created; this only impacts the creation of new instances.
 */
 var StackPadding bool = true
 
@@ -273,11 +228,9 @@ func isPowerOfTwo(x int) bool {
 }
 
 /*
-Hash computes a SHA-1 hash value, derived from the String
-method output (or string value) of input value x.
+Hash computes a SHA-1 hash value, derived from the String method output (or string value) of input value x.
 
-The hash, if generated, is cast as a string prior to being
-returned alongside an error.
+The hash, if generated, is cast as a string prior to being returned alongside an error.
 
 Input value x must qualify as one (1) of the following:
 
@@ -286,19 +239,9 @@ Input value x must qualify as one (1) of the following:
 
 Failing the above, a non-nil error instance is returned.
 
-This package-level function is the basis for all Compare
-methods extended by myriad types throughout this package.
-In most cases, using an available Compare method is easier
-than using this function directly.
+This package-level function is the basis for all Compare methods extended by myriad types throughout this package. In most cases, using an available Compare method is easier than using this function directly.
 
-The hash evaluation offered by this package is meant to act
-as a supplement in a change review process or similar.  The
-return value should not be used to gauge "validity", "nilness"
-or "initialization status" of an instance. In certain cases,
-two (2) dissimilar (and invalid!) instances of the same type
-shall evaluate as "equal". When string representation yields
-the same effective value for two (2) type instances, this is
-both guaranteed and expected behavior.
+The hash evaluation offered by this package is meant to act as a supplement in a change review process or similar.  The return value should not be used to gauge "validity", "nilness" or "initialization status" of an instance. In certain cases, two (2) dissimilar (and invalid!) instances of the same type shall evaluate as "equal". When string representation yields the same effective value for two (2) type instances, this is both guaranteed and expected behavior.
 */
 func Hash(x any) (string, error) {
 	return hashInstance(x)
