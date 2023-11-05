@@ -1,21 +1,18 @@
 package aci
 
 /*
-net.go contains types, methods and constants that relate to the
-use of IP addresses and DNS names within Bind Rules.
+net.go contains types, methods and constants that relate to the use of IP addresses and DNS names within Bind Rules.
 */
 
 /*
-IPAddr embeds slices of address values, allowing simple
-composition of flexible IP-based Bind Rule conditions.
+IPAddr embeds slices of address values, allowing simple composition of flexible IP-based [BindRule] instances.
 */
 type IPAddr struct {
 	*ipAddrs
 }
 
 /*
-IP initializes, sets and returns a new instance of IPAddr in one shot. This
-function is an alternative to separate assignment and set procedures.
+IP initializes, sets and returns a new instance of [IPAddr] in one shot. This function is an alternative to separate assignment and set procedures.
 */
 func IP(addr ...string) IPAddr {
 	return newIPAddr(addr...)
@@ -37,25 +34,21 @@ const (
 )
 
 /*
-Keyword returns the Keyword (interface) assigned to the receiver instance. This
-shall be the keyword that appears in a BindRule containing the receiver instance
-as the expression value.
+Keyword returns the [BindKeyword] instance assigned to the receiver instance as a [Keyword]. This shall be the [BindKeyword] that appears in a [BindRule] containing the receiver instance as the expression value.
 */
 func (r FQDN) Keyword() Keyword {
 	return BindDNS
 }
 
 /*
-Compare returns a Boolean value indicative of a SHA-1 comparison
-between the receiver (r) and input value x.
+Compare returns a Boolean value indicative of a SHA-1 comparison between the receiver (r) and input value x.
 */
 func (r FQDN) Compare(x any) bool {
 	return compareHashInstance(r, x)
 }
 
 /*
-Eq initializes and returns a new BindRule instance configured to express the
-evaluation of the receiver value as Equal-To the `ip` Bind keyword context.
+Eq initializes and returns a new [BindRule] instance configured to express the evaluation of the receiver value as Equal-To the `ip` [BindKeyword] context.
 */
 func (r IPAddr) Eq() BindRule {
 	if err := r.Valid(); err != nil {
@@ -65,10 +58,9 @@ func (r IPAddr) Eq() BindRule {
 }
 
 /*
-Ne initializes and returns a new BindRule instance configured to express the
-evaluation of the receiver value as Not-Equal-To the `ip` Bind keyword context.
+Ne initializes and returns a new [BindRule] instance configured to express the evaluation of the receiver value as Not-Equal-To the `ip` [BindKeyword] context.
 
-Negated equality BindRule instances should be used with caution.
+Negated equality [BindRule] instances should be used with caution.
 */
 func (r IPAddr) Ne() BindRule {
 	if err := r.Valid(); err != nil {
@@ -78,23 +70,13 @@ func (r IPAddr) Ne() BindRule {
 }
 
 /*
-BRM returns an instance of BindRuleMethods.
+BRM returns an instance of [BindRuleMethods].
 
-Each of the return instance's key values represent a single instance of the
-ComparisonOperator type that is allowed for use in the creation of BindRule
-instances which bear the receiver instance as an expression value. The value
-for each key is the actual BindRuleMethod instance for OPTIONAL use in the
-creation of a BindRule instance.
+Each of the return instance's key values represent a single instance of the [ComparisonOperator] type that is allowed for use in the creation of [BindRule] instances which bear the receiver instance as an expression value. The value for each key is the actual [BindRuleMethod] instance for OPTIONAL use in the creation of a [BindRule] instance.
 
-This is merely a convenient alternative to maintaining knowledge of which
-ComparisonOperator instances apply to which types. Instances of this type
-are also used to streamline package unit tests.
+This is merely a convenient alternative to maintaining knowledge of which [ComparisonOperator] instances apply to which types. Instances of this type are also used to streamline package unit tests.
 
-Please note that if the receiver is in an aberrant state, or if it has not
-yet been initialized, the execution of ANY of the return instance's value
-methods will return bogus BindRule instances. While this is useful in unit
-testing, the end user must only execute this method IF and WHEN the receiver
-has been properly populated and prepared for such activity.
+Please note that if the receiver is in an aberrant state, or if it has not yet been initialized, the execution of ANY of the return instance's value methods will return bogus BindRule instances. While this is useful in unit testing, the end user must only execute this method IF and WHEN the receiver has been properly populated and prepared for such activity.
 */
 func (r IPAddr) BRM() BindRuleMethods {
 	return newBindRuleMethods(bindRuleFuncMap{
@@ -104,8 +86,7 @@ func (r IPAddr) BRM() BindRuleMethods {
 }
 
 /*
-Compare returns a Boolean value indicative of a SHA-1 comparison
-between the receiver (r) and input value x.
+Compare returns a Boolean value indicative of a SHA-1 comparison between the receiver (r) and input value x.
 */
 func (r IPAddr) Compare(x any) bool {
 	return compareHashInstance(r, x)
@@ -122,9 +103,7 @@ func (r IPAddr) Len() int {
 }
 
 /*
-Keyword returns the Keyword (interface) assigned to the receiver instance. This
-shall be the keyword that appears in a BindRule containing the receiver instance
-as the expression value.
+Keyword returns the [BindKeyword] assigned to the receiver instance. This shall be the keyword that appears in a [BindRule] containing the receiver instance as the expression value.
 */
 func (r IPAddr) Keyword() Keyword {
 	return BindIP
@@ -138,8 +117,7 @@ func (r IPAddr) Kind() string {
 }
 
 /*
-Set assigns the provided address component to the receiver and
-returns the receiver instance in fluent-form.
+Set assigns the provided address component to the receiver and returns the receiver instance in fluent-form.
 
 Multiple values can be provided in variadic form, or piecemeal.
 */
@@ -205,8 +183,7 @@ func isValidV6Char(char rune) bool {
 }
 
 /*
-IsZero returns a Boolean value indicative of whether the
-receiver is considered nil, or unset.
+IsZero returns a Boolean value indicative of whether the receiver is considered nil, or unset.
 */
 func (r IPAddr) IsZero() bool {
 	if r.ipAddrs == nil {
@@ -217,8 +194,7 @@ func (r IPAddr) IsZero() bool {
 }
 
 /*
-Valid returns an error indicative of whether the receiver
-is in an aberrant state.
+Valid returns an error indicative of whether the receiver is in an aberrant state.
 */
 func (r IPAddr) Valid() error {
 	if r.IsZero() {
@@ -237,8 +213,7 @@ func (r *ipAddrs) isZero() bool {
 }
 
 /*
-unique scans the receiver to verify whether the addr input
-value is not already present within the receiver.
+unique scans the receiver to verify whether the addr input value is not already present within the receiver.
 */
 func (r IPAddr) unique(addr string) bool {
 	if r.IsZero() {
@@ -258,8 +233,7 @@ func (r ipAddrs) unique(addr string) bool {
 }
 
 /*
-String is a stringer method that returns the string
-representation of an IP address.
+String is a stringer method that returns the string representation of an IP address.
 */
 func (r IPAddr) String() string {
 	if r.isZero() {
@@ -278,9 +252,7 @@ func (r IPAddr) String() string {
 //////////////////////////////////////////////////////////////////////////////////
 
 /*
-domainLabel represents a single component within a fully-qualified domain name.
-Multiple occurrences of ordered instances of this type represent a complete FQDN,
-which may include wildcards (*), to be used in DNS-based ACIs.
+domainLabel represents a single component within a fully-qualified domain name. Multiple occurrences of ordered instances of this type represent a complete FQDN, which may include wildcards (*), to be used in DNS-based ACIs.
 */
 type domainLabel []byte
 type labels []domainLabel
@@ -293,8 +265,7 @@ type FQDN struct {
 }
 
 /*
-DNS initializes, sets and returns a new instance of FQDN in one shot. This
-function is an alternative to separate assignment and set procedures.
+DNS initializes, sets and returns a new instance of [FQDN] in one shot. This function is an alternative to separate assignment and set procedures.
 */
 func DNS(label ...string) FQDN {
 	x := FQDN{new(labels)}
@@ -305,8 +276,7 @@ func DNS(label ...string) FQDN {
 }
 
 /*
-zeroDomain is used in as a return instance for failed FQDN-related Set
-operations.
+zeroDomain is used in as a return instance for failed [FQDN]-related Set operations.
 */
 var zeroDomain FQDN
 
@@ -317,10 +287,7 @@ const (
 )
 
 /*
-Len returns the abstract integer length of the receiver. The value
-returned represents the number of valid DNS labels within a given
-instance of FQDN. For example, `www.example.com` has three (3) such
-labels.
+Len returns the abstract integer length of the receiver. The value returned represents the number of valid DNS labels within a given instance of FQDN. For example, `www.example.com` has three (3) such labels.
 */
 func (r FQDN) Len() int {
 	if r.labels == nil {
@@ -330,27 +297,18 @@ func (r FQDN) Len() int {
 }
 
 /*
-Set appends one or more domain labels to the receiver. The total character
-length of a single label CANNOT exceed sixty-three (63) characters.  When
-added up, all domain label instances present within the receiver SHALL NOT
-collectively exceed two hundred fifty-three (253) characters.
+Set appends one or more domain labels to the receiver. The total character length of a single label CANNOT exceed sixty-three (63) characters.  When added up, all domain label instances present within the receiver SHALL NOT collectively exceed two hundred fifty-three (253) characters.
 
 Valid characters within labels:
 
-• a-z
+  - a-z
+  - A-Z
+  - 0-9
+  - Hyphen ('-', limited to [1:length-1] slice range)
+  - Asterisk ('*', use with care for wildcard DNS-based ACI [BindRule] expressions)
+  - Full Stop ('.', see below for remarks on this character)
 
-• A-Z
-
-• 0-9
-
-• Hyphen ('-', limited to [1:length-1] slice range)
-
-• Asterisk ('*', use with care for wildcard DNS-based ACI Bind Rule expressions)
-
-• Full Stop ('.', see below for remarks on this character)
-
-Users need not enter full stops (.) manually, given this method supports the
-use of variadic expressions, i.e.:
+Users need not enter full stops (.) manually, given this method supports the use of variadic expressions, i.e.:
 
 	Set(`www`,`example`,`com`)
 
@@ -358,11 +316,9 @@ However, should full stops (.) be used within input values:
 
 	Set(`www.example.com`)
 
-... the parser shall split the input into label components and add
-them to the receiver piecemeal in the intended order.
+... the parser shall split the input into label components and add them to the receiver piecemeal in the intended order.
 
-Please note that it is not necessary to include a NULL terminating
-full stop character (.) at the end (TLD?) of the intended FQDN
+Please note that it is not necessary to include a NULL terminating full stop character (.) at the end (TLD?) of the intended [FQDN].
 */
 func (r *FQDN) Set(label ...string) *FQDN {
 	if r.IsZero() {
@@ -430,8 +386,7 @@ func processLabel(label ...string) (dl labels, c int, ok bool) {
 }
 
 /*
-String is a stringer method that returns the string representation
-of a fully-qualified domain name.
+String is a stringer method that returns the string representation of a fully-qualified domain name.
 */
 func (r FQDN) String() string {
 	if err := r.Valid(); err != nil {
@@ -448,8 +403,7 @@ func (r FQDN) String() string {
 }
 
 /*
-Eq initializes and returns a new BindRule instance configured to express the
-evaluation of the receiver value as Equal-To the `dns` Bind keyword context.
+Eq initializes and returns a new [BindRule] instance configured to express the evaluation of the receiver value as Equal-To the [BindDNS] [BindKeyword] context.
 */
 func (r FQDN) Eq() BindRule {
 	if err := r.Valid(); err != nil {
@@ -459,10 +413,9 @@ func (r FQDN) Eq() BindRule {
 }
 
 /*
-Ne initializes and returns a new BindRule instance configured to express the
-evaluation of the receiver value as Not-Equal-To the `dns` Bind keyword context.
+Ne initializes and returns a new [BindRule] instance configured to express the evaluation of the receiver value as Not-Equal-To the [BindDNS] [BindKeyword] context.
 
-Negated equality BindRule instances should be used with caution.
+Negated equality [BindRule] instances should be used with caution.
 */
 func (r FQDN) Ne() BindRule {
 	if err := r.Valid(); err != nil {
@@ -472,23 +425,13 @@ func (r FQDN) Ne() BindRule {
 }
 
 /*
-BRM returns an instance of BindRuleMethods.
+BRM returns an instance of [BindRuleMethods].
 
-Each of the return instance's key values represent a single instance of the
-ComparisonOperator type that is allowed for use in the creation of BindRule
-instances which bear the receiver instance as an expression value. The value
-for each key is the actual BindRuleMethod instance for OPTIONAL use in the
-creation of a BindRule instance.
+Each of the return instance's key values represent a single instance of the [ComparisonOperator] type that is allowed for use in the creation of [BindRule] instances which bear the receiver instance as an expression value. The value for each key is the actual [BindRuleMethod] instance for OPTIONAL use in the creation of a [BindRule] instance.
 
-This is merely a convenient alternative to maintaining knowledge of which
-ComparisonOperator instances apply to which types. Instances of this type
-are also used to streamline package unit tests.
+This is merely a convenient alternative to maintaining knowledge of which [ComparisonOperator] instances apply to which types. Instances of this type are also used to streamline package unit tests.
 
-Please note that if the receiver is in an aberrant state, or if it has not
-yet been initialized, the execution of ANY of the return instance's value
-methods will return bogus BindRule instances. While this is useful in unit
-testing, the end user must only execute this method IF and WHEN the receiver
-has been properly populated and prepared for such activity.
+Please note that if the receiver is in an aberrant state, or if it has not yet been initialized, the execution of ANY of the return instance's value methods will return bogus [BindRule] instances. While this is useful in unit testing, the end user must only execute this method IF and WHEN the receiver has been properly populated and prepared for such activity.
 */
 func (r FQDN) BRM() BindRuleMethods {
 	return newBindRuleMethods(bindRuleFuncMap{
@@ -498,8 +441,7 @@ func (r FQDN) BRM() BindRuleMethods {
 }
 
 /*
-IsZero returns a Boolean value indicative of whether the receiver
-is nil, or unset.
+IsZero returns a Boolean value indicative of whether the receiver is nil, or unset.
 */
 func (r FQDN) IsZero() bool {
 	return r.labels.isZero()
@@ -510,8 +452,7 @@ func (r *labels) isZero() bool {
 }
 
 /*
-Valid returns a Boolean value indicative of whether the receiver
-contents represent a legal fully-qualified domain name value.
+Valid returns a Boolean value indicative of whether the receiver contents represent a legal fully-qualified domain name value.
 */
 func (r FQDN) Valid() (err error) {
 	L := r.len()
@@ -526,8 +467,7 @@ func (r FQDN) Valid() (err error) {
 }
 
 /*
-Len returns the integer length of the receiver in terms of character
-count.
+Len returns the integer length of the receiver in terms of character count.
 */
 func (r FQDN) len() int {
 	if r.labels == nil {
@@ -545,9 +485,7 @@ func (r FQDN) len() int {
 }
 
 /*
-validLabel returns a Boolean value indicative of whether the input
-value (label) represents a valid label component for use within
-a fully-qualified domain.
+validLabel returns a Boolean value indicative of whether the input value (label) represents a valid label component for use within a fully-qualified domain.
 */
 func validLabel(label string) bool {
 	// Cannot exceed maximum component lengths!

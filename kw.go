@@ -5,10 +5,9 @@ kw.go contains Keyword / BindTypes methods and constants.
 */
 
 /*
-Keyword describes the effective "type" within the context of a given Bind or Target Rule. The available keywords vary based
-on the rule type in which a given Keyword resides.
+Keyword describes the effective "type" within the context of a given [BindRule] or [TargetRule]. The available [Keyword] instances vary based on the rule type in which a given [Keyword] resides.
 
-See the Keyword constants defined in this package for a complete list.
+See the [Keyword] constants defined in this package for a complete list.
 */
 type Keyword interface {
 	String() string
@@ -25,27 +24,23 @@ var (
 )
 
 /*
-BindKeyword contains the value describing a particular Bind Keyword to be used within a Bind Rule.
+BindKeyword contains the value describing a particular [BindKeyword] to be used within a [BindRule].
 */
 type BindKeyword uint8
 
 /*
-TargetKeyword contains the value describing a particular Target Keyword to be used within a Target Rule.
+TargetKeyword contains the value describing a particular Target Keyword to be used within a [TargetRule].
 */
 type TargetKeyword uint8
 
 /*
-BindType describes one (1) of five (5) possible keywords used in certain Bind Rule *Condition values:
+BindType describes one (1) of five (5) possible contexts used in certain [BindRule] instances:
 
-• USERDN
-
-• GROUPDN
-
-• ROLEDN
-
-• SELFDN
-
-• LDAPURL
+  - [USERDN]
+  - [GROUPDN]
+  - [ROLEDN]
+  - [SELFDN]
+  - [LDAPURL]
 */
 type BindType uint8
 
@@ -59,10 +54,7 @@ const (
 )
 
 /*
-BindType keyword constants are used in value matching
-definitions that utilizes either the UAT (userattr)
-or GAT (groupattr) BindKeyword constant within a
-BindRule *Condition instance.
+BindType keyword constants are used in value matching definitions that utilizes either the [BindUAT[ (userattr) or [BindGAT] (groupattr) [BindKeyword] constant within a [BindRule] instance.
 */
 const (
 	_ BindType = iota // <invalid_bind_type>
@@ -74,8 +66,7 @@ const (
 )
 
 /*
-BindKeyword constants are intended for singular use within
-a Bind Rule condition.
+BindKeyword constants are intended for singular use within a [BindRule] instance.
 */
 const (
 	_       BindKeyword = iota // <invalid_bind_keyword>
@@ -93,8 +84,7 @@ const (
 )
 
 /*
-TargetKeyword constants are intended for singular use within
-a Target Rule condition.
+TargetKeyword constants are intended for singular use within a [TargetRule] instance.
 */
 const (
 	_                 TargetKeyword = iota // <invalid_target_keyword>
@@ -110,8 +100,7 @@ const (
 )
 
 /*
-String is a stringer method that returns the string representation
-of the receiver instance of BindType.
+String is a stringer method that returns the string representation of the receiver instance of [BindType].
 */
 func (r BindType) String() (b string) {
 	b = badBT
@@ -122,22 +111,21 @@ func (r BindType) String() (b string) {
 }
 
 /*
-Kind returns the string name for the kind of underlying Keyword (`bind`).
+Kind returns the static string literal `bind` identifying the instance as a [BindKeyword].
 */
 func (r BindKeyword) Kind() string {
 	return bindRuleID
 }
 
 /*
-Kind returns the string name for the kind of underlying Keyword (`target`).
+Kind returns the static string literal `target` identifying the instance as a [TargetKeyword].
 */
 func (r TargetKeyword) Kind() string {
 	return targetRuleID
 }
 
 /*
-String is a stringer method that returns the string representation
-of the receiver instance of Bind Rule Keyword.
+String is a stringer method that returns the string representation of the receiver instance of [BindKeyword].
 */
 func (r BindKeyword) String() (k string) {
 	k = badBKW
@@ -148,8 +136,7 @@ func (r BindKeyword) String() (k string) {
 }
 
 /*
-String is a stringer method that returns the string representation
-of the receiver instance of TargetKeyword.
+String is a stringer method that returns the string representation of the receiver instance of [TargetKeyword].
 */
 func (r TargetKeyword) String() (k string) {
 	k = badTKW
@@ -176,8 +163,7 @@ func assertATBTVBindKeyword(bkw ...any) (kw BindKeyword) {
 }
 
 /*
-matchTKW will return the matching TargetKeyword constant
-for the input kw string value.
+matchTKW will return the matching TargetKeyword constant for the input kw string value.
 */
 func matchTKW(kw string) TargetKeyword {
 	for k, v := range tkwMap {
@@ -190,8 +176,7 @@ func matchTKW(kw string) TargetKeyword {
 }
 
 /*
-matchBKW will return the matching BindKeyword constant
-for the input kw string value.
+matchBKW will return the matching BindKeyword constant for the input kw string value.
 */
 func matchBKW(kw string) BindKeyword {
 	for k, v := range bkwMap {
@@ -204,8 +189,7 @@ func matchBKW(kw string) BindKeyword {
 }
 
 /*
-matchBT will return the matching BindType constant
-for the input kw string value.
+matchBT will return the matching BindType constant for the input kw string value.
 */
 func matchBT(kw string) BindType {
 	for k, v := range btMap {

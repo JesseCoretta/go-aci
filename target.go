@@ -10,20 +10,16 @@ var (
 )
 
 /*
-TargetRuleMethods contains one (1) or more instances of TargetRuleMethod,
-representing a particular TargetRule "builder" method for execution by
-the caller.
+TargetRuleMethods contains one (1) or more instances of [TargetRuleMethod], representing a particular [TargetRule] "builder" method for execution by the caller.
 
-See the Operators method extended through all eligible types for further
-details.
+See the Operators method extended through all eligible types for further details.
 */
 type TargetRuleMethods struct {
 	*targetRuleFuncMap
 }
 
 /*
-newTargetRuleMethods populates an instance of *targetRuleFuncMap, which
-is embedded within the return instance of TargetRuleMethods.
+newTargetRuleMethods populates an instance of *targetRuleFuncMap, which is embedded within the return instance of TargetRuleMethods.
 */
 func newTargetRuleMethods(m targetRuleFuncMap) TargetRuleMethods {
 	if len(m) == 0 {
@@ -39,38 +35,24 @@ func newTargetRuleMethods(m targetRuleFuncMap) TargetRuleMethods {
 }
 
 /*
-Index calls the input index (idx) within the internal structure of the
-receiver instance. If found, an instance of ComparisonOperator and its
-accompanying TargetRuleMethod instance are returned.
+Index calls the input index (idx) within the internal structure of the receiver instance. If found, an instance of [ComparisonOperator] and its accompanying [TargetRuleMethod] instance are returned.
 
-Valid input index types are integer (int), ComparisonOperator constant
-or string identifier. In the case of a string identifier, valid values
-are as follows:
+Valid input index types are integer (int), [ComparisonOperator] constant or string identifier. In the case of a string identifier, valid values are as follows:
 
-• For Eq (1): `=`, `Eq`, `Equal To`
-
-• For Ne (2): `=`, `Ne`, `Not Equal To`
-
-• For Lt (3): `=`, `Lt`, `Less Than`
-
-• For Le (4): `=`, `Le`, `Less Than Or Equal`
-
-• For Gt (5): `=`, `Gt`, `Greater Than`
-
-• For Ge (6): `=`, `Ge`, `Greater Than Or Equal`
+  - For Eq (1): `=`, `Eq`, `Equal To`
+  - For Ne (2): `=`, `Ne`, `Not Equal To`
+  - For Lt (3): `=`, `Lt`, `Less Than`
+  - For Le (4): `=`, `Le`, `Less Than Or Equal`
+  - For Gt (5): `=`, `Gt`, `Greater Than`
+  - For Ge (6): `=`, `Ge`, `Greater Than Or Equal`
 
 Case is not significant in the string matching process.
 
-Please note that use of this method by way of integer or ComparisonOperator
-values utilizes fewer resources than a string lookup.
+Please note that use of this method by way of integer or [ComparisonOperator] values utilizes fewer resources than a string lookup.
 
-See the ComparisonOperator type's Context, String and Description methods
-for accessing the above string values easily.
+See the [ComparisonOperator] type's Context, String and Description methods for accessing the above string values easily.
 
-If the index was not matched, an invalid ComparisonOperator is returned
-alongside a nil TargetRuleMethod. This will also apply to situations in
-which the type instance which crafted the receiver is uninitialized, or
-is in an otherwise aberrant state.
+If the index was not matched, an invalid [ComparisonOperator] is returned alongside a nil [TargetRuleMethod]. This will also apply to situations in which the type instance which crafted the receiver is uninitialized, or is in an otherwise aberrant state.
 */
 func (r TargetRuleMethods) Index(idx any) (ComparisonOperator, TargetRuleMethod) {
 	return r.index(idx)
@@ -134,15 +116,9 @@ func rangeTargetRuleFuncMap(candidate string, fm *targetRuleFuncMap) (cop Compar
 }
 
 /*
-Contains returns a Boolean value indicative of whether the specified ComparisonOperator,
-which may be expressed as a string, int or native ComparisonOperator, is allowed for use
-by the type instance that created the receiver instance. This method offers a convenient
-alternative to the use of the Index method combined with an assertion value (such as Eq,
-Ne, "=", "Greater Than", et al).
+Contains returns a Boolean value indicative of whether the specified [ComparisonOperator], which may be expressed as a string, int or native [ComparisonOperator], is allowed for use by the type instance that created the receiver instance. This method offers a convenient alternative to the use of the Index method combined with an assertion value (such as Eq, Ne, "=", "Greater Than", et al).
 
-In other words, if one uses the TargetDistinguishedName.TRM method to create an instance
-of TargetRuleMethods, feeding Gt (Greater Than) to this method shall return false, as no
-TargetRule context allows mathematical comparison.
+In other words, if one uses the [TargetDistinguishedName]'s TRM method to create an instance of [TargetRuleMethods], feeding Gt (Greater Than) to this method shall return false, as no [TargetRule] context allows mathematical comparison.
 */
 func (r TargetRuleMethods) Contains(cop any) bool {
 	c, _ := r.index(cop)
@@ -150,18 +126,14 @@ func (r TargetRuleMethods) Contains(cop any) bool {
 }
 
 /*
-IsZero returns a Boolean value indicative of whether the receiver is
-nil, or unset.
+IsZero returns a Boolean value indicative of whether the receiver is nil, or unset.
 */
 func (r TargetRuleMethods) IsZero() bool {
 	return r.targetRuleFuncMap == nil
 }
 
 /*
-Valid returns the first encountered error returned as a result of
-execution of the first available TargetRuleMethod instance. This is
-useful in cases where a user wants to see if the desired instance(s)
-of TargetRuleMethod will produce a usable result.
+Valid returns the first encountered error returned as a result of execution of the first available [TargetRuleMethod] instance. This is useful in cases where a user wants to see if the desired instance(s) of [TargetRuleMethod]0 will produce a usable result.
 */
 func (r TargetRuleMethods) Valid() (err error) {
 	if r.IsZero() {
@@ -179,8 +151,7 @@ func (r TargetRuleMethods) Valid() (err error) {
 }
 
 /*
-Len returns the integer length of the receiver. Note that the return
-value will NEVER be less than zero (0) nor greater than six (6).
+Len returns the integer length of the receiver. Note that the return value will NEVER be less than zero (0) nor greater than six (6).
 */
 func (r TargetRuleMethods) Len() int {
 	if r.IsZero() {
@@ -191,61 +162,37 @@ func (r TargetRuleMethods) Len() int {
 }
 
 /*
-TargetRuleMethod is the closure signature for methods used to build
-new instances of TargetRule.
+TargetRuleMethod is the closure signature for methods used to build new instances of [TargetRule].
 
-The signature is qualified by the following methods extended through
-all eligible types defined in this package:
+The signature is qualified by the following methods extended through all eligible types defined in this package:
 
-• Eq
+  - Eq
+  - Ne
 
-• Ne
-
-Note that TargetRule instances only support a very limited subset
-of these methods when compared to BindRule instances. In fact, some
-TargetRule instances only support ONE such method: Eq.
+Note that [TargetRule] instances only support a very limited subset of these methods when compared to [BindRule] instances. In fact, some [TargetRule] instances only support ONE such method: Eq.
 */
 type TargetRuleMethod func() TargetRule
 
 /*
-targetRuleFuncMap is a private type intended to be used within
-instances of TargetRuleMethods.
+targetRuleFuncMap is a private type intended to be used within instances of TargetRuleMethods.
 */
 type targetRuleFuncMap map[ComparisonOperator]TargetRuleMethod
 
 /*
-TR wraps go-stackage's Cond package-level function. In this context,
-it is wrapped here to assemble and return a TargetRule instance using
-the so-called "one-shot" procedure. This is an option only when ALL
-information necessary for the process is in-hand and ready for user
-input: the keyword, comparison operator and the appropriate value(s)
-expression.
+TR wraps go-stackage's Cond package-level function. In this context, it is wrapped here to assemble and return a [TargetRule] instance using the so-called "one-shot" procedure. This is an option only when ALL information necessary for the process is in-hand and ready for user input: the [TargetKeyword], [ComparisonOperator] and the appropriate value(s) expression.
 
-Use of this function shall not require a subsequent call of TargetRule's
-Init method, which is needed only for so-called "piecemeal" TargetRule
-assembly.
+Use of this function shall not require a subsequent call of [TargetRule]'s Init method, which is needed only for so-called "piecemeal" [TargetRule] assembly.
 
-Use of this function is totally optional. Users may, instead, opt to
-populate the specific value instance(s) needed and execute the type's
-own Eq, Ne, Ge, Gt, Le and Lt methods (when applicable) to produce an
-identical return instance. Generally speaking, those methods may prove
-to be more convenient -- and far safer -- than use of this function.
+Use of this function is totally optional. Users may, instead, opt to populate the specific value instance(s) needed and execute the type's own Eq, Ne, Ge, Gt, Le and Lt methods (when applicable) to produce an identical return instance. Generally speaking, those methods may prove to be more convenient -- and far safer -- than use of this function.
 */
 func TR(kw, op, ex any) TargetRule {
 	return newTargetRule(kw, op, ex)
 }
 
 /*
-Init wraps stackage.Condition's Init method. This is a required method
-for situations involving the piecemeal (step-by-step) assembly of an
-instance of TargetRule as opposed to a one-shot creation using the TR
-package-level function. It is also an ideal means for the creation of
-a TargetRule instance when one does not immediately possess all of the
-needed pieces of information (i.e.: uncertain which keyword to use, or
-when an expression value has not yet been determined, etc).
+Init wraps stackage.Condition's Init method. This is a required method for situations involving the piecemeal (step-by-step) assembly of an instance of [TargetRule] as opposed to a one-shot creation using the [TR] package-level function. It is also an ideal means for the creation of a [TargetRule] instance when one does not immediately possess all of the needed pieces of information (i.e.: uncertain which [TargetKeyword] to use, or when an expression value has not yet been determined, etc).
 
-Call this method after a variable declaration but before your first
-change, e.g.:
+Call this method after a variable declaration but before your first change, e.g.:
 
 	var tr TargetRule
 	... do other things ...
@@ -255,13 +202,9 @@ change, e.g.:
 	tr.SetSomethingElse(...)
 	...
 
-Init need only be executed once within the lifespan of a TargetRule
-instance. Its execution shall result in a completely new embedded
-pointer instance supplanting the previous one.
+Init need only be executed once within the lifespan of a [TargetRule] instance. Its execution shall result in a completely new embedded pointer instance supplanting the previous one.
 
-One may choose, however, to re-execute this method IF this instance
-shall be reused (perhaps in a repetative or looped manner), and if
-it would be desirable to 'wipe the slate clean' for some reason.
+One may choose, however, to re-execute this method IF this instance shall be reused (perhaps in a repetative or looped manner), and if it would be desirable to 'wipe the slate clean' for some reason.
 */
 func (r *TargetRule) Init() TargetRule {
 	_r := r.cast()
@@ -274,9 +217,7 @@ func (r *TargetRule) Init() TargetRule {
 }
 
 /*
-newTargetRule is a private function called by the TR function. It
-auto-executes -- among other things -- the stackage.Condition.Init
-method.
+newTargetRule is a private function called by the TR function. It auto-executes -- among other things -- the stackage.Condition.Init method.
 */
 func newTargetRule(kw, op, ex any) (t TargetRule) {
 	t.Init()
@@ -313,12 +254,9 @@ func (r TargetRule) Valid() (err error) {
 }
 
 /*
-Len performs no significantly useful task. This method exists to
-satisfy Go's interface signature requirements.
+Len performs no significantly useful task. This method exists to satisfy Go's interface signature requirements.
 
-When executed on a nil instance, an abstract length of zero (0) is
-returned. When executed on a non-nil instance, an abstract length
-of one (1) is returned.
+When executed on a nil instance, an abstract length of zero (0) is returned. When executed on a non-nil instance, an abstract length of one (1) is returned.
 */
 func (r TargetRule) Len() int {
 	if r.IsZero() {
@@ -328,16 +266,14 @@ func (r TargetRule) Len() int {
 }
 
 /*
-Kind returns the string literal `condition` to identify the receiver
-as a stackage.Condition type alias.
+Kind returns the string literal `condition` to identify the receiver as a stackage.Condition type alias.
 */
 func (r TargetRule) Kind() string {
 	return `condition`
 }
 
 /*
-Compare returns a Boolean value indicative of a SHA-1 comparison
-between the receiver (r) and input value x.
+Compare returns a Boolean value indicative of a SHA-1 comparison between the receiver (r) and input value x.
 */
 func (r TargetRule) Compare(x any) bool {
 	return compareHashInstance(r, x)
@@ -361,8 +297,7 @@ func (r TargetRule) ID() string {
 }
 
 /*
-String is a stringer method that returns the string
-representation of the receiver instance.
+String is a stringer method that returns the string representation of the receiver instance.
 
 This method wraps go-stackage's Condition.String method.
 */
@@ -392,26 +327,18 @@ func (r TargetRule) NoPadding(state ...bool) TargetRule {
 }
 
 /*
-SetQuoteStyle allows the election of a particular multivalued
-quotation style offered by the various adopters of the ACIv3
-syntax. In the context of a TargetRule, this will only have a
-meaningful impact if the keyword for the receiver is one (1)
-of the following:
+SetQuoteStyle allows the election of a particular multivalued quotation style offered by the various adopters of the ACIv3 syntax. In the context of a [TargetRule], this will only have a meaningful impact if the [TargetKeyword] for the receiver is one (1) of the following:
 
-  - Target (target)
-  - TargetTo (target_to)
-  - TargetFrom (target_from)
-  - TargetAttr (targetattr)
-  - TargetCtrl (targetcontrol)
-  - TargetExtOp (extop)
+  - [Target] (target)
+  - [TargetTo] (target_to)
+  - [TargetFrom] (target_from)
+  - [TargetAttr] (targetattr)
+  - [TargetCtrl] (targetcontrol)
+  - [TargetExtOp] (extop)
 
-The underlying expression type must be a TargetDistinguishedNames
-instance for Target-related keywords, an ObjectIdentifiers instance
-for OID-related keywords, or simply an AttributeTypes instance for
-the TargetAttr keyword.
+The underlying expression type must be a [TargetDistinguishedNames] instance for [TargetRule] related [Keyword] contexts, an [ObjectIdentifiers] instance for OID-related keywords, or simply an [AttributeTypes] instance for the [TargetAttr] [TargetKeyword].
 
-See the const definitions for MultivalOuterQuotes (default)
-and MultivalSliceQuotes for details.
+See the constant definitions for [MultivalOuterQuotes] (default) and [MultivalSliceQuotes] for details.
 */
 func (r TargetRule) SetQuoteStyle(style int) TargetRule {
 	key := r.Keyword()
@@ -474,9 +401,7 @@ func (r TargetRule) SetKeyword(kw any) TargetRule {
 }
 
 /*
-SetOperator wraps go-stackage's Condition.SetOperator method.
-Valid input types are ComparisonOperator or its string value
-equivalent (e.g.: `>=` for Ge).
+SetOperator wraps go-stackage's Condition.SetOperator method. Valid input types are [ComparisonOperator] or its string value equivalent (e.g.: `>=` for Ge).
 */
 func (r TargetRule) SetOperator(op any) TargetRule {
 	var cop ComparisonOperator
@@ -529,9 +454,7 @@ func (r TargetRule) SetExpression(expr any) TargetRule {
 }
 
 /*
-Keyword wraps go-stackage's Condition.Keyword method and
-resolves the raw value into a TargetKeyword. Failure to do
-so will return a bogus Keyword.
+Keyword wraps go-stackage's Condition.Keyword method and resolves the raw value into a [TargetKeyword]. Failure to do so will return a bogus [TargetKeyword].
 */
 func (r TargetRule) Keyword() Keyword {
 	var kw any = matchTKW(r.cast().Keyword())
@@ -560,66 +483,43 @@ func (r TargetRule) IsZero() bool {
 }
 
 /*
-Kind returns the string literal `stack` to identify the receiver as
-a stackage.Stack type alias.
+Kind returns the string literal `stack` to identify the receiver as a stackage.Stack type alias.
 */
 func (r TargetRules) Kind() string {
 	return `stack`
 }
 
 /*
-Compare returns a Boolean value indicative of a SHA-1 comparison
-between the receiver (r) and input value x.
+Compare returns a Boolean value indicative of a SHA-1 comparison between the receiver (r) and input value x.
 */
 func (r TargetRules) Compare(x any) bool {
 	return compareHashInstance(r, x)
 }
 
 /*
-TRs creates and returns a new instance of TargetRules with an initialized
-embedded stack configured to function as a Target Rule store that is
-meant to contain one (1) or more Condition instances, each of which bear
-one (1) of the following Target Rule keyword constants:
+TRs creates and returns a new instance of [TargetRules] with an initialized embedded stack configured to function as a collection that is meant to contain one (1) or more [TargetRule] instances, each of which bear one (1) of the following [TargetKeyword] constants:
 
-• Target
+  - Target
+  - TargetTo
+  - TargetFrom
+  - TargetAttr
+  - TargetCtrl
+  - TargetScope
+  - TargetFilter
+  - TargetAttrFilters
+  - TargetExtOp
 
-• TargetTo
+Optionally, the caller may choose to submit one (1) or more (valid) instances of the [TargetRule] type (or its string equivalent) during initialization. This is merely a more convenient alternative to separate initialization and push procedures.
 
-• TargetFrom
+Please note that instances of this design are set with a maximum capacity of nine (9) for both the following reasons:
 
-• TargetAttr
+• There are only said number of [TargetKeyword] contexts supported within the ACI syntax specification honored by this package, and ...
 
-• TargetCtrl
+• Individual [TargetKeyword] contexts can only be used once per ACI; in other words, one cannot specify multiple `target` conditions within the same [TargetRules] instance.
 
-• TargetScope
+Instances of this design generally are assigned to top-level instances of [Instruction], and never allow nesting elements (e.g.: other stackage.Stack derived type aliases).
 
-• TargetFilter
-
-• TargetAttrFilters
-
-• TargetExtOp
-
-Optionally, the caller may choose to submit one (1) or more (valid) instances of the
-TargetRule type (or its string equivalent) during initialization. This is merely a
-more convenient alternative to separate initialization and push procedures.
-
-Please note that instances of this design are set with a maximum capacity
-of nine (9) for both the following reasons:
-
-• There are only said number of Target Rule keywords supported within the
-ACI syntax specification honored by this package, and ...
-
-• Individual Target Rule keywords can only be used once per ACI; in other
-words, one cannot specify multiple `target` conditions within the same
-TargetRules instance.
-
-Instances of this design generally are assigned to top-level instances of
-Instruction, and never allow nesting elements (e.g.: other stackage.Stack
-derived type aliases).
-
-Padding is disabled by default, meaning there shall be no whitespace residing
-between individual TargetRule instances. This behavior can be altered using
-the NoPadding method.
+Padding is disabled by default, meaning there shall be no whitespace residing between individual [TargetRule] instances. This behavior can be altered using the NoPadding method.
 */
 func TRs(x ...any) (t TargetRules) {
 	// create a native stackage.Stack
@@ -653,8 +553,7 @@ func TRs(x ...any) (t TargetRules) {
 }
 
 /*
-String is a stringer method that returns the string
-representation of the receiver instance.
+String is a stringer method that returns the string representation of the receiver instance.
 
 This method wraps go-stackage's Stack.String method.
 */
@@ -670,8 +569,7 @@ func (r TargetRules) IsZero() bool {
 }
 
 /*
-reset wraps go-stackage's Stack.Reset method. This is a private
-method in go-aci.
+reset wraps go-stackage's Stack.Reset method. This is a private method in go-aci.
 */
 func (r TargetRules) reset() {
 	if r.IsZero() {
@@ -703,11 +601,9 @@ func (r TargetRules) Push(x ...any) TargetRules {
 }
 
 /*
-Pop wraps go-stackage's Stack.Pop method. An instance of
-TargetRule is returned following a call of this method.
+Pop wraps go-stackage's Stack.Pop method. An instance of [TargetRule] is returned following a call of this method.
 
-Within the context of the receiver type, a RuleContext, if
-non-nil, can only represent a TargetRule instance.
+Within the context of the receiver type, if non-nil, can only represent a [TargetRule] instance.
 */
 func (r TargetRules) Pop() TargetRule {
 	x, _ := r.cast().Pop()
@@ -741,8 +637,7 @@ func (r TargetRules) ReadOnly(state ...bool) TargetRules {
 }
 
 /*
-NoPadding sets the delimiter to a SPACE (ASCII #32 ) or to
-a zero-string depending on the state input.
+NoPadding sets the delimiter to a SPACE (ASCII #32 ) or to a zero-string depending on the state input.
 */
 func (r TargetRules) NoPadding(state ...bool) TargetRules {
 	_t := r.cast()
@@ -773,12 +668,9 @@ func (r TargetRules) Valid() (err error) {
 }
 
 /*
-targetRulesPushPolicy conforms to the PushPolicy signature
-defined within go-stackage.  This function will be called
-privately whenever an instance is pushed into a particular
-stackage.Stack (or alias) type instance.
+targetRulesPushPolicy conforms to the PushPolicy signature defined within go-stackage.  This function will be called privately whenever an instance is pushed into a particular stackage.Stack (or alias) type instance.
 
-Only TargetRule instances are to be cleared for push executions.
+Only [TargetRule] instances are to be cleared for push executions.
 */
 func (r TargetRules) pushPolicy(x ...any) (err error) {
 	for i := 0; i < len(x); i++ {
@@ -806,9 +698,7 @@ func (r TargetRules) pushPolicy(x ...any) (err error) {
 }
 
 /*
-Contains returns a Boolean value indicative of whether value x,
-if a string or TargetKeyword instance, already resides within
-the receiver instance.
+Contains returns a Boolean value indicative of whether value x, if a string or [TargetKeyword] instance, already resides within the receiver instance.
 
 Case is not significant in the matching process.
 */

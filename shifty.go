@@ -34,17 +34,13 @@ func (r rights) cast() shifty.BitValue {
 	return shifty.BitValue(r)
 }
 
-/*
-days is the private type for pointer embedding within
-instances of DayOfWeek.
-*/
 type (
-	// DayOfWeek is a type alias of shifty.BitValue, and is used
-	// to construct a dayofweek BindRule.
+	// [DayOfWeek] is a type alias of shifty.BitValue, and is used
+	// to construct a dayofweek [BindRule].
 	DayOfWeek shifty.BitValue // 8-bit
 
 	// rights is a private type alias of shifty.BitValue, and is
-	// used in the construction an instance of Permission.
+	// used in the construction an instance of [Permission].
 	rights shifty.BitValue // 16-bit
 
 	// levels is a private type alias of shifty.BitValue, and is

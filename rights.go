@@ -5,7 +5,7 @@ rights.go contains methods pertaining to the use of discrete privilege identifie
 */
 
 /*
-Right constants are discrete left-shifted privilege aggregates that can be used in an additive (or subtractive) manner to form a complete Permission.
+Right constants are discrete left-shifted privilege aggregates that can be used in an additive (or subtractive) manner to form a complete [Permission].
 */
 const (
 	ReadAccess      Right = 1 << iota // 1
@@ -30,14 +30,12 @@ var rightsMap map[Right]string
 var rightsNames map[string]Right
 
 /*
-Right contains the specific bit value of a single user privilege. Constants of this
-type are intended for submission to the Permission.Shift, Permission.Unshift and
-Permission.Positive methods.
+Right contains the specific bit value of a single user privilege. Constants of this type are intended for submission to the [Permission] Shift ,Unshift and Positive methods.
 */
 type Right uint16
 
 /*
-Permission defines a level of access bestowed (or withheld) by an ACI.
+Permission defines a level of access bestowed (or withheld) by a [PermissionBindRule].
 */
 type Permission struct {
 	*permission
@@ -49,24 +47,21 @@ type permission struct {
 }
 
 /*
-Allow returns a granting Permission instance bearing the provided
-instances of Right.
+Allow returns a granting [Permission] instance bearing the provided instances of [Right].
 */
 func Allow(x ...any) Permission {
 	return Permission{newPermission(true, x...)}
 }
 
 /*
-Deny returns a withholding Permission instance bearing the provided
-instances of Right.
+Deny returns a withholding [Permission] instance bearing the provided instances of [Right].
 */
 func Deny(x ...any) Permission {
 	return Permission{newPermission(false, x...)}
 }
 
 /*
-newPermission returns a newly initialized instance of *permission
-bearing the provided disposition and Right instance(s).
+newPermission returns a newly initialized instance of *permission bearing the provided disposition and Right instance(s).
 */
 func newPermission(disp bool, x ...any) (p *permission) {
 	p = new(permission)
@@ -134,7 +129,7 @@ func (r *permission) positive(x any) (posi bool) {
 }
 
 /*
-String is a stringer method that returns a single string name value for receiver instance of Right.
+String is a stringer method that returns a single string name value for receiver instance.
 */
 func (r Right) String() (p string) {
 	switch r {
@@ -151,18 +146,14 @@ func (r Right) String() (p string) {
 }
 
 /*
-Compare returns a Boolean value indicative of a SHA-1 comparison
-between the receiver (r) and input value x.
+Compare returns a Boolean value indicative of a SHA-1 comparison between the receiver (r) and input value x.
 */
 func (r Right) Compare(x any) bool {
 	return compareHashInstance(r, x)
 }
 
 /*
-Len returns the abstract integer length of the receiver, quantifying
-the number of Right instances currently being expressed. For example,
-if the receiver instance has its Read and Delete Right bits enabled,
-this would represent an abstract length of two (2).
+Len returns the abstract integer length of the receiver, quantifying the number of [Right] instances currently being expressed. For example, if the receiver instance has its [Read] and [Delete] [Right] bits enabled, this would represent an abstract length of two (2).
 */
 func (r Permission) Len() (l int) {
 	if !r.IsZero() {
@@ -183,8 +174,7 @@ func (r permission) len() int {
 }
 
 /*
-String is a stringer method that returns the string representation of
-the receiver instance.
+String is a stringer method that returns the string representation of the receiver instance.
 */
 func (r Permission) String() string {
 	if r.IsZero() {
@@ -215,8 +205,7 @@ func (r Permission) String() string {
 }
 
 /*
-Compare returns a Boolean value indicative of a SHA-1 comparison
-between the receiver (r) and input value x.
+Compare returns a Boolean value indicative of a SHA-1 comparison between the receiver (r) and input value x.
 */
 func (r Permission) Compare(x any) bool {
 	return compareHashInstance(r, x)
@@ -227,8 +216,7 @@ func (r Permission) sprintf(rights []string) string {
 }
 
 /*
-Disposition returns the string disposition `allow`
-or 'deny', depending on the state of the receiver.
+Disposition returns the string disposition `allow` or 'deny', depending on the state of the receiver.
 */
 func (r Permission) Disposition() string {
 	if r.permission == nil {
@@ -258,7 +246,7 @@ func (r Permission) Positive(x any) (posi bool) {
 }
 
 /*
-Shift left-shifts the receiver instance to include Right x, if not already present.
+Shift left-shifts the receiver instance to include [Right] x, if not already present.
 */
 func (r Permission) Shift(x ...any) Permission {
 	if err := r.Valid(); err == nil {
@@ -270,7 +258,7 @@ func (r Permission) Shift(x ...any) Permission {
 }
 
 /*
-Unshift right-shifts the receiver instance to remove Right x, if present.
+Unshift right-shifts the receiver instance to remove [Right] x, if present.
 */
 func (r Permission) Unshift(x ...any) Permission {
 	if err := r.Valid(); err == nil {
@@ -282,8 +270,7 @@ func (r Permission) Unshift(x ...any) Permission {
 }
 
 /*
-IsZero returns a Boolean value indicative of whether the receiver
-is nil, or unset.
+IsZero returns a Boolean value indicative of whether the receiver is nil, or unset.
 */
 func (r Permission) IsZero() bool {
 	return r.permission.isZero()
@@ -298,9 +285,7 @@ func (r *permission) isZero() bool {
 }
 
 /*
-Parse wraps go-antlraci's ParsePermission function, writing
-valid data into the receiver, or returning an error instance
-if processing fails.
+Parse wraps go-antlraci's ParsePermission function, writing valid data into the receiver, or returning an error instance if processing fails.
 */
 func (r *Permission) Parse(raw string) (err error) {
 	var perm *permission
@@ -312,8 +297,7 @@ func (r *Permission) Parse(raw string) (err error) {
 }
 
 /*
-Valid returns a non-error instance if the receiver fails to pass
-basic validity checks.
+Valid returns a non-error instance if the receiver fails to pass basic validity checks.
 */
 func (r Permission) Valid() (err error) {
 	err = nilInstanceErr(r)

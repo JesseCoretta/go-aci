@@ -21,8 +21,8 @@ var (
 /*
 AttributeTypeContext is a convenient interface type that is qualified by the following types:
 
- - [AttributeType]
- - [AttributeTypes]
+  - [AttributeType]
+  - [AttributeTypes]
 
 The qualifying methods shown below are intended to make the generalized handling of attributeTypes
 slightly easier without an absolute need for type assertion at every step.
@@ -48,11 +48,11 @@ AttributeBindTypeOrValue contains a statement of the following syntax:
 
 	<AttributeName>#<BindType -OR- AttributeValue>
 
-Instances of this type are used in certain Bind Rules, particularly those that
-involve user-attribute or group-attribute [Keyword] instances.
+Instances of this type are used in certain [BindRules], particularly those that
+involve user-attribute or group-attribute [BindKeyword] instances.
 */
 type AttributeBindTypeOrValue struct {
-	BindKeyword // [BindUAT] or [BindGAT] keywords only!
+	BindKeyword // BindUAT or BindGAT keywords only!
 	*atbtv      // PTR
 }
 
@@ -102,7 +102,7 @@ func ABTV(kw BindKeyword, x ...any) (a AttributeBindTypeOrValue) {
 /*
 UAT (User-Attribute Name + Bind Type -OR- Attribute Value) returns an initialized
 instance of [AttributeBindTypeOrValue] configured for rules that leverage the [BindUAT]
-[BindRule] [Keyword].
+[BindKeyword] context.
 */
 func UAT(x ...any) AttributeBindTypeOrValue {
 	return userOrGroupAttr(BindUAT, x...)
@@ -111,16 +111,14 @@ func UAT(x ...any) AttributeBindTypeOrValue {
 /*
 GAT (Group-Attribute Name + Bind Type -OR- Attribute Value) returns an initialized
 instance of [AttributeBindTypeOrValue] configured for rules that leverage the [BindGAT]
-[BindRule] [Keyword].
+[BindKeyword] context.
 */
 func GAT(x ...any) AttributeBindTypeOrValue {
 	return userOrGroupAttr(BindGAT, x...)
 }
 
 /*
-userOrGroupAttr is a private package level function called by either the GroupAttr or
-UserAttr function. This function is the base initializer for the AttributeBindTypeOrValue
-instance returned by said functions.
+userOrGroupAttr is a private package level function called by either the GroupAttr or UserAttr function. This function is the base initializer for the [AttributeBindTypeOrValue] instance returned by said functions.
 */
 func userOrGroupAttr(t BindKeyword, x ...any) (A AttributeBindTypeOrValue) {
 	A = AttributeBindTypeOrValue{
@@ -135,9 +133,7 @@ func userOrGroupAttr(t BindKeyword, x ...any) (A AttributeBindTypeOrValue) {
 }
 
 /*
-Set assigns value(s) x to the receiver. The value(s) must be [AttributeType]
-and/or [AttributeValue] instances, created via the package-level AT and AV
-functions respectively.
+Set assigns value(s) x to the receiver. The value(s) must be [AttributeType] and/or [AttributeValue] instances, created via the package-level [AT] and [AV] functions respectively.
 */
 func (r *AttributeBindTypeOrValue) Set(x ...any) *AttributeBindTypeOrValue {
 	if r.IsZero() {
@@ -148,9 +144,7 @@ func (r *AttributeBindTypeOrValue) Set(x ...any) *AttributeBindTypeOrValue {
 }
 
 /*
-Eq initializes and returns a new [BindRule] instance configured to express the
-evaluation of the receiver value as Equal-To a [BindUAT] or [BindGAT] [BindRule]
-[Keyword] context.
+Eq initializes and returns a new [BindRule] instance configured to express the evaluation of the receiver value as Equal-To a [BindUAT] or [BindGAT] [BindKeyword] context.
 */
 func (r AttributeBindTypeOrValue) Eq() (b BindRule) {
 	if !r.atbtv.isZero() {
@@ -160,9 +154,7 @@ func (r AttributeBindTypeOrValue) Eq() (b BindRule) {
 }
 
 /*
-Ne initializes and returns a new [BindRule] instance configured to express the
-evaluation of the receiver value as Not-Equal-To a [BindUAT] or [BindGAT] [BindRule]
-[Keyword] context.
+Ne initializes and returns a new [BindRule] instance configured to express the evaluation of the receiver value as Not-Equal-To a [BindUAT] or [BindGAT] [BindKeyword] context.
 
 Negated equality [BindRule] instances should be used with caution.
 */
@@ -176,21 +168,11 @@ func (r AttributeBindTypeOrValue) Ne() (b BindRule) {
 /*
 BRM returns an instance of [BindRuleMethods].
 
-Each of the return instance's key values represent a single instance of the
-[ComparisonOperator] type that is allowed for use in the creation of [BindRule]
-instances which bear the receiver instance as an expression value. The value
-for each key is the actual [BindRuleMethod] instance for OPTIONAL use in the
-creation of a [BindRule] instance.
+Each of the return instance's key values represent a single instance of the [ComparisonOperator] type that is allowed for use in the creation of [BindRule] instances which bear the receiver instance as an expression value. The value for each key is the actual [BindRuleMethod] instance for OPTIONAL use in the creation of a [BindRule] instance.
 
-This is merely a convenient alternative to maintaining knowledge of which
-[ComparisonOperator] instances apply to which types. Instances of this type
-are also used to streamline package unit tests.
+This is merely a convenient alternative to maintaining knowledge of which [ComparisonOperator] instances apply to which types. Instances of this type are also used to streamline package unit tests.
 
-Please note that if the receiver is in an aberrant state, or if it has not
-yet been initialized, the execution of ANY of the return instance's value
-methods will return bogus [BindRule] instances. While this is useful in unit
-testing, the end user must only execute this method IF and WHEN the receiver
-has been properly populated and prepared for such activity.
+Please note that if the receiver is in an aberrant state, or if it has not yet been initialized, the execution of ANY of the return instance's value methods will return bogus [BindRule] instances. While this is useful in unit testing, the end user must only execute this method IF and WHEN the receiver has been properly populated and prepared for such activity.
 */
 func (r AttributeBindTypeOrValue) BRM() BindRuleMethods {
 	return newBindRuleMethods(bindRuleFuncMap{
@@ -200,9 +182,7 @@ func (r AttributeBindTypeOrValue) BRM() BindRuleMethods {
 }
 
 /*
-Keyword returns the [Keyword] associated with the receiver instance. In
-the context of this type instance, the Keyword returned will be either
-[BindUAT] or [BindGAT].
+Keyword returns the [BindKeyword] associated with the receiver instance, enveloped as a [Keyword]. In the context of this type instance, the [BindKeyword] returned will be either [BindUAT] or [BindGAT].
 */
 func (r AttributeBindTypeOrValue) Keyword() Keyword {
 	var kw Keyword = r.BindKeyword
@@ -215,8 +195,7 @@ func (r AttributeBindTypeOrValue) Keyword() Keyword {
 }
 
 /*
-isZero returns a Boolean value indicative of whether the receiver is nil, or
-unset.
+isZero returns a Boolean value indicative of whether the receiver is nil, or unset.
 */
 func (r *atbtv) isZero() bool {
 	if r == nil {
@@ -226,8 +205,7 @@ func (r *atbtv) isZero() bool {
 }
 
 /*
-String is a stringer method that returns the string representation of the
-receiver.
+String is a stringer method that returns the string representation of the receiver.
 */
 func (r atbtv) String() (s string) {
 	// Only one (1) of the following
@@ -263,13 +241,9 @@ func (r atbtv) String() (s string) {
 }
 
 /*
-set assigns one (1) or more values (x) to the receiver. Only
-[AttributeType], [AttributeValue] and [BindType] instances shall be
-assigned.
+set assigns one (1) or more values (x) to the receiver. Only [AttributeType], [AttributeValue] and [BindType] instances shall be assigned.
 
-Note that if a string value is detected, it will be cast as
-the appropriate type and assigned to the appropriate slice in
-the receiver, but ONLY if said slice is nil.
+Note that if a string value is detected, it will be cast as the appropriate type and assigned to the appropriate slice in the receiver, but ONLY if said slice is nil.
 */
 func (r *atbtv) set(x ...any) {
 	for i := 0; i < len(x); i++ {
@@ -309,12 +283,9 @@ func (r AttributeBindTypeOrValue) String() (s string) {
 }
 
 /*
-Parse reads the input string (raw) in an attempt to marshal its contents
-into the receiver instance (r). An error is returned at the end of the
-process.
+Parse reads the input string (raw) in an attempt to marshal its contents into the receiver instance (r). An error is returned at the end of the process.
 
-If no suitable [BindKeyword] is provided (bkw), the default is [BindUAT].
-Valid options are [BindUAT] and [BindGAT].
+If no suitable [BindKeyword] is provided (bkw), the default is [BindUAT]. Valid options are [BindUAT] and [BindGAT].
 */
 func (r *AttributeBindTypeOrValue) Parse(raw string, bkw ...any) (err error) {
 	var _r AttributeBindTypeOrValue
@@ -327,8 +298,7 @@ func (r *AttributeBindTypeOrValue) Parse(raw string, bkw ...any) (err error) {
 }
 
 /*
-Valid returns an error indicative of whether the receiver is in
-an aberrant state.
+Valid returns an error indicative of whether the receiver is in an aberrant state.
 */
 func (r AttributeBindTypeOrValue) Valid() (err error) {
 	err = nilInstanceErr(r)
@@ -382,24 +352,21 @@ func parseATBTV(x string, bkw ...any) (A AttributeBindTypeOrValue, err error) {
 }
 
 /*
-AttributeType embeds a pointer value that reflects a single [AttributeType] descriptor
-such as `manager` or `cn`. The descriptor should conform to RFC4512 §2.5.
+AttributeType embeds a pointer value that reflects a single [AttributeType] descriptor such as `manager` or `cn`. The descriptor should conform to RFC 4512 Section 2.5.
 */
 type AttributeType struct {
 	*string
 }
 
 /*
-Compare returns a Boolean value indicative of a SHA-1 comparison
-between the receiver (r) and input value x.
+Compare returns a Boolean value indicative of a SHA-1 comparison between the receiver (r) and input value x.
 */
 func (r AttributeType) Compare(x any) bool {
 	return compareHashInstance(r, x)
 }
 
 /*
-Eq initializes and returns a new [TargetRule] instance configured to express the
-evaluation of the receiver value as Equal-To a [TargetAttr] [Keyword] context.
+Eq initializes and returns a new [TargetRule] instance configured to express the evaluation of the receiver value as Equal-To a [TargetAttr] [TargetKeyword] context.
 */
 func (r AttributeType) Eq() (t TargetRule) {
 	if !r.IsZero() {
@@ -409,8 +376,7 @@ func (r AttributeType) Eq() (t TargetRule) {
 }
 
 /*
-Ne initializes and returns a new [TargetRule] instance configured to express the
-evaluation of the receiver value as Not-Equal-To a [TargetAttr] [Keyword] context.
+Ne initializes and returns a new [TargetRule] instance configured to express the evaluation of the receiver value as Not-Equal-To a [TargetAttr] [TargetKeyword] context.
 
 Negated equality [TargetRule] instances should be used with caution.
 */
@@ -422,17 +388,12 @@ func (r AttributeType) Ne() (t TargetRule) {
 }
 
 /*
-Kind performs no useful task, as the receiver instance has no concept of
-a keyword, which is the typical value source for Kind calls. This method
-exists solely to satisfy Go's interface signature requirements and will
-return a zero string if executed.
+Kind performs no useful task, as the receiver instance has no concept of a keyword, which is the typical value source for Kind calls. This method exists solely to satisfy Go's interface signature requirements and will return a zero string if executed.
 */
 func (r AttributeType) Kind() string { return `` }
 
 /*
-Keyword performs no useful task, as the receiver instance has no concept
-of a keyword. This method exists solely to satisfy Go's interface signature
-requirements and will return nil if executed.
+Keyword performs no useful task, as the receiver instance has no concept of a keyword. This method exists solely to satisfy Go's interface signature requirements and will return nil if executed.
 */
 func (r AttributeType) Keyword() Keyword { return nil }
 
@@ -441,21 +402,11 @@ func (r AttributeType) isAttributeTypeContext() {}
 /*
 TRM returns an instance of [TargetRuleMethods].
 
-Each of the return instance's key values represent a single instance of the
-[ComparisonOperator] type that is allowed for use in the creation of [TargetRule]
-instances which bear the receiver instance as an expression value. The value
-for each key is the actual [TargetRuleMethod] instance for OPTIONAL use in the
-creation of a [TargetRule] instance.
+Each of the return instance's key values represent a single instance of the [ComparisonOperator] type that is allowed for use in the creation of [TargetRule] instances which bear the receiver instance as an expression value. The value for each key is the actual [TargetRuleMethod] instance for OPTIONAL use in the creation of a [TargetRule] instance.
 
-This is merely a convenient alternative to maintaining knowledge of which
-[ComparisonOperator] instances apply to which types. Instances of this type
-are also used to streamline package unit tests.
+This is merely a convenient alternative to maintaining knowledge of which [ComparisonOperator] instances apply to which types. Instances of this type are also used to streamline package unit tests.
 
-Please note that if the receiver is in an aberrant state, or if it has not
-yet been initialized, the execution of ANY of the return instance's value
-methods will return bogus [TargetRule] instances. While this is useful in unit
-testing, the end user must only execute this method IF and WHEN the receiver
-has been properly initialized, populated and prepared for such activity.
+Please note that if the receiver is in an aberrant state, or if it has not yet been initialized, the execution of ANY of the return instance's value methods will return bogus [TargetRule] instances. While this is useful in unit testing, the end user must only execute this method IF and WHEN the receiver has been properly initialized, populated and prepared for such activity.
 */
 func (r AttributeType) TRM() TargetRuleMethods {
 	return newTargetRuleMethods(targetRuleFuncMap{
@@ -465,8 +416,7 @@ func (r AttributeType) TRM() TargetRuleMethods {
 }
 
 /*
-AT initializes, sets and returns an [AttributeType] instance in one shot.
-The input value x shall be an RFC4512 §2.5 compliant descriptor (e.g.: `manager`).
+AT initializes, sets and returns an [AttributeType] instance in one shot. The input value x shall be an RFC 4512 Section 2.5 compliant descriptor (e.g.: `manager`).
 */
 func AT(x string) (A AttributeType) {
 	if isIdentifier(x) || x == `*` {
@@ -477,9 +427,7 @@ func AT(x string) (A AttributeType) {
 }
 
 /*
-String returns the string representation of the underlying
-value within the receiver. The return value shall reflect
-an LDAP descriptor, such as `manager` or `cn`.
+String returns the string representation of the underlying value within the receiver. The return value shall reflect an LDAP descriptor, such as `manager` or `cn`.
 */
 func (r AttributeType) String() (s string) {
 	s = badAT
@@ -491,9 +439,7 @@ func (r AttributeType) String() (s string) {
 }
 
 /*
-Len returns 0 or 1 to describe an abstract length of
-the receiver. This method exists only to satisfy Go's
-interface signature requirements and need not be used.
+Len returns 0 or 1 to describe an abstract length of the receiver. This method exists only to satisfy Go's interface signature requirements and need not be used.
 */
 func (r AttributeType) Len() int {
 	if err := r.Valid(); err != nil {
@@ -503,11 +449,7 @@ func (r AttributeType) Len() int {
 }
 
 /*
-Valid returns an instance of error describing the aberrant
-state of the receiver, if applicable. At the moment, this
-method merely verifies nilness, as the [AttributeType] type
-defined within this package is strictly one dimensional, and
-lacks any significant mechanics for extended scrutiny.
+Valid returns an instance of error describing the aberrant state of the receiver, if applicable. At the moment, this method merely verifies nilness, as the [AttributeType] type defined within this package is strictly one dimensional, and lacks any significant mechanics for extended scrutiny.
 */
 func (r AttributeType) Valid() error {
 	if r.IsZero() {
@@ -518,8 +460,7 @@ func (r AttributeType) Valid() error {
 }
 
 /*
-IsZero returns a Boolean value indicative of whether the receiver is nil,
-or unset.
+IsZero returns a Boolean value indicative of whether the receiver is nil, or unset.
 */
 func (r AttributeType) IsZero() bool {
 	if r.string == nil {
@@ -536,17 +477,14 @@ type AttributeValue struct {
 }
 
 /*
-Compare returns a Boolean value indicative of a SHA-1 comparison
-between the receiver (r) and input value x.
+Compare returns a Boolean value indicative of a SHA-1 comparison between the receiver (r) and input value x.
 */
 func (r AttributeValue) Compare(x any) bool {
 	return compareHashInstance(r, x)
 }
 
 /*
-AV initializes, sets and returns an [AttributeValue] instance in one shot. The
-input value x shall be a known [BindType] constant, such as [USERDN], OR a raw
-string value.
+AV initializes, sets and returns an [AttributeValue] instance in one shot. The input value x shall be a known [BindType] constant, such as [USERDN], OR a raw string value.
 */
 func AV(x string) (A AttributeValue) {
 	if len(x) > 0 {
@@ -556,9 +494,7 @@ func AV(x string) (A AttributeValue) {
 }
 
 /*
-String returns the string representation of the underlying value within the receiver.
-The return value should be either an attributeType assertion value, or one (1) of the
-five (5) possible [BindType] identifiers (e.g.: [USERDN]).
+String returns the string representation of the underlying value within the receiver. The return value should be either an attributeType assertion value, or one (1) of the five (5) possible [BindType] identifiers (e.g.: [USERDN]).
 */
 func (r AttributeValue) String() (s string) {
 	s = badAV
@@ -570,9 +506,7 @@ func (r AttributeValue) String() (s string) {
 }
 
 /*
-F returns the appropriate instance creator function for crafting individual [AttributeType]
-instances for submission to the receiver. This is merely a convenient alternative to
-maintaining knowledge as to which function applies to the current receiver instance.
+F returns the appropriate instance creator function for crafting individual [AttributeType] instances for submission to the receiver. This is merely a convenient alternative to maintaining knowledge as to which function applies to the current receiver instance.
 
 As there is only one possibility for instances of this design, the [AT] function is returned.
 */
@@ -581,8 +515,7 @@ func (r AttributeTypes) F() func(string) AttributeType {
 }
 
 /*
-Compare returns a Boolean value indicative of a SHA-1 comparison
-between the receiver (r) and input value x.
+Compare returns a Boolean value indicative of a SHA-1 comparison between the receiver (r) and input value x.
 */
 func (r AttributeTypes) Compare(x any) bool {
 	return compareHashInstance(r, x)
@@ -617,8 +550,7 @@ func (r AttributeTypes) resetKeyword(x any) {
 }
 
 /*
-Eq initializes and returns a new [TargetRule] instance configured to express the
-evaluation of the receiver value as Equal-To a [TargetAttr] [Keyword] context.
+Eq initializes and returns a new [TargetRule] instance configured to express the evaluation of the receiver value as Equal-To a [TargetAttr] [TargetKeyword] context.
 */
 func (r AttributeTypes) Eq() TargetRule {
 	if r.IsZero() {
@@ -628,8 +560,7 @@ func (r AttributeTypes) Eq() TargetRule {
 }
 
 /*
-Ne initializes and returns a new [TargetRule] instance configured to express the
-evaluation of the receiver value as Not-Equal-To a [TargetAttr] [Keyword] context.
+Ne initializes and returns a new [TargetRule] instance configured to express the evaluation of the receiver value as Not-Equal-To a [TargetAttr] [TargetKeyword] context.
 
 Negated equality [TargetRule] instances should be used with caution.
 */
@@ -646,21 +577,11 @@ func (r AttributeTypes) isAttributeTypeContext() {}
 /*
 TRM returns an instance of [TargetRuleMethods].
 
-Each of the return instance's key values represent a single instance of the
-[ComparisonOperator] type that is allowed for use in the creation of [TargetRule]
-instances which bear the receiver instance as an expression value. The value
-for each key is the actual [TargetRuleMethod] instance for OPTIONAL use in the
-creation of a [TargetRule] instance.
+Each of the return instance's key values represent a single instance of the [ComparisonOperator] type that is allowed for use in the creation of [TargetRule] instances which bear the receiver instance as an expression value. The value for each key is the actual [TargetRuleMethod] instance for OPTIONAL use in the creation of a [TargetRule] instance.
 
-This is merely a convenient alternative to maintaining knowledge of which
-[ComparisonOperator] instances apply to which types. Instances of this type
-are also used to streamline package unit tests.
+This is merely a convenient alternative to maintaining knowledge of which [ComparisonOperator] instances apply to which types. Instances of this type are also used to streamline package unit tests.
 
-Please note that if the receiver is in an aberrant state, or if it has not
-yet been initialized, the execution of ANY of the return instance's value
-methods will return bogus [TargetRule] instances. While this is useful in unit
-testing, the end user must only execute this method IF and WHEN the receiver
-has been properly populated and prepared for such activity.
+Please note that if the receiver is in an aberrant state, or if it has not yet been initialized, the execution of ANY of the return instance's value methods will return bogus [TargetRule] instances. While this is useful in unit testing, the end user must only execute this method IF and WHEN the receiver has been properly populated and prepared for such activity.
 */
 func (r AttributeTypes) TRM() TargetRuleMethods {
 	if r.Keyword() == TargetAttr {
@@ -755,9 +676,7 @@ func (r AttributeTypes) Valid() (err error) {
 }
 
 /*
-Keyword returns the [Keyword] associated with the receiver instance. In
-the context of this type instance, the [Keyword] returned shall be either
-[TargetAttr] or [TargetFilter].
+Keyword returns the [Keyword] associated with the receiver instance. In the context of this type instance, the [TargetKeyword] returned shall be either [TargetAttr] or [TargetFilter].
 */
 func (r AttributeTypes) Keyword() Keyword {
 	if r.Kind() == `<uri_search_attributes>` {
@@ -768,8 +687,7 @@ func (r AttributeTypes) Keyword() Keyword {
 }
 
 /*
-transfer will "copy" all slice references from the receiver
-instance into dest instance. PushPolicy controls may apply.
+transfer will "copy" all slice references from the receiver instance into dest instance. PushPolicy controls may apply.
 */
 func (r AttributeTypes) transfer(dest AttributeTypes) {
 	_r := r.cast()
@@ -790,10 +708,7 @@ func (r AttributeTypes) Pop() (x AttributeType) {
 }
 
 /*
-Push wraps go-stackage's Stack.Push method. Valid input types
-are string and [AttributeType]. In the case of a string value,
-it is automatically cast as an instance of [AttributeType], so
-long as the raw string is of a non-zero length.
+Push wraps go-stackage's Stack.Push method. Valid input types are string and [AttributeType]. In the case of a string value, it is automatically cast as an instance of [AttributeType], so long as the raw string is of a non-zero length.
 */
 func (r AttributeTypes) Push(x ...any) AttributeTypes {
 	_r := r.cast()
@@ -809,9 +724,7 @@ func (r AttributeTypes) Push(x ...any) AttributeTypes {
 }
 
 /*
-pushPolicy conforms to the PushPolicy interface signature defined within
-go-stackage. This private function is called during Push attempts to a
-[AttributeTypes] stack instance.
+pushPolicy conforms to the PushPolicy interface signature defined within go-stackage. This private function is called during Push attempts to a [AttributeTypes] stack instance.
 */
 func (r AttributeTypes) pushPolicy(x ...any) (err error) {
 	// verify uniqueness; bail out if Boolean
@@ -839,9 +752,7 @@ func (r AttributeTypes) pushPolicy(x ...any) (err error) {
 }
 
 /*
-Contains returns a Boolean value indicative of whether value x,
-if a string or [AttributeType] instance, already resides within
-the receiver instance.
+Contains returns a Boolean value indicative of whether value x, if a string or [AttributeType] instance, already resides within the receiver instance.
 
 Case is not significant in the matching process.
 */
@@ -877,17 +788,11 @@ func (r AttributeTypes) contains(x any) bool {
 }
 
 /*
-TAs returns a freshly initialized instance of [AttributeTypes], configured to
-store one (1) or more [AttributeType] instances for the purpose of [TargetRule]
-expression when using the [TargetAttr] [Keyword] context.
+TAs returns a freshly initialized instance of [AttributeTypes], configured to store one (1) or more [AttributeType] instances for the purpose of [TargetRule] expression when using the [TargetAttr] [TargetKeyword] context.
 
-Optionally, the caller may choose to submit one (1) or more (valid) instances
-of the [AttributeType] type (or its string equivalent) during initialization.
-This is merely a more convenient alternative to separate initialization and
-push procedures.
+Optionally, the caller may choose to submit one (1) or more (valid) instances of the [AttributeType] type (or its string equivalent) during initialization. This is merely a more convenient alternative to separate initialization and push procedures.
 
-Values are automatically delimited using stackage.Stack's Symbol method using
-the symbolic OR operator (`||`).
+Values are automatically delimited using stackage.Stack's Symbol method using the symbolic OR operator (`||`).
 */
 func TAs(x ...any) (a AttributeTypes) {
 	_a := stackOr().
@@ -903,18 +808,11 @@ func TAs(x ...any) (a AttributeTypes) {
 }
 
 /*
-UAs returns a freshly initialized instance of [AttributeTypes], configured
-to store one (1) or more [AttributeType] instances for the purpose of LDAP
-Search URI specification of desired [AttributeType] names. Instances of
-this design are not generally needed elsewhere.
+UAs returns a freshly initialized instance of [AttributeTypes], configured to store one (1) or more [AttributeType] instances for the purpose of LDAP Search URI specification of desired [AttributeType] names. Instances of this design are not generally needed elsewhere.
 
-Optionally, the caller may choose to push one (1) or more (valid) instances
-of the [AttributeType] type (or its string equivalent) during initialization.
-This is merely a more convenient alternative to separate initialization and
-push procedures.
+Optionally, the caller may choose to push one (1) or more (valid) instances of the [AttributeType] type (or its string equivalent) during initialization. This is merely a more convenient alternative to separate initialization and push procedures.
 
-Values are automatically comma-delimited (ASCII #44) using stackage.Stack's
-SetDelimiter method in List mode.
+Values are automatically comma-delimited (ASCII #44) using stackage.Stack's SetDelimiter method in List mode.
 */
 func UAs(x ...any) (a AttributeTypes) {
 	_a := stackList().

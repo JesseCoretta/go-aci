@@ -9,7 +9,7 @@ import (
 )
 
 /*
-ParseBindRule returns an instance of BindRule alongside an error instance.
+ParseBindRule returns an instance of [BindRule] alongside an error instance.
 
 This function calls the imported antlraci.ParseBindRule function, delegating
 parsing responsibilities there.
@@ -34,8 +34,8 @@ func parseBindRule(raw string) (BindRule, error) {
 }
 
 /*
-ParseBindRules returns an instance of BindContext alongside an error
-instance. BindContext may represent either a BindRule or BindRules
+ParseBindRules returns an instance of [BindContext] alongside an error
+instance. [BindContext] may represent either a [BindRule] or [BindRules]
 instance, depending on that which was parsed.
 */
 func ParseBindRules(raw string) (BindContext, error) {
@@ -48,7 +48,7 @@ value into the receiver instance. If successful, any contents within
 the receiver instance would be obliterated, replaced irrevocably by
 the freshly parsed values.
 
-Both this method, and the package-level ParseBindRule function, call
+Both this method, and the package-level [ParseBindRules] function, call
 antlraci's ParseBindRule function in similar fashion. The only real
 difference here is the process of writing to a receiver, versus writing
 to an uninitialized variable declaration.
@@ -69,7 +69,7 @@ func (r *BindRules) Parse(raw string) error {
 
 /*
 parseBindRules communicates with the backend parser (antlraci)
-package for the purpose of parsing an instance of BindRules,
+package for the purpose of parsing an instance of [BindRules],
 which is returned alongside an error.
 */
 func parseBindRules(raw string) (BindContext, error) {
@@ -263,11 +263,11 @@ assertBindUGRDN is handler for all possible DN and URI values used within Bind R
 expressive statements. In particular, this handles `userdn`, `groupdn` and `roledn`
 keyword contexts.
 
-An any-enveloped DistinguishedNames instance is returned in the event that the raw value(s)
+An any-enveloped [BindDistinguishedNames] instance is returned in the event that the raw value(s)
 represent one (1) or more legal LDAP Distinguished Name value.
 
 In the event that a legal LDAP URI is found, it is returned as an instance of (any-enveloped)
-LDAPURI.
+[LDAPURI].
 
 Quotation schemes are supported seamlessly and either scheme shall be honored per the ANTLR4
 parsed content.
@@ -388,8 +388,8 @@ func (r BindRule) assertExpressionValue() (err error) {
 /*
 ParseTargetRule processes the raw input string value,
 which should represent a single Target Rule expressive
-statement, into an instance of TargetRule. This, along
-with an error instance, are returned upom completion
+statement, into an instance of [TargetRule]. This, along
+with an error instance, are returned upon completion
 of processing.
 */
 func ParseTargetRule(raw string) (TargetRule, error) {
@@ -399,7 +399,7 @@ func ParseTargetRule(raw string) (TargetRule, error) {
 /*
 parseTargetRule is a private function which converts the
 stock stackage.Condition instance assembled by go-antlraci
-and casts as a go-aci TargetRule instance, which will be
+and casts as a go-aci [TargetRule] instance, which will be
 returned alongside an error upon completion of processing.
 */
 func parseTargetRule(raw string) (TargetRule, error) {
@@ -415,7 +415,7 @@ value into the receiver instance. If successful, any contents within
 the receiver instance would be obliterated, replaced irrevocably by
 the freshly parsed values.
 
-Both this method, and the package-level ParseTargetRule function,
+Both this method, and the package-level [ParseTargetRule] function,
 call antlraci's ParseTargetRule function in similar fashion. The only
 real difference here is the process of writing to a receiver, versus
 writing to an uninitialized variable declaration.
@@ -436,7 +436,7 @@ value into the receiver instance. If successful, any contents within
 the receiver instance would be obliterated, replaced irrevocably by
 the freshly parsed values.
 
-Both this method, and the package-level ParseTargetRules function,
+Both this method, and the package-level [ParseTargetRules] function,
 call antlraci's ParseTargetRules function in similar fashion. The only
 real difference here is the process of writing to a receiver, versus
 writing to an uninitialized variable declaration.
@@ -454,7 +454,7 @@ func (r *TargetRules) Parse(raw string) error {
 /*
 ParseTargetRules processes the raw input string value,
 which should represent one (1) or more valid Target Rule
-expressive statements, into an instance of TargetRules.
+expressive statements, into an instance of [TargetRules].
 This, alongside an error instance, are returned at the
 completion of processing.
 */

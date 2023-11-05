@@ -10,12 +10,9 @@ var (
 )
 
 /*
-BindRuleMethods contains one (1) or more instances of BindRuleMethod,
-representing a particular BindRule "builder" method for execution by
-the caller.
+BindRuleMethods contains one (1) or more instances of [BindRuleMethod], representing a particular [BindRule] "builder" method for execution by the caller.
 
-See the Operators method extended through all eligible types for further
-details.
+See the Operators method extended through all eligible types for further details.
 */
 type BindRuleMethods struct {
 	*bindRuleFuncMap
@@ -35,38 +32,24 @@ func newBindRuleMethods(m bindRuleFuncMap) BindRuleMethods {
 }
 
 /*
-Index calls the input index (idx) within the internal structure of the
-receiver instance. If found, an instance of ComparisonOperator and its
-accompanying BindRuleMethod instance are returned.
+Index calls the input index (idx) within the internal structure of the receiver instance. If found, an instance of [ComparisonOperator] and its accompanying [BindRuleMethod] instance are returned.
 
-Valid input index types are integer (int), ComparisonOperator constant
-or string identifier. In the case of a string identifier, valid values
-are as follows:
+Valid input index types are integer (int), [ComparisonOperator] constant or string identifier. In the case of a string identifier, valid values are as follows:
 
-• For Eq (1): `=`, `Eq`, `Equal To`
-
-• For Ne (2): `=`, `Ne`, `Not Equal To`
-
-• For Lt (3): `=`, `Lt`, `Less Than`
-
-• For Le (4): `=`, `Le`, `Less Than Or Equal`
-
-• For Gt (5): `=`, `Gt`, `Greater Than`
-
-• For Ge (6): `=`, `Ge`, `Greater Than Or Equal`
+  - For Eq (1): `=`, `Eq`, `Equal To`
+  - For Ne (2): `=`, `Ne`, `Not Equal To`
+  - For Lt (3): `=`, `Lt`, `Less Than`
+  - For Le (4): `=`, `Le`, `Less Than Or Equal`
+  - For Gt (5): `=`, `Gt`, `Greater Than`
+  - For Ge (6): `=`, `Ge`, `Greater Than Or Equal`
 
 Case is not significant in the string matching process.
 
-Please note that use of this method by way of integer or ComparisonOperator
-values utilizes fewer resources than a string lookup.
+Please note that use of this method by way of integer or [ComparisonOperator] values utilizes fewer resources than a string lookup.
 
-See the ComparisonOperator type's Context, String and Description methods
-for accessing the above string values easily.
+See the [ComparisonOperator] type's Context, String and Description methods for accessing the above string values easily.
 
-If the index was not matched, an invalid ComparisonOperator is returned
-alongside a nil BindRuleMethod. This will also apply to situations in
-which the type instance which crafted the receiver is uninitialized, or
-is in an otherwise aberrant state.
+If the index was not matched, an invalid [ComparisonOperator] is returned alongside a nil [BindRuleMethod]. This will also apply to situations in which the type instance which crafted the receiver is uninitialized, or is in an otherwise aberrant state.
 */
 func (r BindRuleMethods) Index(idx any) (ComparisonOperator, BindRuleMethod) {
 	return r.index(idx)
@@ -134,22 +117,11 @@ func rangeBindRuleFuncMap(candidate string, fm *bindRuleFuncMap) (cop Comparison
 }
 
 /*
-BR wraps go-stackage's Cond package-level function. In this context,
-it is wrapped here to assemble and return a BindRule instance using
-the so-called "one-shot" procedure. This is an option only when ALL
-information necessary for the process is in-hand and ready for user
-input: the keyword, comparison operator and the appropriate value(s)
-expression.
+BR wraps go-stackage's Cond package-level function. In this context, it is wrapped here to assemble and return a [BindRule] instance using the so-called "one-shot" procedure. This is an option only when ALL information necessary for the process is in-hand and ready for user input: the [BindKeyword], [ComparisonOperator] and the appropriate value(s) expression.
 
-Use of this function shall not require a subsequent call of BindRule's
-Init method, which is needed only for so-called "piecemeal" BindRule
-assembly.
+Use of this function shall not require a subsequent call of [BindRule]'s Init method, which is needed only for so-called "piecemeal" [BindRule] assembly.
 
-Use of this function is totally optional. Users may, instead, opt to
-populate the specific value instance(s) needed and execute the type's
-own Eq, Ne, Ge, Gt, Le and Lt methods (when applicable) to produce an
-identical return instance. Generally speaking, those methods may prove
-to be more convenient -- and far safer -- than use of this function.
+Use of this function is totally optional. Users may, instead, opt to populate the specific value instance(s) needed and execute the type's own Eq, Ne, Ge, Gt, Le and Lt methods (when applicable) to produce an identical return instance. Generally speaking, those methods may prove to be more convenient -- and far safer -- than use of this function.
 */
 func BR(kw, op, ex any) BindRule {
 	return newBindRule(kw, op, ex)
@@ -174,16 +146,9 @@ func newBindRule(kw, op, ex any) (b BindRule) {
 }
 
 /*
-Init wraps stackage.Condition's Init method. This is a required method
-for situations involving the piecemeal (step-by-step) assembly of an
-instance of BindRule as opposed to a one-shot creation using the BR
-package-level function. It is also an ideal means for the creation of
-a BindRule instance when one does not immediately possess all of the
-needed pieces of information (i.e.: uncertain which keyword to use, or
-when an expression value has not yet been determined, etc).
+Init wraps stackage.Condition's Init method. This is a required method for situations involving the piecemeal (step-by-step) assembly of an instance of [BindRule] as opposed to a one-shot creation using the [BR] package-level function. It is also an ideal means for the creation of a [BindRule] instance when one does not immediately possess all of the needed pieces of information (i.e.: uncertain which keyword to use, or when an expression value has not yet been determined, etc).
 
-Call this method after a variable declaration but before your first
-change, e.g.:
+Call this method after a variable declaration but before your first change, e.g.:
 
 	var br BindRule
 	... do other things ...
@@ -193,13 +158,9 @@ change, e.g.:
 	br.SetSomethingElse(...)
 	...
 
-Init need only be executed once within the lifespan of a BindRule
-instance. Its execution shall result in a completely new embedded
-pointer instance supplanting the previous one.
+Init need only be executed once within the lifespan of a [BindRule] instance. Its execution shall result in a completely new embedded pointer instance supplanting the previous one.
 
-One may choose, however, to re-execute this method IF this instance
-shall be reused (perhaps in a repetative or looped manner), and if
-it would be desirable to 'wipe the slate clean' for some reason.
+One may choose, however, to re-execute this method IF this instance shall be reused (perhaps in a repetative or looped manner), and if it would be desirable to 'wipe the slate clean' for some reason.
 */
 func (r *BindRule) Init() BindRule {
 	_r := r.cast()
@@ -211,15 +172,9 @@ func (r *BindRule) Init() BindRule {
 }
 
 /*
-Contains returns a Boolean value indicative of whether the specified ComparisonOperator,
-which may be expressed as a string, int or native ComparisonOperator, is allowed for use
-by the type instance that created the receiver instance. This method offers a convenient
-alternative to the use of the Index method combined with an assertion value (such as Eq,
-Ne, "=", "Greater Than", et al).
+Contains returns a Boolean value indicative of whether the specified [ComparisonOperator], which may be expressed as a string, int or native [ComparisonOperator], is allowed for use by the type instance that created the receiver instance. This method offers a convenient alternative to the use of the Index method combined with an assertion value (such as Eq, Ne, "=", "Greater Than", et al).
 
-In other words, if one uses the FQDN.BRM method to create an instance of BindRuleMethods,
-feeding Gt (Greater Than) to this method shall return false, as mathematical comparison
-does not apply to instances of the FQDN type.
+In other words, if one uses the [FQDN]'s BRM method to create an instance of [BindRuleMethods], feeding Gt (Greater Than) to this method shall return false, as mathematical comparison does not apply to instances of the [FQDN] type.
 */
 func (r BindRuleMethods) Contains(cop any) bool {
 	c, _ := r.index(cop)
@@ -227,18 +182,14 @@ func (r BindRuleMethods) Contains(cop any) bool {
 }
 
 /*
-IsZero returns a Boolean value indicative of whether the receiver is
-nil, or unset.
+IsZero returns a Boolean value indicative of whether the receiver is nil, or unset.
 */
 func (r BindRuleMethods) IsZero() bool {
 	return r.bindRuleFuncMap == nil
 }
 
 /*
-Valid returns the first encountered error returned as a result of
-execution of the first available BindRuleMethod instance. This is
-useful in cases where a user wants to see if the desired instance(s)
-of BindRuleMethod will produce a usable result.
+Valid returns the first encountered error returned as a result of execution of the first available [BindRuleMethod] instance. This is useful in cases where a user wants to see if the desired instance(s) of [BindRuleMethod] will produce a usable result.
 */
 func (r BindRuleMethods) Valid() (err error) {
 	if r.IsZero() {
@@ -256,8 +207,7 @@ func (r BindRuleMethods) Valid() (err error) {
 }
 
 /*
-Len returns the integer length of the receiver. Note that the return
-value will NEVER be less than zero (0) nor greater than six (6).
+Len returns the integer length of the receiver. Note that the return value will NEVER be less than zero (0) nor greater than six (6).
 */
 func (r BindRuleMethods) Len() int {
 	if r.IsZero() {
@@ -268,77 +218,60 @@ func (r BindRuleMethods) Len() int {
 }
 
 /*
-BindRuleMethod is the closure signature for methods used to build
-new instances of BindRule.
+BindRuleMethod is the closure signature for methods used to build new instances of [BindRule].
 
-The signature is qualified by the following methods extended through
-all eligible types defined in this package:
+The signature is qualified by the following methods extended through all eligible types defined in this package:
 
-• Eq
+  - Eq
+  - Ne
+  - Lt
+  - Le
+  - Gt
+  - Ge
 
-• Ne
-
-• Lt
-
-• Le
-
-• Gt
-
-• Ge
-
-Note that certain types only support a subset of the above list. Very
-few types support all of the above.
+Note that certain types only support a subset of the above list. Very few types support all of the above.
 */
 type BindRuleMethod func() BindRule
 
 /*
-bindRuleFuncMap is a private type intended to be used within
-instances of BindRuleMethods.
+bindRuleFuncMap is a private type intended to be used within instances of [BindRuleMethods].
 */
 type bindRuleFuncMap map[ComparisonOperator]BindRuleMethod
 
 func (r BindRule) isBindContextQualifier() {}
 
 /*
-Traverse returns the receiver instance. This method only exists to satisfy
-Go's interface signature requirements for the BindContext interface. See
-BindRules.Traverse instead.
+Traverse returns the receiver instance. This method only exists to satisfy Go's interface signature requirements for the [BindContext] interface. See [BindRules] Traverse method instead.
 */
 func (r BindRule) Traverse(indices ...int) BindContext {
 	return r
 }
 
 /*
-Index returns the receiver instance. This method only exists to satisfy
-Go's interface signature requirements for the BindContext interface. See
-BindRules.Index instead.
+Index returns the receiver instance. This method only exists to satisfy Go's interface signature requirements for the [BindContext] interface. See [BindRules] Index method instead.
 */
 func (r BindRule) Index(_ int) BindContext {
 	return r
 }
 
 /*
-Compare returns a Boolean value indicative of a SHA-1 comparison
-between the receiver (r) and input value x.
+Compare returns a Boolean value indicative of a SHA-1 comparison between the receiver (r) and input value x.
 */
 func (r BindRule) Compare(x any) bool {
 	return compareHashInstance(r, x)
 }
 
 /*
-Kind returns the string literal `condition` to identify the receiver
-as a stackage.Condition type alias.
+Kind returns the string literal `condition` to identify the receiver as a stackage.Condition type alias.
 */
 func (r BindRule) Kind() string {
 	return `condition`
 }
 
 /*
-Len does not perform any useful task, and exists only to satisfy Go's
-interface signature requirements and to convey this message.
+Len does not perform any useful task, and exists only to satisfy Go's interface signature requirements and to convey this message.
 
-A value of zero (0) is returned if the receiver instance is nil. A
-value of one (1) otherwise.
+A value of zero (0) is returned if the receiver instance is nil. A value of one (1) otherwise.
 */
 func (r BindRule) Len() int {
 	if r.IsZero() {
@@ -348,8 +281,7 @@ func (r BindRule) Len() int {
 }
 
 /*
-IsNesting does not perform any useful task, and exists only to satisfy
-Go's interface signature requirements and to convey this message.
+IsNesting does not perform any useful task, and exists only to satisfy Go's interface signature requirements and to convey this message.
 
 A Boolean value of false is returned in any scenario.
 */
@@ -406,8 +338,7 @@ func (r BindRule) Category() string {
 }
 
 /*
-String is a stringer method that returns the string
-representation of the receiver instance.
+String is a stringer method that returns the string representation of the receiver instance.
 
 This method wraps go-stackage's Condition.String method.
 */
@@ -431,9 +362,7 @@ func (r BindRule) NoPadding(state ...bool) BindRule {
 }
 
 /*
-Keyword wraps go-stackage's Condition.Keyword method and
-resolves the raw value into a BindKeyword. Failure to do
-so will return a bogus Keyword.
+Keyword wraps go-stackage's Condition.Keyword method and resolves the raw value into a [BindKeyword]. Failure to do so will return a bogus [Keyword].
 */
 func (r BindRule) Keyword() Keyword {
 	k := r.cast().Keyword()
@@ -442,9 +371,7 @@ func (r BindRule) Keyword() Keyword {
 }
 
 /*
-Operator wraps go-stackage's Condition.Operator method
-and casts the stackage.ComparisonOperator to the local
-aci.ComparisonOperator.
+Operator wraps go-stackage's Condition.Operator method and casts the stackage.ComparisonOperator to the local [ComparisonOperator].
 */
 func (r BindRule) Operator() ComparisonOperator {
 	return castCop(r.cast().Operator())
@@ -467,36 +394,28 @@ func (r BindRule) IsZero() bool {
 func (r BindRules) isBindContextQualifier() {}
 
 /*
-Compare returns a Boolean value indicative of a SHA-1 comparison
-between the receiver (r) and input value x.
+Compare returns a Boolean value indicative of a SHA-1 comparison between the receiver (r) and input value x.
 */
 func (r BindRules) Compare(x any) bool {
 	return compareHashInstance(r, x)
 }
 
 /*
-Kind returns the string literal `stack` to identify the receiver as
-a stackage.Stack type alias.
+Kind returns the string literal `stack` to identify the receiver as a stackage.Stack type alias.
 */
 func (r BindRules) Kind() string {
 	return `stack`
 }
 
 /*
-And returns an instance of Rule configured to express Boolean AND logical operations.
-Instances of this design contain BindContext instances, which are qualified through
-instances of the following types:
+And returns an instance of [BindRule] configured to express Boolean AND logical operations. Instances of this design contain [BindContext] instances, which are qualified through instances of the following types:
 
-• BindRule
+  - [BindRule]
+  - [BindRules]
 
-• BindRules
+Optionally, the caller may choose to submit one (1) or more (valid) instances of these types during initialization. This is merely a more convenient alternative to separate initialization and push procedures.
 
-Optionally, the caller may choose to submit one (1) or more (valid) instances of these
-types during initialization. This is merely a more convenient alternative to separate
-initialization and push procedures.
-
-The embedded type within the return is stackage.Stack via the go-stackage
-package's And function.
+The embedded type within the return is stackage.Stack via the go-stackage package's And function.
 */
 func And(x ...any) (b BindRules) {
 	// create a native stackage.Stack
@@ -528,20 +447,14 @@ func And(x ...any) (b BindRules) {
 }
 
 /*
-Or returns an instance of Rule configured to express Boolean OR logical operations.
-Instances of this design contain BindContext instances, which are qualified through
-instances of the following types:
+Or returns an instance of Rule configured to express Boolean OR logical operations. Instances of this design contain [BindContext] instances, which are qualified through instances of the following types:
 
-• BindRule
+  - [BindRule]
+  - [BindRules]
 
-• BindRules
+Optionally, the caller may choose to submit one (1) or more (valid) instances of these types during initialization. This is merely a more convenient alternative to separate initialization and push procedures.
 
-Optionally, the caller may choose to submit one (1) or more (valid) instances of these
-types during initialization. This is merely a more convenient alternative to separate
-initialization and push procedures.
-
-The embedded type within the return is stackage.Stack via the go-stackage
-package's Or function.
+The embedded type within the return is stackage.Stack via the go-stackage package's Or function.
 */
 func Or(x ...any) (b BindRules) {
 	// create a native stackage.Stack
@@ -573,20 +486,14 @@ func Or(x ...any) (b BindRules) {
 }
 
 /*
-Not returns an instance of Rule configured to express Boolean NOT logical operations.
-Instances of this design contain BindContext instances, which are qualified through
-instances of the following types:
+Not returns an instance of Rule configured to express Boolean NOT logical operations. Instances of this design contain [BindContext] instances, which are qualified through instances of the following types:
 
-• BindRule
+  - [BindRule]
+  - [BindRules]
 
-• BindRules
+Optionally, the caller may choose to submit one (1) or more (valid) instances of these types during initialization. This is merely a more convenient alternative to separate initialization and push procedures.
 
-Optionally, the caller may choose to submit one (1) or more (valid) instances of these
-types during initialization. This is merely a more convenient alternative to separate
-initialization and push procedures.
-
-The embedded type within the return is stackage.Stack via the go-stackage
-package's Not function.
+The embedded type within the return is stackage.Stack via the go-stackage package's Not function.
 */
 func Not(x ...any) (b BindRules) {
 	// create a native stackage.Stack
@@ -848,22 +755,15 @@ func (r BindRule) SetExpression(expr any) BindRule {
 }
 
 /*
-SetQuoteStyle allows the election of a particular multivalued
-quotation style offered by the various adopters of the ACIv3
-syntax. In the context of a BindRule, this will only have a
-meaningful impact if the keyword for the receiver is one (1)
-of the following:
+SetQuoteStyle allows the election of a particular multivalued quotation style offered by the various adopters of the ACIv3 syntax. In the context of a [BindRule], this will only have a meaningful impact if the keyword for the receiver is one (1) of the following:
 
-  - BindUDN (userdn)
-  - BindRDN (roledn)
-  - BindGDN (groupdn)
+  - [BindUDN] (userdn)
+  - [BindRDN] (roledn)
+  - [BindGDN] (groupdn)
 
-Additionally, the underlying type set as the expression value
-within the receiver MUST be a BindDistinguishedNames instance
-with two (2) or more distinguished names within.
+Additionally, the underlying type set as the expression value within the receiver MUST be a [BindDistinguishedNames] instance with two (2) or more distinguished names within.
 
-See the const definitions for MultivalOuterQuotes (default)
-and MultivalSliceQuotes for details.
+See the const definitions for [MultivalOuterQuotes] (default) and [MultivalSliceQuotes] for details.
 */
 func (r BindRule) SetQuoteStyle(style int) BindRule {
 	key := r.Keyword()
@@ -902,8 +802,7 @@ func (r BindRule) SetQuoteStyle(style int) BindRule {
 }
 
 /*
-String is a stringer method that returns the string
-representation of the receiver instance.
+String is a stringer method that returns the string representation of the receiver instance.
 
 This method wraps go-stackage's Stack.String method.
 */
@@ -919,8 +818,7 @@ func (r BindRules) IsZero() bool {
 }
 
 /*
-reset wraps go-stackage's Stack.Reset method. This is a private
-method in go-aci.
+reset wraps go-stackage's Stack.Reset method. This is a private method in go-aci.
 */
 func (r BindRules) reset() {
 	r.cast().Reset()
@@ -964,9 +862,7 @@ func (r BindRules) IsNesting() bool {
 }
 
 /*
-Keyword wraps go-stackage's Stack.Category method and
-resolves the raw value into a BindKeyword. Failure to
-do so will return a bogus Keyword.
+Keyword wraps go-stackage's Stack.Category method and resolves the raw value into a [BindKeyword]. Failure to do so will return a bogus [Keyword].
 */
 func (r BindRules) Keyword() Keyword {
 	var kw any = matchBKW(r.cast().Category())
@@ -982,16 +878,12 @@ func (r BindRules) Push(x ...any) BindRules {
 }
 
 /*
-Pop wraps go-stackage's Stack.Pop method. An instance of
-BindContext, which may or may not be nil, is returned
-following a call of this method.
+Pop wraps go-stackage's Stack.Pop method. An instance of [BindContext], which may or may not be nil, is returned following a call of this method.
 
-Within the context of the receiver type, a BindContext, if
-non-nil, can represent any of the following instance types:
+Within the context of the receiver type, a [BindContext], if non-nil, can represent any of the following instance types:
 
-• BindRule
-
-• BindRules
+  - [BindRule]
+  - [BindRules]
 */
 func (r BindRules) Pop() BindContext {
 	return r.pop()
@@ -1029,8 +921,7 @@ func (r BindRules) Replace(x any, idx int) BindRules {
 }
 
 /*
-replace is a private method called by BindRules.Replace
-as well as certain ANTLR->ACI parsing procedures.
+replace is a private method called by BindRules.Replace as well as certain ANTLR->ACI parsing procedures.
 */
 func (r BindRules) replace(x any, idx int) BindRules {
 	if !r.IsZero() {
@@ -1080,10 +971,7 @@ func (r BindRules) IsParen() bool {
 }
 
 /*
-Fold wraps go-stackage's Stack.Fold method to allow the case
-folding of logical Boolean 'AND', 'OR' and 'AND NOT' WORD
-operators to 'and', 'or' and 'and not' respectively, or vice
-versa.
+Fold wraps go-stackage's Stack.Fold method to allow the case folding of logical Boolean 'AND', 'OR' and 'AND NOT' WORD operators to 'and', 'or' and 'and not' respectively, or vice versa.
 */
 func (r BindRules) Fold(state ...bool) BindRules {
 	r.cast().Fold(state...)
@@ -1140,12 +1028,9 @@ func (r BindRules) Valid() (err error) {
 }
 
 /*
-pushPolicy conforms to the PushPolicy signature defined
-within go-stackage. This function will be called privately
-whenever an instance is pushed into a particular Stack (or
-Stack alias) type instance.
+pushPolicy conforms to the PushPolicy signature defined within go-stackage. This function will be called privately whenever an instance is pushed into a particular Stack (or Stack alias) type instance.
 
-Only BindContext qualifiers are to be cleared for push.
+Only [BindContext] qualifiers are to be cleared for push.
 */
 func (r BindRules) pushPolicy(x ...any) (err error) {
 	// perform type switch upon input value
@@ -1176,23 +1061,14 @@ func (r BindRules) pushPolicy(x ...any) (err error) {
 }
 
 /*
-BindContext is a convenient interface type that is qualified by
-the following types:
+BindContext is a convenient interface type that is qualified by the following types:
 
-• BindRule
+  - [BindRule]
+  - [BindRules]
 
-• BindRules
+The qualifying methods shown below are intended to make the handling of a structure of (likely nested) [BindRules] instances slightly easier without an absolute need for type assertion at every step. These methods are inherently read-only in nature and represent only a subset of the available methods exported by the underlying qualifier types.
 
-The qualifying methods shown below are intended to make the
-handling of a structure of (likely nested) BindRules instances
-slightly easier without an absolute need for type assertion at
-every step. These methods are inherently read-only in nature
-and represent only a subset of the available methods exported
-by the underlying qualifier types.
-
-To alter the underlying value, or to gain access to all of a
-given type's methods, type assertion of qualifying instances
-shall be necessary.
+To alter the underlying value, or to gain access to all of a given type's methods, type assertion of qualifying instances shall be necessary.
 */
 type BindContext interface {
 	// String returns the string representation of the
