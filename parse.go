@@ -18,6 +18,10 @@ func ParseBindRule(raw string) (BindRule, error) {
 	return parseBindRule(raw)
 }
 
+/*
+Parse returns an error instance following an attempt to parse the raw input value
+into the receiver instance.
+*/
 func (r *BindRule) Parse(raw string) error {
 	_r, err := parseBindRule(raw)
 	if err != nil {

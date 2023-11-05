@@ -59,11 +59,11 @@ instances of the Instruction type. The fields are as follows:
 • N contains the string name (or "ACL") of a particular Instruction; note
 that this field cannot be reset for security reasons
 
-• T contains one (1) TargetRules instance, which is a stackage.Stack type
-alias containing a sequence of zero (0) or more TargetRule instances
+• T contains one (1) TargetRules instance, which is a [stackage.Stack] type
+alias containing a sequence of zero (0) or more [TargetRule] instances
 
-• PB contains one (1) PermissionBindRules instance, which is a stackage.Stack alias
-type containing a sequence of one (1) or more PermissionBindRule instances
+• PB contains one (1) PermissionBindRules instance, which is a [stackage.Stack] alias
+type containing a sequence of one (1) or more [PermissionBindRule] instances
 */
 type instruction struct {
 	ACL  string

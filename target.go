@@ -217,7 +217,7 @@ func (r *TargetRule) Init() TargetRule {
 }
 
 /*
-newTargetRule is a private function called by the TR function. It auto-executes -- among other things -- the stackage.Condition.Init method.
+newTargetRule is a private function called by the TR function. It auto-executes -- among other things -- the [stackage.Condition.Init] method.
 */
 func newTargetRule(kw, op, ex any) (t TargetRule) {
 	t.Init()

@@ -790,7 +790,7 @@ TAs returns a freshly initialized instance of [AttributeTypes], configured to st
 
 Optionally, the caller may choose to submit one (1) or more (valid) instances of the [AttributeType] type (or its string equivalent) during initialization. This is merely a more convenient alternative to separate initialization and push procedures.
 
-Values are automatically delimited using stackage.Stack's Symbol method using the symbolic OR operator (`||`).
+Values are automatically delimited using the [stackage.Stack.Symbol] method using the symbolic OR operator (`||`).
 */
 func TAs(x ...any) (a AttributeTypes) {
 	_a := stackOr().
@@ -810,7 +810,7 @@ UAs returns a freshly initialized instance of [AttributeTypes], configured to st
 
 Optionally, the caller may choose to push one (1) or more (valid) instances of the [AttributeType] type (or its string equivalent) during initialization. This is merely a more convenient alternative to separate initialization and push procedures.
 
-Values are automatically comma-delimited (ASCII #44) using stackage.Stack's SetDelimiter method in List mode.
+Values are automatically comma-delimited (ASCII #44) using the [stackage.Stack.SetDelimiter] method in List mode.
 */
 func UAs(x ...any) (a AttributeTypes) {
 	_a := stackList().

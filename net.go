@@ -48,7 +48,7 @@ func (r FQDN) Compare(x any) bool {
 }
 
 /*
-Eq initializes and returns a new [BindRule] instance configured to express the evaluation of the receiver value as Equal-To the `ip` [BindKeyword] context.
+Eq initializes and returns a new [BindRule] instance configured to express the evaluation of the receiver value as Equal-To the [BindIP] [BindKeyword] context.
 */
 func (r IPAddr) Eq() BindRule {
 	if err := r.Valid(); err != nil {
@@ -58,7 +58,7 @@ func (r IPAddr) Eq() BindRule {
 }
 
 /*
-Ne initializes and returns a new [BindRule] instance configured to express the evaluation of the receiver value as Not-Equal-To the `ip` [BindKeyword] context.
+Ne initializes and returns a new [BindRule] instance configured to express the evaluation of the receiver value as Not-Equal-To the [BindIP] [BindKeyword] context.
 
 Negated equality [BindRule] instances should be used with caution.
 */

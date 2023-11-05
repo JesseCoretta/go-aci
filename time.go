@@ -11,7 +11,7 @@ import (
 var now func() time.Time = time.Now
 
 /*
-Day constants can be shifted into an instance of DayOfWeek, allowing effective expressions such as "Sun,Tues". See the [DayOfWeek] Set method.
+Day constants can be shifted into an instance of [DayOfWeek], allowing effective expressions such as [Sun],[Tues]. See the [DayOfWeek.Set] method.
 */
 const (
 	noDay Day = 0         // 0 <invalid_day>
@@ -138,7 +138,7 @@ func (r DayOfWeek) Keyword() Keyword {
 }
 
 /*
-Len returns the abstract integer length of the receiver, quantifying the number of Day instances currently being expressed.
+Len returns the abstract integer length of the receiver, quantifying the number of [Day] instances currently being expressed.
 
 For example, if the receiver instance has its [Mon] and [Fri] [Day] bits enabled, this would represent an abstract length of two (2).
 */

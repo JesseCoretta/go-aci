@@ -39,7 +39,7 @@ type ObjectIdentifier struct {
 }
 
 /*
-objectIdentifier is the private embedded instance (BY POINTER) for storage within an ObjectIdentifier. It houses the actual *objectid.DotNotation instance, as well as either the TargetExtOp keyword, or its mate keyword, TargetControl.
+objectIdentifier is the private embedded instance (BY POINTER) for storage within an ObjectIdentifier. It houses the actual [objectid.DotNotation] (pointer!) instance, as well as either the [TargetExtOp] or [TargetCtrl] [TargetKeyword] context.
 */
 type objectIdentifier struct {
 	TargetKeyword

@@ -262,7 +262,7 @@ func (r BindRule) Compare(x any) bool {
 }
 
 /*
-Kind returns the string literal `condition` to identify the receiver as a stackage.Condition type alias.
+Kind returns the string literal `condition` to identify the receiver as a [stackage.Condition] type alias.
 */
 func (r BindRule) Kind() string {
 	return `condition`
@@ -371,7 +371,7 @@ func (r BindRule) Keyword() Keyword {
 }
 
 /*
-Operator wraps the [stackage.Condition.Operator] method and casts the stackage.ComparisonOperator to the local [ComparisonOperator].
+Operator wraps the [stackage.Condition.Operator] method and casts the [stackage.ComparisonOperator] to the local package [ComparisonOperator].
 */
 func (r BindRule) Operator() ComparisonOperator {
 	return castCop(r.cast().Operator())
@@ -401,7 +401,7 @@ func (r BindRules) Compare(x any) bool {
 }
 
 /*
-Kind returns the string literal `stack` to identify the receiver as a stackage.Stack type alias.
+Kind returns the string literal `stack` to identify the receiver as a [stackage.Stack] type alias.
 */
 func (r BindRules) Kind() string {
 	return `stack`
@@ -415,7 +415,7 @@ And returns an instance of [BindRule] configured to express Boolean AND logical 
 
 Optionally, the caller may choose to submit one (1) or more (valid) instances of these types during initialization. This is merely a more convenient alternative to separate initialization and push procedures.
 
-The embedded type within the return is stackage.Stack via the [stackage.And] package-level function.
+The embedded type within the return is [stackage.Stack] via the [stackage.And] package-level function.
 */
 func And(x ...any) (b BindRules) {
 	// create a native stackage.Stack
@@ -454,7 +454,7 @@ Or returns an instance of [BindRule] configured to express Boolean OR logical op
 
 Optionally, the caller may choose to submit one (1) or more (valid) instances of these types during initialization. This is merely a more convenient alternative to separate initialization and push procedures.
 
-The embedded type within the return is stackage.Stack via the [stackage.Or] package-level function.
+The embedded type within the return is [stackage.Stack] via the [stackage.Or] package-level function.
 */
 func Or(x ...any) (b BindRules) {
 	// create a native stackage.Stack
@@ -493,7 +493,7 @@ Not returns an instance of [BindRule] configured to express Boolean NOT logical 
 
 Optionally, the caller may choose to submit one (1) or more (valid) instances of these types during initialization. This is merely a more convenient alternative to separate initialization and push procedures.
 
-The embedded type within the return is stackage.Stack via the [stackage.Not] package-level function.
+The embedded type within the return is [stackage.Stack] via the [stackage.Not] package-level function.
 */
 func Not(x ...any) (b BindRules) {
 	// create a native stackage.Stack

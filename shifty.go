@@ -35,7 +35,7 @@ func (r rights) cast() shifty.BitValue {
 }
 
 type (
-	// [DayOfWeek] is a type alias of shifty.BitValue, and is used
+	// [DayOfWeek] is a type alias of [shifty.BitValue], and is used
 	// to construct a dayofweek [BindRule].
 	DayOfWeek shifty.BitValue // 8-bit
 

@@ -219,7 +219,7 @@ func parseInheritance(inh string) (I Inheritance, err error) {
 }
 
 /*
-Len returns the abstract integer length of the receiver, quantifying the number of Level instances currently being expressed. For example, if the receiver instance has its Level1 and Level5 bits enabled, this would represent an abstract length of two (2).
+Len returns the abstract integer length of the receiver, quantifying the number of Level instances currently being expressed. For example, if the receiver instance has its [Level1] and [Level5] bits enabled, this would represent an abstract length of two (2).
 */
 func (r Inheritance) Len() int {
 	var D int
