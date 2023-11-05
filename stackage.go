@@ -131,7 +131,7 @@ type (
 	//         ( targetscope = "subordinate" )( targetattr = "cn || sn || givenName || objectClass" )
 	//
 	// Instances of this type may be assembled manually by users, or may be
-	// created logically as a result of textual parsing. See the T function
+	// created logically as a result of textual parsing. See the [TR] function
 	// for easily initializing and returning instances of this type.
 	//
 	// Instances of this type will not allow nesting (i.e.: the addition of any
@@ -139,9 +139,9 @@ type (
 	// may be pushed into instances of this type.
 	TargetRules stackage.Stack
 
-	// AttributeFilterOperation is a [stackage.Stack] type alias used to store Target Attribute
-	// Filters expressions, specifically those used within [TargetRule] instances bearing the
-	// [TargetAttrFilters] [TargetRule] keyword context.
+	// AttributeFilterOperation is a [stackage.Stack] type alias used to store [TargetAttrFilters] expressions,
+	// specifically those used within [TargetRule] instances bearing the [TargetAttrFilters] [TargetRule] keyword
+	// context.
 	//
 	// See also the [AttributeFilterOperations] type and its methods.
 	AttributeFilterOperation stackage.Stack

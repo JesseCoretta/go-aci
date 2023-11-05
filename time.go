@@ -262,7 +262,7 @@ func (r DayOfWeek) Valid() (err error) {
 }
 
 /*
-Eq initializes and returns a new [BindRule] instance configured to express the evaluation of the receiver value as Equal-To the `dayofweek` [BindKeyword] context.
+Eq initializes and returns a new [BindRule] instance configured to express the evaluation of the receiver value as Equal-To the [BindDoW] [BindKeyword] context.
 */
 func (r DayOfWeek) Eq() (b BindRule) {
 	if err := r.Valid(); err == nil {
@@ -272,7 +272,7 @@ func (r DayOfWeek) Eq() (b BindRule) {
 }
 
 /*
-Ne initializes and returns a new [BindRule] instance configured to express the evaluation of the receiver value as Not-Equal-To the `dayofweek` [BindKeyword] context.
+Ne initializes and returns a new [BindRule] instance configured to express the evaluation of the receiver value as Not-Equal-To the [BindDoW] [BindKeyword] context.
 
 Negated equality [BindRule] instances should be used with caution.
 */
@@ -337,7 +337,7 @@ func (r Day) Compare(x any) bool {
 ////////////////////////////////////////////////////////////////
 
 /*
-TimeOfDay is a [2]byte type used to represent a specific point in 24-hour time using hours and minutes (such as 1215 for 12:15 PM, or 1945 for 7:45 PM). Instances of this type contain a big endian unsigned 16-bit integer value, one that utilizes the first (1st) and second (2nd) slices. The value is used within "timeofday" [BindRule] statements.
+TimeOfDay is a [2]byte type used to represent a specific point in 24-hour time using hours and minutes (such as 1215 for 12:15 PM, or 1945 for 7:45 PM). Instances of this type contain a big endian unsigned 16-bit integer value, one that utilizes the first (1st) and second (2nd) slices. The value is used within [BindToD]-based [BindRule] statements.
 */
 type TimeOfDay struct {
 	*timeOfDay
@@ -386,7 +386,7 @@ func (r TimeOfDay) Keyword() Keyword {
 }
 
 /*
-Eq initializes and returns a new [BindRule] instance configured to express the evaluation of the receiver value as Equal-To the `timeofday` [BindKeyword] context.
+Eq initializes and returns a new [BindRule] instance configured to express the evaluation of the receiver value as Equal-To the [BindToD] [BindKeyword] context.
 */
 func (r TimeOfDay) Eq() BindRule {
 	if err := r.Valid(); err != nil {
@@ -396,7 +396,7 @@ func (r TimeOfDay) Eq() BindRule {
 }
 
 /*
-Ne initializes and returns a new [BindRule] instance configured to express the evaluation of the receiver value as Not-Equal-To the `timeofday` [BindKeyword] context.
+Ne initializes and returns a new [BindRule] instance configured to express the evaluation of the receiver value as Not-Equal-To the [BindToD] [BindKeyword] context.
 
 Negated equality [BindRule] instances should be used with caution.
 */
@@ -408,7 +408,7 @@ func (r TimeOfDay) Ne() BindRule {
 }
 
 /*
-Lt initializes and returns a new [BindRule] instance configured to express the evaluation of the receiver value as Less-Than the `timeofday` [BindKeyword] context.
+Lt initializes and returns a new [BindRule] instance configured to express the evaluation of the receiver value as Less-Than the [BindToD] [BindKeyword] context.
 */
 func (r TimeOfDay) Lt() BindRule {
 	if err := r.Valid(); err != nil {
@@ -418,7 +418,7 @@ func (r TimeOfDay) Lt() BindRule {
 }
 
 /*
-Le initializes and returns a new [BindRule] instance configured to express the evaluation of the receiver value as Less-Than-Or-Equal to the `timeofday` [BindKeyword] context.
+Le initializes and returns a new [BindRule] instance configured to express the evaluation of the receiver value as Less-Than-Or-Equal to the [BindToD] [BindKeyword] context.
 */
 func (r TimeOfDay) Le() BindRule {
 	if err := r.Valid(); err != nil {
@@ -428,7 +428,7 @@ func (r TimeOfDay) Le() BindRule {
 }
 
 /*
-Gt initializes and returns a new [BindRule] instance configured to express the evaluation of the receiver value as Greater-Than the `timeofday` [BindKeyword] context.
+Gt initializes and returns a new [BindRule] instance configured to express the evaluation of the receiver value as Greater-Than the [BindToD] [BindKeyword] context.
 */
 func (r TimeOfDay) Gt() BindRule {
 	if err := r.Valid(); err != nil {
@@ -438,7 +438,7 @@ func (r TimeOfDay) Gt() BindRule {
 }
 
 /*
-Ge initializes and returns a new [BindRule] instance configured to express the evaluation of the receiver value as Greater-Than-Or-Equal to the `timeofday` [BindKeyword] context.
+Ge initializes and returns a new [BindRule] instance configured to express the evaluation of the receiver value as Greater-Than-Or-Equal to the [BindToD] [BindKeyword] context.
 */
 func (r TimeOfDay) Ge() BindRule {
 	if err := r.Valid(); err != nil {
@@ -512,7 +512,7 @@ func (r TimeOfDay) IsZero() bool {
 /*
 Set encodes the specified 24-hour (a.k.a.: military) time value into the receiver instance.
 
-Valid input types are string and time.Time. The effective hour and minute values, when combined, should ALWAYS fall within the valid clock range of 0000 up to and including 2400.  Bogus values within said range, such as 0477, will return an error.
+Valid input types are string and [time.Time]. The effective hour and minute values, when combined, should ALWAYS fall within the valid clock range of 0000 up to and including 2400.  Bogus values within said range, such as 0477, will return an error.
 */
 func (r *TimeOfDay) Set(t any) TimeOfDay {
 	*r = newTimeOfDay(t)
