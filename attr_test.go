@@ -6,11 +6,11 @@ import (
 )
 
 /*
-This example demonstrates the creation of an instance of AttributeType, which
+This example demonstrates the creation of an instance of [AttributeType], which
 is used in a variety of contexts.
 
-In this example, a string name is fed to the package level AT function to form
-a complete AttributeType instance, which is then shown in string representation.
+In this example, a string name is fed to the package level [AT] function to form
+a complete [AttributeType] instance, which is then shown in string representation.
 */
 func ExampleAT() {
 	atb := AT(`homeDirectory`)
@@ -27,7 +27,7 @@ func ExampleAttributeType_String() {
 }
 
 /*
-This example demonstrates the SHA-1 hash comparison between two (2) AttributeType
+This example demonstrates the SHA-1 hash comparison between two (2) [AttributeType]
 instances using the Compare method.
 */
 func ExampleAttributeType_Compare() {
@@ -39,8 +39,8 @@ func ExampleAttributeType_Compare() {
 }
 
 /*
-This example demonstrates the use of the useless Keyword method, as AttributeType
-instances do not have any knowledge of Keywords at this time.
+This example demonstrates the use of the useless [Keyword] method, as [AttributeType]
+instances do not have any knowledge of [Keyword] instances at this time.
 */
 func ExampleAttributeType_Keyword() {
 	fmt.Printf("%v", AT(`owner`).Keyword())
@@ -49,7 +49,7 @@ func ExampleAttributeType_Keyword() {
 
 /*
 This example demonstrates the use of the useless Kind method, as this information
-is normally derived from a Keyword, which the receiver does not have.
+is normally derived from a [Keyword], which the receiver does not have.
 */
 func ExampleAttributeType_Kind() {
 	fmt.Printf("'%s'", AT(`owner`).Kind())
@@ -59,7 +59,7 @@ func ExampleAttributeType_Kind() {
 /*
 This example demonstrates the use of the useless Len method, as this information
 is only made available to satisfy Go's interface signature requirements as they
-pertain to the AttributeTypeContext interface.
+pertain to the [AttributeTypeContext] interface.
 */
 func ExampleAttributeType_Len() {
 	fmt.Printf("%d", AT(`owner`).Len())
@@ -83,8 +83,7 @@ func ExampleAttributeType_Valid() {
 }
 
 /*
-This example demonstrates how a caller can determine the number of comparison
-operator methods are available for use by the receiver instance.
+This example demonstrates how a caller can determine the number of [ComparisonOperator]-related methods are available for use by the receiver instance.
 */
 func ExampleAttributeType_TRM() {
 	var at AttributeType
@@ -93,7 +92,7 @@ func ExampleAttributeType_TRM() {
 }
 
 /*
-This example demonstrates the creation of an equality TargetRule (targetattr)
+This example demonstrates the creation of an equality [TargetRule] ([TargetAttr])
 using the receiver instance as input:
 */
 func ExampleAttributeType_Eq() {
@@ -103,8 +102,8 @@ func ExampleAttributeType_Eq() {
 }
 
 /*
-This example demonstrates the creation of a negated equality TargetRule
-(targetattr) using the receiver instance as input:
+This example demonstrates the creation of a negated equality [TargetRule]
+([TargetAttr]) using the receiver instance as input:
 */
 func ExampleAttributeType_Ne() {
 	attr := AT(`aci`)
@@ -113,9 +112,9 @@ func ExampleAttributeType_Ne() {
 }
 
 /*
-This example demonstrates the creation of an AttributeTypes instance
-suitable for use in the assembly of a TargetRule bearing the `targetattr`
-keyword context.
+This example demonstrates the creation of an [AttributeTypes] instance
+suitable for use in the assembly of a [TargetRule] bearing the [TargetAttr]
+[Keyword] context.
 */
 func ExampleAttributeTypes_targetAttributes() {
 
@@ -137,8 +136,8 @@ func ExampleAttributeTypes_targetAttributes() {
 }
 
 /*
-This example demonstrates the creation of an AttributeTypes
-instance suitable for use in an LDAPURI instance.
+This example demonstrates the creation of an [AttributeTypes]
+instance suitable for use in an [LDAPURI] instance.
 */
 func ExampleAttributeTypes_uRIAttributes() {
 
@@ -204,7 +203,7 @@ func ExampleAttributeTypes_Compare_likeInstances() {
 This example demonstrates why two seemingly identical instances, though
 created by separate functions, fail to evaluate as equal when multi-valued.
 The reason for this is due to the nature of the String method behavior for
-each of the instances. Use of the TAs package level function guarantees a
+each of the instances. Use of the [TAs] package level function guarantees a
 delimitation scheme using the symbolic OR (||) symbol, while use of the UAs
 package level function uses comma-delimitation.
 */
@@ -218,7 +217,7 @@ func ExampleAttributeTypes_Compare_multiValueFalse() {
 
 /*
 This example demonstrates the contrary condition to that demonstrated in the
-AttributeTypes CompareMultiValueFalse example. Because the two instances to
+[AttributeTypes] CompareMultiValueFalse example. Because the two instances to
 be evaluated are single-valued, no delimiter scheme comes into play. As such,
 the two instances produce identical String output.
 */
@@ -277,7 +276,7 @@ func ExampleAttributeTypes_Index() {
 
 /*
 This example demonstrates the addition of new slice elements
-to an AttributeTypes instance using its Push method.
+to an [AttributeTypes] instance using its Push method.
 */
 func ExampleAttributeTypes_Push() {
 	attrs := TAs(
@@ -309,9 +308,7 @@ func ExampleAttributeTypes_String() {
 }
 
 /*
-This example demonstrates the use of the receiver's TRM
-method in order to determine available comparison operator
-driven methods available in this context.
+This example demonstrates the use of the receiver's TRM method in order to determine available [ComparisonOperator]-related methods available in this context.
 */
 func ExampleAttributeTypes_TRM_targetAttributes() {
 	attrs := TAs(
@@ -328,10 +325,10 @@ func ExampleAttributeTypes_TRM_targetAttributes() {
 /*
 This example demonstrates the useless nature of the receiver's
 TRM method in situations where the receiver is intended for use
-within an LDAPURI instance, rather than as a rule condition unto
-itself. As a result, a bogus TargetRuleMethods instance will be
+within an [LDAPURI] instance, rather than as a rule condition unto
+itself. As a result, a bogus [TargetRuleMethods] instance will be
 returned if the receiver was created through any means *OTHER
-THAN* by execution of the TAs package level function.
+THAN* by execution of the [TAs] package level function.
 */
 func ExampleAttributeTypes_TRM_uRIAttributes() {
 	attrs := UAs(
@@ -347,7 +344,7 @@ func ExampleAttributeTypes_TRM_uRIAttributes() {
 
 /*
 This example demonstrates the removal of a single slice element
-from an AttributeTypes instance in LIFO fashion using its Pop
+from an [AttributeTypes] instance in LIFO fashion using its Pop
 method.
 */
 func ExampleAttributeTypes_Pop() {
@@ -411,11 +408,11 @@ func ExampleAttributeTypes_Kind_uninitialized() {
 
 /*
 This example demonstrates the incompatibility with an
-AttributeTypes stack intended for use within an LDAPURI
-instance. Because this incarnation of AttributeTypes has
-no direct application within a BindRule or a TargetRule
+[AttributeTypes] stack intended for use within an [LDAPURI]
+instance. Because this incarnation of [AttributeTypes] has
+no direct application within a [BindRule] or a [TargetRule]
 (rather it resides WITHIN another type eligible for such
-use),  the Keyword cannot be inferred and returns a nil
+use),  the [Keyword] cannot be inferred and returns a nil
 instance. This is expected behavior.
 */
 func ExampleAttributeTypes_Keyword_uRIAttributes() {
@@ -427,8 +424,8 @@ func ExampleAttributeTypes_Keyword_uRIAttributes() {
 		`objectClass`,
 	)
 
-	fmt.Printf("Keyword: %s", attrs.Keyword())
-	// Output: Keyword: targetfilter
+	fmt.Printf("%s", attrs.Keyword())
+	// Output: targetfilter
 }
 
 func ExampleABTV() {
@@ -439,7 +436,7 @@ func ExampleABTV() {
 }
 
 /*
-This example demonstrates the creation of an instance of AttributeBindTypeOrValue.
+This example demonstrates the creation of an instance of [AttributeBindTypeOrValue].
 */
 func ExampleUAT() {
 	attr := AT(`manager`)
@@ -452,7 +449,7 @@ func ExampleUAT() {
 }
 
 /*
-This example demonstrates the creation of an instance of AttributeBindTypeOrValue.
+This example demonstrates the creation of an instance of [AttributeBindTypeOrValue].
 */
 func ExampleGAT() {
 	attr := AT(`owner`)
@@ -465,9 +462,9 @@ func ExampleGAT() {
 }
 
 /*
-This example demonstrates the creation of an instance of AttributeBindTypeOrValue.
+This example demonstrates the creation of an instance of [AttributeBindTypeOrValue].
 
-In this example, a raw string representation of an AttributeBindTypeOrValue instance
+In this example, a raw string representation of an [AttributeBindTypeOrValue] instance
 is used for parser input.
 */
 func ExampleAttributeBindTypeOrValue_Parse() {
@@ -484,10 +481,10 @@ func ExampleAttributeBindTypeOrValue_Parse() {
 }
 
 /*
-This example demonstrates the creation of an instance of AttributeBindTypeOrValue followed
-by a call of its AttributeType method.
+This example demonstrates the creation of an instance of [AttributeBindTypeOrValue] followed
+by a call of its [AttributeType] method.
 
-The return type, AttributeType, is shown in string representation.
+The return type, [AttributeType], is shown in string representation.
 */
 /*
 func ExampleAttributeBindTypeOrValue_AttributeType() {
@@ -512,7 +509,7 @@ func ExampleAttributeBindTypeOrValue_IsZero() {
 
 /*
 This example demonstrates the interrogation of the receiver in order to
-discern the appropriate Keyword.
+discern the appropriate [Keyword].
 
 Its string representation, along with the name of the Keyword type, is
 shown.
@@ -525,7 +522,7 @@ func ExampleAttributeBindTypeOrValue_Keyword() {
 }
 
 /*
-This example demonstrates the creation of an instance of AttributeBindTypeOrValue followed
+This example demonstrates the creation of an instance of [AttributeBindTypeOrValue] followed
 by a call of its String method.
 
 The return value is the entirely of the receiver in string representation.
@@ -538,7 +535,7 @@ func ExampleAttributeBindTypeOrValue_String() {
 }
 
 /*
-This example demonstrates the creation of an instance of AttributeBindTypeOrValue followed
+This example demonstrates the creation of an instance of [AttributeBindTypeOrValue] followed
 by a call of its String method through fmt.Printf.
 
 The return value is the entirely of the receiver in string representation.
@@ -551,7 +548,7 @@ func ExampleAttributeBindTypeOrValue_Set() {
 }
 
 /*
-This example demonstrates the SHA-1 hash comparison between two (2) AttributeBindTypeOrValue
+This example demonstrates the SHA-1 hash comparison between two (2) [AttributeBindTypeOrValue]
 instances using the Compare method.
 */
 func ExampleAttributeBindTypeOrValue_Compare() {
@@ -569,7 +566,7 @@ func ExampleAttributeBindTypeOrValue_Compare() {
 }
 
 /*
-This example demonstrates the creation of an instance of AttributeBindTypeOrValue followed
+This example demonstrates the creation of an instance of [AttributeBindTypeOrValue] followed
 by a call of its String method through fmt.Printf. In this example, the receiver instance
 is populated using only string values.
 
@@ -583,7 +580,7 @@ func ExampleAttributeBindTypeOrValue_Set_alt() {
 }
 
 /*
-This example demonstrates the creation of an instance of AttributeBindTypeOrValue followed
+This example demonstrates the creation of an instance of [AttributeBindTypeOrValue] followed
 by a call of its Valid method for the purpose of sanity checking the receiver.
 
 An error is reported and printed to STDOUT.
@@ -601,9 +598,9 @@ func ExampleAttributeBindTypeOrValue_Valid() {
 }
 
 /*
-This example demonstrates the use of the AttributeBindTypeOrValue type's Eq method,
-allowing for the creation of a TargetRule instance containing the receiver value,
-and bearing the `targattrfilters` keyword context.
+This example demonstrates the use of the [AttributeBindTypeOrValue] type's Eq method,
+allowing for the creation of a [TargetRule] instance containing the receiver value,
+and bearing the [TargetAttrFilters] [Keyword] context.
 */
 func ExampleAttributeBindTypeOrValue_Eq() {
 	attr := AT(`manager`)
@@ -616,7 +613,7 @@ func ExampleAttributeBindTypeOrValue_Eq() {
 }
 
 /*
-This example demonstrates the use of the AttributeBindTypeOrValue type's Ne method
+This example demonstrates the use of the [AttributeBindTypeOrValue] type's Ne method
 */
 func ExampleAttributeBindTypeOrValue_Ne() {
 	attr := AT(`manager`)

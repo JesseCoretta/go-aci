@@ -11,18 +11,13 @@ const (
 )
 
 /*
-LDAPURI contains the components of a fully-qualified LDAP Search URI,
-including:
+LDAPURI contains the components of a fully-qualified LDAP Search URI which is comprised of one (1) or more of the following:
 
-• An LDAP Distinguished Name
-
-• An LDAP Search Scope
-
-• An AttributeBindTypeOrValue
-
-• A comma-delimited list of AttributeType names
-
-• An LDAP Search Filter
+  - One (1) [BindDistinguishedName] instance
+  - One (1) [SearchScope] instance
+  - One (1) [AttributeBindTypeOrValue] instance
+  - One (1) [AttributeTypes] instance
+  - One (1) [SearchFilter] instance
 */
 type LDAPURI struct {
 	*ldapURI
@@ -41,8 +36,7 @@ type ldapURI struct {
 }
 
 /*
-URI initializes, (optionally) sets and returns a new instance of LDAPURI,
-which represents a fully-qualified LDAP Search URI of the following syntax:
+URI initializes, (optionally) sets and returns a new instance of [LDAPURI], which represents a fully-qualified LDAP Search URI of the following syntax:
 
 	scheme:///<dn>?<at[,...]>?<scope>?<filter>
 
@@ -50,11 +44,9 @@ As a practical example:
 
 	ldap:///ou=People,dc=example,dc=com?sn,cn,givenName?one?(objectClass=*)
 
-URIs of this format are used within UDN (userdn) and GDN (groupdn) Bind Rules.
+URIs of this format are used within [BindUDN] and [BindGDN] [BindRules].
 
-Additionally, the ACI syntax specification honored by this package allows the
-use of an AttributeBindTypeOrValue instance INSTEAD of a comma-delimited list
-of attributeTypes, a search scope and a search filter:
+Additionally, the ACI syntax specification honored by this package allows the use of an [AttributeBindTypeOrValue] instance INSTEAD of a comma-delimited list of attributeTypes, a search scope and a search filter:
 
 	scheme:///<dn>?<atbtv>
 
@@ -62,10 +54,7 @@ As a practical example:
 
 	ldap:///ou=People,dc=example,dc=com?owner#GROUPDN
 
-Be advised that only UAT (userattr) Bind Rules will make use of this particular
-URI format. An instance of AttributeBindTypeOrValue submitted as a URI component
-bearing the GAT (groupattr) bind keyword will have this keyword IGNORED in favor
-of UAT automatically.
+Be advised that only [BindUAT] (userattr) [BindRules] instances shall make use of this particular URI format. An instance of AttributeBindTypeOrValue submitted as a URI component bearing the [BindGAT] (groupattr) [BindKeyword] will have this keyword IGNORED in favor of [BindUAT] automatically.
 */
 func URI(x ...any) LDAPURI {
 	return LDAPURI{newLDAPURI(x...)}
@@ -82,72 +71,16 @@ func newLDAPURI(x ...any) (l *ldapURI) {
 }
 
 /*
-Len performs no useful task, as the concept of integer length
-does not apply to the LDAPURI type in this context. Execution
-of this method shall always return zero (0).
+Len performs no useful task, as the concept of integer length does not apply to the [LDAPURI] type in this context. Execution of this method shall always return zero (0).
 
-This method exists solely to allow the receiver to qualify for
-the DistinguishedNameContext interface signature.
+This method exists solely to allow the receiver to qualify for the [DistinguishedNameContext] interface signature.
 */
 func (r LDAPURI) Len() int {
 	return 0
 }
 
 /*
-Parse is a convenient alternative to building the receiver instance using individual
-instances of the needed types. This method does not use go-antlraci.
-
-An error is returned if the parsing attempt fails for some reason. If successful, the
-receiver pointer is updated (clobbered) with new information.
-*/
-func (r *LDAPURI) Parse(raw string) (err error) {
-	var L LDAPURI
-	if L, err = parseLDAPURI(raw); err != nil {
-		return
-	}
-	*r = L
-
-	return
-}
-
-/*
-parseLDAPURI reads input string x and produces an instance of LDAPURI
-(L), which is returned alongside an error instance (err).
-
-An optional Bind Keyword may be provided to supplant BindUAT in the
-event of an AttributeBindTypeOrValue instance being present. Note
-that only BindGAT is supported as an alternative.
-*/
-func parseLDAPURI(x string, bkw ...BindKeyword) (L LDAPURI, err error) {
-	// URI absolutely MUST begin with the local
-	// LDAP scheme (e.g.: ldap:///). If it does
-	// not, fail immediately.
-	if !hasPfx(x, LocalScheme) {
-		err = uriBadPrefixErr()
-		return
-	}
-
-	// Chop the scheme off the string, since
-	// it is no longer needed.
-	uri := x[len(LocalScheme):]
-
-	// initialize our embedded uri type
-	l := newLDAPURI()
-
-	// iterate each value produced through split
-	// on question mark and massage values into
-	// LDAP URI appropriate component values ...
-	err = l.assertURIComponents(split(uri, `?`), bkw...)
-
-	// Envelope ldapURI instance and send it off
-	L = LDAPURI{l}
-
-	return
-}
-
-/*
-assertURIComponents is intended to reduce cyclomatic complexity factors associated with
-the parseLDAPURI function, which is the sole caller of this function.
+assertURIComponents is intended to reduce cyclomatic complexity factors associated with the parseLDAPURI function, which is the sole caller of this function.
 */
 func (r *ldapURI) assertURIComponents(vals []string, kw ...BindKeyword) (err error) {
 
@@ -198,14 +131,10 @@ func (r *ldapURI) assertURIComponents(vals []string, kw ...BindKeyword) (err err
 }
 
 /*
-uriAssertATB shall analyze the input string value (raw) and will do one (1)
-of the following:
+uriAssertATB shall analyze the input string value (raw) and will do one (1) of the following:
 
-• Parse the value under the assumption it represents an AttributeBindTypeOrvalue instance
-using the provided BindKeyword (kw), OR ...
-
-• Parse the value under the assumption it represents a sequence of one or more LDAP AttributeType
-values, delimited using a comma (ASCII #44) as needed
+• Parse the value under the assumption it represents an AttributeBindTypeOrValue instance using the provided BindKeyword (kw), OR ...
+• Parse the value under the assumption it represents a sequence of one or more LDAP AttributeType values, delimited using a comma (ASCII #44) as needed
 
 Should any errors be encountered, a non-nil error instance (err) is returned.
 */
@@ -262,79 +191,47 @@ func (r *ldapURI) uriAssertATB(raw string, bkw ...BindKeyword) (err error) {
 }
 
 /*
-Eq initializes and returns a new BindRule instance configured to express the
-evaluation of the receiver value as Equal-To one (1) of the following keyword
-contexts:
+Eq initializes and returns a new [BindRule] instance configured to express the evaluation of the receiver value as Equal-To one (1) of the following [BindKeyword] contexts:
 
-• `userdn` (Bind Rule)
+  - [BindUDN]
+  - [BindUAT]
+  - [BindGAT]
 
-• `userattr` (Bind Rule)
+The appropriate [BindKeyword] is automatically imposed based on the following scenarios:
 
-• `groupdn` (Bind Rule)
-
-The appropriate keyword is automatically imposed based on the following
-scenarios:
-
-• If an AttributeBindTypeOrValue (as created by UAT() package-level function)
-is set within the receiver, the keyword shall be BindUAT; this is regardless
-to the keyword assigned to the DistinguishedName instance.
-
-• If an AttributeBindTypeOrValue is NOT set within the receiver, the keyword
-shall fallback to that which is found within the BindDistinguishedName assigned to
-the receiver; this keyword was set by the UDN() or GDN() package-level functions
-respectively during BindDistinguishedName creation.
+  - If an [AttributeBindTypeOrValue] (as created by [UAT] package-level function) is set within the receiver, the [BindKeyword] shall be [BindUAT]; this is regardless to the keyword assigned to the underying distinguished name.
+  - If an [AttributeBindTypeOrValue] is NOT set within the receiver, the [BindKeyword] shall fallback to that which is found within the [BindDistinguishedName] assigned to the receiver; this keyword was set by the [UDN] or [GDN] package-level functions respectively during [BindDistinguishedName] creation.
 */
 func (r LDAPURI) Eq() BindRule {
 	return r.makeBindRule()
 }
 
 /*
-Ne initializes and returns a new BindRule instance configured to express the
-evaluation of the receiver value as Not-Equal-To one (1) of the following
-keywords:
+Ne initializes and returns a new [BindRule] instance configured to express the evaluation of the receiver value as Not-Equal-To one (1) of the following [BindKeyword] contexts:
 
-• `userdn` (Bind Rule)
+  - [BindUDN]
+  - [BindUAT]
+  - [BindGAT]
 
-• `userattr` (Bind Rule)
+The appropriate [BindKeyword] is automatically imposed based on the following scenarios:
 
-• `groupdn` (Bind Rule)
+  - If an [AttributeBindTypeOrValue] (as created by [UAT] package-level function) is set within the receiver, the [BindKeyword] shall be [BindUAT]; this is regardless to the keyword assigned to the underying distinguished name.
+  - If an [AttributeBindTypeOrValue] is NOT set within the receiver, the [BindKeyword] shall fallback to that which is found within the [BindDistinguishedName] assigned to the receiver; this keyword was set by the [UDN] or [GDN] package-level functions respectively during [BindDistinguishedName] creation.
 
-The appropriate keyword is automatically imposed based on the following
-scenarios:
-
-• If an AttributeBindTypeOrValue (as created by UAT() package-level function)
-is set within the receiver, the keyword shall be BindUAT; this is regardless
-to the keyword assigned to the DistinguishedName instance.
-
-• If an AttributeBindTypeOrValue is NOT set within the receiver, the keyword
-shall fallback to that which is found within the BindDistinguishedName assigned
-to the receiver; this keyword was set by the UDN() or GDN() package-level functions
-respectively during BindDistinguishedName creation.
-
-Negated equality BindRule instances should be used with caution.
+Negated equality [BindRule] instances should be used with caution.
 */
 func (r LDAPURI) Ne() BindRule {
 	return r.makeBindRule(true)
 }
 
 /*
-BRM returns an instance of BindRuleMethods.
+BRM returns an instance of [BindRuleMethods].
 
-Each of the return instance's key values represent a single instance of the
-ComparisonOperator type that is allowed for use in the creation of BindRule
-instances which bear the receiver instance as an expression value. The value
-for each key is the actual BindRuleMethod instance for OPTIONAL use in the
-creation of a BindRule instance.
+Each of the return instance's key values represent a single instance of the [ComparisonOperator] type that is allowed for use in the creation of [BindRule] instances which bear the receiver instance as an expression value. The value for each key is the actual [BindRuleMethod] instance for OPTIONAL use in the creation of a [BindRule] instance.
 
-This is merely a convenient alternative to maintaining knowledge of which
-ComparisonOperator instances apply to which types. Instances of this type
-are also used to streamline package unit tests.
+This is merely a convenient alternative to maintaining knowledge of which [ComparisonOperator] instances apply to which types. Instances of this type are also used to streamline package unit tests.
 
-Please note that if the receiver is in an aberrant state, or if it has not
-yet been initialized, the execution of ANY of the return instance's value
-methods will return bogus BindRule instances. While this is useful in unit
-testing, the end user must only execute this method IF and WHEN the receiver
-has been properly populated and prepared for such activity.
+Please note that if the receiver is in an aberrant state, or if it has not yet been initialized, the execution of ANY of the return instance's value methods will return bogus [BindRule] instances. While this is useful in unit testing, the end user must only execute this method IF and WHEN the receiver has been properly populated and prepared for such activity.
 */
 func (r LDAPURI) BRM() BindRuleMethods {
 	return newBindRuleMethods(bindRuleFuncMap{
@@ -344,8 +241,7 @@ func (r LDAPURI) BRM() BindRuleMethods {
 }
 
 /*
-makeBindRule is a private method extended by LDAPURI solely to be executed
-by the Eq and Ne methods during BindRule assembly.
+makeBindRule is a private method extended by LDAPURI solely to be executed by the Eq and Ne methods during BindRule assembly.
 */
 func (r LDAPURI) makeBindRule(negate ...bool) BindRule {
 	// don't process a bogus receiver instance.
@@ -392,8 +288,7 @@ func (r LDAPURI) makeBindRule(negate ...bool) BindRule {
 }
 
 /*
-IsZero returns a Boolean value indicative of whether the receiver
-is nil, or unset.
+IsZero returns a Boolean value indicative of whether the receiver is nil, or unset.
 */
 func (r LDAPURI) IsZero() bool {
 	return r.ldapURI.isZero()
@@ -407,8 +302,7 @@ func (r *ldapURI) isZero() bool {
 }
 
 /*
-String is a stringer method that returns the string representation
-of the receiver instance.
+String is a stringer method that returns the string representation of the receiver instance.
 */
 func (r LDAPURI) String() string {
 	if r.IsZero() {
@@ -419,22 +313,15 @@ func (r LDAPURI) String() string {
 }
 
 /*
-Keyword returns the Keyword associated with the receiver instance. In
-the context of this type instance, the Keyword returned will be one
-of the following:
+Keyword returns the [BindKeyword] associated with the receiver instance enveloped as a [Keyword]. In the context of this type instance, the [BindKeyword] returned will be one of the following:
 
-• BindUDN
+  - [BindUDN]
+  - [BindGDN]
+  - [BindRDN]
+  - [BindUAT]
+  - [BindGAT]
 
-• BindGDN
-
-• BindRDN
-
-• BindUAT
-
-• BindGAT
-
-Which Keyword is actually used is determined by the underlying type
-instances that were used to assemble the receiver.
+Which [BindKeyword] is actually used is determined by the underlying type instances that were used to assemble the receiver.
 */
 func (r LDAPURI) Keyword() (k Keyword) {
 	if err := r.Valid(); err != nil {
@@ -457,8 +344,7 @@ func (r LDAPURI) Keyword() (k Keyword) {
 }
 
 /*
-Kind returns the string form of the receiver's Keyword, if the instance
-is valid.
+Kind returns the string form of the receiver's [Keyword], if the instance is valid.
 */
 func (r LDAPURI) Kind() (k string) {
 	kw := r.Keyword()
@@ -499,8 +385,7 @@ func (r ldapURI) string() string {
 }
 
 /*
-Valid returns an error instance in the event the receiver is in
-an aberrant state.
+Valid returns an error instance in the event the receiver is in an aberrant state.
 */
 func (r LDAPURI) Valid() error {
 	if r.IsZero() {
@@ -519,43 +404,24 @@ func (r ldapURI) valid() error {
 }
 
 /*
-Set assigns the provided instances to the receiver. The order in which
-instances are assigned to the receiver is immaterial. The semantics of
-type instance assignment are as follows:
+Set assigns the provided instances to the receiver. The order in which instances are assigned to the receiver is immaterial. The semantics of type instance assignment are as follows:
 
-• An instance of BindDistinguishedName will be set as the URI DN; this
-is ALWAYS required. Valid DN creator functions are UDN (userdn), and GDN
-(groupdn) for instances of this type.
+  - An instance of [BindDistinguishedName] will be set as the URI DN; this is ALWAYS required. Valid DN creator functions are [UDN] and [GDN] for instances of this type.
+  - An instance of [SearchScope] shall be set as the URI SearchScope
+  - An instance of [AttributeBindTypeOrValue] shall be set as a component within the receiver. Please see a special remark below related to the use of instances of this type within [LDAPURI] instances.
+  - An instance of [AttributeTypes] (created using the UAs package-level function) shall be set as the URI attribute(s) list.
+  - An instance of [SearchFilter] shall be set as the URI Search Filter. Please see a special remark below related to the use of instances of this type within [LDAPURI] instances.
+  - An instance of string (with no other arguments) shall result in an [LDAPURI] parse operation that, if successful, shall overwrite the receiver in its entirety. This should not be combined with other types of input values as the results will not be compounded.
 
-• An instance of SearchScope shall be set as the URI Search Scope
-
-• An instance of AttributeBindTypeOrValue shall be set as a component
-within the receiver. Please see a special remark below related to the
-use of instances of this type within LDAP URIs.
-
-• An instance of AttributeTypes (created using the UAs package-level
-function) shall be set as the URI attribute(s) list.
-
-• An instance of SearchFilter shall be set as the URI Search Filter.
-Please see a special remark below related to the use of instances of
-this type within LDAP URIs.
-
-• An instance of string (with no other arguments) shall result in an
-LDAP URI parse operation that, if successful, shall overwrite the
-receiver in its entirety. This should not be combined with other types
-of input values as the results will not be compounded.
-
-When an AttributeBindTypeOrValue is specified, an LDAP Search Filter
-MUST NOT BE SET, as it will supercede the AttributeBindTypeOrValue
-instance during string representation.
+When an [AttributeBindTypeOrValue] is specified, a [SearchFilter] MUST NOT BE SET, as it will supercede the [AttributeBindTypeOrValue] instance during string representation.
 
 In short, choose:
 
-• DN and AttributeType(s), Scope, Filter
+• [BindDistinguishedName] and [AttributeTypes], [SearchScope], [SearchFilter]
 
 ... OR ...
 
-• DN and AttributeBindTypeOrValue
+• [BindDistinguishedName] and [AttributeBindTypeOrValue]
 */
 func (r *LDAPURI) Set(x ...any) LDAPURI {
 	if r.IsZero() {
@@ -611,8 +477,7 @@ func (r *ldapURI) set(x ...any) {
 }
 
 /*
-Compare returns a Boolean value indicative of a SHA-1 comparison
-between the receiver (r) and input value x.
+Compare returns a Boolean value indicative of a SHA-1 comparison between the receiver (r) and input value x.
 */
 func (r LDAPURI) Compare(x any) bool {
 	return compareHashInstance(r, x)

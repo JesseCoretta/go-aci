@@ -16,7 +16,7 @@ var (
 )
 
 /*
-ComparisonOperator constants defined within the stackage package are aliased
+[ComparisonOperator] constants defined within the stackage package are aliased
 within this package for convenience, without the need for user-invoked stackage
 package import.
 */
@@ -32,47 +32,47 @@ const (
 )
 
 type (
-	// ComparisonOperator is an alias for stackage.ComparisonOperator. Instances of
-	// this type are used to contruct TargetRule and BindRule instances, and describe
+	// ComparisonOperator is an alias for [stackage.ComparisonOperator]. Instances of
+	// this type are used to contruct [TargetRule] and [BindRule] instances, and describe
 	// the manner in which abstract contexts are to be evaluated.
 	ComparisonOperator stackage.ComparisonOperator
 
-	// BindDistinguishedNames is an alias type for stackage.Stack, and is intended
-	// to house one (1) or more BindDistinguishedName instances for the purpose of
-	// expression within a BindRule instance.
+	// BindDistinguishedNames is an alias type for [stackage.Stack], and is intended
+	// to house one (1) or more [BindDistinguishedName] instances for the purpose of
+	// expression within a [BindRule] instance.
 	BindDistinguishedNames stackage.Stack
 
-	// TargetDistinguishedNames is an alias type for stackage.Stack, and is intended
-	// to house one (1) or more TargetDistinguishedName instances for the purpose of
-	// expression within a TargetRule instance.
+	// TargetDistinguishedNames is an alias type for [stackage.Stack], and is intended
+	// to house one (1) or more [TargetDistinguishedName] instances for the purpose of
+	// expression within a [TargetRule] instance.
 	TargetDistinguishedNames stackage.Stack
 
-	// PermissionBindRules is a stackage.Stack type alias used to store one (1)
-	// or more instances of PermissionBindRule. Instances of this kind are used
-	// in top-level Instruction (ACI) assembly.
+	// PermissionBindRules is a [stackage.Stack] type alias used to store one (1)
+	// or more instances of [PermissionBindRule]. Instances of this kind are used
+	// in top-level [Instruction] (ACI) assembly.
 	PermissionBindRules stackage.Stack
 
-	// ObjectIdentifiers is an alias type for stackage.Stack, and is intended
-	// to house one (1) or more ObjectIdentifier instances for the purpose of
-	// expression within a TargetRule instance.
+	// ObjectIdentifiers is an alias type for [stackage.Stack], and is intended
+	// to house one (1) or more [ObjectIdentifier] instances for the purpose of
+	// expression within a [TargetRule] instance.
 	ObjectIdentifiers stackage.Stack
 
-	// Instructions is a go-stackage Stack alias type intended to store slices of
-	// Instruction instances.
+	// Instructions is a [stackage.Stack] alias type intended to store slices of
+	// [Instruction] instances.
 	//
-	// Note that the concept of a "collection" of Instruction instances does not
+	// Note that the concept of a "collection" of [Instruction] instances does not
 	// come from the ACIv3 syntax per se, and is implemented here merely for the
 	// user's convenience. Use of this type is not required in any scenario.
 	Instructions stackage.Stack
 
-	// AttributeTypes is an alias type for stackage.Stack, and is intended
-	// to house one (1) or more AttributeType instances for the purpose of
-	// expression within a BindRule or TargetRule instance.
+	// AttributeTypes is an alias type for [stackage.Stack], and is intended
+	// to house one (1) or more [AttributeType] instances for the purpose of
+	// expression within a [BindRule] or [TargetRule] instance.
 	AttributeTypes stackage.Stack
 
-	// BindRule is a stackage.Condition type alias intended to represent
-	// a single Bind Rule; that is, one (1) Bind Rule keyword, one (1)
-	// comparison operator and one (1) or more string values (called an
+	// BindRule is a [stackage.Condition] type alias intended to represent
+	// a single Bind Rule; that is, one (1) [BindKeyword], one (1)
+	// [ComparisonOperator] and one (1) or more string values (called an
 	// 'expression').
 	//
 	// For example:
@@ -84,12 +84,12 @@ type (
 	// to use convenient Eq, Ne, Gt, Ge, Lt, and Le methods extended through
 	// various types (as permitted) for simplicity.
 	//
-	// Instances of this type shall appear within BindRules instances and may
-	// or may not be parenthetical.
+	// Instances of this type shall appear within [BindRules] instances and
+	// may or may not be parenthetical.
 	BindRule stackage.Condition
 
-	// BindRules is a stackage.Stack type alias intended to store and express
-	// one (1) or more Bind Rule statements, with or without nesting and (at
+	// BindRules is a [stackage.Stack] type alias intended to store and express
+	// one (1) or more [BindRule] statements, with or without nesting and (at
 	// least usually) bound by Boolean logical WORD operators 'AND', 'OR' and
 	// 'AND NOT'.
 	//
@@ -103,9 +103,9 @@ type (
 	// for 'OR' and Not() for 'AND NOT'.
 	BindRules stackage.Stack
 
-	// TargetRule is a stackage.Condition type alias intended to represent
-	// a single Target Rule; that is, one (1) Target Rule keyword, one (1)
-	// comparison operator and one (1) or more string values (called an
+	// TargetRule is a [stackage.Condition] type alias intended to represent
+	// a single Target Rule; that is, one (1) [TargetKeyword], one (1)
+	// [ComparisonOperator] and one (1) or more string values (called an
 	// 'expression').
 	//
 	// For example:
@@ -117,55 +117,55 @@ type (
 	// to use convenient Eq and Ne methods extended through various types
 	// (as permitted) for simplicity.
 	//
-	// Instances of this type shall appear within TargetRules instances.
+	// Instances of this type shall appear within [TargetRules] instances.
 	//
-	// TargetRule instances are always parenthetical. No parenthetical control
+	// [TargetRule] instances are always parenthetical. No parenthetical control
 	// methods exist for instances of this type.
 	TargetRule stackage.Condition
 
-	// TargetRules is a stackage.Stack type alias intended to store and express
-	// one (1) or more Target Rule statements.
+	// TargetRules is a [stackage.Stack] type alias intended to store and express
+	// one (1) or more [TargetRule] statements.
 	//
 	// For example:
 	//
 	//         ( targetscope = "subordinate" )( targetattr = "cn || sn || givenName || objectClass" )
 	//
 	// Instances of this type may be assembled manually by users, or may be
-	// created logically as a result of textual parsing. See the T function
+	// created logically as a result of textual parsing. See the [TR] function
 	// for easily initializing and returning instances of this type.
 	//
 	// Instances of this type will not allow nesting (i.e.: the addition of any
-	// stackage.Stack type alias instances). Only individual TargetRule instances
+	// [stackage.Stack] type alias instances). Only individual [TargetRule] instances
 	// may be pushed into instances of this type.
 	TargetRules stackage.Stack
 
-	// AttributeFilterOperation is a stackage.Stack type alias used to store Target Attribute
-	// Filters expressions, specifically those used within TargetRule instances bearing the
-	// `targattrfilters` TargetRule keyword context.
+	// AttributeFilterOperation is a [stackage.Stack] type alias used to store [TargetAttrFilters] expressions,
+	// specifically those used within [TargetRule] instances bearing the [TargetAttrFilters] [TargetRule] keyword
+	// context.
 	//
-	// See also the AttributeFilterOperations type and its methods.
+	// See also the [AttributeFilterOperations] type and its methods.
 	AttributeFilterOperation stackage.Stack
 
-	// AttributeFilterOperations is a go-stackage Stack alias type, used for the
-	// storage of individual AttributeFilterOperation instances.
+	// AttributeFilterOperations is a [stackage.Stack] alias type, used for the
+	// storage of individual [AttributeFilterOperation] instances.
 	//
-	// Instances of this design are used in TargetRule instances which bear the
-	// targattrfilters keyword context.
+	// Instances of this design are used in [TargetRule] instances which bear the
+	// [TargetAttrFilters] [Keyword] context.
 	AttributeFilterOperations stackage.Stack
 )
 
 /*
 castAsCondition merely wraps (casts, converts) and returns an
-instance of BindRule -OR- TargetRule as a stackage.Condition
+instance of BindRule -OR- TargetRule as a [stackage.Condition]
 instance. This is useful for calling methods that have not been
-extended (wrapped) in this package via go-stackage, as it may not
+extended (wrapped) in this package via [stackage], as it may not
 be needed in many cases ...
 
 An instance submitted as x that is neither a BindRule or TargetRule
-will result in an empty stackage.Condition return value.
+will result in an empty [stackage.Condition] return value.
 
 Note this won't alter an existing BindRule or TargetRule instance,
-rather a new reference is made through the stackage.Condition type
+rather a new reference is made through the [stackage.Condition] type
 defined within go-stackage. The BindRule or TargetRule, once it has
 been altered to one's satisfaction, can be sent off as intended and
 this "Condition Counterpart" can be discarded, or left for GC.
@@ -197,7 +197,7 @@ func (r BindRule) cast() stackage.Condition {
 
 /*
 cast is a private convenience method intended to streamline
-the act of casting a BindRules instance to a stackage.Stack
+the act of casting a BindRules instance to a [stackage.Stack]
 instance if access to unwrapped methods is needed.
 */
 func (r BindRules) cast() stackage.Stack {
@@ -289,9 +289,9 @@ func castAsCop(x ComparisonOperator) stackage.ComparisonOperator {
 }
 
 func castCop(x any) (cop ComparisonOperator) {
+	//case stackage.ComparisonOperator:
+	//	cop = ComparisonOperator(tv)
 	switch tv := x.(type) {
-	case stackage.ComparisonOperator:
-		cop = ComparisonOperator(tv)
 	case ComparisonOperator:
 		cop = tv
 	}
@@ -308,7 +308,7 @@ func isStack(stack any) (is bool) {
 }
 
 /*
-isStackageStack merely matches the input type as a stackage.Stack
+isStackageStack merely matches the input type as a [stackage.Stack]
 type and returns the resultant Boolean value.
 */
 func isStackageStack(stack any) (is bool) {
@@ -338,7 +338,7 @@ func isPkgStack(stack any) (is bool) {
 }
 
 /*
-isStackageStack merely matches the input type as a stackage.Stack
+isStackageStack merely matches the input type as a [stackage.Stack]
 type and returns the resultant Boolean value.
 */
 func isStackageCondition(stack any) (is bool) {
@@ -361,14 +361,14 @@ func derefC(cond any) (c stackage.Condition) {
 
 /*
 castAsStack merely wraps (casts, converts) and returns any type
-alias of stackage.Stack as a native stackage.Stack.
+alias of [stackage.Stack] as a native stackage.Stack.
 
 This is useful for calling methods that have not been extended
 (wrapped) in this package via go-stackage, as it might not be
 needed in most cases ...
 
-An instance submitted as x that is NOT a type alias of stackage.Stack
-will result in an empty stackage.Stack return value.
+An instance submitted as x that is NOT a type alias of [stackage.Stack]
+will result in an empty [stackage.Stack] return value.
 
 Note this won't alter an existing values, rather a new reference is
 made through the stackage.Condition type defined within go-stackage.

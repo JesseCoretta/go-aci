@@ -11,32 +11,26 @@ var (
 )
 
 /*
-String wraps go-stackage's ComparisonOperator.String method. This will
-return the comparison operator character(s) required by the ACIv3 syntax
-for a particular expressive statement.
+String wraps [stackage.ComparisonOperator.String] method. This will return the comparison operator character(s) required by the ACIv3 syntax for a particular expressive statement.
 
-For example, if the receiver is the Eq ComparisonOperator const, the
-returned string value shall be `=`.
+For example, if the receiver is the Eq [ComparisonOperator] constant, the returned string value shall be `=`.
 
-If the receiver is bogus, or describes an unknown ComparisonOperator
-value, the default go-stackage tag "<invalid_operator>" is returned.
+If the receiver is bogus, or describes an unknown [ComparisonOperator] value, the default [stackage] tag "<invalid_operator>" is returned.
 
-See the ComparisonOperator const definitions for details.
+See the [ComparisonOperator] constant definitions for details.
 */
 func (r ComparisonOperator) String() string {
 	return r.cast().String()
 }
 
 /*
-Context returns the "name" of the ComparisonOperator const.
+Context returns the "name" of the [ComparisonOperator] constant.
 
-For example, if the receiver represents the Eq ComparisonOperator const,
-the returned string value shall be `Eq`.
+For example, if the receiver represents the Eq [ComparisonOperator] constant, the returned string value shall be `Eq`.
 
-If the receiver is bogus, or describes an unknown ComparisonOperator
-value, the default go-stackage tag "<invalid_operator>" is returned.
+If the receiver is bogus, or describes an unknown [ComparisonOperator] value, the default [stackage] tag "<invalid_operator>" is returned.
 
-See the ComparisonOperator const definitions for details.
+See the [ComparisonOperator] constant definitions for details.
 */
 func (r ComparisonOperator) Context() string {
 	switch r {
@@ -54,34 +48,23 @@ func (r ComparisonOperator) Context() string {
 		return `Ge`
 	}
 
-	return r.String() // go-stackage "<invalid_operator>"
+	return r.String() // [stackage] "<invalid_operator>"
 }
 
 /*
-Description returns a short description of the receiver instance's
-context.
+Description returns a short description of the receiver instance's context.
 
-For instance, if the receiver is the Eq ComparisonOperator const,
-the returned string value shall be `Equal To`.
+For instance, if the receiver is the Eq [ComparisonOperator] constant, the returned string value shall be `Equal To`.
 
-If the receiver is bogus, or describes an unknown ComparisonOperator
-value, the default go-stackage tag "<invalid_operator>" is returned.
+If the receiver is bogus, or describes an unknown [ComparisonOperator] value, the default [stackage] tag "<invalid_operator>" is returned.
 
-This method is largely for convenience, and many individuals may feel
-it only has any practical applications in the areas of documentation,
-diagram creation or some other similar activity.
+This method is largely for convenience, and many individuals may feel it only has any practical applications in the areas of documentation, diagram creation or some other similar activity.
 
-However, a prudent cybersecurity expert may argue that this method can
-be used to aid in the (critical) area of proofreading newly-devised or
-modified access control statements. A person could very easily mistake
->= and <=, certainly if they're not paying attention. One such mistake
-could spell disaster.
+However, a prudent cybersecurity expert may argue that this method can be used to aid in the (critical) area of proofreading newly-devised or modified access control statements. A person could very easily mistake >= and <=, certainly if they're not paying attention. One such mistake could spell disaster.
 
-Additionally, use of this method as a means to auto-generate Instruction
-comments (for LDIF configurations, or similar) can greatly help an admin
-more easily READ and UNDERSTAND the statements in question.
+Additionally, use of this method as a means to auto-generate [Instruction] comments (for LDIF configurations, or similar) can greatly help an admin more easily READ and UNDERSTAND the statements in question.
 
-See the ComparisonOperator const definitions for details.
+See the [ComparisonOperator] const definitions for details.
 */
 func (r ComparisonOperator) Description() string {
 	switch r {
@@ -99,14 +82,11 @@ func (r ComparisonOperator) Description() string {
 		return `Greater Than Or Equal`
 	}
 
-	return r.String() // go-stackage "<invalid_operator>"
+	return r.String() // [stackage] "<invalid_operator>"
 }
 
 /*
-Valid returns an error instance following the process of verifying
-the receiver to be a known ComparisonOperator instance.  This does
-NOT, however, imply feasibility of use with any particular type in
-the creation of BindRule or TargetRule instances.
+Valid returns an error instance following the process of verifying the receiver to be a known [ComparisonOperator] instance.  This does NOT, however, imply feasibility of use with any particular type in the creation of [BindRule] or [TargetRule] instances.
 */
 func (r ComparisonOperator) Valid() (err error) {
 	if !isValidCopNumeral(int(r)) {
@@ -117,13 +97,9 @@ func (r ComparisonOperator) Valid() (err error) {
 }
 
 /*
-Compare shall resolve the input ComparisonOperator candidate (cop)
-and, if successful, shall perform an equality assertion between it
-and the receiver instance. The assertion result is returned as a
-bool instance.
+Compare shall resolve the input [ComparisonOperator] candidate (cop) and, if successful, shall perform an equality assertion between it and the receiver instance. The assertion result is returned as a bool instance.
 
-In the case of the string representation of a given candidate input
-value, case-folding is not a significant factor.
+In the case of the string representation of a given candidate input value, case-folding is not a significant factor.
 */
 func (r ComparisonOperator) Compare(cop any) bool {
 	switch tv := cop.(type) {
@@ -143,24 +119,18 @@ func (r ComparisonOperator) Compare(cop any) bool {
 }
 
 /*
-isValidCopNumeral merely returns the Boolean evaluation result of a check to see
-whether integer x falls within a numerical range of one (1) through six (6).
+isValidCopNumeral merely returns the Boolean evaluation result of a check to see whether integer x falls within a numerical range of one (1) through six (6).
 
-This range represents the absolute minimum and maximum numerical values for any
-valid instance of the stackage.ComparisonOperator type (and, by necessity, the
-go-aci ComparisonOperator alias type as well).
+This range represents the absolute minimum and maximum numerical values for any valid instance of the stackage.ComparisonOperator type (and, by necessity, the go-aci [ComparisonOperator] alias type as well).
 */
 func isValidCopNumeral(x int) bool {
 	return (1 <= x && x <= 6)
 }
 
 /*
-keywordAllowsComparisonOperator returns a Boolean value indicative of
-whether Keyword input value kw allows ComparisonOperator op
-for use in T/B rule instances.
+keywordAllowsComparisonOperator returns a Boolean value indicative of whether Keyword input value kw allows [ComparisonOperator] op for use in T/B rule instances.
 
-Certain keywords, such as TargetScope, allow only certain operators,
-while others, such as BindSSF, allow the use of ALL operators.
+Certain keywords, such as [TargetScope], allow only certain operators, while others, such as [BindSSF], allow the use of ALL operators.
 */
 func keywordAllowsComparisonOperator(kw, op any) (allowed bool) {
 	// identify the comparison operator,
@@ -198,12 +168,9 @@ func keywordAllowsComparisonOperator(kw, op any) (allowed bool) {
 }
 
 /*
-matchCOP reads the *string representation* of a
-ComparisonOperator instance and returns
-the appropriate ComparisonOperator const.
+matchCOP reads the *string representation* of a ComparisonOperator instance and returns the appropriate ComparisonOperator constant.
 
-A bogus ComparisonOperator (badCop, 0x0)
-shall be returned if a match was not made.
+A bogus ComparisonOperator (badCop, 0x0) shall be returned if a match was not made.
 */
 func matchCOP(op string) ComparisonOperator {
 	for _, v := range comparisonOperatorMap {
@@ -220,7 +187,7 @@ func matchCOP(op string) ComparisonOperator {
 }
 
 /*
-bindKeywordAllowsComparisonOperator is a private function called by keywordAllowsCompariso9nOperator.
+bindKeywordAllowsComparisonOperator is a private function called by keywordAllowsComparisonOperator.
 */
 func bindKeywordAllowsComparisonOperator(key BindKeyword, cop ComparisonOperator) (allowed bool) {
 	// look-up the keyword within the permitted cop
@@ -242,7 +209,7 @@ func bindKeywordAllowsComparisonOperator(key BindKeyword, cop ComparisonOperator
 }
 
 /*
-targetKeywordAllowsComparisonOperator is a private function called by keywordAllowsCompariso9nOperator.
+targetKeywordAllowsComparisonOperator is a private function called by keywordAllowsComparisonOperator.
 */
 func targetKeywordAllowsComparisonOperator(key TargetKeyword, cop ComparisonOperator) bool {
 	// look-up the keyword within the permitted cop

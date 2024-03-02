@@ -1,14 +1,11 @@
 package aci
 
 /*
-pb.go contains PermissionBindRules types and methods. PermissionBindRules combine
-Permissions with BindRules, and are a key component in the formation of a complete
-ACI.
+pb.go contains PermissionBindRules types and methods. PermissionBindRules combine Permissions with BindRules, and are a key component in the formation of a complete Instruction.
 */
 
 /*
-invalid value constants used as stringer method returns when
-something goes wrong :/
+invalid value constants used as stringer method returns when something goes wrong :/
 */
 const (
 	// badPB is supplied during PermissionBindRule string representation
@@ -22,12 +19,9 @@ var (
 )
 
 /*
-PB contains one (1) Permission instance and one (1) BindRules instance. Instances
-of this type are used to create top-level ACI Permission+Bind Rule pairs, of which
-at least one (1) is required in any given access control instructor definition.
+PermissionBindRule contains one (1) [Permission] instance and one (1) [BindRules] instance. Instances of this type are used within an [Instruction] instance.
 
-Users may compose instances of this type manually, or using the PB package
-level function, which automatically invokes value checks.
+Users may create instances of this type using the [PBR] package level function.
 */
 type PermissionBindRule struct {
 	*permissionBindRule
@@ -46,17 +40,11 @@ func newPBR(P Permission, B BindContext) *permissionBindRule {
 }
 
 /*
-PBR returns an instance of PermissionBindRule, bearing the Permission P and
-the Bind Rule B. The values P and B shall undergo validity checks per the
-conditions of the PermissionBindRule.Valid method automatically. A bogus
-PermissionBindRule is returned if such checks fail.
+PBR returns an instance of [PermissionBindRule], bearing the [Permission] P and the [BindRule] B. The values P and B shall undergo validity checks per the conditions of the [PermissionBindRule] Valid method automatically. A bogus [PermissionBindRule] is returned if such checks fail.
 
-Instances of this kind are intended for submission (via Push) into instances
-of PermissionBindRules.
+Instances of this kind are intended for submission (via Push) into instances of [PermissionBindRules].
 
-Generally, an ACI only has a single PermissionBindRule, though multiple
-instances of this type are allowed per the syntax specification honored
-by this package.
+Generally, an [Instruction] only has a single [PermissionBindRule], though multiple instances of this type are allowed per the syntax specification honored by this package.
 */
 func PBR(P Permission, B BindContext) (r PermissionBindRule) {
 	_r := PermissionBindRule{
@@ -71,22 +59,18 @@ func PBR(P Permission, B BindContext) (r PermissionBindRule) {
 }
 
 /*
-Valid returns an error instance should any of the following conditions
-evaluate as true:
+Valid returns an error instance should any of the following conditions evaluate as true:
 
-• Permission.Valid returns an error for P
-
-• Rule.Valid returns an error for B
-
-• Rule.Len returns zero (0) for B
+  - Valid returns an error for P
+  - Valid returns an error for B
+  - Len returns zero (0) for B
 */
 func (r PermissionBindRule) Valid() (err error) {
 	return r.valid()
 }
 
 /*
-IsZero returns a Boolean value indicative of whether the receiver
-instance is nil, or unset.
+IsZero returns a Boolean value indicative of whether the receiver instance is nil, or unset.
 */
 func (r PermissionBindRule) IsZero() bool {
 	if r.permissionBindRule == nil {
@@ -98,8 +82,7 @@ func (r PermissionBindRule) IsZero() bool {
 }
 
 /*
-Set assigns one (1) or more values (x) to the receiver. Valid types
-for input are Permission, BindContext or their string equivalents.
+Set assigns one (1) or more values (x) to the receiver. Valid types for input are [Permission], [BindContext] or their string equivalents.
 */
 func (r *PermissionBindRule) Set(x ...any) PermissionBindRule {
 	if r.IsZero() {
@@ -167,16 +150,14 @@ func (r PermissionBindRule) valid() (err error) {
 }
 
 /*
-String is a stringer method that returns the string representation
-of the receiver.
+String is a stringer method that returns the string representation of the receiver.
 */
 func (r PermissionBindRule) String() string {
 	return r.string()
 }
 
 /*
-Compare returns a Boolean value indicative of a SHA-1 comparison
-between the receiver (r) and input value x.
+Compare returns a Boolean value indicative of a SHA-1 comparison between the receiver (r) and input value x.
 */
 func (r PermissionBindRule) Compare(x any) bool {
 	return compareHashInstance(r, x)
@@ -197,7 +178,7 @@ func (r PermissionBindRule) string() (s string) {
 }
 
 /*
-Valid wraps go-stackage's Stack.Valid method.
+Valid wraps the [stackage.Stack.Valid] method.
 */
 func (r PermissionBindRules) Valid() (err error) {
 	err = r.cast().Valid()
@@ -205,29 +186,28 @@ func (r PermissionBindRules) Valid() (err error) {
 }
 
 /*
-IsZero wraps go-stackage's Stack.IsZero method.
+IsZero wraps the [stackage.Stack.IsZero] method.
 */
 func (r PermissionBindRules) IsZero() bool {
 	return r.cast().IsZero()
 }
 
 /*
-Len wraps go-stackage's Stack.Len method.
+Len wraps the [stackage.Stack.Len] method.
 */
 func (r PermissionBindRules) Len() int {
 	return r.cast().Len()
 }
 
 /*
-Category wraps go-stackage's Stack.ID method.
+Category wraps the [stackage.Stack.ID] method.
 */
 func (r PermissionBindRules) Kind() string {
 	return pbrsRuleID
 }
 
 /*
-Index wraps go-stackage's Stack.Index method and performs type
-assertion in order to return an instance of PermissionBindRule.
+Index wraps the [stackage.Stack.Index] method and performs type assertion in order to return an instance of [PermissionBindRule].
 */
 func (r PermissionBindRules) Index(idx int) (pbr PermissionBindRule) {
 	x, _ := r.cast().Index(idx)
@@ -239,25 +219,23 @@ func (r PermissionBindRules) Index(idx int) (pbr PermissionBindRule) {
 }
 
 /*
-String is a stringer method that returns the string
-representation of the receiver instance.
+String is a stringer method that returns the string representation of the receiver instance.
 
-This method wraps go-stackage's Stack.String method.
+This method wraps the [stackage.Stack.String] method.
 */
 func (r PermissionBindRules) String() string {
 	return r.cast().String()
 }
 
 /*
-Compare returns a Boolean value indicative of a SHA-1 comparison
-between the receiver (r) and input value x.
+Compare returns a Boolean value indicative of a SHA-1 comparison between the receiver (r) and input value x.
 */
 func (r PermissionBindRules) Compare(x any) bool {
 	return compareHashInstance(r, x)
 }
 
 /*
-Push wraps go-stackage's Stack.Push method.
+Push wraps the [stackage.Stack.Push] method.
 */
 func (r PermissionBindRules) Push(x ...any) PermissionBindRules {
 	_r := r.cast()
@@ -281,12 +259,9 @@ func (r PermissionBindRules) Push(x ...any) PermissionBindRules {
 }
 
 /*
-Pop wraps go-stackage's Stack.Pop method. An instance of
-PermissionBindRule, which may or may not be nil, is returned
-following a call of this method.
+Pop wraps the [stackage.Stack.Pop] method. An instance of [PermissionBindRule], which may or may not be nil, is returned following a call of this method.
 
-Within the context of the receiver type, a PermissionBindRule,
-if non-nil, can only represent a PermissionBindRule instance.
+Within the context of the receiver type, a [PermissionBindRule], if non-nil, can only represent a [PermissionBindRule] instance.
 */
 func (r PermissionBindRules) Pop() (pbr PermissionBindRule) {
 	x, _ := r.cast().Pop()
@@ -298,9 +273,7 @@ func (r PermissionBindRules) Pop() (pbr PermissionBindRule) {
 }
 
 /*
-permissionBindRulesPushPolicy conforms to the PushPolicy interface signature
-defined within the go-stackage package. This private function is called during
-Push attempts to a PermissionBindRules instance.
+permissionBindRulesPushPolicy conforms to the PushPolicy interface signature defined within the [stackage] package. This private function is called during Push attempts to a PermissionBindRules instance.
 */
 func (r PermissionBindRules) pushPolicy(x ...any) (err error) {
 	if len(x) == 0 {
@@ -329,9 +302,7 @@ func (r PermissionBindRules) pushPolicy(x ...any) (err error) {
 }
 
 /*
-Contains returns a Boolean value indicative of whether value x,
-if a string or PermissionBindRule instance, already resides within
-the receiver instance.
+Contains returns a Boolean value indicative of whether value x, if a string or [PermissionBindRule] instance, already resides within the receiver instance.
 
 Case is not significant in the matching process.
 */
@@ -368,11 +339,9 @@ func (r PermissionBindRules) contains(x any) bool {
 }
 
 /*
-PBRs returns a freshly initialized instance of PermissionBindRules, configured to
-store one (1) or more instances of PermissionBindRule.
+PBRs returns a freshly initialized instance of [PermissionBindRules], configured to store one (1) or more instances of [PermissionBindRule].
 
-Instances of this kind are used as a component in top-level Instruction (ACI)
-assembly.
+Instances of this kind are used as a component in top-level [Instruction] assembly.
 */
 func PBRs(x ...any) (pbr PermissionBindRules) {
 	// create a native stackage.Stack
