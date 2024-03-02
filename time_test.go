@@ -71,16 +71,18 @@ func ExampleDayOfWeek_Keyword() {
 func ExampleDayOfWeek_Shift() {
 	var d DayOfWeek
 	d.Shift(Mon)
-	d.Shift(Tues)
+	d.Shift(`SAT`)
+	d.Shift(3) // tues
 	fmt.Printf("%s", d)
-	// Output: Mon,Tues
+	// Output: Mon,Tues,Sat
 }
 
 func ExampleDayOfWeek_Unshift() {
 	var d DayOfWeek
 	d.Shift(Mon)
-	d.Shift(Tues)
-	d.Unshift(Mon)
+	d.Shift(`wed`)
+	d.Shift(3) // tues
+	d.Unshift(Mon,4) // Mon & Wed
 	fmt.Printf("%s", d)
 	// Output: Tues
 }
