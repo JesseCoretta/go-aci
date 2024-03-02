@@ -23,7 +23,7 @@ In cases where the [AttributeFilterOperations] type is used to represent any [Ta
 
 Use of this constant allows the use of a comma (ASCII #44) to delimit the slices in an [AttributeFilterOperations] instance as opposed to the alternative delimiter (semicolon, ASCII #59).
 
-This constant may be fed to the SetDelimiter method that is extended through the [AttributeFilterOperations] type.
+This constant may be fed to the [AttributeFilterOperations.SetDelimiter] method.
 
 This is the default setting for the above scenario, and likely need to be specified manually unless reverting back from the alternative character.
 */
@@ -36,7 +36,7 @@ In cases where the [AttributeFilterOperations] type is used to represent any [Ta
 
 Use of this constant allows the use of a semicolon (ASCII #59) to delimit the slices in an [AttributeFilterOperations] instance as opposed to the default delimiter (comma, ASCII #44).
 
-This constant may be fed to the SetDelimiter method that is extended through the [AttributeFilterOperations] type.
+This constant may be fed to the [AttributeFilterOperations.SetDelimiter] method.
 */
 const AttributeFilterOperationsSemiDelim = 1
 
@@ -68,9 +68,9 @@ Note that altering this value will not impact instances that were already create
 var RulePadding bool = true
 
 /*
-StackPadding is a global variable that will be applies to ALL Stack instances assembled during package operations. This is a convenient alternative to manually invoking the NoPadding method on a case by case basis.
+StackPadding is a global variable that will be applies to ALL [stackage.Stack] instances assembled during package operations. This is a convenient alternative to manually invoking the NoPadding method on a case by case basis.
 
-Padding is enabled by default, and can be disabled here globally, or overridden for individual Stack instances as needed.
+Padding is enabled by default, and can be disabled here globally, or overridden for individual [stackage.Stack] instances as needed.
 
 Note that altering this value will not impact instances that were already created; this only impacts the creation of new instances.
 */
