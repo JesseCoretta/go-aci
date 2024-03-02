@@ -1,4 +1,4 @@
-# Welcome to the go-schemax contributing guide <!-- omit in toc -->
+# Welcome to the go-aci contributing guide <!-- omit in toc -->
 
 First, welcome to the go-aci repository.
 
