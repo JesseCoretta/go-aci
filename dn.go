@@ -1,7 +1,7 @@
 package aci
 
 /*
-dn.go contains LDAP Distinguished Name types and methods.
+dn.go contains distinguished name types and methods.
 */
 
 /*
@@ -17,7 +17,7 @@ var (
 	//   ldap:///ou=People,dc=example,dc=com??one?(objectClass=*) // GOOD
 	//
 	// This constant is automatically used in any request related to the string
-	// representation of DistinguishedName instances. It is exported and visible
+	// representation of distinguished name instances. It is exported and visible
 	// to users for reference purposes only, and generally need not be accessed
 	// directly.
 	LocalScheme = `ldap:///`
@@ -47,11 +47,11 @@ var (
 )
 
 /*
-BindDistinguishedName describes a single LDAP distinguished name. For example:
+BindDistinguishedName describes a single distinguished name. For example:
 
 	ou=People,dc=example,dc=com
 
-For efficiency reasons, the LDAP "local scheme" prefix (ldap:///) is not stored in literal form within any DistinguishedName instance, however it will appear during string representation operations, e.g.:
+For efficiency reasons, the LDAP "local scheme" prefix (ldap:///) is not stored in literal form within any distinguished name instance, however it will appear during string representation operations, e.g.:
 
 	ldap:///ou=People,dc=example,dc=com
 
@@ -70,13 +70,13 @@ type BindDistinguishedName struct {
 }
 
 /*
-TargetDistinguishedName describes a single LDAP distinguished name. For
+TargetDistinguishedName describes a single distinguished name. For
 example:
 
 	ou=People,dc=example,dc=com
 
 For efficiency reasons, the LDAP "local scheme" prefix (ldap:///) is not
-stored in literal form within any DistinguishedName instance, however it
+stored in literal form within any distinguished name instance, however it
 will appear during string representation operations, e.g.:
 
 	ldap:///ou=People,dc=example,dc=com
@@ -310,7 +310,7 @@ func (r TargetDistinguishedName) IsZero() bool {
 }
 
 /*
-Set assigns value x to the receiver to represent an LDAP distinguished name in
+Set assigns value x to the receiver to represent an distinguished name in
 the context of a [BindRule].
 
 This method presents an opportunity for setting a DN at a later point versus
@@ -346,7 +346,7 @@ func (r *BindDistinguishedName) Set(x string, kw ...BindKeyword) BindDistinguish
 }
 
 /*
-Set assigns value x to the receiver to represent an LDAP distinguished name in
+Set assigns value x to the receiver to represent an distinguished name in
 the context of a [TargetRule].
 
 This method presents an opportunity for setting a DN at a later point versus
@@ -408,7 +408,7 @@ func (r *distinguishedName) set(x string, kw Keyword) {
 /*
 UDN initializes, sets and returns an instance of [BindDistinguishedName].
 
-An LDAP distinguished name in string form is required.
+A distinguished name in string form is required.
 
 The return value shall be suitable for use in creating a [BindRule] that bears the [BindUDN] [BindKeyword].
 */
@@ -417,7 +417,7 @@ func UDN(x string) BindDistinguishedName {
 }
 
 /*
-RDN initializes, sets and returns an instance of [BindDistinguishedName]. An LDAP distinguished name in string form is required.
+RDN initializes, sets and returns an instance of [BindDistinguishedName]. A distinguished name in string form is required.
 
 The return value shall be suitable for use in creating a [BindRule] that bears the [BindRDN] [BindKeyword].
 */
@@ -426,7 +426,7 @@ func RDN(x string) BindDistinguishedName {
 }
 
 /*
-GDN initializes, sets and returns an instance of [BindDistinguishedName]. An LDAP distinguished name in string form is required.
+GDN initializes, sets and returns an instance of [BindDistinguishedName]. A distinguished name in string form is required.
 
 The return value shall be suitable for use in creating a [BindRule] that bears the [BindGDN] [BindKeyword].
 */
@@ -435,7 +435,7 @@ func GDN(x string) BindDistinguishedName {
 }
 
 /*
-TDN initializes, sets and returns an instance of [TargetDistinguishedName] in one shot. An LDAP distinguished name in string form is required.
+TDN initializes, sets and returns an instance of [TargetDistinguishedName] in one shot. A distinguished name in string form is required.
 
 The return value shall be suitable for use in creating a [TargetRule] instance that bears the [Target] [TargetKeyword].
 */
@@ -444,7 +444,7 @@ func TDN(x string) TargetDistinguishedName {
 }
 
 /*
-TTDN initializes, sets and returns an instance of [TargetDistinguishedName] in one shot. An LDAP distinguished name in string form is required.
+TTDN initializes, sets and returns an instance of [TargetDistinguishedName] in one shot. A distinguished name in string form is required.
 
 The return value shall be suitable for use in creating a [TargetRule] instance that bears the [TargetTo] [TargetKeyword].
 */
@@ -453,7 +453,7 @@ func TTDN(x string) TargetDistinguishedName {
 }
 
 /*
-TFDN initializes, sets and returns an instance of [TargetDistinguishedName] in one shot. An LDAP distinguished name in string form is required.
+TFDN initializes, sets and returns an instance of [TargetDistinguishedName] in one shot. A distinguished name in string form is required.
 
 The return value shall be suitable for use in creating a TargetRule instance that bears the [TargetFrom] [TargetKeyword].
 */
@@ -1248,10 +1248,10 @@ func pushBindDistinguishedNames(kw Keyword, x any) (ctx DistinguishedNameContext
 	ctx = badBindDN
 	switch tv := x.(type) {
 
-	// case match is a DistinguishedName in string form.
+	// case match is a distinguished name in string form.
 	// In this case, it will be marshaled into a proper
-	// instance of DistinguishedName bearing the same
-	// ke yword as the destination receiver.
+	// instance of distinguished name bearing the same
+	// keyword as the destination receiver.
 	case string:
 		if len(tv) > 0 {
 			ctx = BindDistinguishedName{newDistinguishedName(tv, kw)}
@@ -1282,9 +1282,9 @@ func pushTargetDistinguishedNames(kw Keyword, x any) (tdn TargetDistinguishedNam
 	tdn = badTargetDN
 	switch tv := x.(type) {
 
-	// case match is a DistinguishedName in string form.
+	// case match is a distinguished name in string form.
 	// In this case, it will be marshaled into a proper
-	// instance of DistinguishedName bearing the same
+	// instance of distinguished name bearing the same
 	// ke yword as the destination receiver.
 	case string:
 		if len(tv) > 0 {
@@ -1437,7 +1437,7 @@ func distinguishedNamesPushPolicyKeywordHandler(r any, kw Keyword) {
 }
 
 /*
-UDNs returns a new instance of [BindDistinguishedNames] with an initialized embedded stack configured to function as a simple ORed list containing a single level of LDAP distinguished names. The [BindUDN] (userdn) [BindKeyword] is automatically assigned to the return value.
+UDNs returns a new instance of [BindDistinguishedNames] with an initialized embedded stack configured to function as a simple ORed list containing a single level of distinguished names. The [BindUDN] (userdn) [BindKeyword] is automatically assigned to the return value.
 
 Only valid instances of [BindDistinguishedName] which bear the [BindUDN] keyword are to be considered eligible for push requests. If the input value is a string, it will be accepted and properly branded with the [BindKeyword].
 
@@ -1477,7 +1477,7 @@ func UDNs(x ...any) (d BindDistinguishedNames) {
 }
 
 /*
-RDNs returns a new instance of [BindDistinguishedNames] with an initialized embedded stack configured to function as a simple ORed list containing a single level of LDAP distinguished names. The [BindRDN] (roledn) [BindKeyword] is automatically assigned to the return value.
+RDNs returns a new instance of [BindDistinguishedNames] with an initialized embedded stack configured to function as a simple ORed list containing a single level of distinguished names. The [BindRDN] (roledn) [BindKeyword] is automatically assigned to the return value.
 
 Only valid instances of [BindDistinguishedName] which bear the [BindRDN] [BindKeyword] are to be considered eligible for push requests. If the input value is a string, it will be accepted and properly branded with the [BindKeyword].
 
@@ -1517,7 +1517,7 @@ func RDNs(x ...any) (d BindDistinguishedNames) {
 }
 
 /*
-GDNs returns a new instance of [BindDistinguishedNames] with an initialized embedded stack configured to function as a simple ORed list containing a single level of LDAP distinguished names. The [BindGDN] (groupdn) [BindKeyword] is automatically assigned to the return value.
+GDNs returns a new instance of [BindDistinguishedNames] with an initialized embedded stack configured to function as a simple ORed list containing a single level of distinguished names. The [BindGDN] (groupdn) [BindKeyword] is automatically assigned to the return value.
 
 Only valid instances of [BindDistinguishedName] which bear the [BindGDN] [BindKeyword] are to be considered eligible for push requests. If the input value is a string, it will be accepted and properly branded with the [BindKeyword].
 
@@ -1557,7 +1557,7 @@ func GDNs(x ...any) (d BindDistinguishedNames) {
 }
 
 /*
-TDNs returns a new instance of [TargetDistinguishedNames] with an initialized embedded stack configured to function as a simple ORed list containing a single level of LDAP distinguished names. The [Target] (target) [TargetKeyword] is automatically assigned to the return value.
+TDNs returns a new instance of [TargetDistinguishedNames] with an initialized embedded stack configured to function as a simple ORed list containing a single level of distinguished names. The [Target] (target) [TargetKeyword] is automatically assigned to the return value.
 
 Only valid instances of [TargetDistinguishedName] which bear the [Target] [TargetKeyword] are to be considered eligible for push requests. If the input value is a string, it will be accepted and properly branded with the keyword.
 
@@ -1597,7 +1597,7 @@ func TDNs(x ...any) (d TargetDistinguishedNames) {
 }
 
 /*
-TTDNs returns a new instance of [TargetDistinguishedNames] with an initialized embedded stack configured to function as a simple ORed list containing a single level of LDAP distinguished names. The [TargetTo] (target_to) [Keyword] is automatically assigned to the return value.
+TTDNs returns a new instance of [TargetDistinguishedNames] with an initialized embedded stack configured to function as a simple ORed list containing a single level of distinguished names. The [TargetTo] (target_to) [Keyword] is automatically assigned to the return value.
 
 Only valid instances of [TargetDistinguishedName] which bear the [TargetTo] [Keyword] are to be considered eligible for push requests. If the input value is a string, it will be accepted and properly branded with the [Keyword].
 
@@ -1637,7 +1637,7 @@ func TTDNs(x ...any) (d TargetDistinguishedNames) {
 }
 
 /*
-TFDNs returns a new instance of [TargetDistinguishedNames] with an initialized embedded stack configured to function as a simple ORed list containing a single level of LDAP distinguished names. The [TargetFrom] (target_from) [TargetKeyword] will be automatically assigned to the return value.
+TFDNs returns a new instance of [TargetDistinguishedNames] with an initialized embedded stack configured to function as a simple ORed list containing a single level of distinguished names. The [TargetFrom] (target_from) [TargetKeyword] will be automatically assigned to the return value.
 
 Optionally, the caller may choose to submit one (1) or more (valid) instances of the [TargetDistinguishedName] type (or its string equivalent) for push during initialization. This is merely a more convenient alternative to separate init and push procedures.
 

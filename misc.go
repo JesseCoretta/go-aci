@@ -41,7 +41,7 @@ This constant may be fed to the [AttributeFilterOperations.SetDelimiter] method.
 const AttributeFilterOperationsSemiDelim = 1
 
 /*
-MultivalOuterQuotes represents the alternate quotation style used by this package. In cases where a multi-valued [BindRule] or [TargetRule] expression involving LDAP distinguished names, ASN.1 Object Identifiers (in dot notation) and LDAP Attribute Type names is being created, this constant will enforce only outer-most double-quotation of the whole sequence of values, including the delimiters.
+MultivalOuterQuotes represents the alternate quotation style used by this package. In cases where a multi-valued [BindRule] or [TargetRule] expression involving distinguished names, ASN.1 Object Identifiers (in dot notation) and LDAP Attribute Type names is being created, this constant will enforce only outer-most double-quotation of the whole sequence of values, including the delimiters.
 
 	Example: keyword = "<val> || <val> || <val>"
 
@@ -50,7 +50,7 @@ This constant may be fed to the SetQuoteStyle method that is extended through el
 const MultivalOuterQuotes = 1
 
 /*
-MultivalSliceQuotes represents the standard quotation scheme offered by this package. In cases where a multi-valued [BindRule] or [TargetRule] expression involving LDAP distinguished names, ASN.1 Object Identifiers (in dot notation) and LDAP Attribute Type names is being created, this constant shall disable outermost quotation and will, instead, quote individual values. This will NOT enclose symbolic OR (||) delimiters within quotations.
+MultivalSliceQuotes represents the standard quotation scheme offered by this package. In cases where a multi-valued [BindRule] or [TargetRule] expression involving distinguished names, ASN.1 Object Identifiers (in dot notation) and LDAP Attribute Type names is being created, this constant shall disable outermost quotation and will, instead, quote individual values. This will NOT enclose symbolic OR (||) delimiters within quotations.
 
 	Example: keyword = "<val>" || "<val>" || "<val>"
 
