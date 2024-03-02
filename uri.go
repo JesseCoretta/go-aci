@@ -133,7 +133,7 @@ func (r *ldapURI) assertURIComponents(vals []string, kw ...BindKeyword) (err err
 /*
 uriAssertATB shall analyze the input string value (raw) and will do one (1) of the following:
 
-• Parse the value under the assumption it represents an AttributeBindTypeOrvalue instance using the provided BindKeyword (kw), OR ...
+• Parse the value under the assumption it represents an AttributeBindTypeOrValue instance using the provided BindKeyword (kw), OR ...
 • Parse the value under the assumption it represents a sequence of one or more LDAP AttributeType values, delimited using a comma (ASCII #44) as needed
 
 Should any errors be encountered, a non-nil error instance (err) is returned.

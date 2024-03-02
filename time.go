@@ -11,7 +11,7 @@ import (
 var now func() time.Time = time.Now
 
 /*
-Day constants can be shifted into an instance of [DayOfWeek], allowing effective expressions such as [Sun],[Tues]. See the [DayOfWeek.Set] method.
+Day constants can be shifted into an instance of [DayOfWeek], allowing effective expressions such as [Sun],[Tues]. See the [DayOfWeek.Shift] and [DayOfWeek.Unshift] methods.
 */
 const (
 	noDay Day = 0         // 0 <invalid_day>
@@ -32,7 +32,7 @@ Day represents the numerical abstraction of a single day of the week, such as Su
 type Day uint8
 
 /*
-iterate a comma-delimited list and verify each slice as a day of the week. return a DayOfWeek instance alongside a Boolean value indicative of success.
+parseDoW will iterate a comma-delimited list and verify each slice as a day of the week and return a [DayOfWeek] instance alongside a Boolean value indicative of success.
 */
 func parseDoW(dow string) (d DayOfWeek, err error) {
 	d = newDoW()
@@ -112,20 +112,7 @@ DoW initializes, shifts and returns a new instance of [DayOfWeek] in one shot. T
 */
 func DoW(x ...any) (d DayOfWeek) {
 	d = newDoW()
-
-	// assert each dow's type and analyze.
-	// If deemed a valid dow, left-shift
-	// into D.
-	for i := 0; i < len(x); i++ {
-		switch tv := x[i].(type) {
-		case int, string:
-			if dw := matchDoW(tv); dw != noDay {
-				d.Shift(dw)
-			}
-		case Day:
-			d.Shift(tv)
-		}
-	}
+	d.Shift(x...)
 
 	return
 }
@@ -178,13 +165,28 @@ func Weekend(cop any) (b BindRule) {
 }
 
 /*
-Shift wraps the [shifty.BitValue.Shift] method.
+Shift wraps [shifty.BitValue.Shift] method to allow for bit-shifting of the receiver (r) instance using various representations of any number of days (string, int or [Day]).
 */
-func (r *DayOfWeek) Shift(x Day) DayOfWeek {
+func (r *DayOfWeek) Shift(x ...any) DayOfWeek {
+	// initialize receiver r if zero.
 	if r.IsZero() {
 		*r = newDoW()
 	}
-	r.cast().Shift(x)
+
+        // assert each dow's type and analyze.
+        // If deemed a valid dow, left-shift
+        // into d.
+        for i := 0; i < len(x); i++ {
+                switch tv := x[i].(type) {
+                case int, string:
+                        if dw := matchDoW(tv); dw != noDay {
+				r.cast().Shift(dw)
+                        }
+                case Day:
+			r.cast().Shift(tv)
+                }
+        }
+
 	return *r
 }
 
@@ -199,12 +201,28 @@ func (r DayOfWeek) Positive(x Day) (posi bool) {
 }
 
 /*
-Unshift wraps the [shifty.BitValue.Unshift] method.
+Unshift wraps [shifty.BitValue.Unshift] method to allow for bit-unshifting of the receiver (r) instance using various representations of any number of days (string, int or [Day]).
 */
-func (r *DayOfWeek) Unshift(x Day) DayOfWeek {
-	if !r.IsZero() {
-		r.cast().Unshift(x)
+func (r *DayOfWeek) Unshift(x ...any) DayOfWeek {
+	// can't unshift from nothing
+	if r.IsZero() {
+		return *r
 	}
+
+        // assert each dow's type and analyze.
+        // If deemed a valid dow, right-shift
+        // out of d.
+        for i := 0; i < len(x); i++ {
+                switch tv := x[i].(type) {
+                case int, string:
+                        if dw := matchDoW(tv); dw != noDay {
+                                r.cast().Unshift(dw)
+                        }
+                case Day:
+                        r.cast().Unshift(tv)
+                }
+        }
+
 	return *r
 }
 
@@ -286,8 +304,7 @@ func (r DayOfWeek) Ne() (b BindRule) {
 /*
 BRM returns an instance of [BindRuleMethods].
 
-Each of the return instance's key values represent a single instance of the [ComparisonOperator] type that is allowed for use in the creation of [BindRule] instances which bear the receiver instance as an expression value. The value
-for each key is the actual [BindRuleMethod] instance for OPTIONAL use in the creation of a [BindRule] instance.
+Each of the return instance's key values represent a single instance of the [ComparisonOperator] type that is allowed for use in the creation of [BindRule] instances which bear the receiver instance as an expression value. The value for each key is the actual [BindRuleMethod] instance for OPTIONAL use in the creation of a [BindRule] instance.
 
 This is merely a convenient alternative to maintaining knowledge of which [ComparisonOperator] instances apply to which types. Instances of this type are also used to streamline package unit tests.
 
