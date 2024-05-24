@@ -34,6 +34,12 @@ github.com/JesseCoretta/go-objectid v0.0.6-alpha.1 h1:aq+kKX3rZaKUl8XSAOFqzMTw6Y
 github.com/JesseCoretta/go-objectid v0.0.6-alpha.1/go.mod h1:dOPQhGxLieMBl4WF1gq0Z3yb3KppfNGV/XrPrudjyuw=
 github.com/JesseCoretta/go-objectid v1.0.0 h1:WeME825KeUDv3OBt/OnqV8BrhwdpUpQ54NX16NuIjdg=
 github.com/JesseCoretta/go-objectid v1.0.0/go.mod h1:dOPQhGxLieMBl4WF1gq0Z3yb3KppfNGV/XrPrudjyuw=
+github.com/JesseCoretta/go-objectid v1.0.2 h1:5HeqLg4ZBhzHE+nO2gJUxgNyDQoKT9N2cF8knOsEXTg=
+github.com/JesseCoretta/go-objectid v1.0.2/go.mod h1:dOPQhGxLieMBl4WF1gq0Z3yb3KppfNGV/XrPrudjyuw=
+github.com/JesseCoretta/go-objectid v1.0.3 h1:e6TEpUmeQrIFnFdjmRSZT5fqbB0Jt7ecIRlLBrvrkXs=
+github.com/JesseCoretta/go-objectid v1.0.3/go.mod h1:dOPQhGxLieMBl4WF1gq0Z3yb3KppfNGV/XrPrudjyuw=
+github.com/JesseCoretta/go-objectid v1.0.4 h1:JhQTcKXc5yrr3nCuLOVaG16K5Bgf8hZOwYsmDWz81zw=
+github.com/JesseCoretta/go-objectid v1.0.4/go.mod h1:dOPQhGxLieMBl4WF1gq0Z3yb3KppfNGV/XrPrudjyuw=
 github.com/JesseCoretta/go-shifty v1.0.0-stable.0 h1:ELY5r6moVZeR8PrbZvZco52mzzFmHbv4xKUUmKs4nV8=
 github.com/JesseCoretta/go-shifty v1.0.0-stable.0/go.mod h1:vnqi9wCMnLDDD4XU3NmL2fF7dz4HiaAuI/M3bqB2bQE=
 github.com/JesseCoretta/go-shifty v1.0.1 h1:+AaQbNfVtWxWwI9jo0Hke6Jv1mBlOD/bAooaj0xjVi8=
@@ -80,6 +86,10 @@ github.com/JesseCoretta/go-stackage v0.0.3-alpha.1.0.20231008030922-c19b07d401f0
 github.com/JesseCoretta/go-stackage v0.0.3-alpha.1.0.20231008030922-c19b07d401f0/go.mod h1:x+xxD8I9N7JVURFrjQvLlQAp3AI30egZm7PogZCzB/g=
 github.com/JesseCoretta/go-stackage v1.0.0 h1:X27ZJc99TQjL3aNuXAUqbQ9NUBGQ2dEyblAsuO3+gvE=
 github.com/JesseCoretta/go-stackage v1.0.0/go.mod h1:JMqwT2pzRSHpYylydbrZYRe0GqRtADl7OJzy72wV4/8=
+github.com/JesseCoretta/go-stackage v1.0.2-0.20240316124206-a0d995cb00aa h1:LdT3WUYeAQotW6GjhMkCdvcDvtdjRn80X41IpuHrmDs=
+github.com/JesseCoretta/go-stackage v1.0.2-0.20240316124206-a0d995cb00aa/go.mod h1:QnPSyIRAMp4VWZNwBOOF7IcBGu+rWVUMDcAeATlRikI=
+github.com/JesseCoretta/go-stackage v1.0.3 h1:NhLG5LaRo8uFYjpWW/36Rpg2RVJS50KCgkmo5yenk5U=
+github.com/JesseCoretta/go-stackage v1.0.3/go.mod h1:QnPSyIRAMp4VWZNwBOOF7IcBGu+rWVUMDcAeATlRikI=
 github.com/antlr4-go/antlr/v4 v4.13.0 h1:lxCg3LAv+EUK6t1i0y1V6/SLeUi0eKEKdhQAlS8TVTI=
 github.com/antlr4-go/antlr/v4 v4.13.0/go.mod h1:pfChB/xh/Unjila75QW7+VU4TSnWnnk9UTnmpPaOR2g=
 golang.org/x/exp v0.0.0-20230515195305-f3d0a9c9a5cc h1:mCRnTeVUjcrhlRmO0VK8a6k6Rrf6TF9htwo2pJVSjIU=

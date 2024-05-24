@@ -127,7 +127,7 @@ isIdentifier scans the input string val and judges whether
 it appears to qualify as an identifier, in that:
 
 - it begins with a lower alpha
-- it contains only alphanumeric characters, hyphens or semicolons
+- it contains only alphanumeric characters, hyphens or semicolons (for tagged attributes)
 
 This is used, specifically, it identify an LDAP attributeType (with
 or without a tag), or an LDAP matchingRule.
@@ -138,7 +138,7 @@ func isIdentifier(val string) bool {
 	}
 
 	// must begin with lower alpha.
-	if !isLower(rune(val[0])) {
+	if !isLetter(rune(val[0])) {
 		return false
 	}
 
