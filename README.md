@@ -4,6 +4,10 @@
 
 Package aci implements the complete ACIv3 syntax as an SDK in a vendor-agnostic manner with rich features and a flexible design.
 
+## Maintenance Notice
+
+This package is now archived. The API is stable and it does everything I ever wanted it to do. Enjoy.
+
 ## License
 
 The aci package -- from [`go-aci`](http://github.com/JesseCoretta/go-aci) -- is available under the terms of the MIT license.
