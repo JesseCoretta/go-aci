@@ -4,9 +4,16 @@
 
 Package aci implements the complete ACIv3 syntax as an SDK in a vendor-agnostic manner with rich features and a flexible design.
 
-## Maintenance Notice
+## Q2 2025 Announcement
 
-This package is now archived. The API is stable and it does everything I ever wanted it to do. Enjoy.
+I am unarchiving go-aci to resolve some invalid security notices as well as to create a parallel release build for "No ANTLR" purposes.
+
+The current "v1.0.4" will remain unchanged aside from the following minor actions:
+
+  - Relocation into an "ANTLR" variant folder
+  - Version number update
+
+The new "No ANTLR" release shall support all of the actions as the "ANTLR" release, but with slightly better performance _and_ all native code.
 
 ## License
 
