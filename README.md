@@ -2,22 +2,13 @@
 
 ## Overview
 
-Package aci implements the complete ACIv3 syntax as an SDK in a vendor-agnostic manner with rich features and a flexible design.
+Package aci implements the complete ACIv3 syntax as an ANTLR-based SDK in a vendor-agnostic manner with rich features and a flexible design.
 
-## Q2 2025 Announcement
+## Archival Notice
 
-I am unarchiving go-aci to resolve some invalid security notices as well as to create a parallel release build for "No ANTLR" purposes.
+This package is archived. It is fully functional and has 100% test coverage.
 
-The current "v1.0.4" will remain unchanged aside from the following minor actions:
-
-  - Relocation into an "ANTLR" variant folder
-  - Version number update
-
-The new "No ANTLR" release shall support all of the actions as the "ANTLR" release, but with slightly better performance _and_ all native code.
-
-## Help Wanted!
-
-As indicated by the above badge, I am **actively looking for experienced open source volunteers** who have a keen grasp of the Netscape ACIv3 syntax and (ideally) its interaction with X.500/LDAP DSAs as an internal component. Past or present contributors of any third-party X.500/LDAP DSA (server!) products are _especially welcome_.
+If you need an actively maintained ACIv3 parser/tokenizer, please use [go-dirsyn](https://github.com/JesseCoretta/go-dirsyn).
 
 ## License
 
